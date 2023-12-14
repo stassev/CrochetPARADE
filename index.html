@@ -1,0 +1,1529 @@
+<!-- 
+    
+    Copyright (C) Svetlin Tassev
+
+// This file is part of CrochetPARADE.
+
+// CrochetPARADE is free software: you can redistribute it and/or modify it under 
+// the terms of the GNU General Public License as published by the Free Software 
+// Foundation, either version 3 of the License, or (at your option) any later version.
+
+// CrochetPARADE is distributed in the hope that it will be useful, but WITHOUT 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along 
+// with CrochetPARADE. If not, see <https://www.gnu.org/licenses/>.
+
+// Additional permission under GNU GPL version 3 section 7
+
+// If you modify this Program, or any covered work, by linking or combining it 
+// with Graphviz (or a modified version of that library) by using Viz.js, containing parts 
+// covered by the terms of Common Public License Version 1.0, the licensors 
+// of this Program grant you additional permission to convey the resulting work. 
+// Corresponding Source for a non-source form of such a combination shall 
+// include the source code for the parts of Graphviz used as well as that 
+// of the covered work.  -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>CrochetPARADE</title>
+
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "./three.module.js"
+          }
+        }
+      </script>
+    <style>
+        #examples {
+            appearance: none;
+            /* Hide the default arrow in some browsers */
+            -webkit-appearance: none;
+            /* Hide the default arrow in WebKit browsers */
+            -moz-appearance: none;
+            /* Hide the default arrow in Firefox */
+            padding-right: 20px;
+            /* Add some padding to the right to make space for the arrow */
+        }
+
+
+        .radio-buttons label {
+            font-size: 14pt;
+        }
+
+
+
+        .button-bar {
+            display: flex;
+            justify-content: left;
+            /*background-color: rgb(240, 240, 245);*/
+            /* Background color */
+            padding: 0px;
+            margin: 0;
+            border: 0;
+            align-self: stretch;
+
+        }
+
+
+        .button,
+        .label {
+            flex: 1;
+            align-self: stretch;
+        }
+
+
+
+        .button,
+        #examples,
+        .label {
+            outline: none;
+            /* Remove the outline */
+
+            font-size: 14pt;
+            background-color: #a2d1f0;
+            border: none;
+            color: rgb(0, 0, 0);
+            padding: 5px 10px;
+            /* Smaller padding */
+            text-align: left;
+            text-decoration: none;
+            display: inline-block;
+            /* Smaller font size */
+            border-radius: 2px;
+            cursor: pointer;
+            margin: 2px;
+            /* Remove default margin */
+        }
+
+        .spacer {
+            margin-right: 3px;
+        }
+
+
+        /*From csstricks: https://css-tricks.com/creating-an-editable-textarea-that-supports-syntax-highlighted-code/ */
+
+        #inputText,
+        #highlighting {
+            /* Both elements need the same text and space styling so they are directly on top of each other */
+
+            padding: 0;
+            border: 0;
+            margin: 0;
+            overflow-x: visible;
+            overflow-y: hidden;
+
+            width: 9999px;
+        }
+
+        #inputText,
+        #highlighting {
+            /* Also add text styles to highlighing tokens */
+            left: 0;
+            line-height: 21pt;
+            tab-size: 2;
+        }
+
+
+
+        #inputText,
+        #highlighting {
+            /* In the same place */
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+
+        /* Move the textarea in front of the result */
+
+        #inputText {
+            z-index: 1;
+        }
+
+        #highlighting {
+            z-index: 0;
+        }
+
+
+        /* Make textarea almost completely transparent */
+
+        #inputText {
+            color: transparent;
+            background: transparent;
+            caret-color: black;
+            /* Or choose your favourite color */
+        }
+
+        /* Paragraphs; First Image */
+
+
+        p code {
+            border-radius: 2px;
+            background: transparent;
+            color: rgb(34, 34, 34);
+        }
+
+        /**/
+
+
+        .info-box {
+            display: none;
+            position: absolute;
+            top: 0%;
+            margin-top: 0;
+            left: 50%;
+            transform: translate(-50%, 0%);
+
+            font-size: 14pt;
+            overflow-y: auto;
+
+
+            padding: 20px;
+            background-color: #f2f2f2;
+            border: 1px solid #ccc;
+            z-index: 1;
+        }
+
+        #dialog-box {
+            display: none;
+            position: fixed;
+            font-size: 14pt;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        #dialog-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        #close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 26px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #close-btn:hover {
+            color: #000;
+        }
+
+
+        .editor_container,
+        #3dview {
+            box-sizing: border-box;
+        }
+
+
+        /* Styling for side-by-side view */
+        .side-by-side {
+            float: left;
+            width: 50%;
+            height: 80vh;
+            /* 100% of the viewport height */
+        }
+
+        /* Styling for stacked view */
+        .stacked {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .editor_container {
+            border-radius: 0px;
+            padding: 0px 0px;
+            margin: 0;
+            border: 0;
+            max-height: 100vh;
+
+            line-height: 21pt;
+            max-width: 100%;
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+
+        .hor_scroll {
+            border-radius: 0px;
+            padding: 0px 0px;
+            margin: 0px;
+            border: 0px;
+            width: 100%;
+            overflow-y: clip;
+            overflow-x: auto;
+        }
+
+        .editor {
+            display: inline-flex;
+            gap: 10px;
+            font-family: monospace;
+            font-size: 14pt;
+            line-height: 21pt;
+            background: rgb(240, 240, 240);
+            border-radius: 2px;
+            max-height: 9999px;
+            width: 100%;
+            padding: 0px 10px;
+            border: 0px;
+            overflow-x: visible;
+            overflow-y: visible;
+        }
+
+        .numbers {
+            width: 20px;
+            text-align: right;
+            height: 100%;
+            padding: 0px;
+            margin: 0;
+            border: 0px;
+
+            color: rgb(130, 130, 130);
+            line-height: 21pt;
+        }
+
+
+
+        textarea {
+
+            font-family: monospace;
+            font-size: 14pt;
+            line-height: 21pt;
+            outline: none;
+            resize: none;
+
+        }
+
+        .dropbtn {
+            background-color: #a2d1f0;
+            color: black;
+            padding: 5px;
+            font-size: 14pt;
+            border: none;
+            cursor: pointer;
+        }
+
+        .dropbtn:hover,
+        .dropbtn:focus,
+        #examples:hover,
+        .button:hover,
+        .label:hover {
+            background-color: #89bfe3;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+
+        .show {
+            display: block;
+        }
+
+
+        .button-examples {
+            margin: 2px;
+            background-color: #f9f9f9;
+        }
+
+
+        .dropdown-content button {
+            width: 100%;
+            /* Make the buttons fill the width of the menu */
+            text-align: left;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            background-color: transparent;
+            /* Set the background color to transparent */
+            border: none;
+            /* Remove the border */
+            cursor: pointer;
+        }
+
+        .dropdown-content label {
+            font-family: sans-serif;
+            width: 100%;
+            /* Make the buttons fill the width of the menu */
+            text-align: left;
+            padding: 12px 0px;
+            margin: 0;
+            font-size: 14pt;
+            line-height: 21pt;
+            text-decoration: none;
+            display: block;
+            background-color: transparent;
+            /* Set the background color to transparent */
+            border: none;
+            /* Remove the border */
+            cursor: pointer;
+        }
+
+        .dropdown-content button:hover,
+        .dropdown-content label:hover,
+        .button-examples:hover {
+            background-color: #dcdcdc;
+            /* Add a background color on button hover */
+        }
+
+        .container {
+            display: flex;
+            align-items: center;
+            font-size: 26px;
+            font-weight: 600;
+            color: rgb(35, 35, 36);
+        }
+
+        .logo {
+            flex: 0 0 auto;
+            margin-right: 10px;
+            max-width: 100pt;
+        }
+
+        .title-author {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .title {
+            font-size: 26px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .author {
+            font-size: 18px;
+            font-weight: 400;
+            margin: 3px 0 0 0;
+        }
+    </style>
+    <link rel="icon" type="image/png" href="icon.png">
+
+
+</head>
+
+<body>
+
+    <div class="container">
+        <img class="logo" src="./logo.png" alt="CrochetPARADE">
+        <div class="title-author">
+            <p class="title">CrochetPARADE: Crochet Pattern Renderer, Analyzer and Debugger</p>
+            <p class="author">Author: Svetlin Tassev</p>
+        </div>
+    </div>
+
+    <script src="./viz-standalone.js"></script>
+    <script src="./parse.js"></script>
+    <script src="./svg.min.js"></script>
+    <!--<script src="./math.js"></script>-->
+
+
+    <div>
+        <select id="examples">
+        </select>
+        <span class="radio-buttons">
+            <label>
+                <input type="radio" name="rendering" value="2D">
+                2D
+            </label>
+            <label>
+                <input type="radio" name="rendering" value="3D" checked>
+                3D
+            </label>
+        </span>
+
+
+        <!-- <div class="dropdown">
+        <button class="dropbtn" onclick="toggleDropdown('calculateDropdown')">Calculate</button>
+        <div class="dropdown-content" id="calculateDropdown">
+            <button class="button" id="3dbutton">Calculate and show model in 3D</button>
+        </div>
+    </div> -->
+
+        <button class="button" id="3dbutton">Calculate and show model in 3D</button>
+        <div class="dropdown">
+            <button class="dropbtn" onclick="toggleDropdown('saveOptionsDropdown')">Save/Export &#9660;</button>
+            <div class="dropdown-content" id="saveOptionsDropdown">
+                <button class="button" onclick="saveTextAsFile()">Save crochet instructions text (best for sharing!)</button>
+                <button class="button" onclick="printDiv()">Print crochet instructions with highlights</button>
+                <button class="button" onclick="processToDotFile()">Save Graphviz DOT file</button>
+                <button class="button" onclick="do_exportGLTF()">Save 3D model as GLTF file (compatible with Blender)</button>
+                <button class="button" onclick="do_saveSvg()">Save SVG image</button>
+                <button class="button" onclick="saveDebugInfo()">Save debug info</button>
+            </div>
+        </div>
+
+
+
+
+
+        <div class="dropdown">
+            <button class="dropbtn" onclick="toggleDropdown('layoutDropdown')">Editor layout &#9660;</button>
+            <div class="dropdown-content" id="layoutDropdown">
+                <label class="button"><input type="radio" name="layout" value="sideBySide" onclick="toggleLayout('sideBySide')" checked> Side by Side</label>
+                <!-- <label class="button"><input type="radio" name="layout" onclick="toggleLayout('stacked')"> Stacked Vertically</label> -->
+                <label class="button"><input type="radio" name="layout" value="editorOnly" onclick="toggleLayout('editorOnly')"> Editor Only</label>
+                <label class="button"><input type="radio" name="layout" value="3dViewOnly" onclick="toggleLayout('3dViewOnly')"> 3D View Only</label>
+            </div>
+        </div>
+
+        <div class="dropdown">
+            <button class="dropbtn" onclick="toggleDropdown('helpDropdown')">Help &#9660;</button>
+            <div class="dropdown-content" id="helpDropdown">
+                <button class="button" onclick="showStats()">Crochet project info</button>
+                <button class="button" onclick="document.getElementById('info').style.display='block'">Keyboard shortcuts</button>
+
+                <button class="button" onclick="window.open('./Manual.html', '_blank')">Manual</button>
+
+
+                <button class="button" onclick="document.getElementById('about').style.display='block'">About</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var layoutNumber = 0
+        // var layouts = ['sideBySide', 'stacked', 'editorOnly', '3dViewOnly']
+        var layouts = ['sideBySide', 'editorOnly', '3dViewOnly']
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'r') {
+                event.preventDefault();
+            }
+            if (event.ctrlKey && event.key === 'l') {
+                event.preventDefault();
+                // Call the function to toggle the layout
+                let l = layouts[((++layoutNumber) % 3)]
+                toggleLayout(l); // Replace 'sideBySide' with the desired layout
+
+                // Select the corresponding radio button
+                //for (let li of layouts)
+                //    document.querySelector('input[name="layout"][value=' + li + ']').checked = false;
+                document.querySelector('input[name="layout"][value="' + l + '"]').checked = true;
+            }
+        });
+
+        function toggleDropdown(dropdownId) {
+            var dropdown = document.getElementById(dropdownId);
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (var i = 0; i < dropdowns.length; i++) {
+                if (dropdowns[i] !== dropdown && dropdowns[i].classList.contains('show')) {
+                    dropdowns[i].classList.remove('show');
+                }
+            }
+            dropdown.classList.toggle("show");
+        }
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    if (dropdowns[i].classList.contains('show')) {
+                        dropdowns[i].classList.remove('show');
+                    }
+                }
+            }
+        }
+    </script>
+
+
+
+    <script>
+        var json0 = '';
+        var jsonOld = '';
+        var reset_json = 1
+
+        const radioButtons = document.querySelectorAll('input[type="radio"]');
+
+        radioButtons.forEach((radioButton) => {
+            radioButton.addEventListener('change', () => {
+                if (radioButton.value === '2D') {
+                    DIM = 2;
+                } else if (radioButton.value === '3D') {
+                    DIM = 3;
+                }
+            });
+        });
+
+        var textOptions = [
+            ['Write your own instructions', "", 3],
+            ['Baby Bootie (~5sec)', textBootie, 3],
+            ['Irish crochet flower 1 (~5sec)', textFlower2, 2],
+            ['Irish crochet flowers 2 (~5sec)', textFlower, 3],
+            ['Granny square (~15sec)', textSquare, 2],
+            ['Edging (~5sec)', textEdging, 2],
+            ['Simplistic amigurumi snowman (~10sec)', textSnowman, 3],
+            ['Baby Blanket (~1min)', textBlanket, 3],
+            ['Swatch (~1min)', textSwatch, 3],
+            ['Stocking (~1min)', textStocking, 3],
+            ['Hat (~3min)', textHat, 3],
+            ['Filet crochet (~3min)', textFilet, 3],
+            ['Irish crochet doily (~20min or more!)', textDoily, 2],
+            ['Simple flower with post stitches (~5sec)', textFlower3, 3]
+        ];
+
+        var select = document.getElementById('examples');
+
+        // Create a wrapper div
+        var wrapperDiv = document.createElement('div');
+        wrapperDiv.style.position = 'relative';
+        wrapperDiv.style.display = 'inline-block';
+
+        // Replace the select element with the wrapper div
+        select.parentNode.replaceChild(wrapperDiv, select);
+
+        // Append the select element to the wrapper div
+        wrapperDiv.appendChild(select);
+
+        // Clear any existing options
+        select.innerHTML = "";
+
+        // Add the default option
+        var defaultOption = document.createElement("option");
+        defaultOption.classList.add("button-examples");
+        defaultOption.text = textOptions[0][0]
+        defaultOption.value = textOptions[0][0]
+        select.appendChild(defaultOption);
+
+        for (var i = 1; i < textOptions.length; i++) {
+            var option = document.createElement("option");
+            option.classList.add("button-examples");
+            option.text = textOptions[i][0];
+            option.value = textOptions[i][0];
+            select.appendChild(option);
+        }
+
+        var arrowDiv = document.createElement('div');
+        arrowDiv.innerHTML = '&#9660;';
+        arrowDiv.style.position = 'absolute';
+        arrowDiv.style.right = '10pt'; // Adjust this value to position the arrow
+        arrowDiv.style.top = '6pt'; // Adjust this value to position the arrow
+        wrapperDiv.appendChild(arrowDiv); // Append the arrow div to the wrapper div instead of the select element
+
+
+        select.onchange = function() {
+            var inputText = document.getElementById("inputText");
+            var selectedValue = select.value;
+
+            var index = textOptions.findIndex(option => option[0] === selectedValue);
+            var selectedNdim = textOptions[index][2];
+
+            //console.log(index, textValues, selectedValue)
+            inputText.value = textOptions[index][1]
+            radioButtons.forEach((radioButton) => {
+                if (radioButton.value === String(selectedNdim) + 'D') {
+                    radioButton.checked = true;
+                    DIM = selectedNdim;
+                }
+            })
+
+            inputText.value = inputText.value.replace(/\t/g, '    ').replace(/\r/g, '')
+            onMyInput()
+            update(inputText.value)
+        }
+    </script>
+
+    <div class="editor_container" id="edc">
+        <div class="editor" id="ed">
+            <div class="numbers" id="nums">
+                <span></span>
+            </div>
+            <div class="hor_scroll" id="hrs" style='position:relative'>
+
+                <div id="textdiv">
+                    <textarea placeholder="Enter crochet instructions" id="inputText" rows="20" cols="150" spellcheck="false" oninput="update(this.value); sync_scroll(this);" onscroll="sync_scroll(this);" onkeydown="check_tab(this, event);"></textarea>
+                    <div class="language-html" id="highlighting" style="position:relative"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div id="3dview" class="side-by-side" style="background: rgb(230, 230, 230);;font-size:20pt; 
+    justify-content: center; align-items: center;"><br><br>
+        3D view will be displayed here once the calculation button is pressed.<br><br>After the model is displayed and selected, press <span style='font-family:monospace;font-weight:400'>'c'</span> to see the yarn colors, or <span style='font-family:monospace;font-weight:400'>'esc'</span> to reset the view. <br> Pressing <span style='font-family:monospace;font-weight:400'>'ctrl+a'</span> or <span style='font-family:monospace;font-weight:400'>'a'</span> will hide/display stitches incrementally.<br> Pressing <span style='font-family:monospace;font-weight:400'>'r'</span> will automatically rotate the view. <br>
+        See the help for more keyboard shortcuts.
+
+    </div>
+    <script>
+        const textarea = document.getElementById('inputText');
+
+        function findMatchingClosingBracketIndex(str, cursorPos) {
+            const openingBrackets = '([{';
+            const closingBrackets = ')]}';
+            const stack = [];
+
+            for (let i = 0; i < str.length; i++) {
+                if (openingBrackets.includes(str[i])) {
+                    stack.push(i);
+                } else if (closingBrackets.includes(str[i])) {
+                    if (stack.length === 0) {
+                        return -1; // Unbalanced brackets
+                    }
+                    const openingIndex = stack.pop();
+                    if (openingIndex === cursorPos) {
+                        return i; // Match found
+                    }
+                }
+            }
+
+            if (stack.length > 0) {
+                return -1; // Unbalanced brackets
+            }
+
+            return -1; // No match found
+        }
+
+
+        function getMatchingBracket(Bracket) {
+            switch (Bracket) {
+                case '(':
+                    return ')';
+                case '[':
+                    return ']';
+                case '{':
+                    return '}';
+                case ')':
+                    return '(';
+                case ']':
+                    return '[';
+                case '}':
+                    return '{';
+                default:
+                    return null;
+            }
+        }
+
+        function findMatchingOpeningBracketIndex(str, cursorPos) {
+            const openingBrackets = ')]}';
+            const closingBrackets = '([{';
+            str = str.split('').reverse().join('');
+
+            const stack = [];
+
+            for (let i = 0; i < str.length; i++) {
+                if (openingBrackets.includes(str[i])) {
+                    stack.push(i);
+                } else if (closingBrackets.includes(str[i])) {
+                    if (stack.length === 0) {
+                        return -1; // Unbalanced brackets
+                    }
+                    const openingIndex = stack.pop();
+                    if (openingIndex === (str.length - 1) - cursorPos) {
+                        return (str.length - 1) - i; // Match found
+                    }
+                }
+            }
+
+            if (stack.length > 0) {
+                return -1; // Unbalanced brackets
+            }
+
+            return -1; // No match found
+        }
+
+        textarea.addEventListener('input', function() {
+            setTimeout(function() {
+
+                update(textarea.value), 0
+            })
+        })
+
+
+
+
+        textarea.addEventListener('mousedown', function() {
+            setTimeout(function() {
+
+                update(textarea.value), 0
+            })
+        })
+
+        function update(text) {
+            const cursorPosition = textarea.selectionStart;
+
+            const inputString = textarea.value;
+            let bracket = inputString[cursorPosition]
+            let bracketIndex = cursorPosition
+            var matchingBracketIndex = findMatchingClosingBracketIndex(inputString, cursorPosition);
+            if (matchingBracketIndex == -1) {
+                matchingBracketIndex = findMatchingOpeningBracketIndex(inputString, cursorPosition)
+            }
+            if (matchingBracketIndex == -1) {
+                matchingBracketIndex = findMatchingClosingBracketIndex(inputString, cursorPosition - 1)
+                bracket = inputString[cursorPosition - 1]
+                bracketIndex = cursorPosition - 1
+            }
+            if (matchingBracketIndex == -1) {
+                matchingBracketIndex = findMatchingOpeningBracketIndex(inputString, cursorPosition - 1)
+                bracket = inputString[cursorPosition - 1]
+                bracketIndex = cursorPosition - 1
+            }
+
+            //console.log(cursorPosition, matchingBracketIndex, bracketIndex, bracket, inputString[matchingBracketIndex])
+
+
+            let result_element = document.querySelector("#highlighting");
+            // Handle final newlines (see article)
+            if (text[text.length - 1] == "\n") {
+                text += " ";
+            }
+            // Update code
+
+            // Syntax Highlight
+            //Prism.highlightElement(result_element);
+
+            //const text = textarea.value;
+            let highlightedText = '';
+            let balance = 0;
+            let insideLabelText = false;
+            let insideCommentText = false;
+            let insideCommentText1 = false;
+            let insideDefText = false;
+            let insideDotText = false;
+            let insideColorText = 0;
+            let insideDollarText = false;
+            let insideSpecialText = false;
+            let label = true
+            let dollarCount = 0
+            let backslashCount = 0
+            let background = 'transparent'
+
+            for (let i = 0; i < text.length; i++) {
+                if (i == bracketIndex)
+                    if (inputString[i] && inputString[i] !== '' && '[](){}'.includes(inputString[i]))
+                        background = 'rgb(255,100,100)'
+                if (i == matchingBracketIndex) {
+                    background = 'rgb(200,200,200)' // 'rgb(100,100,255)'
+                    if (inputString[i] !== getMatchingBracket(bracket))
+                        background = 'rgb(255,100,100)'
+                }
+                if ((matchingBracketIndex != -1) && (i == bracketIndex)) {
+                    background = 'rgb(200,200,200)' // 'rgb(100,100,255)'
+                    if (inputString[matchingBracketIndex] !== getMatchingBracket(inputString[bracketIndex]))
+                        background = 'rgb(255,100,100)'
+                }
+
+                if (text[i] === '#')
+                    insideCommentText = true
+                if (text[i] === '\n')
+                    insideCommentText = false
+
+                if (text.slice(i, i + 11) === 'BACKGROUND:')
+                    insideColorText = 1
+                if (text.slice(i, i + 6) === 'COLOR:')
+                    insideColorText = 1
+                if (text[i] === '\n')
+                    insideColorText = 0
+                if ((insideColorText == 1) && (text[i]) === '(')
+                    insideColorText = 2
+                if ((text[i]) === ')')
+                    insideColorText -= 1
+                if (([',', ']', '}', ].includes(text[i])) && insideColorText == 1)
+                    insideColorText = 0
+
+                if (text.slice(i, i + 4) === 'DOT:')
+                    insideDotText = true
+                if (text[i] === '\n')
+                    insideDotText = false
+
+                if (text.slice(i, i + 4) === 'DEF:')
+                    insideDefText = true
+                if (text[i] === '\n')
+                    insideDefText = false
+
+                if ([text.slice(i - 2, i + 1), text.slice(i - 1, i + 2), text.slice(i, i + 3)].includes('...') || ['<', '>'].includes(text[i]))
+                    insideSpecialText = true
+
+                if ((text[i] === '#') || (text.slice(i - 3, i + 1) === 'DEF:') || (text.slice(i - 3, i + 1) === 'DOT:')) {
+                    balance = 1000000
+                }
+                if (text[i] === '$')
+                    dollarCount++
+                if (dollarCount % 2 == 1)
+                    insideDollarText = true
+
+                if (text[i] === '\\')
+                    backslashCount++
+                if (backslashCount % 2 == 1)
+                    insideCommentText1 = true
+
+
+                if (text[i] === '@' || (text[i] === '.' && text[i - 1] !== '.' && text[i + 1] !== '.')) {
+                    if (balance < 10000) {
+                        if (!insideLabelText)
+                            balance = 0
+                        insideLabelText = true
+                    }
+                    if (text[i] === '@')
+                        label = true
+                    else
+                        label = false
+                }
+
+                if (text[i] === '(' || text[i] === '[' || text[i] === '{') {
+                    balance++;
+                } else if (text[i] === ')' || text[i] === ']' || text[i] === '}') {
+                    balance--;
+                }
+
+                if ((text[i] === '\n') || (balance < 0) || ((balance == 0) && ((text[i] === ',' && (dollarCount % 2 == 0)) || (text[i] === '*' && (dollarCount % 2 == 0))))) {
+                    insideLabelText = false
+                    balance = 0
+                }
+                var texti = text[i].replaceAll(' ', '&nbsp;').replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;")
+
+                if (insideCommentText1) {
+                    highlightedText += '<span style="color:rgb(128,128,128);background-color:' + background + '">' + texti + '</span>';
+                    //highlightedText += '<span style="color:rgb(128,128,128);">' + texti + '</span>';
+                } else if (insideCommentText) {
+                    highlightedText += '<span style="color:rgb(128,128,128);background-color:' + background + '">' + texti + '</span>';
+                    //highlightedText += '<span style="color:rgb(128,128,128);">' + texti + '</span>';
+                } else if (insideDotText) {
+                    highlightedText += '<span style="color:rgb(150, 50, 50);font-weight:540;background-color:' + background + '">' + texti + '</span>';
+                } else if (insideColorText > 0) {
+                    highlightedText += '<span style="color:rgb(193, 124, 15);font-weight:540;background-color:' + background + '">' + texti + '</span>';
+                } else if (insideDefText) {
+                    highlightedText += '<span style="color:rgb(121, 42, 121);font-weight:540;background-color:' + background + '">' + texti + '</span>';
+                } else if (insideDollarText) {
+                    highlightedText += '<span style="color:rgb(40,160, 150);font-weight:540;background-color:' + background + '">' + texti + '</span>';
+                } else if (insideSpecialText) {
+                    highlightedText += '<span style="color:rgb(250,0, 0);font-weight:540;background-color:' + background + '">' + texti + '</span>';
+                } else if (insideLabelText) {
+                    if (label)
+                        highlightedText += '<span style="color:rgb(80, 200, 80);font-weight:540;background-color:' + background + '">' + texti + '</span>';
+                    else
+                        highlightedText += '<span style="color:rgb(37, 170, 226);font-weight:540;background-color:' + background + '">' + texti + '</span>';
+                } else {
+                    highlightedText += '<span style="font-weight: 540;background-color:' + background + '">' + texti + '</span>'
+                    //.replace(new RegExp("&", "g"), "&amp;").replaceAll(" ", "&nbsp;").replace(new RegExp("<", "g"), "&lt;").replace(new RegExp(">", "g"), "&gt;") + '</b>'
+                }
+
+                if (dollarCount % 2 == 0)
+                    insideDollarText = false
+                if (backslashCount % 2 == 0)
+                    insideCommentText1 = false
+                insideSpecialText = false
+                background = 'transparent'
+
+            }
+            result_element.innerHTML = highlightedText.replaceAll('\n', '<br>');
+            //console.log(result_element.innerHTML)
+
+        }
+
+        function sync_scroll(element) {
+            /* Scroll result to scroll coords of event - sync with textarea */
+            let result_element = document.querySelector("#highlighting");
+            // Get and set x and y
+            result_element.scrollTop = element.scrollTop;
+            result_element.scrollLeft = element.scrollLeft;
+        }
+
+        function check_tab(element, event) {
+            ///let code = element.value;
+            ///if (event.key == "Tab") {
+            ///    /* Tab key pressed */
+            ///    event.preventDefault(); // stop normal
+            ///    let before_tab = code.slice(0, element.selectionStart); // text before tab
+            ///    let after_tab = code.slice(element.selectionEnd, element.value.length); // text after tab
+            ///    let cursor_pos = element.selectionStart + 4; // where cursor moves after tab - moving forward by 1 char to after tab
+            ///    element.value = before_tab + "    " + after_tab; // add tab char
+            ///    // move cursor
+            ///    element.selectionStart = cursor_pos;
+            ///    element.selectionEnd = cursor_pos;
+            ///    update(element.value); // Update text to include indent
+            ///}
+        }
+
+        function onMyInput() {
+
+
+            const edc = document.getElementById('edc');
+            //const textarea = document.getElementById('inputText');
+            const numbers = document.querySelector('.numbers');
+            if (textarea.value.includes('¶')) {
+                let text = ''
+                for (var l of textarea.value.split('\n')) {
+                    if (l.trim()[0] === '¶') {
+                        l = l.trim().slice(1)
+                        if ((l.trim().slice(0, 3) === '...'))
+                            text += l.trim().slice(3)
+                        else
+                            text += '\n' + l
+                    } else
+                        text += l.trim()
+                }
+                textarea.value = text.trim()
+            }
+            const lines1 = textarea.value.split('\n');
+            let maxLength = 0;
+
+            lines1.forEach((line) => {
+                if (line.length > maxLength) {
+                    maxLength = line.length;
+                }
+            });
+
+            //if (maxLength < 140)
+            //    maxLength = 140
+            textarea.style.width = (maxLength + 3) + 'ch';
+
+            if (textarea.offsetWidth < edc.offsetWidth - 80)
+                textarea.style.width = (edc.offsetWidth - 80) + 'px';
+
+            const highlight = document.getElementById('highlighting');
+            highlight.style.width = textarea.style.width
+
+            const textdiv = document.getElementById('textdiv');
+            //textdiv.style.width = textarea.style.width
+
+            let tempElement = document.createElement('div');
+            tempElement.style.height = '10pt'; // Set the font size in points
+            //
+            //// Add the temporary element to the document
+            document.body.appendChild(tempElement);
+            //
+            //// Measure the height of the temporary element
+            let heightInPixels = tempElement.offsetHeight / 10;
+            //
+            //// Remove the temporary element from the document
+            document.body.removeChild(tempElement);
+            //console.log(heightInPixels)
+
+            const H = (window.innerHeight / heightInPixels - 40) / 21
+
+            var numberOfLineBreaks = (textarea.value.match(/\n/g) || []).length;
+            if (numberOfLineBreaks < H)
+                numberOfLineBreaks = H
+
+            //numberOfLineBreaks * 21 + 40;
+            const newHeight = numberOfLineBreaks * 21 + 40;
+            textarea.style.height = newHeight + 'pt';
+            highlight.style.height = textarea.style.height
+            //edc.style.height = textarea.style.height
+            //textdiv.style.height = textarea.style.height
+            //const firstDiv = document.getElementById('inputText');
+            //const firstDivHeight = firstDiv.clienHeight;
+            var firstDivHeight = newHeight
+            var secondDiv = document.getElementById('nums');
+            secondDiv.style.height = (firstDivHeight - 15 - 21) + 'pt';
+            secondDiv = document.getElementById('hrs');
+            secondDiv.style.height = firstDivHeight + 'pt';
+            secondDiv = document.getElementById('ed');
+            secondDiv.style.height = firstDivHeight + 'pt';
+
+            const lines = textarea.value.split('\n');
+            var numtext = ''
+            var num = 0
+            for (var l of lines) {
+                if ((l.trim().slice(0, 4) != 'DEF:') && (l.trim().slice(0, 3) != '...') && (l.trim().slice(0, 4) != 'DOT:') && (l.trim().slice(0, 11) != 'BACKGROUND:') && (l.split('#')[0].trim() !== '') && (l.trim() !== ""))
+                    numtext += '<span>' + (num++) + '<br></span>'
+                else
+                    numtext += '<span><br></span>'
+            }
+
+
+            numbers.innerHTML = numtext;
+
+        }
+
+        textarea.addEventListener('input', onMyInput);
+    </script>
+
+
+
+    <script>
+        function processTextSafe(text, json0) {
+            if (text.trim() === '') {
+                alert('There are no instructions to parse. Write your own or use one of the examples from the drop down menu.');
+                //throw new Error('Error during processing of text. See alert box.')
+                return ''
+            }
+            try {
+                return processText(text, json0)
+
+            } catch (error) {
+                alert(error.message);
+                //throw new Error('Error during processing of text. See alert box.')
+                return ''
+            }
+        }
+
+        var renderer = null;
+        var scene = null;
+        var scene1 = null;
+        var exportGLTF
+        var saveSvg
+        var onMouseDown = null;
+        var onMouseMove = null;
+        var handleKeyDown = null;
+        var handleKeyDownHide = null
+        var handleKeyDownHideAnim = null
+        var handleKeyUp = null;
+    </script>
+
+
+
+    <script>
+        function printDiv() {
+            var divContents = document.getElementById("highlighting").innerHTML;
+            divContents = '<span style="color:red">&para;</span><span style="color:rgb(128,128,128)>">#Instructions originally written in CrochetPARADE 1.0 language.</span><br><span style="color:red">&para;</span>' + divContents.replaceAll('<br>', '<br><span style="color:red">&para;</span>')
+            var printWindow = window.open('', '', 'height=400,width=800');
+            printWindow.document.write('<html><head><title>Crochet Instructions</title>');
+            printWindow.document.write(`<style>#highlighting { font-family: monospace;
+            font-size: 9pt;
+            line-height: 14pt;
+            tab-size: 2;
+            overflow-wrap: break-word; /* For modern browsers */
+            word-wrap: break-word; /* For older browsers */}
+           </style>
+            </head>`)
+            printWindow.document.write('<body><div id="highlighting">');
+            printWindow.document.write(divContents);
+
+            printWindow.document.write('</div></body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+    </script>
+    <script>
+        function saveTextAsFile() {
+            var textToWrite = document.getElementById('inputText').value;
+            textToWrite = '¶#Instructions originally written in CrochetPARADE 1.0 language.\n¶' + textToWrite.replaceAll('\n', '\n¶')
+            var textFileAsBlob = new Blob([textToWrite], {
+                type: 'text/plain'
+            });
+            var fileNameToSaveAs = "instructions.txt";
+
+            var downloadLink = document.createElement("a");
+            downloadLink.download = fileNameToSaveAs;
+            downloadLink.href = window.URL.createObjectURL(textFileAsBlob);
+            downloadLink.click();
+        }
+    </script>
+    <div id="about" class="info-box">
+        <span id="close-btn" onclick="document.getElementById('about').style.display='none'" style="float: right; cursor: pointer;">&times;</span>
+        <h2 style="font-weight:400">About</h2>
+        <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
+            platform that allows users to create, visualize, and analyze both 2D and 3D crochet patterns.
+        </p>
+        <p>OVERVIEW</p>
+        <p>
+            CrochetPARADE uses a custom language grammar that allows users to define stitches and stitch patterns.
+            The CrochetPARADE
+            grammar aims
+            to ensure accuracy and precision in the crochet pattern instructions, avoiding the ambiguities
+            encountered with instructions
+            in plain English. The code parses and checks any user provided pattern for correctness and
+            then creates a virtual model of the project, which is then rendered in 3D.
+            <p></p>
+            After rendering a pattern, users can review ('debug') the final project's
+            shape and make adjustments. The platform identifies overly loose or tight
+            stitches, enabling users to replace them with more suitable ones before crocheting,
+            thus reducing the need for blocking.
+        </p>
+        <p>
+            CrochetPARADE's export feature allows users to generate an SVG image that
+            shows stitch connections and identifies stitches by their type, row number, and position within a row.
+            The SVG pattern shows the same information as standard crochet diagrams and can be used as a guide when crocheting.
+            Users can also export projects to 3D files that can be imported in
+            <a href="https://www.blender.org">Blender</a> for further manipulation and visualization.
+        </p>
+        <p>
+            CrochetPARADE includes interactive features such as the ability to rotate, zoom, and pan the 3D view, as well as
+            animating the pattern creation
+            process, which can help in visualizing how stitches attach to each other.
+            Additional features include highlighting and hiding selected stitches, and
+            changing yarn thickness and color.
+            Users can access stitch information by hovering over stitches in the 3D view.
+        </p>
+        <p>CrochetPARADE performs all calculations locally on your device, ensuring
+            that no data is collected to a central server or
+            transmitted over the internet. As a side effect, the platform can be sluggish on old hardware.
+            Models of patterns involving (tens of) thousands of stitches can take minutes or more to calculate.
+        </p>
+        <p>GOALS AND POSSIBLE APPLICATIONS</p>
+        <ul>
+            <li>The main goal of CrochetPARADE is to facilitate crochet project design and execution.
+            </li>
+            <li>Patterns created with CrochetPARADE can be easily shared,
+                ensuring they are free from ambiguities or typographic mistakes.
+                Creators can simply copy and paste the pattern text to share it,
+                and others can use the CrochetPARADE platform to render the shared text into a model of the pattern
+                exactly as intended by the pattern author.
+            </li>
+            <li>CrochetPARADE can be used in education to teach crocheting but also programming skills, since the CrochetPARADE grammar
+                follows rules similar to those of real programming languages.
+            </li>
+            <li>The virtual models created by CrochetPARADE can be imported in 3D modelling and CGI software. Picture an animated movie where characters
+                wear crochet hats and sweaters that match real-world crochet projects.
+            </li>
+            <li>It is probably inevitable that the grammar along with the renderer can
+                allow AI to learn how to write
+                correct crochet instructions of complicated patterns (beyond simple amigurumi)
+                based on general project descriptions.
+            </li>
+        </ul>
+        <p> LICENSE AND COPYRIGHT
+            <ul>
+                <li>The website and all of its computational components are free and open source and are released under
+                    the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html#license-text">GPLv3 license</a>,
+                    with an exception provided for including <a href="https://graphviz.org/">Graphviz</a> as part of the computational engine. This ensures that the platform will be free and open to all in perpetuity.
+                </li>
+                <li>The showcase patterns are either in the public domain (as specified in the pattern description)
+                    or are created by the author and are released in the public domain. </li>
+                <li>The user manual which includes
+                    a description of the CrochetPARADE grammar is released under the
+                    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Creative Commons BY-NC-SA</a> license.
+                    The grammar itself cannot be copyrighted and, as any language, is in the public domain.</li>
+            </ul>
+        </p>
+        <p>ACKNOWLEDGEMENTS</p>
+        <p>CrochetPARADE uses the following libraries: <a href="https://viz-js.com/">Viz.js</a>, <a href="https://svgjs.dev/">SVG.js</a> and
+            <a href="https://threejs.org/">three.js</a>.
+        </p>
+        <p>AUTHOR</p>
+        <p>Svetlin Tassev (2023)</p>
+    </div>
+    <div id="info" class="info-box">
+        <span id="close-btn" onclick="document.getElementById('info').style.display='none'" style="float: right; cursor: pointer;">&times;</span>
+        <h2 style="font-weight:400">Key bindings</h2>
+        <p> General shortcuts.</p>
+        <p>
+            <ul>
+                <li><kbd>ctrl+l</kbd>: Toggle layouts.</li>
+            </ul>
+        </p>
+        <p> Shortcuts in the text input area.</p>
+        <p>
+            <ul>
+                <li><kbd>shift+Enter</kbd>: Recalculate positions of all stitches.
+                <li><kbd>ctrl+Enter</kbd> (experimental!): Keep positions of already placed stitches. Then calculate positions of newly added stitches since last calculation. Speeds up calculation, but results will be poorer then rerunning whole calculation by pressing on "Calculate..." button or pressing <kbd>shift+Enter</kbd>.</li>
+                <li><kbd>ctrl+r</kbd> (experimental!): Same as the previous one, but recalculate the positions found last time the calculation was run. So, it undoes the last calculation and restarts the calculation with the new stitches only. Speeds up code, but will lead to poorer results then rerunning the whole calculation again.</li>
+            </ul>
+            <p> Shortcuts in 3D view. To activate, click on the 3D canvas first.</p>
+            <p>
+                <ul>
+                    <li><kbd>left click and drag</kbd>: Rotate view.</li>
+                    <li><kbd>scroll wheel</kbd>: Zoom.</li>
+                    <li><kbd>(right click and drag)</kbd> or <kbd>(shift and left click and drag)</kbd>: Pan view.</li>
+                    <li><kbd>a</kbd>: Show stitches one by one.</li>
+                    <li><kbd>ctrl+a</kbd>: Hide stitches one by one.</li>
+                    <li><kbd>c</kbd>: Show project colors. Gray is default if no colors are specified.</li>
+                    <li><kbd>esc</kbd>: Reset visibility and colors of stitches.</li>
+                    <li><kbd>ctrl+esc</kbd>: Hide all but the first stitch.</li>
+                    <li><kbd>ctrl+f</kbd>: Highlight row (by entering: row number) or stitch (by entering: row number, stitch number).</li>
+                    <li><kbd>ctrl+h</kbd>: Hide after row or stitch.</li>
+                    <li><kbd>ctrl +/-</kbd>: increase/decrease radii of spheres and cylinders. Affects exported GLTF file as well.</li>
+                    <li><kbd>i</kbd>: Toggle visibility of stitch information box.</li>
+                    <li><kbd>p</kbd>: Write view to SVG file. For 2D projects, it shows a face-on view. For 3D projects, it shows an orthographic projection from the current view.</li>
+                    <li><kbd>r</kbd>: Rotate view automatically.</li>
+                    <li><kbd>s</kbd>: Highlight over/under-stretched stitches. Blue for stitches that are too loose, and red for stitches that are too stretched (by more than about 15%) relative to their baseline height. The rest are shown in gray.</li>
+                    <li><kbd>v</kbd>: Toggle visibility of arrowheads.</li>
+                </ul>
+            </p>
+    </div>
+
+
+
+
+    <div id="dialog-box" style="display: none;position: absolute;
+    top: 0%;
+    margin-top:0;
+    left: 50%;
+    transform: translate(-50%, 0%);">
+        <div id="dialog-content" style="
+        padding: 20px;
+        background-color: #f2f2f2;
+        border: 1px solid #ccc;
+        z-index: 1;">
+            <span id="close-btn" onclick="closeDialog()" style="float: right; cursor: pointer;">&times;</span>
+            <pre id="dialog-text"></pre>
+        </div>
+    </div>
+
+    <script>
+        function showStats() {
+            var text = 'Information about the current project.\n\nStitch count per row:\n'
+            var dot = processTextSafe(inputText.value, json0)
+            if (dot !== '') {
+                for (var row of Object.keys(STATS)) {
+                    text += "Row " + row + ": "
+                    var x = Object.keys(STATS[row])
+                    x.sort()
+                    for (var st of x) {
+                        text += STATS[row][st] + " " + st + ", "
+                    }
+                    text = text.slice(0, -2) + "\n"
+                }
+                text += STATSstretch;
+                text += '\n'
+
+                let dict = {}
+                for (var row of Object.keys(STATS))
+                    for (var k of Object.keys(STATS[row]))
+                        dict[k] = Dictionary[k]
+                text += 'Dictionary of stitches used for this project:\n'
+                for (let k of Object.keys(dict))
+                    text += k + '=' + dict[k] + '\n'
+
+                document.getElementById('dialog-text').textContent = text.replace(/\n/g, '\r\n');
+                document.getElementById('dialog-box').style.display = 'block';
+            }
+        }
+
+        function closeDialog() {
+            document.getElementById('dialog-box').style.display = 'none';
+        }
+    </script>
+    <script type="module">
+
+        import Generate3DModel from './mesh.js';
+        import  "./viz-standalone.js";
+        const button = document.getElementById("3dbutton");
+        //const textarea = document.getElementById('inputText');
+
+
+        textarea.addEventListener('keydown', function(event) {
+          
+            if ((event.ctrlKey || event.metaKey)  && event.key === 'r') {
+                event.preventDefault();
+                reset_json = 3;
+                
+                show3DModel();
+                reset_json = 1;
+            } else if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                event.preventDefault();
+                reset_json = 2;
+                show3DModel();
+                reset_json = 1;
+            } else if ((event.shiftKey) && event.key === 'Enter') {
+                event.preventDefault();
+                reset_json = 1;
+                show3DModel();
+                
+            } else {
+                setTimeout(function() {
+                    update(textarea.value);
+                }, 0);
+            }
+        });
+        function show3DModel() {
+
+document.removeEventListener('mousemove',onMouseMove)
+document.removeEventListener('mousedown',onMouseDown)
+document.removeEventListener('keydown', handleKeyDown);
+document.removeEventListener('keydown', handleKeyDownHide);
+document.removeEventListener('keydown', handleKeyDownHideAnim);
+document.getElementById("3dview").innerText=''
+
+document.removeEventListener('keyup', handleKeyUp);
+var select = document.getElementById("examples");
+var inputText = document.getElementById("inputText");
+
+if (reset_json==1){//default
+jsonOld=''
+json0=''
+        }
+        else if (reset_json==2){//continue ctrl+c
+jsonOld=json0
+        }else if (reset_json==3){//repeat ctrl+r
+            json0=jsonOld
+        }
+    var dot = processTextSafe(inputText.value,json0)
+    if (dot!==''){
+            // Create the loading icon element
+            var tmp=document.getElementById('loading-icon')
+            if (tmp)
+            tmp.parentNode.removeChild(tmp)
+            const loadingIcon = document.createElement('div');
+            loadingIcon.setAttribute('id', 'loading-icon');
+            loadingIcon.innerHTML = 'Calculating... This may take up to a few minutes.';
+
+            // Add the loading icon to the HTML
+            document.body.appendChild(loadingIcon);
+
+            // Set the CSS properties for the loading icon
+            loadingIcon.style.position = 'fixed';
+            loadingIcon.style.top = '50%';
+            loadingIcon.style.left = '50%';
+            loadingIcon.style.transform = 'translate(-50%, -50%)';
+            loadingIcon.style.backgroundColor = 'white';
+            loadingIcon.style.padding = '10px';
+            loadingIcon.style.fontSize = '30pt';
+            loadingIcon.style.display = 'none';
+
+            // Show the loading icon before running the code
+            loadingIcon.style.display = 'block';
+    
+    Viz.instance().then(function(viz) {
+        
+        //console.log(dot)
+                json0 = viz.renderString(dot, {
+                    engine: "neato",format:"json0"
+                });
+                //console.log(json0)
+
+                                // Hide the loading icon once the code has finished running
+                                loadingIcon.style.display = 'none';
+                                DEBUG+=  '=======JSON0:=======\n' + json0 + '\n'
+                                
+                                var a =Generate3DModel(json0,renderer,scene,scene1,backgroundColor)
+                                renderer=a[0]
+                                scene=a[1]
+                                onMouseDown=a[2]
+                                onMouseMove=a[3]
+                                handleKeyDown=a[4]
+                                handleKeyUp=a[5]
+                                STATSstretch=a[6]
+                                handleKeyDownHide=a[7]
+                                handleKeyDownHideAnim=a[8]
+                                exportGLTF=a[9]
+                                scene1=a[10]
+                                saveSvg=a[11]
+                
+            });
+        }
+
+
+}
+
+        button.addEventListener("click", show3DModel);
+
+
+      </script>
+
+    <script>
+        function do_exportGLTF() {
+            try {
+                exportGLTF()
+            } catch (error) {
+                alert('You need to press "Calculate model in 3D" first to calculate model.')
+            }
+        }
+
+        function do_saveSvg() {
+            try {
+                saveSvg()
+            } catch (error) {
+                alert('You need to press "Calculate model in 3D" first to calculate model.')
+            }
+        }
+
+        var dot;
+
+
+
+        function processToDotFile() {
+            var text = document.getElementById("inputText").value;
+            dot = processTextSafe(text, json0)
+            if (dot !== '') {
+                var file = new Blob([dot], {
+                    type: "text/plain"
+                });
+                var a = document.createElement("a");
+                a.href = URL.createObjectURL(file);
+                a.download = "crochet.dot";
+                a.click();
+            }
+        }
+
+
+
+        function saveDebugInfo() {
+            var file = new Blob([DEBUG], {
+                type: "text/plain"
+            });
+            var a = document.createElement("a");
+            a.href = URL.createObjectURL(file);
+            a.download = "debug.txt";
+            a.click();
+        }
+    </script>
+
+
+
+
+    <script>
+        //const view = document.getElementById('3dview');
+        //view.classList.add('stacked');
+        const editor = document.getElementById('edc');
+        const view = document.getElementById('3dview');
+
+        editor.classList.remove('side-by-side', 'stacked');
+        view.classList.remove('side-by-side', 'stacked');
+
+        editor.classList.add('side-by-side');
+        view.classList.add('side-by-side');
+
+        function toggleLayout(layout) {
+            const editor = document.getElementById('edc');
+            const view = document.getElementById('3dview');
+            editor.classList.remove('side-by-side', 'stacked');
+            view.classList.remove('side-by-side', 'stacked');
+            editor.style.display = 'block';
+            view.style.display = 'block';
+            switch (layout) {
+                case 'sideBySide':
+                    editor.classList.add('side-by-side');
+                    view.classList.add('side-by-side');
+                    break;
+                case 'stacked':
+                    editor.classList.add('stacked');
+                    view.classList.add('stacked');
+                    break;
+                case 'editorOnly':
+
+                    editor.classList.add('stacked');
+                    view.classList.add('stacked');
+                    editor.style.display = 'block';
+                    view.style.display = 'none';
+                    break;
+                case '3dViewOnly':
+
+                    editor.classList.add('stacked');
+                    view.classList.add('stacked');
+                    editor.style.display = 'none';
+                    view.style.display = 'block';
+                    break;
+                default:
+                    break;
+            }
+        }
+        textarea.value = ''
+        onMyInput()
+    </script>
+</body>
+
+</html>
