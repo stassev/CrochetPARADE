@@ -385,7 +385,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
         ///
         const distance = A.distanceTo(B);
-        var radius = 0.005;
+        var radius = 0.003;
         var non = false
         edge['gray'] = 0
         if (edge.color === 'gray') {
