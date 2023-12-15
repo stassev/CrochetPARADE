@@ -1970,7 +1970,46 @@ function parse_definitions(text) {
         text0 = text0.split('BACKGROUND:')[0] + '\n' + text0.split('BACKGROUND:')[1].split('\n').slice(1).join('\n')
     }
 
-    return text0.trim()
+
+    //hack colors:
+    text = ''
+    for (let l of text0.split('\n')) {
+        if (l.split('COLOR:').length >= 2) {
+            let S = l.split('COLOR:')
+            let l0 = S[0]
+            for (var s of S.slice(1)) {
+                let insideColor = 1
+                let col = ''
+                let j = 0
+                let t = ''
+                while (insideColor > 0 && j < s.length) {
+
+                    t = s[j]
+                    j++
+                    if (t === '\n')
+                        insideColor = 0
+                    if ((insideColor == 1) && (t) === '(')
+                        insideColor = 2
+                    if ((t) === ')')
+                        insideColor -= 1
+                    if (([',', ']', '}', ].includes(t)) && insideColor == 1)
+                        insideColor = 0
+                    if (insideColor > 0)
+                        col += t
+                }
+                //                console.log(col)
+                l0 += 'COLOR:' + col.replaceAll(',', '~').replace('(', '+').replace(')', '-') + s.slice(col.length)
+                //                console.log(l0)
+            }
+            text += l0 + '\n'
+        } else
+            text += l + '\n'
+    }
+
+
+
+
+    return text.trim()
 }
 
 
@@ -2480,11 +2519,27 @@ function parse_text_instruction_to_structure(input, original = '', COLOR = {}) {
                 let S = l.split('COLOR:')
                 let l0 = S[0]
                 for (var s of S.slice(1)) {
-                    ind = ind0 + l0.length //+1
-                    let col = s.split(',')[0].split(']')[0].split('}')[0]
-                    if (!(col.includes('(')))
-                        col = col.split(')')[0]
-                    COLOR[ind] = col.trim()
+                    ind = ind0 + l0.length
+                    let insideColor = 1
+                    let col = ''
+                    let t = ''
+                    let j = 0
+                    while (insideColor > 0 && j < s.length) {
+                        t = s[j]
+                        j++
+                        if (t === '\n')
+                            insideColor = 0
+                        if ((insideColor == 1) && (t) === '(')
+                            insideColor = 2
+                        if ((t) === ')')
+                            insideColor -= 1
+                        if (([',', ']', '}', ].includes(t)) && insideColor == 1)
+                            insideColor = 0
+                        if (insideColor > 0)
+                            col += t
+                    }
+                    console.log(col.replaceAll('~', ',').replace('+', '(').replace('-', ')'))
+                    COLOR[ind] = col.replaceAll('~', ',').replace('+', '(').replace('-', ')').trim()
                     l0 += s.slice(col.length)
                 }
                 if (l0 !== '') {
