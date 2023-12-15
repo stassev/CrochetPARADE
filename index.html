@@ -46,7 +46,7 @@
             /* Hide the default arrow in WebKit browsers */
             -moz-appearance: none;
             /* Hide the default arrow in Firefox */
-            padding-right: 20px;
+           
             /* Add some padding to the right to make space for the arrow */
         }
 
@@ -103,7 +103,7 @@
         .spacer {
             margin-right: 3px;
         }
-
+        #examples{padding-right:20pt}
 
         /*From csstricks: https://css-tricks.com/creating-an-editable-textarea-that-supports-syntax-highlighted-code/ */
 
@@ -627,7 +627,7 @@
         var arrowDiv = document.createElement('div');
         arrowDiv.innerHTML = '&#9660;';
         arrowDiv.style.position = 'absolute';
-        arrowDiv.style.right = '10pt'; // Adjust this value to position the arrow
+        arrowDiv.style.right = '4pt'; // Adjust this value to position the arrow
         arrowDiv.style.top = '6pt'; // Adjust this value to position the arrow
         wrapperDiv.appendChild(arrowDiv); // Append the arrow div to the wrapper div instead of the select element
 
@@ -663,16 +663,20 @@
 
                 <div id="textdiv">
                     <textarea placeholder="Enter crochet instructions" id="inputText" rows="20" cols="150" spellcheck="false" oninput="update(this.value); sync_scroll(this);" onscroll="sync_scroll(this);" onkeydown="check_tab(this, event);"></textarea>
-                    <div class="language-html" id="highlighting" style="position:relative"></div>
+                    <div class="language-html" id="highlighting" style="position:relative"><span style="color:gray">Enter crochet instructions</span></div>
                 </div>
 
             </div>
         </div>
     </div>
-    <div id="3dview" class="side-by-side" style="background: rgb(230, 230, 230);;font-size:20pt; 
-    justify-content: center; align-items: center;"><br><br>
-        3D view will be displayed here once the calculation button is pressed.<br><br>After the model is displayed and selected, press <span style='font-family:monospace;font-weight:400'>'c'</span> to see the yarn colors, or <span style='font-family:monospace;font-weight:400'>'esc'</span> to reset the view. <br> Pressing <span style='font-family:monospace;font-weight:400'>'ctrl+a'</span> or <span style='font-family:monospace;font-weight:400'>'a'</span> will hide/display stitches incrementally.<br> Pressing <span style='font-family:monospace;font-weight:400'>'r'</span> will automatically rotate the view. <br>
-        See the help for more keyboard shortcuts.
+    <div id="3dview" class="side-by-side" style="background: rgb(230, 230, 230);;font-size:16pt; 
+    justify-content: center; align-items: center;"><br>
+        Write your crochet pattern instructions in the text field on the left. The instructions should be in the CrochetPARADE language.
+        <br><br>
+        For examples, click on the dropdown menu.
+        <br><br> 3D view will be displayed here once the calculation button is pressed.<br><br>
+        After the model is displayed in this canvas, click on it, and then you can press <span style='font-family:monospace;font-weight:400'>'c'</span> to see the yarn colors, or <span style='font-family:monospace;font-weight:400'>'esc'</span> to reset the view. <br> Pressing <span style='font-family:monospace;font-weight:400'>'ctrl+a'</span> or <span style='font-family:monospace;font-weight:400'>'a'</span> will hide/display stitches incrementally.<br> Pressing <span style='font-family:monospace;font-weight:400'>'r'</span> will automatically rotate the view. <br>
+        <br>See the help for more keyboard shortcuts.
 
     </div>
     <script>
