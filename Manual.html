@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Dec 15, 2023.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -796,6 +796,7 @@ sk,8sc,sc.A[]!,turn
         the next stitch <code>tr</code> attaches to the attachment point of
         <code>dc</code>.</p>
     <h2 id="defining-new-stitches.">Defining new stitches.</h2>
+    <p>New stitches are defined using <code>DEF: definition</code>, which should be placed alone on a new line.</p>
     <h3 id="creating-an-alias">Creating an alias</h3>
     <p>If you are using a sequence of stitches over and over again, you may
         want to create an alias for them. The syntax for that is:</p>
@@ -803,7 +804,7 @@ sk,8sc,sc.A[]!,turn
 #Example:
 DEF: p=3ch,ss@5[%,-4] 
 # Used an arbitrary attachment head 5 (@5), different from the default.
-# This stitch alias is used in the Flower example.</code></pre>
+# A similar stitch alias is used in the Flower example.</code></pre>
     <p>One can use an alias in a pattern in the same way one uses any
         stitch, with one notable exception: An alias will increase the stitch
         count in a row not by 1 but by however many stitches are in the
@@ -823,7 +824,7 @@ DEF: p=3ch,ss@5[%,-4]
         option, but the name <code>rsc</code> will not appear in the rendered
         project. If you would like that name to show up in the rendered project
         as well, then you can <code>Copy()</code> the stitch:
-        <code>DEF: new_stitch=Copy(old_stitch_name) # Example: DEF: rsc=Copy(sc) # This stitch is used in the Hat example.</code></p>
+        <code>DEF: new_stitch=Copy(old_stitch_name) # Example: DEF: scbl = Copy(sc) # This stitch is used in the Baby Bootie example.</code></p>
     <p>If you would like to adjust the height of the newly created or a
         pre-existing stitch, you could do:
         <code>DEF: new_stitch=Copy(old_stitch_name,new_height) # Example: DEF: dc=Copy(dc,3) # This stitch modification is used in the Blanket example.</code></p>
