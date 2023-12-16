@@ -431,6 +431,59 @@
             font-weight: 400;
             margin: 3px 0 0 0;
         }
+
+
+
+
+
+
+        #display {
+            position: fixed;
+            bottom: 12pt;
+            left: 211pt;
+            background-color: rgba(255, 234, 95, 0.77);
+            pointer-events: none;
+            color: rgb(255, 106, 0);
+            -webkit-text-stroke: 1px rgb(100, 100, 100);
+            font-size: 24pt;
+            font-weight: 600;
+            z-index: 1000;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        .highlight {
+
+            color: rgb(255, 106, 0);
+        }
+
+
+        #mouse {
+            position: fixed;
+            bottom: 10pt;
+            left: 10pt;
+            background-color: rgba(255, 255, 255, 0.8);
+            pointer-events: none;
+            color: rgb(215, 215, 215);
+            -webkit-text-stroke: 1px rgb(100, 100, 100);
+            font-size: 30pt;
+            font-weight: 600;
+            z-index: 1000;
+            border: 1px solid rgb(100, 100, 100);
+            border-radius: 5px;
+            padding: 5px;
+            line-height: 30pt;
+        }
+
+        .buttonM {
+            display: inline-block;
+            pointer-events: none;
+            background-color: rgb(235, 235, 235);
+            border: 1px solid rgb(100, 100, 100);
+            border-radius: 5px;
+            padding: 2px;
+            margin: 0px;
+        }
     </style>
     <link rel="icon" type="image/png" href="icon.png">
 
@@ -453,6 +506,162 @@
     <!--<script src="./math.js"></script>-->
 
 
+    <div id="mouse">
+        <span id="left" class="buttonM">L</span>
+        <span id="middle" class="buttonM">M</span>
+        <span id="right" class="buttonM">R</span>
+        <span id="up" class="buttonM">&#9650;</span>
+        <span id="down" class="buttonM">&#9660;</span>
+    </div>
+    <div id="display"></div>
+
+    <script>
+        var showinfo = false
+        document.getElementById('mouse').style.display = 'none'
+        document.getElementById('display').style.display = 'none'
+        document.addEventListener('keydown', function(event) {
+            if ((event.altKey) && ((event.ctrlKey)) && (event.key === '1'))
+                showinfo = !showinfo
+            if (showinfo) {
+                document.getElementById('mouse').style.display = 'block'
+                document.getElementById('display').style.display = 'block'
+            } else {
+                document.getElementById('mouse').style.display = 'none'
+                document.getElementById('display').style.display = 'none'
+            }
+        })
+        var renderer = null;
+        var canvasClicked = false
+        document.addEventListener('mousedown', function(event) {
+            if ((renderer === null) || event.target !== renderer.domElement) {
+                canvasClicked = false;
+            } else
+                canvasClicked = true;
+        });
+
+
+        var timeoutID = null
+        var timeoutID1 = null
+        // Map of special keys
+        const specialKeys = {
+            "Control": "Ctrl",
+            "Alt": "Alt",
+            "Shift": "Shift",
+            "Tab": "Tab",
+            "Escape": "Esc"
+        };
+        document.addEventListener("wheel", function(event) {
+
+            var message = event.deltaY > 0 ? "~down" : "~up";
+
+            display(message)
+        });
+
+        document.addEventListener("auxdown", function(event) {
+            if (event.button === 1) { // 1 is the code for the middle mouse button
+
+                display("~middle")
+            }
+        });
+        document.addEventListener("auxup", function(event) {
+            if (event.button === 1) { // 1 is the code for the middle mouse button
+
+                display("!middle")
+            }
+        });
+
+        function display(text) {
+            if (timeoutID != null)
+                clearTimeout(timeoutID)
+            if (timeoutID1 != null)
+                clearTimeout(timeoutID1)
+
+            var myLabel = document.getElementById("display")
+            if (canvasClicked) {
+                if (text[0] === '~' && text.length > 1) {
+                    document.getElementById(text.slice(1)).classList.add("highlight");
+                } else if (text[0] === '!' && text.length > 1) {
+                    if (['right', 'left', 'middle'].includes(text.slice(1))) document.getElementById(text.slice(1)).classList.remove("highlight");
+                } else
+                    myLabel.innerText = text
+            } else if (text.length > 1 && (!(['~', '!'].includes(text[0])))) {
+                myLabel.innerText = text
+            }
+
+
+            timeoutID1 = setTimeout(() => {
+
+                //myLabel.style.display = 'none';
+                try {
+
+                    document.getElementById('down').classList.remove("highlight");
+                    document.getElementById('up').classList.remove("highlight");
+                } catch (error) {}
+            }, 100);
+
+            timeoutID = setTimeout(() => {
+
+                //myLabel.style.display = 'none';
+                try {
+                    for (let i in Object.keys(pressedSpecialKeys))
+                        delete pressedSpecialKeys[i]
+                    myLabel.innerText = ""
+                } catch (error) {}
+            }, 500);
+        }
+
+        // Variable to store the pressed special keys
+        let pressedSpecialKeys = {};
+
+        // Function to update the display
+        function updateDisplay() {
+            const pressed = Object.values(pressedSpecialKeys).join("+");
+            document.getElementById("display").innerText = (pressed)
+        }
+
+        // Capture and display key press including special keys
+        document.addEventListener("keydown", function(event) {
+
+            if (event.key in specialKeys) {
+                pressedSpecialKeys[event.key] = specialKeys[event.key];
+                updateDisplay();
+            } else {
+                var keyCombination
+                if (Object.values(pressedSpecialKeys).join("+").length > 0)
+                    keyCombination = Object.values(pressedSpecialKeys).join("+") + "+" + event.key.toUpperCase();
+                else
+                    keyCombination = event.key.toUpperCase();
+                display(keyCombination)
+            }
+        });
+
+        // Remove special key from the list when released
+        document.addEventListener("keyup", function(event) {
+            if (event.key in specialKeys) {
+
+                delete pressedSpecialKeys[event.key];
+                updateDisplay();
+            }
+        });
+
+        document.addEventListener("mouseup", function(event) {
+            var buttonClicked = event.button;
+            var buttonName = buttonClicked === 0 ? "left" : (buttonClicked === 1 ? "middle" : "right");
+            console.log('!' + buttonName)
+            display("!" + buttonName)
+        });
+
+        document.addEventListener("mousedown", function(event) {
+
+            var buttonClicked = event.button;
+            var buttonName = buttonClicked === 0 ? "left" : (buttonClicked === 1 ? "middle" : "right");
+            display("~" + buttonName)
+        });
+        document.addEventListener("contextmenu", function(event) {
+
+            display("~right")
+        });
+    </script>
     <div>
         <select id="examples">
         </select>
@@ -1087,7 +1296,6 @@
             }
         }
 
-        var renderer = null;
         var scene = null;
         var scene1 = null;
         var exportGLTF
