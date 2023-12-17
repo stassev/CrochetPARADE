@@ -609,7 +609,7 @@
                 clearTimeout(timeoutID1)
 
             var myLabel = document.getElementById("display")
-            if (canvasClicked) {
+
                 if (text[0] === '~' && text.length > 1) {
                     if (!(['up', 'down'].includes(text.slice(1))))
                     document.getElementById(text.slice(1)).classList.add("highlight");
@@ -617,10 +617,12 @@
                         document.getElementById(text.slice(1)).classList.add("highlight-font");
                 } else if (text[0] === '!' && text.length > 1) {
                     if (['right', 'left', 'middle'].includes(text.slice(1))) document.getElementById(text.slice(1)).classList.remove("highlight");
-                } else
+            } else {
+                if ((canvasClicked))
                     myLabel.innerText = text
-            } else if (text.length > 1 && (!(['~', '!'].includes(text[0])))) {
+                else if (text.length > 1 && (!(['~', '!'].includes(text[0])))) {
                 myLabel.innerText = text
+            }
             }
 
 
@@ -706,7 +708,7 @@
             display("~" + buttonName)
         });
         document.addEventListener("contextmenu", function(event) {
-
+            event.preventDefault()
             display("~right")
         });
     </script>
