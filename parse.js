@@ -355,7 +355,7 @@ DEF: scbl = Copy(sc,1) #sc in back loops only
 9ch,turn
 sk,(hdc2inc,3hdc,3dc,dc5inc).R,turn
 (dc@[0,1],2dc,3hdc,hdc2inc).R,ss@[0,-1]
-ch,(2hdc2inc,6hdc,5hdc2inc,6hdc,2hdc2inc)@R,hdc@[-1,-1],ss@[%,0] # Work last slip stitch in chain space.
+ch,(2hdc2inc,6hdc,5hdc2inc,6hdc,2hdc2inc)@R~,hdc@[-1,-1],ss@[%,0] # Work last slip stitch in chain space.
 ch,2hdc,hdc2inc,8hdc,2hdc2inc,2hdc,2hdc2inc,2hdc,2hdc2inc,8hdc,hdc2inc,hdc,hdc2inc,ss@[%,0]
 ch,sk,41scbl,ss@[%,0]
 ch,sk,41hdc,ss@[%,0]
