@@ -440,7 +440,7 @@
         #display {
             position: fixed;
             bottom: 12pt;
-            left: 211pt;
+            left: 133pt;
             background-color: rgba(255, 234, 95, 0.77);
             pointer-events: none;
             color: rgb(255, 106, 0);
@@ -452,10 +452,6 @@
             margin: 5px;
         }
 
-        .highlight {
-
-            color: rgb(255, 106, 0);
-        }
 
 
         #mouse {
@@ -466,13 +462,19 @@
             pointer-events: none;
             color: rgb(215, 215, 215);
             -webkit-text-stroke: 1px rgb(100, 100, 100);
-            font-size: 30pt;
+            font-size: 15pt;
             font-weight: 600;
             z-index: 1000;
             border: 1px solid rgb(100, 100, 100);
             border-radius: 5px;
             padding: 5px;
-            line-height: 30pt;
+            height: 36pt;
+            line-height: 24pt;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
         }
 
         .buttonM {
@@ -483,6 +485,29 @@
             border-radius: 5px;
             padding: 2px;
             margin: 0px;
+            width: 30pt;
+            height: 30pt;
+            line-height: 30pt;
+            margin: 2px
+        }
+
+        #up,
+        #down {
+            display: block;
+            text-align: center;
+            height: 15pt;
+            line-height: 15pt;
+            margin-bottom: -1pt;
+        }
+
+        .highlight-font {
+
+            color: rgb(255, 106, 0);
+        }
+
+        .highlight {
+
+            background-color: rgb(255, 106, 0);
         }
     </style>
     <link rel="icon" type="image/png" href="icon.png">
@@ -507,11 +532,12 @@
 
 
     <div id="mouse">
-        <span id="left" class="buttonM">L</span>
-        <span id="middle" class="buttonM">M</span>
-        <span id="right" class="buttonM">R</span>
-        <span id="up" class="buttonM">&#9650;</span>
-        <span id="down" class="buttonM">&#9660;</span>
+        <span id="left" class="buttonM"></span>
+        <span id="middle" class="buttonM">
+            <span id="up">&#9650;</span>
+            <span id="down">&#9660;</span>
+        </span>
+        <span id="right" class="buttonM"></span>
     </div>
     <div id="display"></div>
 
@@ -523,7 +549,7 @@
             if ((event.altKey) && ((event.ctrlKey)) && (event.key === '1'))
                 showinfo = !showinfo
             if (showinfo) {
-                document.getElementById('mouse').style.display = 'block'
+                document.getElementById('mouse').style.display = 'flex'
                 document.getElementById('display').style.display = 'block'
             } else {
                 document.getElementById('mouse').style.display = 'none'
@@ -579,7 +605,10 @@
             var myLabel = document.getElementById("display")
             if (canvasClicked) {
                 if (text[0] === '~' && text.length > 1) {
+                    if (!(['up', 'down'].includes(text.slice(1))))
                     document.getElementById(text.slice(1)).classList.add("highlight");
+                    else
+                        document.getElementById(text.slice(1)).classList.add("highlight-font");
                 } else if (text[0] === '!' && text.length > 1) {
                     if (['right', 'left', 'middle'].includes(text.slice(1))) document.getElementById(text.slice(1)).classList.remove("highlight");
                 } else
@@ -594,8 +623,8 @@
                 //myLabel.style.display = 'none';
                 try {
 
-                    document.getElementById('down').classList.remove("highlight");
-                    document.getElementById('up').classList.remove("highlight");
+                    document.getElementById('down').classList.remove("highlight-font");
+                    document.getElementById('up').classList.remove("highlight-font");
                 } catch (error) {}
             }, 100);
 
