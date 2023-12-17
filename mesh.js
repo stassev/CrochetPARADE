@@ -588,7 +588,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 I = null
             } else if (intersects.length == 1) {
                 I = intersects[0]
-                label.innerHTML = I.object.name_long;
+                label.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'>" + I.object.name_long + "</span>";
             } else {
                 I = null
                 for (var i of intersects) {
@@ -601,7 +601,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 if (I == null)
                     I = intersects[0]
 
-                label.innerHTML = I.object.name_long;
+                label.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'>" + I.object.name_long + "</span>";
             }
 
             if ((Iold != null) && ((I == null) || (Iold.object.id0 != I.object.id0)))
@@ -1030,7 +1030,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 let label = createLabel()
 
                 //label.innerHTML = "<span style='font-size: 16px; font-weight: bold;'>" + str.objects[HIDE].name + '</span>'
-                label.innerHTML = "<span style='font-size: 16px; font-weight: bold;'>(" + str.objects[HIDE].name + ") [" + str.objects[HIDE].label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + str.objects[HIDE].label.split('|')[1] + "&hellip;"
+                label.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'><span style='font-size: 16px; font-weight: bold;'>(" + str.objects[HIDE].name + ") [" + str.objects[HIDE].label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + str.objects[HIDE].label.split('|')[1] + "&hellip;</span>"
                 document.body.appendChild(label);
                 if (timeoutID != null)
                     clearTimeout(timeoutID)
