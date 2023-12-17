@@ -848,7 +848,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     }
     //Search and hide.
 
-    document.addEventListener('keydown', handleKeyDownHide);
+    document.addEventListener('keydown', handleKeyDownHide, true);
 
     function handleKeyDownHide(event) {
         if ((canvasClicked) && (event.key === 'r')) {
