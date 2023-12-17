@@ -741,8 +741,9 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         }
         if (canvasClicked && ((event.key === '+') || (event.key === '=') || (event.key === '-')) && (event.ctrlKey || event.metaKey)) {
             //console.log(NODES)
+            event.preventDefault();
             setTimeout(function() {
-                event.preventDefault();
+
                 let f = 1.259921
                 if (event.key === '-')
                     f = 1. / f
