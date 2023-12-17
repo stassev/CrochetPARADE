@@ -855,93 +855,103 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             wasMouseDown = false
         }
         if (canvasClicked && (event.key === 'p')) {
-            saveSvg()
+            setTimeout(function() {
+                saveSvg()
+            }, 300)
         }
         if (canvasClicked && (event.key === 'h' && (event.ctrlKey || event.metaKey))) {
+
+
             event.preventDefault();
-            if (rowNumber != -1000) {
-                for (var i = 0; i < NODES.length; i++) {
-                    NODES[i].material = originalMaterials[i];
-                    NODES[i].visible = true;
-                }
-            }
-            var rn = null
-            rn = (prompt('Enter a row number or stitch coordinate (row,stitch number; e.g. 2,4). All stitches after that will be hidden'));
-            var rr = []
-            if (rn) {
-                for (var r of rn.split(new RegExp('[^0-9]+')))
-                    if (r !== '')
-                        rr.push(parseInt(r))
-                if (rr.length == 1) {
-                    rowNumber = rr[0]
-                    //console.log(NODES)
+            setTimeout(function() {
+                if (rowNumber != -1000) {
                     for (var i = 0; i < NODES.length; i++) {
-                        if (NODES[i].row[0] > rowNumber) {
-                            NODES[i].visible = false;
-                        }
+                        NODES[i].material = originalMaterials[i];
+                        NODES[i].visible = true;
                     }
-                    for (var i = 0; i < NODEShidden.length; i++) {
-                        if (NODEShidden[i].row[0] > rowNumber) {
-                            NODEShidden[i].visible = false;
-                        }
-                    }
-
-                    RESETCOLORS = false
-
-                    HIDE = str.objects.findIndex((obj) => obj.name.split('|')[0] === String(rr[0] + 1) + ',' + String(0));
-                    HIDE--
-                    if (HIDE == -2) { //searching for last element
-                        HIDE = str.objects.length - 1
-                        //while ((str.objects[HIDE].label.split('|')[0] === "hidden") && HIDE >= 0)
-                        //    HIDE--
-                    }
-
-                    if (HIDE == -1)
-                        HIDE = 0
-                } else if (rr.length == 2) {
-                    //console.log(NODES)
-                    rowNumber = rr[0]
-                    for (var i = 0; i < NODES.length; i++) {
-                        if (((NODES[i].row[0] == rowNumber) && (NODES[i].row[1] > rr[1])) || (NODES[i].row[0] > rowNumber)) {
-                            NODES[i].visible = false;
-                        }
-                    }
-
-                    for (var i = 0; i < NODEShidden.length; i++) {
-                        if (((NODEShidden[i].row[0] == rowNumber) && (NODEShidden[i].row[1] > rr[1])) || (NODEShidden[i].row[0] > rowNumber)) {
-                            NODEShidden[i].visible = false;
-                        }
-                    }
-
-                    RESETCOLORS = false
-
-                    HIDE = str.objects.findIndex((obj) => obj.name.split('|')[0] === String(rr[0]) + ',' + String(rr[1]));
-                    if (HIDE == -1)
-                        HIDE = 0
-
-                } {
-                    let myLabel = document.getElementById('myLabel');
-                    //myLabel.style.display = 'none';
-                    try {
-                        document.body.removeChild(myLabel)
-                    } catch (error) {}
                 }
-                if (requestedInfo) {
-                    let label = createLabel()
-                    //console.log(str.objects[HIDE].name)
-                    label.innerHTML = "<span style='font-size: 16px; font-weight: bold;'>" + str.objects[HIDE].name + '</span>'
-                    document.body.appendChild(label);
-                    if (timeoutID != null)
-                        clearTimeout(timeoutID)
-                    timeoutID = setTimeout(() => {
-                        var myLabel = document.getElementById('myLabel');
+                //var rn = null
+                //rn = (prompt('Enter a row number or stitch coordinate (row,stitch number; e.g. 2,4). All stitches after that will be hidden'));
+
+                var rn = null
+                rn = (prompt('Enter a row number or stitch coordinate (row,stitch number; e.g. 2,4). All stitches after that will be hidden'));
+                var rr = []
+                if (rn) {
+                    for (var r of rn.split(new RegExp('[^0-9]+')))
+                        if (r !== '')
+                            rr.push(parseInt(r))
+                    if (rr.length == 1) {
+                        rowNumber = rr[0]
+                        //console.log(NODES)
+                        for (var i = 0; i < NODES.length; i++) {
+                            if (NODES[i].row[0] > rowNumber) {
+                                NODES[i].visible = false;
+                            }
+                        }
+                        for (var i = 0; i < NODEShidden.length; i++) {
+                            if (NODEShidden[i].row[0] > rowNumber) {
+                                NODEShidden[i].visible = false;
+                            }
+                        }
+
+                        RESETCOLORS = false
+
+                        HIDE = str.objects.findIndex((obj) => obj.name.split('|')[0] === String(rr[0] + 1) + ',' + String(0));
+                        HIDE--
+                        if (HIDE == -2) { //searching for last element
+                            HIDE = str.objects.length - 1
+                            //while ((str.objects[HIDE].label.split('|')[0] === "hidden") && HIDE >= 0)
+                            //    HIDE--
+                        }
+
+                        if (HIDE == -1)
+                            HIDE = 0
+                    } else if (rr.length == 2) {
+                        //console.log(NODES)
+                        rowNumber = rr[0]
+                        for (var i = 0; i < NODES.length; i++) {
+                            if (((NODES[i].row[0] == rowNumber) && (NODES[i].row[1] > rr[1])) || (NODES[i].row[0] > rowNumber)) {
+                                NODES[i].visible = false;
+                            }
+                        }
+
+                        for (var i = 0; i < NODEShidden.length; i++) {
+                            if (((NODEShidden[i].row[0] == rowNumber) && (NODEShidden[i].row[1] > rr[1])) || (NODEShidden[i].row[0] > rowNumber)) {
+                                NODEShidden[i].visible = false;
+                            }
+                        }
+
+                        RESETCOLORS = false
+
+                        HIDE = str.objects.findIndex((obj) => obj.name.split('|')[0] === String(rr[0]) + ',' + String(rr[1]));
+                        if (HIDE == -1)
+                            HIDE = 0
+
+                    } {
+                        let myLabel = document.getElementById('myLabel');
                         //myLabel.style.display = 'none';
                         try {
                             document.body.removeChild(myLabel)
                         } catch (error) {}
-                    }, 10000);
+                    }
+                    if (requestedInfo) {
+                        let label = createLabel()
+                        //console.log(str.objects[HIDE].name)
+                        label.innerHTML = "<span style='font-size: 16px; font-weight: bold;'>" + str.objects[HIDE].name + '</span>'
+                        document.body.appendChild(label);
+                        if (timeoutID != null)
+                            clearTimeout(timeoutID)
+                        timeoutID = setTimeout(() => {
+                            var myLabel = document.getElementById('myLabel');
+                            //myLabel.style.display = 'none';
+                            try {
+                                document.body.removeChild(myLabel)
+                            } catch (error) {}
+                        }, 10000);
+                    }
                 }
-            }
+            }, 300);
+
         }
     }
 
