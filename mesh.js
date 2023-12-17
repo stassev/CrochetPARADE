@@ -782,37 +782,39 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             }, 200)
         }
         if (canvasClicked && (event.key === 'f' && (event.ctrlKey || event.metaKey))) {
-            event.preventDefault();
-            if (rowNumber != -1000) {
-                for (var i = 0; i < NODES.length; i++) {
-                    NODES[i].material = originalMaterials[i];
-                }
-            }
-            var rn = null
-            rn = (prompt('Enter a row number or stitch coordinate (row,stitch number; e.g. 2,4) to be highlighted'));
-            var rr = []
-            if (rn) {
-                for (var r of rn.split(new RegExp('[^0-9]+')))
-                    if (r !== '')
-                        rr.push(parseInt(r))
-                if (rr.length == 1) {
-                    rowNumber = rr[0]
-                    //console.log(NODES)
+            setTimeout(function() {
+                event.preventDefault();
+                if (rowNumber != -1000) {
                     for (var i = 0; i < NODES.length; i++) {
-                        if (NODES[i].row[0] == rowNumber) {
-                            NODES[i].material = selectedRowMaterial
-                        }
-                    }
-                } else if (rr.length == 2) {
-                    //console.log(NODES)
-                    rowNumber = rr[0]
-                    for (var i = 0; i < NODES.length; i++) {
-                        if ((NODES[i].row[0] == rowNumber) && (NODES[i].row[1] == rr[1])) {
-                            NODES[i].material = selectedRowMaterial
-                        }
+                        NODES[i].material = originalMaterials[i];
                     }
                 }
-            }
+                var rn = null
+                rn = (prompt('Enter a row number or stitch coordinate (row,stitch number; e.g. 2,4) to be highlighted'));
+                var rr = []
+                if (rn) {
+                    for (var r of rn.split(new RegExp('[^0-9]+')))
+                        if (r !== '')
+                            rr.push(parseInt(r))
+                    if (rr.length == 1) {
+                        rowNumber = rr[0]
+                        //console.log(NODES)
+                        for (var i = 0; i < NODES.length; i++) {
+                            if (NODES[i].row[0] == rowNumber) {
+                                NODES[i].material = selectedRowMaterial
+                            }
+                        }
+                    } else if (rr.length == 2) {
+                        //console.log(NODES)
+                        rowNumber = rr[0]
+                        for (var i = 0; i < NODES.length; i++) {
+                            if ((NODES[i].row[0] == rowNumber) && (NODES[i].row[1] == rr[1])) {
+                                NODES[i].material = selectedRowMaterial
+                            }
+                        }
+                    }
+                }
+            }, 300)
         }
     }
 
