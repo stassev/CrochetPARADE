@@ -767,15 +767,17 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             }
         }
         if (canvasClicked && (event.key === 's')) {
-            event.preventDefault();
-            for (var i = 0; i < NODES.length; i++) {
-                if ('stretch' in NODES[i])
-                    NODES[i].material = new THREE.MeshLambertMaterial({
-                        color: new THREE.Color(...color(7 * (NODES[i].stretch - 1.) + 3))
-                    })
-                else
-                    NODES[i].material = edgeMaterialGray
-            }
+            setTimeout(function() {
+                event.preventDefault();
+                for (var i = 0; i < NODES.length; i++) {
+                    if ('stretch' in NODES[i])
+                        NODES[i].material = new THREE.MeshLambertMaterial({
+                            color: new THREE.Color(...color(7 * (NODES[i].stretch - 1.) + 3))
+                        })
+                    else
+                        NODES[i].material = edgeMaterialGray
+                }
+            }, 100)
         }
         if (canvasClicked && (event.key === 'f' && (event.ctrlKey || event.metaKey))) {
             event.preventDefault();
