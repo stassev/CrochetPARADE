@@ -741,36 +741,41 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         }
         if (canvasClicked && ((event.key === '+') || (event.key === '=') || (event.key === '-')) && (event.ctrlKey || event.metaKey)) {
             //console.log(NODES)
-            event.preventDefault();
-            let f = 1.259921
-            if (event.key === '-')
-                f = 1. / f
-            factor_radius *= f
-            ScaleRadii(f)
-        }
-        if (canvasClicked && (event.key === 'v')) {
-            event.preventDefault();
-            showArrows = !showArrows
-            if (showArrows) {
-                var [x, y] = str.objects[HIDE].name.split('|')[0].split(',')
-
-                for (var i = 0; i < NODES.length; i++) {
-                    if (((NODES[i].row[0] == parseInt(x)) && (NODES[i].row[1] <= parseInt(y))) ||
-                        ((NODES[i].row[0] < parseInt(x)))) {
-                        if ('is_arrow' in NODES[i])
-                            NODES[i].visible = true
-                    }
-                }
-
-            } else {
-                for (let i of NODES)
-                    if ('is_arrow' in i)
-                        i.visible = false
-            }
-        }
-        if (canvasClicked && (event.key === 's')) {
             setTimeout(function() {
                 event.preventDefault();
+                let f = 1.259921
+                if (event.key === '-')
+                    f = 1. / f
+                factor_radius *= f
+                ScaleRadii(f)
+            }, 300)
+        }
+        if (canvasClicked && (event.key === 'v')) {
+            setTimeout(function() {
+                event.preventDefault();
+                showArrows = !showArrows
+                if (showArrows) {
+                    var [x, y] = str.objects[HIDE].name.split('|')[0].split(',')
+
+                    for (var i = 0; i < NODES.length; i++) {
+                        if (((NODES[i].row[0] == parseInt(x)) && (NODES[i].row[1] <= parseInt(y))) ||
+                            ((NODES[i].row[0] < parseInt(x)))) {
+                            if ('is_arrow' in NODES[i])
+                                NODES[i].visible = true
+                        }
+                    }
+
+                } else {
+                    for (let i of NODES)
+                        if ('is_arrow' in i)
+                            i.visible = false
+                }
+            }, 300)
+        }
+        if (canvasClicked && (event.key === 's')) {
+            event.preventDefault();
+            setTimeout(function() {
+
                 for (var i = 0; i < NODES.length; i++) {
                     if ('stretch' in NODES[i])
                         NODES[i].material = new THREE.MeshLambertMaterial({
@@ -782,8 +787,9 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             }, 200)
         }
         if (canvasClicked && (event.key === 'f' && (event.ctrlKey || event.metaKey))) {
+            event.preventDefault();
             setTimeout(function() {
-                event.preventDefault();
+
                 if (rowNumber != -1000) {
                     for (var i = 0; i < NODES.length; i++) {
                         NODES[i].material = originalMaterials[i];
