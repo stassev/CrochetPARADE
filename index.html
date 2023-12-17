@@ -657,6 +657,13 @@
                 updateDisplay();
             } else {
                 var keyCombination
+                if (!event.ctrlKey)
+                    delete pressedSpecialKeys['Control']
+                if (!event.altKey)
+                    delete pressedSpecialKeys['Alt']
+                if (!event.shiftKey)
+                    delete pressedSpecialKeys['Shift']
+
                 if (Object.values(pressedSpecialKeys).join("+").length > 0)
                     keyCombination = Object.values(pressedSpecialKeys).join("+") + "+" + event.key.toUpperCase();
                 else

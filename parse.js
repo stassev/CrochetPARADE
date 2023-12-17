@@ -2538,7 +2538,7 @@ function parse_text_instruction_to_structure(input, original = '', COLOR = {}) {
                         if (insideColor > 0)
                             col += t
                     }
-                    console.log(col.replaceAll('~', ',').replace('+', '(').replace('-', ')'))
+                    //console.log(col.replaceAll('~', ',').replace('+', '(').replace('-', ')'))
                     COLOR[ind] = col.replaceAll('~', ',').replace('+', '(').replace('-', ')').trim()
                     l0 += s.slice(col.length)
                 }
