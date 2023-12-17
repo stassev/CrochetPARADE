@@ -722,20 +722,22 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             } catch (error) {}
         }
         if (canvasClicked && (event.key === 'c')) {
-            c_was_pressed = true
-            showArrows = false
-            for (let i of NODES) {
-                i.material = new THREE.MeshLambertMaterial({
-                    color: new THREE.Color(i.Color)
-                })
-                if (('is_arrow' in i) || i.type == 0)
+            setTimeout(function() {
+                c_was_pressed = true
+                showArrows = false
+                for (let i of NODES) {
+                    i.material = new THREE.MeshLambertMaterial({
+                        color: new THREE.Color(i.Color)
+                    })
+                    if (('is_arrow' in i) || i.type == 0)
+                        i.visible = false
+                }
+                for (let i of NODEShidden)
                     i.visible = false
-            }
-            for (let i of NODEShidden)
-                i.visible = false
 
-            ScaleRadii(4 / factor_radius) // show all radii as twice the default
-            factor_radius = 4
+                ScaleRadii(4 / factor_radius) // show all radii as twice the default
+                factor_radius = 4
+            }, 200)
         }
         if (canvasClicked && ((event.key === '+') || (event.key === '=') || (event.key === '-')) && (event.ctrlKey || event.metaKey)) {
             //console.log(NODES)
@@ -777,7 +779,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                     else
                         NODES[i].material = edgeMaterialGray
                 }
-            }, 100)
+            }, 200)
         }
         if (canvasClicked && (event.key === 'f' && (event.ctrlKey || event.metaKey))) {
             event.preventDefault();
