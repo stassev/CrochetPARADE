@@ -516,9 +516,21 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     camera.lookAt(0, 0, 0);
     var wasMouseDown = true;
     var canvasClicked = false;
+    var timeoutQ = true;
+    var timeoutID = null;
 
     function onMouseDown(event) {
-
+        if (event.shiftKey && event.button === 0 && event.target === renderer.domElement)
+            timeoutQ = !timeoutQ
+        if (!timeoutQ) {
+            if (timeoutID != null)
+                clearTimeout(timeoutID)
+        } else {
+            var myLabel = document.getElementById('myLabel');
+            try {
+                document.body.removeChild(myLabel)
+            } catch (error) {}
+        }
         if ((event.button === 0) && (canvasClicked)) { // Left mouse button
             wasMouseDown = true;
         }
@@ -561,7 +573,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     var requestedInfo = true
 
     function onMove(event) {
-        if (requestedInfo) {
+
+        if (requestedInfo && timeoutQ) {
             // Calculate the mouse position
             //mouse.x = ((event.clientX) / window.innerWidth) * 2 - 1;
             //mouse.y = -((event.clientY) / window.innerHeight) * 2 + 1;
@@ -708,7 +721,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
     var RESETCOLORS = true;
     var HIDE = str.objects.length - 1
-    var timeoutID = null;
+
     //Search and highlight
     function handleKeyDown(event) {
         if (canvasClicked && (event.key === 'i')) {
@@ -954,13 +967,14 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                         document.body.appendChild(label);
                         if (timeoutID != null)
                             clearTimeout(timeoutID)
-                        timeoutID = setTimeout(() => {
-                            var myLabel = document.getElementById('myLabel');
-                            //myLabel.style.display = 'none';
-                            try {
-                                document.body.removeChild(myLabel)
-                            } catch (error) {}
-                        }, 10000);
+                        if (timeoutQ)
+                            timeoutID = setTimeout(() => {
+                                var myLabel = document.getElementById('myLabel');
+                                //myLabel.style.display = 'none';
+                                try {
+                                    document.body.removeChild(myLabel)
+                                } catch (error) {}
+                            }, 10000);
                     }
                 }
             }, 300);
@@ -1057,12 +1071,13 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 document.body.appendChild(label);
                 if (timeoutID != null)
                     clearTimeout(timeoutID)
-                timeoutID = setTimeout(() => {
-                    var myLabel = document.getElementById('myLabel');
-                    try {
-                        document.body.removeChild(myLabel)
-                    } catch (error) {}
-                }, 10000);
+                if (timeoutQ)
+                    timeoutID = setTimeout(() => {
+                        var myLabel = document.getElementById('myLabel');
+                        try {
+                            document.body.removeChild(myLabel)
+                        } catch (error) {}
+                    }, 10000);
             }
 
             if (c_was_pressed) {
