@@ -26,6 +26,36 @@
 var EXTRA_DOTS = ''
 var backgroundColor = ''
 
+var textLacyHat = `# Lacy hat showcase
+# Own design, incorporating a modified version of the flower in the "Irish crochet flower 1" showcase.
+# Start with Irish crochet style flower petals
+DEF: p=3ch,ss@1[%,%-4] # Picot stitch: chain 3, then slip-stitch to stitch at base of picot
+DEF: dc=Copy(dc,2)
+COLOR: rgb(240,180,150)
+6ch.Ring+1!,ss@[%,0]
+[ch,15sc].Ring1[]@Ring,ss@[%,0]
+ch,sk,sc,[2sc,<,p]*8,ss@[%,0],sc@Ring1[][0]
+$c=0$,@Ring1[][0],[5ch.chain_space[0,c++]+!,sk,>,sc]*8,ss@[-1,-1]
+$t=0,c=0$,ch,[sc,hdc,p,dc,tr.Tip[t++],dc,p,hdc,>,sc]@chain_space[0,c++]*8,ss@[%,0]
+$t=0$,start_at@Tip[t]
+$k=0$,[ss@Tip[t++],7ch.chsp[0,k++]]*8,sc@[%,0]
+$k=0$,ch,[sc,2hdc,2dc,1tr,2dc,2hdc,>,sc]@chsp[0,k++]*8,ss@[%,0]
+$k=0$,sk,6ss,[10ch.chsp[1,k++],>,ss@[tr:@+1]]*8,sc@[%,5]
+$k=0$,ch,[2sc,2hdc,3dc,tr,3dc,2hdc,sc,>,sc]@chsp[1,k++]*8,ss@[%,0]
+$k=0$,sk,8ss,[13ch.chsp[2,k++],>,ss@[tr:@+1]]*8,sc@[%,7]
+#Switch to filet crochet
+7sk,2ss,2ch,[[2sk,2ch,dc]*4,sk,2ch,>,dc]*8,ss@[ch:%,1]
+4sk,ss,2ch,[2sk,2ch,>,dc]*40,ss@[ch:%,1]
+3sk,ss,2ch,[2sk,2ch,>,dc]*40,ss@[ch:%,1]
+#Switch to crocheting in the round
+3sk,sc,119sc
+[4sc,sc2tog]*20
+[3sc,sc2tog]*20
+[80sc
+]*5
+79sc,ss@[%,0]
+`
+
 var textEdging = `#Edging showcase
 DEF: hdc=Copy(hdc,2) # Change height of hdc
 DEF: dc=&dc^A(dc):B~A-B:C;D:!-1-A;B-1-C;C-1-D;D-1-A #fancy dc
@@ -1483,6 +1513,9 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
     return Stitches
 }
 
+function evaluateExpression(expression) {
+    return Function(`'use strict'; return ${expression}`)();
+}
 
 function update_attachment_points(Stitches, node, attach, turns, attach_row) {
     //console.log(attach, node)
@@ -1507,9 +1540,9 @@ function update_attachment_points(Stitches, node, attach, turns, attach_row) {
         var a = l['attach_id']
         attach_row[key] = find_stitch_by_id(Stitches, a)[0].nrow
         if (sum(turns.slice(attach_row[key])) % 2 == 0)
-            attach[key] = a + (eval(at.split('][')[1].slice(0, -1)) - l['n'] + 1)
+            attach[key] = a + (evaluateExpression(at.split('][')[1].slice(0, -1)) - l['n'] + 1)
         else
-            attach[key] = a - eval(at.split('][')[1].slice(0, -1))
+            attach[key] = a - evaluateExpression(at.split('][')[1].slice(0, -1))
         return attach
     }
     if ((at[0] === '[') && (at.slice(-1) == ']')) {
@@ -1530,7 +1563,7 @@ function update_attachment_points(Stitches, node, attach, turns, attach_row) {
             var keyToExtract = at.match(regex)[1];
             if (keyToExtract === '')
                 keyToExtract = '0'
-            y = eval(at.replace(regex, '0'))
+            y = evaluateExpression(at.replace(regex, '0'))
             var at3 = attach[keyToExtract]
             if ((!Number.isInteger(at3)) && 'attach_id' in at3)
                 at3 = at3['attach_id']
@@ -1539,8 +1572,8 @@ function update_attachment_points(Stitches, node, attach, turns, attach_row) {
         } else {
             at = at.split(',')
             var [count, first, last] = count_stitches_in_row(Stitches, Nrows) //FIXME
-            y = eval(at[1].replace('%', count))
-            x = eval(at[0].replace('%', Nrows))
+            y = evaluateExpression(at[1].replace('%', count))
+            x = evaluateExpression(at[0].replace('%', Nrows))
         }
 
         if (x < 0)
@@ -1787,7 +1820,7 @@ function parse_StitchCode(r, id, id_attach, Stitches, turns) {
 
             if (len !== 'skip') {
                 try {
-                    len = eval(len)
+                    len = evaluateExpression(len)
                 } catch (error) {
                     throw new Error('Length of connection is not a parseable number in stitch: ' + stitch)
                 }
@@ -2109,9 +2142,9 @@ function evaluate_indices(text) {
             i = i.split(';')[0]
             if (!(i.includes(':'))) {
                 try {
-                    if (Number.isInteger(eval((i)))) {
-                        if (i !== String(eval((i)))) {
-                            text = text.replaceAll(i, String(eval((i)))); //replace any index expressions such as (k+3)%2 that evaluate to integers with the corresponding integers.
+                    if (Number.isInteger(evaluateExpression((i)))) {
+                        if (i !== String(evaluateExpression((i)))) {
+                            text = text.replaceAll(i, String(evaluateExpression((i)))); //replace any index expressions such as (k+3)%2 that evaluate to integers with the corresponding integers.
                         }
                     }
                 } catch (error) {
@@ -3095,8 +3128,8 @@ function export_to_dot(Stitches, json0) {
                     } //else
                     //  p1 += '|' + find_stitch_by_id(Stitches, parseInt(p1.split('|')[0], 10)).uid
                     //TOFIX???
-                    text += '"' + p0 + '" -- "' + b.id + '|' + buid + '" ' + '[penwidth=1,color=gray,len=' + eval(d0) + ',label="' + s['Color'] + '"]\n'
-                    text += '"' + b.id + '|' + buid + '" -- "' + p1 + '" ' + '[penwidth=1,color=gray,len=' + eval(d1) + ',label="' + s['Color'] + '"]\n'
+                    text += '"' + p0 + '" -- "' + b.id + '|' + buid + '" ' + '[penwidth=1,color=gray,len=' + evaluateExpression(d0) + ',label="' + s['Color'] + '"]\n'
+                    text += '"' + b.id + '|' + buid + '" -- "' + p1 + '" ' + '[penwidth=1,color=gray,len=' + evaluateExpression(d1) + ',label="' + s['Color'] + '"]\n'
 
                     let name = '"' + b.id + '|' + buid + '"'
                     if (json) {
