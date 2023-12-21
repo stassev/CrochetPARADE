@@ -28,6 +28,9 @@ var backgroundColor = ''
 
 var textLacyHat = `# Lacy hat showcase
 # Own design, incorporating a modified version of the flower in the "Irish crochet flower 1" showcase.
+# Needs more work -- possibly make the dome larger, and close up the largest holes on the side. But
+# I think it's good enough for a demo, showing a mixture of styles.
+#
 # Start with Irish crochet style flower petals
 DEF: p=3ch,ss@1[%,%-4] # Picot stitch: chain 3, then slip-stitch to stitch at base of picot
 DEF: dc=Copy(dc,2)
