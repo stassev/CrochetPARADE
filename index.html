@@ -838,17 +838,17 @@
 
         var textOptions = [
             ['Write your own instructions', "", 3],
-            ['Baby Bootie (~5sec)', textBootie, 3],
+            ['Baby bootie (~5sec)', textBootie, 3],
             ['Irish crochet: flower 1 (~5sec)', textFlower2, 2],
             ['Irish crochet: flowers 2 (~5sec)', textFlower, 3],
             ['Granny square (~15sec)', textSquare, 2],
             ['Edging (~5sec)', textEdging, 2],
-            ['Amigurumi: Simplistic snowman (~10sec)', textSnowman, 3],
-            ['Baby Blanket (~1min)', textBlanket, 3],
+            ['Amigurumi: simplistic snowman (~10sec)', textSnowman, 3],
+            ['Baby blanket (~1min)', textBlanket, 3],
             ['Swatch (~1min)', textSwatch, 3],
             ['Stocking (~1min)', textStocking, 3],
             ['Hat (~3min)', textHat, 3],
-            ['Mixed styles: Lacy Hat (~3min)', textLacyHat, 3],
+            ['Mixed styles: lacy hat (~3min)', textLacyHat, 3],
             ['Filet crochet: logo (~3min)', textFilet, 3],
             ['Irish crochet: doily (~20min or more!)', textDoily, 2],
             ['Simple flower with post stitches (~5sec)', textFlower3, 3]
@@ -1251,6 +1251,7 @@
                 }
                 textarea.value = text.trim()
             }
+            textarea.value = textarea.value.replace(/\t/g, '    ').replace(/\r/g, '')
             const lines1 = textarea.value.split('\n');
             let maxLength = 0;
 

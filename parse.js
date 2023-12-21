@@ -39,7 +39,7 @@ COLOR: rgb(240,180,150)
 [ch,15sc].Ring1[]@Ring,ss@[%,0]
 ch,sk,sc,[2sc,<,p]*8,ss@[%,0],sc@Ring1[][0]
 $c=0$,@Ring1[][0],[5ch.chain_space[0,c++]+!,sk,>,sc]*8,ss@[-1,-1]
-$t=0,c=0$,ch,[sc,hdc,p,dc,tr.Tip[t++],dc,p,hdc,>,sc]@chain_space[0,c++]*8,ss@[%,0]
+$t=0,c=0$,ch,[sc,hdc,dc,p,tr.Tip[t++],dc,p,hdc,>,sc]@chain_space[0,c++]*8,ss@[%,0]
 $t=0$,start_at@Tip[t]
 $k=0$,[ss@Tip[t++],7ch.chsp[0,k++]]*8,sc@[%,0]
 $k=0$,ch,[sc,2hdc,2dc,1tr,2dc,2hdc,>,sc]@chsp[0,k++]*8,ss@[%,0]
@@ -94,7 +94,7 @@ COLOR: Pink
 [ch,15sc].Ring1[]@Ring,ss@[%,0]
 ch,sk,sc,[2sc,<,p]*8,ss@[%,0],COLOR: Violet,sc@Ring1[][0]
 $c=0$,@Ring1[][0],[5ch.chain_space[0,c++]+!,sk,>,sc]*8,ss@[-1,-1]
-$t=0,c=0$,ch,[sc,hdc,p,dc,tr.Tip[t++],dc,p,hdc,>,sc]@chain_space[0,c++]*8,ss@[%,0]
+$t=0,c=0$,ch,[sc,hdc,dc,p,tr.Tip[t++],dc,p,hdc,>,sc]@chain_space[0,c++]*8,ss@[%,0]
 COLOR: Green
 # This starts a new yarn with chain-3 then 3dc together in base to form a starting dc-4 bobble:
 DEF: dc4bobble_start_new= &a dc bobble of 4 stitches^B(hidden);C(ch);D(ch),A(dc):B1~A-B1:E;F;G;H;I;J:!-skip-B;B1-0.001-B;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A;B-0.7-I;I-0.8-J;J-0.7-A
@@ -559,7 +559,7 @@ DEF: sc=Copy(sc,1,1)
 [ch,15sc].Ring1[]@Ring,ss@[%,0]
 ch,sk,sc,[2sc,<,p]*8,ss@[%,0],sc@Ring1[][0]
 $c=0$,@Ring1[][0],[7ch.chain_space[0,c++]+!,sk,>,sc]*8,ss@[-1,-1]
-$c=0$,([5sc,p,5sc,p,5sc]@chain_space[0,c++])*8,ss@[%,0]`
+$c=0$,([5sc,p,6sc,p,4sc]@chain_space[0,c++])*8,ss@[%,0]`
 
 var textDoily = `#Doily showcase
 #"Swirls" doily pattern from "Lily Design Book No. 79 Doilies",
