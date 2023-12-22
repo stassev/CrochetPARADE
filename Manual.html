@@ -569,9 +569,9 @@ BACKGROUND: white</code></pre>
         counting of stitches in a row is over stitches of that type. For
         example, <code>@[sc:-1,3]</code> specifies that the current stitch is
         worked in the 4th single crochet (sc) stitch of the previous row, as
-        opposed to the 4th stitch in general. The direction of counting is <b>not</b> necessarily in the direction 
-    in which the stitches were written (compare with above), but in the crocheting direction. 
-    See the section "Direction of sequential stitch attachment".</p>
+        opposed to the 4th stitch in general. The direction of counting is <b>not</b> necessarily in the direction
+        in which the stitches were written (compare with above), but in the crocheting direction.
+        See the section "Direction of sequential stitch attachment".</p>
     <h3 id="attachment-with-relative-position-1">Attachment with Relative
         Position: @[@+1]</h3>
     <p>The <strong>last</strong> attachment point is stored in the
@@ -710,7 +710,8 @@ sk,8sc,sc.A!,turn
 4ch.A!,sk,9tr,turn
 1ch,sk,8sc,7sc@A~</code></pre>
     <p>Compare with the result from running the previous set of
-        instructions.</p><p>See the section "Direction of sequential stitch attachment" for the way the code chooses the default direction of attaching stitches.</p>
+        instructions.</p>
+    <p>See the section "Direction of sequential stitch attachment" for the way the code chooses the default direction of attaching stitches.</p>
     <h5 id="multiple-stitch-sets-attaching-to-a-labeled-group-a21">Multiple
         stitch sets attaching to a labeled group: <span class="citation" data-cites="A">@A</span>[2;1]</h5>
     <p>If one needs to attach multiple sets of stitches into a labeled
@@ -803,15 +804,18 @@ sk,8sc,sc.A[]!,turn
 
 
     <h2 id="defining-new-stitches.">Direction of sequential stitch attachment.</h2>
-    <p>If no attachment point is specified, the code tries to infer the next attachment point.
+    <h3 id="defining-new-stitches.">Default direction of crocheting.</h3>
+    <p>If no attachment point is specified, the code tries to infer the next attachment point of the next stitch you are working into your project.
         It does that by checking how many <code>turn</code> directives are at the end of the rows
-        between the row (let's call it A for reference) of the previous attachment
-        point and the current row. If that number is even, then the next stitch would by default attach
-        to the next stitch of A in the direction in which A was crocheted, If that number is odd, then
-        the next stitch would attach to the previous stitch on A (as we are going in reverse order).
+        between the row (let's call it A for reference) of the attachment
+        point of the previous stitch and the current row. If that number is even, then the next stitch would by default attach
+        to the next stitch of A in the direction in which A was crocheted. If that number is odd, then
+        the next stitch would attach to the previous stitch on A (as we are going in reverse order). This would match the natural
+        direction in which one crochets when executing the actual project.
         <p> </p>
-        If stitching in a labeled group of stitches, then the default direction of crocheting is determined
-        by the number of <code>turn</code> directives between the row of <b>first</b> stitch of the labeled group
+        If one is stitching in a labeled group of stitches by attaching to that label,
+        then the default direction of crocheting is determined
+        by the number of <code>turn</code> directives between the row of the <b>first</b> stitch of the labeled group
         and the row of that stitch of the set of stitches worked into that labeled group that comes first <b>after</b> the following
         is done: 1. If multiple sets of stitches attach to the same labeled group, sort them according to the order specified after <code>;</code>
         (as in stitches attached to <code>,A[0;0]</code> come before <code>A[0;1]</code>); and 2. Reverse the order of
@@ -823,7 +827,11 @@ sk,8sc,sc.A[]!,turn
         of that stitch and the <b>first</b> stitch of the set of stitches that are
         worked into the post (after the same sorting has been done as in the previous paragraph).
     </p>
-
+    <p><b>NOTE:</b> When attaching to stitches, the stitches that are enumerated correspond to all <b>top nodes</b> (see "raw stitch definitions" below)
+        present in the stitches. That means that a stitch (say <code>sc2inc</code>, which is 2 sc in the same stitch)
+        with two top nodes, will have each of those top nodes enumerated with sequential numbers in the row/round that is being worked. Stitches without top
+        nodes (e.g. internally a skip, <code>sk</code>, is treated like a stitch without a top node) are not enumerated and therefore one cannot attach a stitch to them.
+    </p>
 
 
     <h2 id="defining-new-stitches.">Defining new stitches.</h2>
