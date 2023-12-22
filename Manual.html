@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Dec 15, 2023.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Dec 22, 2023.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -693,7 +693,7 @@ ch,2sc,4ch.A!,4sk,3sc,turn
         the order of attaching a set of stitches to a group of stitches: <span class="citation" data-cites="A">@A</span>~</h5>
     <p>When attaching a set of stitches to a group of stitches, the code is
         trying to do its best, to order the attachments in a way that is least
-        disruptive (i.e. twisting) to the project, but sometimes it fails. For
+        disruptive (i.e. twisting) to the project, but sometimes it fails. For
         example, render the following:</p>
     <pre><code>10ch,turn
 sk,8sc,sc.A!,turn
@@ -738,9 +738,10 @@ sk,8sc,sc.A[]!,turn
     <p>If one wants to attach to the <code>k</code>-th stitch carrying the
         same label, then same as above, one needs to have a label with square
         brackets, such as <code>A[0]</code> and the stitch position would follow
-        in another set of square brackets: e.g. <code>@A[0][k]</code> attaches
+        in another set of square brackets: e.g. <code>@A[0][k]</code> attaches
         to the <code>k</code> stitch of the stitch group labeled
-        <code>A[0]</code>.</p>
+        <code>A[0]</code>. Counting is in the same direction as the default stitching direction (see "Direction of sequential stitch attachment" below).
+    </p>
     <h4 id="labels-with-counters-a-k-and-.ak">Labels with counters: <span class="citation" data-cites="A">@A [++k]</span> and .A[++k]</h4>
     <p>Note that often, one needs to create multiple labels in an
         algorithmic fashion. One can then use a counter (a variable initialized
@@ -796,6 +797,31 @@ sk,8sc,sc.A[]!,turn
         attachment of <code>sc</code> by the operator <code>@[@-1]</code>, so
         the next stitch <code>tr</code> attaches to the attachment point of
         <code>dc</code>.</p>
+
+
+    <h2 id="defining-new-stitches.">Direction of sequential stitch attachment.</h2>
+    <p>If no attachment point is specified, the code tries to infer the next attachment point.
+        It does that by checking how many <code>turn</code> directives are at the end of the rows
+        between the row (let's call it A for reference) of the previous attachment
+        point and the current row. If that number is even, then the next stitch would by default attach
+        to the next stitch of A in the direction in which A was crocheted, If that number is odd, then
+        the next stitch would attach to the previous stitch on A (as we are going in reverse order).
+        <p> </p>
+        If stitching in a labeled group of stitches, then the default direction of crocheting is determined
+        by the number of <code>turn</code> directives between the row of <b>first</b> stitch of the labeled group
+        and the row of that stitch of the set of stitches worked into that labeled group that comes first <b>after</b> the following
+        is done: 1. If multiple sets of stitches attach to the same labeled group, sort them according to the order specified after <code>;</code>
+        (as in stitches attached to <code>,A[0;0]</code> come before <code>A[0;1]</code>); and 2. Reverse the order of
+        any set that has a modifier <code>~</code> after the attachment label (e.g. <code>@A~</code>).
+        <p> </p>
+        If stitching in a post, then then the default direction of crocheting is determined
+        by the number of <code>turn</code> directives between the row of the top node
+        of that stitch (see section on raw stitch definitions below) and the first stitch of the set of stitches that are
+        worked into the post after the same sorting has been done as in the previous paragraph.
+    </p>
+
+
+
     <h2 id="defining-new-stitches.">Defining new stitches.</h2>
     <p>New stitches are defined using <code>DEF: definition</code>, which should be placed alone on a new line.</p>
     <h3 id="creating-an-alias">Creating an alias</h3>
@@ -936,13 +962,18 @@ DEF: p=3ch,ss@5[%,-4]
                 nice to fix this.)</p>
         </li>
         <li>
-            <p>@[@…] cannot work without having an explicit/implicit @ after the
-                first stitch of a row. This is by design.</p>
+            <p>An attachment point using @ as a coordinate, e.g. @[@+1], cannot work
+                unless there was already at least one attached stitch on that row/round.
+                That assigns the value of "@" to which we add the 1 in this example. This is by design. </p>
         </li>
         <li>
             <p>When subscripting in labels using expressions, such as <span class="citation" data-cites="A">@A [N-(k)]</span>, put the parenthesis
                 in, so that the js parser does not treat those as strings but
                 as integers. (Would be nice to fix this.)</p>
+        </li>
+        <li>
+            <p>The <code>turn</code> directive, should always be the last in a row/round/line of the code. No stitches can follow
+                it, unless they are on a new line. (To do: An error should be generated if people do not follow this.)</p>
         </li>
     </ul>
     <h3 id="limitations">Limitations</h3>
