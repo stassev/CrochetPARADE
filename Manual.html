@@ -559,7 +559,7 @@ BACKGROUND: white</code></pre>
         <code>-1</code> meaning the last stitch/row/round; <code>-2</code> the
         last but one stitch/row/round, etc. Counting of rows/rounds starts at
         the beginning of the project. Counting of stitches starts at the first
-        stitch of the row as written down in the instructions. The current
+        stitch of the row as written down in the instructions, disregarding any <code>turn</code> directives. The current
         stitch row and stitch position can be specified using the <code>%</code>
         symbol, so <code>@[%,%-3]</code> implies the current row, three stitches
         back before the currently worked stitch.</p>
@@ -569,7 +569,9 @@ BACKGROUND: white</code></pre>
         counting of stitches in a row is over stitches of that type. For
         example, <code>@[sc:-1,3]</code> specifies that the current stitch is
         worked in the 4th single crochet (sc) stitch of the previous row, as
-        opposed to the 4th stitch in general.</p>
+        opposed to the 4th stitch in general. The direction of counting is <b>not</b> necessarily in the direction 
+    in which the stitches were written (compare with above), but in the crocheting direction. 
+    See the section "Direction of sequential stitch attachment".</p>
     <h3 id="attachment-with-relative-position-1">Attachment with Relative
         Position: @[@+1]</h3>
     <p>The <strong>last</strong> attachment point is stored in the
@@ -580,7 +582,8 @@ BACKGROUND: white</code></pre>
     <p>One can go up and down the row by adding integers to <code>@</code>.
         So, <code>@[@+2]</code> means attach two stitches after the
         <strong>last</strong> attachment point. The direction is in the
-        direction in which we are working, so turns are taken into account.</p>
+        direction in which we are working (see the section "Direction of sequential stitch attachment")
+        , so turns are taken into account.</p>
     <p>One can also combine relative position identifier with a stitch type
         identifier. For instance, <code>@[sc:@+1]</code> means attach to the
         next <code>sc</code> stitch after the last attachment point. Note that
@@ -707,7 +710,7 @@ sk,8sc,sc.A!,turn
 4ch.A!,sk,9tr,turn
 1ch,sk,8sc,7sc@A~</code></pre>
     <p>Compare with the result from running the previous set of
-        instructions.</p>
+        instructions.</p><p>See the section "Direction of sequential stitch attachment" for the way the code chooses the default direction of attaching stitches.</p>
     <h5 id="multiple-stitch-sets-attaching-to-a-labeled-group-a21">Multiple
         stitch sets attaching to a labeled group: <span class="citation" data-cites="A">@A</span>[2;1]</h5>
     <p>If one needs to attach multiple sets of stitches into a labeled
