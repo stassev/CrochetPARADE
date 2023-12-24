@@ -1318,7 +1318,7 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
         var turn = sum(turns.slice(n0, n1)) % 2
         var not_done = true
 
-        if (CarrotNum != -2) {
+        if (CarrotNum != -2) { //Attaching to the post of a stitch
             Lsp = 2
 
 
@@ -1326,20 +1326,20 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
             //  console.log('A', s0, ind1, s0.topNodesNames)
             let top_attach_node = s0.topNodesNames[ind1]
             let attach_names = []
-            for (let c of Object.keys(s0.connections).sort()) {
+            for (let c of Object.keys(s0.connections).sort()) { //Make list of all connections in the stitch.
                 let n0 = c.split('--')[0]
                 n0 = n0[0] === '*' ? n0.slice(1) : n0
                 if (c.split('--')[1] == top_attach_node && (!s0.topNodesNames.includes(n0) && n0 !== '!'))
                     attach_names.push([n0, s0.connections[c], c])
             }
-            let [bottom_attach_node, d, con] = attach_names.slice(CarrotNum)[0]
-            if (s0.bottomNodesNames.includes(bottom_attach_node)) {
+            let [bottom_attach_node, d, con] = attach_names.slice(CarrotNum)[0] //extract the CarrotNum connection
+            if (s0.bottomNodesNames.includes(bottom_attach_node)) { //If bottom of connection is a bottom node, then we can use the rest of the algorithm to do the calculation; so leave not_done=true
                 s0.bottomNodes[bottom_attach_node].id
                 Psp = [s0.bottomNodes[bottom_attach_node].id, ...Psp]
-            } else { //FIXME. ok?
+            } else { //if bottom of post to which we are attaching is an "other node"
                 Psp = ['^' + String(Psp[0]) + '-' + bottom_attach_node, ...Psp]
                 not_done = false
-                if (Lsp == L) {
+                if (Lsp == L) { //If exactly two stitches attach to the post, and the ends are not skipped; then no interpolation nodes need to be created.
                     var i = 0
                     for (var r of c['ref_inds']) {
                         for (var b of Stitches[r].bottomNodesNames) {
@@ -1354,7 +1354,7 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
                         }
                         Stitches[r].id_attach = Stitches[r].bottomNodesNames.map(b => Stitches[r].bottomNodes[b].id)
                     }
-                } else {
+                } else { //Create interpolation nodes
 
                     if (turn == 1) {
                         Psp.reverse()
@@ -1638,7 +1638,7 @@ function parse_StitchCodeList(rList) {
         var k = 0
         var Stitch
         for (var node of row) {
-            var fraction = false
+
             attach = update_attachment_points(Stitches, node, attach, turns, attach_row) //attach now holds the first attachment point of the current node.
             //            console.log(node, JSON.stringify(attach), Stitches)
 
@@ -2953,40 +2953,14 @@ function export_to_dot(Stitches, json0) {
     var json = null
     if (json0 !== '') {
         json = JSON.parse(json0)
-        let rx = 0.0,
-            ry = 0.0,
-            rz = 0.0,
-            n = 0.0
         for (var o of json.objects) {
             var pos = o.pos.split(',').map(Number);
             if (pos.length == 2) {
                 pos[2] = 0
             }
             o['pos'] = [pos[0], pos[1], pos[2]]
-            //rx += pos[0]
-            //ry += pos[1]
-            //rz += pos[2]
-            //n += 1.0
+
         }
-        //for (var o of json.objects) {
-        //    o['pos'] = [o.pos[0] - rx / n, o.pos[1] - ry / n, o.pos[2] - rz / n]
-        //}
-        //var lenF = 0.0,
-        //    totLen = 0.0
-        //for (var edge of json.edges) {
-        //
-        //    const tail = json.objects.find((obj) => obj._gvid === edge.tail);
-        //    const head = json.objects.find((obj) => obj._gvid === edge.head);
-        //
-        //    edge['length'] = Math.sqrt((tail.pos[0] - head.pos[0]) ** 2 + (tail.pos[1] - head.pos[1]) ** 2 + (tail.pos[2] - head.pos[2]) ** 2)
-        //    if (['red', 'blue'].includes(edge.color) && parseFloat(edge.len) > 0.1) {
-        //        lenF += edge.length
-        //        totLen += parseFloat(edge.len)
-        //    }
-        //}
-        //lenF = (lenF / totLen)
-        //if (DIM == 3)
-        //    lenF /= 1.2247 // WEIRD! This is ~ (2/3)^0.5 Did they forget to add the third coordinate in neato, so only 2 out of three counted??
         lenF = 1.0
         for (var o of json.objects) {
             if (DIM == 3)
@@ -3107,7 +3081,7 @@ function export_to_dot(Stitches, json0) {
                     let [id, bottom_attach_node] = b.id.slice(1).split('-')
                     let x = find_stitch_by_id(Stitches, parseInt(id, 10))[0]
                     pos0 = String([x.nrow, parseInt(id, 10) - startID_row[x.nrow]]) + bottom_attach_node + '|' + x.uid
-                } else if ((typeof(b.id) === 'string') && b.id[0] === '$') {
+                } else if ((typeof(b.id) === 'string') && b.id[0] === '$') { //this occurs when attaching to post.
                     let [p0, tmp] = b.id.slice(1).split('--')
                     let [p1, d0, d1] = tmp.split(':')
                     if (p0[0] === '^') {
