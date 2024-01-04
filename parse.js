@@ -13,15 +13,6 @@
 // You should have received a copy of the GNU General Public License along 
 // with CrochetPARADE. If not, see <https://www.gnu.org/licenses/>.
 
-// Additional permission under GNU GPL version 3 section 7
-
-// If you modify this Program, or any covered work, by linking or combining it 
-// with Graphviz (or a modified version of that library) by using Viz.js, containing parts 
-// covered by the terms of Common Public License Version 1.0, the licensors 
-// of this Program grant you additional permission to convey the resulting work. 
-// Corresponding Source for a non-source form of such a combination shall 
-// include the source code for the parts of Graphviz used as well as that 
-// of the covered work.
 
 var EXTRA_DOTS = ''
 var backgroundColor = ''
@@ -72,7 +63,7 @@ sk,4*(8sc),sc,ch,turn
 $k=0$,sk,sc,fan_bottom*4,3ch,turn
 4sk,fan_top_beginning,fan_top*3,3ch,ss,turn
 sk,[ss,<,ch,hdc,hdc,(3ch,ss@1[%,-4]),hdc,ch]*10,ss
-DOT: start=1`
+DOT: start=10`
 
 var textFlower3 = `# Flower showcase, demonstrating stitches in the post of a stitch.
 #Change default heights of stitches:
@@ -84,7 +75,7 @@ COLOR: Blue
 $k=0$,3ch.A[11]+!,(3ch,sk,>,dc.A[k++]^!,dc@[@].A[k++]^!)*6,dc.A[k++]^!,ss@[%,2]
 COLOR: Red
 $k=0$,@[-1,0],ch,[3ch,sc@[dc:@+1],[hdc,2dc,hdc]@A[k++]~,[hdc,2dc,hdc]@A[k++],>,sc@[dc:@]]*6,sc@[-1,-1]
-DOT: start=81`
+DOT: start=37`
 
 var textSquare = `#Granny square showcase
 # Own design, incorporating a modified version of the flower in the "Irish crochet flower 1" showcase.
@@ -377,7 +368,7 @@ sk,7scblo,$k++$,ss@R[][k++],turn
 DEF: ss2togA=ss1@[@+1],ss0@1[@1+1]
 ss1@[-1,-2],ss0@1X,ss2togA*6
 
-DOT: start=20
+DOT: start=2
 
 `
 
@@ -405,6 +396,7 @@ DEF: ss0=&ss0^:B~::B-0.5-!
 DEF: ss1=&ss1^A(ss2tog):B~A-B::!-1-A;B-0.5-A
 DEF: ss2tog=ss1@[@-1],ss0@1[@1-1]
 ss1@[-1,-2],ss0@1X,ss2tog*8
+DOT: start=1
 `
 
 var textBlanket = `#Baby blanket showcase
@@ -559,7 +551,8 @@ DEF: sc=Copy(sc,1,1)
 [ch,15sc].Ring1[]@Ring,ss@[%,0]
 ch,sk,sc,[2sc,<,p]*8,ss@[%,0],sc@Ring1[][0]
 $c=0$,@Ring1[][0],[7ch.chain_space[0,c++]+!,sk,>,sc]*8,ss@[-1,-1]
-$c=0$,([5sc,p,6sc,p,4sc]@chain_space[0,c++])*8,ss@[%,0]`
+$c=0$,([5sc,p,6sc,p,4sc]@chain_space[0,c++])*8,ss@[%,0]
+DOT:start=4`
 
 var textDoily = `#Doily showcase
 #"Swirls" doily pattern from "Lily Design Book No. 79 Doilies",

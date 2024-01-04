@@ -319,10 +319,7 @@
         <li>The website and all of its computational components are free and
             open source and are released under the
             <a href="https://www.gnu.org/licenses/gpl-3.0.en.html#license-text">GPLv3
-                license</a>, with an exception provided for including
-            <a href="https://graphviz.org/">Graphviz</a> as part of the
-            computational engine. This ensures that the platform will be free and
-            open to all in perpetuity.</li>
+                license</a>.</li>
         <li>The showcase patterns are either in the public domain (as specified
             in the pattern description) or are created by the author and are
             released in the public domain.</li>
@@ -456,7 +453,7 @@
         </li>
         <li>
             <p>Save debug info. This can be helpful when debugging the code. A
-                json0 format of the project (as output by Graphviz) is saved in the
+                json0 format of the project (an output similar to that of Graphviz) is saved in the
                 debug info and can be used in other visualization software.</p>
         </li>
     </ul>
@@ -524,18 +521,16 @@ BACKGROUND: white</code></pre>
         <a href="https://threejs.org/docs/#api/en/math/Color">three.js
             documentation</a>.</p>
     <h3 id="dot-command">DOT command</h3>
-    <p>One can add additional commands to the dot file used by Graphviz by
+    <p>One can add additional commands to the dot file by
         adding those after a <code>DOT:</code> at the beginning of the line:</p>
-    <pre><code>    # a hidden node:
-    DOT: &quot;3,27B&quot; [label=&quot;hidden|&quot;] 
-    # creating a new connection outside of a stitch:
-    DOT: &quot;1,54&quot; -- &quot;1,44&quot; [color=gray,len=9.0] 
-    # convergence tolerance for Graphviz&#39;s neato:
-    DOT: epsilon=0.0001 
-    # seed for the random number generator of Graphviz&#39;s  neato:
+    <pre><code>    # a (hidden) node:
+    DOT: &quot;3,27B&quot;
+    # creating a new connection outside of a stitch of length 9.0:
+    DOT: &quot;1,54&quot; -- &quot;1,44&quot; 9.0
+    # iterations
+    DOT: iterations=1000
+    # seed for the random number generator:
     DOT: start=10 </code></pre>
-    <p>See <a href="https://graphviz.org/documentation/">the Graphviz
-            documentation</a> for more details.</p>
     <h2 id="specifying-attachment-points">Specifying attachment points</h2>
     <p>Stitches on a given row/round are automatically attached one-by-one
         to consecutive stitches in the previous row/round. If the work is turned
@@ -1004,9 +999,9 @@ DEF: p=3ch,ss@5[%,-4]
                 e.g. <code>dc_front_post=Copy(dc,1.5)</code>.</p>
         </li>
         <li>
-            <p>In most experiments I have run, the Graphviz engine converges to
+            <p>In most experiments I have run, the computation engine converges to
                 within 10% of the requested stitch lengths (even when it should get them
-                exact). So, take any variations of that magnitude as spurious. That is
+                exact) when using the default settings. So, take any variations of that magnitude as spurious. That is
                 why only stitches over/under stretched by about 15% are shown when ‘s’
                 is pressed.</p>
         </li>
@@ -1016,11 +1011,11 @@ DEF: p=3ch,ss@5[%,-4]
                 platform.</p>
         </li>
         <li>
-            <p>The Graphviz engine is not aware when stitches cross. So for
+            <p>The computational engine is not yet aware when stitches cross. So for
                 example, when creating a 3D project for a flower with picots in a loop
                 in the center of the flower, the picots sometimes may be sticking in
                 front or behind the petals. The only workaround for now is to try a
-                different random seed for Graphviz by setting <code>start</code> to some
+                different random seeds by setting <code>start</code> to some
                 random integer. For example:</p>
             <pre><code>DOT: start=34254 </code></pre>
         </li>

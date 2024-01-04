@@ -1,3 +1,18 @@
+
+//Copyright (C) Svetlin Tassev
+
+// This file is part of CrochetPARADE.
+
+// CrochetPARADE is free software: you can redistribute it and/or modify it under 
+// the terms of the GNU General Public License as published by the Free Software 
+// Foundation, either version 3 of the License, or (at your option) any later version.
+
+// CrochetPARADE is distributed in the hope that it will be useful, but WITHOUT 
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS 
+// FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along 
+// with CrochetPARADE. If not, see <https://www.gnu.org/licenses/>.
 #include <iostream>
 #include <regex>
 #include <unordered_map>
@@ -62,7 +77,7 @@ struct EdgeInfo {
 };
 
 
-Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* deflate,int* embedding_dimensions,double* learningRate) {
+Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* deflate,int* embedding_dimensions,double* learningRate,bool*deflateQ) {
     std::unordered_map<std::string, int> nodeIndexMap;
     std::vector<EdgeInfo> edges;
 
@@ -120,6 +135,7 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
                     found = line.find_first_of("0123456789.", found);
                     size_t end = line.find_first_not_of("0123456789.", found);
                     *deflate = std::stod(line.substr(found, end - found));
+                    *deflateQ=true;
                 }
             }
             {
@@ -235,7 +251,8 @@ extern "C" const char* performLayout(const char* jsInput) {
     double deflate=1.0;
     int embedding_dimensions;
     double learningRate = 0.1;
-    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&deflate,&embedding_dimensions,&learningRate);
+    bool deflateQ=false;
+    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&deflate,&embedding_dimensions,&learningRate,&deflateQ);
     const int numDimensions =embedding_dimensions;
     //const int num_threads = 1; // Set the desired number of threads
     //omp_set_num_threads(num_threads);
@@ -299,6 +316,7 @@ extern "C" const char* performLayout(const char* jsInput) {
         pf = (1 - learningRate * pf);
         double extraF = sqrt(1 - projection_factor) + 1.e-3;
         double F = learningRate;
+        double sINF=sqrt(INF)-1;
         //double error=0.0;
         
         //#pragma omp parallel// reduction(+:error)
@@ -313,7 +331,7 @@ extern "C" const char* performLayout(const char* jsInput) {
             for (int i = 0; i < graph.num_nodes-1; ++i) {
                 for (int j = i+1; j < graph.num_nodes; ++j) {
                     double len = graph.flat_distance_matrix[i * graph.num_nodes + j];
-                    if ((len < sqrt(INF)-1) && (len > 0)) {
+                    if ((len < sINF) && (len > 0)) {
                         len *= len;//
                         double d2 = 0.0;
 
@@ -330,8 +348,10 @@ extern "C" const char* performLayout(const char* jsInput) {
                             //if ((iter>0.667*iterations))
                             //    force=0.0;
                             //else
+                            if (deflateQ)
                                 force *= extraF/(pow(len,deflate)+0.001); //(std::max(d2, len));
-
+                            else 
+                                force *= extraF/(len+0.001);
                             //force *= extraF/std::max(d2, len*len);
                         }
                         //else

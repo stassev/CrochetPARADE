@@ -15,16 +15,6 @@
 
 // You should have received a copy of the GNU General Public License along 
 // with CrochetPARADE. If not, see <https://www.gnu.org/licenses/>.
-
-// Additional permission under GNU GPL version 3 section 7
-
-// If you modify this Program, or any covered work, by linking or combining it 
-// with Graphviz (or a modified version of that library) by using Viz.js, containing parts 
-// covered by the terms of Common Public License Version 1.0, the licensors 
-// of this Program grant you additional permission to convey the resulting work. 
-// Corresponding Source for a non-source form of such a combination shall 
-// include the source code for the parts of Graphviz used as well as that 
-// of the covered work.
 ///
 import * as THREE from 'three';
 import {
