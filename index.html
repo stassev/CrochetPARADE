@@ -46,7 +46,7 @@
             /* Hide the default arrow in WebKit browsers */
             -moz-appearance: none;
             /* Hide the default arrow in Firefox */
-           
+
             /* Add some padding to the right to make space for the arrow */
         }
 
@@ -531,7 +531,7 @@
         </div>
     </div>
 
-    <script src="./viz-standalone.js"></script>
+
     <script src="./parse.js"></script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
@@ -612,7 +612,7 @@
             if (canvasClicked) {
                 if (text[0] === '~' && text.length > 1) {
                     if (!(['up', 'down'].includes(text.slice(1))))
-                    document.getElementById(text.slice(1)).classList.add("highlight");
+                        document.getElementById(text.slice(1)).classList.add("highlight");
                     else
                         document.getElementById(text.slice(1)).classList.add("highlight-font");
                 } else if (text[0] === '!' && text.length > 1) {
@@ -1330,14 +1330,14 @@
 
 
     <script>
-        function processTextSafe(text, json0) {
+        function processTextSafe(text, json0, simple = false) {
             if (text.trim() === '') {
                 alert('There are no instructions to parse. Write your own or use one of the examples from the drop down menu.');
                 //throw new Error('Error during processing of text. See alert box.')
                 return ''
             }
             try {
-                return processText(text, json0)
+                return processText(text, json0, simple = simple)
 
             } catch (error) {
                 alert(error.message);
@@ -1573,289 +1573,58 @@
             document.getElementById('dialog-box').style.display = 'none';
         }
     </script>
+
     <script>
-        function SECONDJSON(dotContent) {
-            const numDimensions = 4
-            const Ndim = DIM;
+        var Module = {
+            onRuntimeInitialized: function() {
+                //  callPerformLayout();
+            }
+        };
+    </script>
+    <script async src="./graph.js"></script>
+    <script>
+        function transformJsonWithPos(inputJson, inputJson2) {
+            const data = JSON.parse(inputJson);
+            const posData = JSON.parse('{"elements":' + inputJson2 + '}');
+            console.log(data)
+            console.log(posData)
 
-
-            function readDotFile() {
-                //const dotContent = fs.readFileSync(filePath, 'utf-8');
-                const lines = dotContent.split('\n');
-                let nodes = [];
-                let edges = [];
-
-                let isNodeDefinition = false;
-                let isEdgeDefinition = false;
-
-                lines.forEach((line) => {
-                    if (line.includes('" -- "') && (line.trim()[0] === '"')) {
-                        isEdgeDefinition = true;
-                        isNodeDefinition = false;
-                    } else if (line.trim()[0] === '"') {
-                        isNodeDefinition = true;
-                        isEdgeDefinition = false;
-                    } else {
-                        isNodeDefinition = false;
-                        isEdgeDefinition = false;
-                    }
-                    if (isNodeDefinition) {
-                        if (line.includes('label') && line.includes('[')) {
-                            const matchResult = line.match(/"([^"]+)"\s*\[.*label="([^"]+)".*\]/);
-                            if (matchResult) {
-                                const [nodeName, label] = matchResult.slice(1);
-                                nodes.push({
-                                    name: nodeName,
-                                    label
-                                });
-                            }
-                        }
-                    }
-                    if (isEdgeDefinition) {
-                        //            const [source, target, options] = line.match(/"([^"]+)"\s*--\s*"([^"]+)"\s*\[?(.*)\]?;/).slice(1);
-                        const M = line.match(/"([^"]+)"\s*--\s*"([^"]+)"\s*\[?(.*)\]?/)
-                        if (M) {
-                            try {
-                            //console.log(line)
-                            const [source, target, options] = M.slice(1);
-                        const edgeInfo = {
-                            source,
-                            target
-                        };
-
-                        if (options) {
-                                    let attributes = options.match(/[^,=\s]+=[^,=\s]+|[^=\s]+="[^"]*(?:(?<=\\)"[^"]*)*"/g).map(pair => {
-                                        const [key, value] = pair.split('=');
-                                        const parsedValue = value.includes('"') ? value.replace(/"/g, '').replace(/\\"/g, '"') : value;
-                                        return {
-                                            [key]: parsedValue
-                                        };
-                            });
-
-
-
-
-                                    for (let attr of attributes) {
-                                        var key = Object.keys(attr)[0]
-                                        var value = attr[key]
-                                        edgeInfo[key.trim()] = value.split(']')[0].replaceAll('"', '').trim();
-                                    };
-                        }
-
-                        edges.push(edgeInfo);
-                            } catch (error) {
-                                throw new Error('offending line: ' + line)
-                            }
-                        } else console.log('problems in this line: ' + line)
-                    }
-                });
-
+            const objects = data.elements.filter(element => element.type === 'node').map((node, index) => {
+                const posInfo = posData.elements.find(item => item.name === node.name);
                 return {
-                    nodes,
-                    edges
+                    _gvid: index,
+                    name: node.name,
+                    label: node.label,
+                    pos: posInfo ? posInfo.pos : "",
                 };
-            }
+            });
 
-            function createGraphJSON(dotContent) {
-                return dotContent;
-            }
+            const nodesMap = {};
+            objects.forEach(obj => {
+                nodesMap[obj.name] = obj._gvid;
+            });
 
+            const edges = data.elements.filter(element => element.type === 'edge').map((edge, index) => ({
+                tail: nodesMap[edge.tail],
+                head: nodesMap[edge.head],
+                color: edge.color,
+                label: edge.label,
+                len: edge.len,
+                penwidth: edge.penwidth
+            }));
 
-            function initializePositions(numNodes, numDimensions) {
-                const positions = [];
+            const transformedJson = {
+                objects: objects,
+                edges: edges
+            };
 
-                for (let i = 0; i < numNodes; i++) {
-                    const position = [];
-                    for (let j = 0; j < numDimensions; j++) {
-                        position.push(Math.random());
-                    }
-                    positions.push(position);
-                }
-
-                return positions;
-            }
-
-
-            var projection_factor = 1
-
-            function stressMajorization(graph, iterations = 1000, learningRate = 0.1) {
-
-                graph.edges.forEach((edge) => {
-                    const sourceIndex = graph.nodes.findIndex((node) => node.name === edge.source);
-                    const targetIndex = graph.nodes.findIndex((node) => node.name === edge.target);
-                    edge.target = targetIndex
-                    edge.source = sourceIndex
-                })
-                matrix = calculateDistanceMatrix(graph)
-                graph.edges.forEach((edge) => {
-                    if ((edge.target !== -1) && (edge.source !== -1)) {
-                    matrix[edge.target][edge.source] = 0
-                    matrix[edge.source][edge.target] = 0
-                    }
-                })
-                console.log(matrix)
-                //const numDimensions = graph.nodes[0].position.length; // assuming all nodes have the same number of dimensions
-                let positions = initializePositions(graph.nodes.length, numDimensions);
-
-
-                for (let iter = 0; iter < iterations; iter++) {
-                    projection_factor = iter / iterations
-                    const stress = computeStress(graph.edges, positions);
-                    console.log(`Iteration ${iter + 1}, Stress: ${stress}`);
-
-                    const forces = computeForces(graph.edges, positions, matrix);
-                    positions = updatePositions(positions, forces, learningRate);
-                }
-
-                graph.nodes.forEach((node, index) => {
-                    node.position = positions[index];
-                });
-            }
-
-            function computeStress(edges, positions) {
-                let stress = 0;
-
-                edges.forEach((edge) => {
-                    const {
-                        source,
-                        target,
-                        len
-                    } = edge;
-                    const dist = euclideanDistance(positions[source], positions[target]);
-                    stress += Math.pow(dist - len, 2);
-                });
-
-                return Math.sqrt(stress / edges.length);
-            }
-
-
-            function computeForces(edges, positions, matrix) {
-                const numNodes = positions.length;
-                const forces = Array.from({
-                    length: numNodes
-                }, () => Array(positions[0].length).fill(0));
-
-                edges.forEach((edge) => {
-                    const {
-                        source,
-                        target,
-                        len
-                    } = edge;
-                    const dist = euclideanDistance(positions[source], positions[target]);
-                    const force = (isFinite(dist) && dist > 1.e-7) ? (dist - len) / dist : 0;
-
-                    for (let dim = 0; dim < positions[0].length; dim++) {
-                        forces[source][dim] += force * (positions[source][dim] - positions[target][dim]);
-                        forces[target][dim] -= force * (positions[source][dim] - positions[target][dim]);
-                    }
-                });
-                const coef = (1 - projection_factor) ** 0.5 + 1.e-3 //Math.exp(-2 * (2. * (1.0 - projection_factor)) ** 2)
-                for (let i = 0; i < numNodes; i++)
-                    for (let j = i + 1; j < numNodes; j++) {
-                        if (matrix[i][j] > 0 && isFinite(matrix[i][j])) {
-                            let len = matrix[i][j]
-
-                            const dist = euclideanDistance(positions[i], positions[j]);
-                            const force = (isFinite(dist) && dist > 1.e-7) ? coef * (dist - len) / ((dist > len ? dist : len) ** 3) : 0;
-
-                            for (let dim = 0; dim < positions[0].length; dim++) {
-                                forces[i][dim] -= force * (positions[j][dim] - positions[i][dim]);
-                                forces[j][dim] += force * (positions[j][dim] - positions[i][dim]);
-                            }
-                        }
-                    }
-
-                return forces;
-            }
-
-            function updatePositions(positions, forces, learningRate) {
-                const numNodes = positions.length;
-                const numDimensions = positions[0].length;
-                const pf = Math.pow(10., -4. * (projection_factor))
-                const updatedPositions = Array.from({
-                        length: numNodes
-                    }, (_, i) =>
-                    Array(numDimensions).fill(0).map((_, dim) => positions[i][dim] * (1 - learningRate * (dim >= Ndim ? (1 - pf) : 0)) - learningRate * forces[i][dim])
-                );
-
-                return updatedPositions;
-            }
-
-            function euclideanDistance(point1, point2) {
-                let sum = 0;
-                for (let i = 0; i < point1.length; i++) {
-                    sum += Math.pow(point1[i] - point2[i], 2);
-                }
-                return Math.sqrt(sum);
-            }
-
-            function exportToJson0(graph) {
-                return JSON.stringify(graph, null, 2);
-            }
-
-            function calculateDistanceMatrix(graph) {
-                const nodes = graph.nodes.length;
-                const adjacencyList = new Array(nodes).fill(null).map(() => []);
-
-                // Build adjacency list
-                graph.edges.forEach(edge => {
-                    adjacencyList[edge.source].push([edge.target, parseFloat(edge.len)]);
-                    adjacencyList[edge.target].push([edge.source, parseFloat(edge.len)]);
-                });
-
-                // Function to perform Dijkstra's algorithm and calculate distances
-                function dijkstra(start) {
-                    const distances = new Array(nodes).fill(Infinity);
-                    distances[start] = 0;
-                    const priorityQueue = [
-                        [start, 0]
-                    ];
-
-                    while (priorityQueue.length > 0) {
-                        const [current, currentDistance] = priorityQueue.shift();
-
-                        if (currentDistance > distances[current]) {
-                            continue;
-                            }
-
-                        for (const [neighbor, weight] of adjacencyList[current]) {
-                            const distance = currentDistance + weight;
-                            if (distance < distances[neighbor]) {
-                                distances[neighbor] = distance;
-                                priorityQueue.push([neighbor, distance]);
-                        }
-                    }
-
-                        priorityQueue.sort((a, b) => distances[a[0]] - distances[b[0]]);
-                    }
-
-                    return distances;
-                }
-
-                // Calculate distance matrix using Dijkstra's algorithm
-                const distanceMatrix = [];
-                for (let i = 0; i < nodes; i++) {
-                    const distances = dijkstra(i);
-                    distanceMatrix.push(distances);
-                }
-
-                return distanceMatrix;
-            }
-
-            // Example usage
-            //const dotFilePath = 'your_graph.dot';
-            const graphData = readDotFile();
-            const graphJSON = createGraphJSON(graphData);
-            stressMajorization(graphJSON);
-            const json0Data = exportToJson0(graphJSON);
-
-            return json0Data
+            return transformedJson;
         }
     </script>
     <script type="module">
 
         import Generate3DModel from './mesh.js';
-        import  "./viz-standalone.js";
+        //import  "./viz-standalone.js";
         const button = document.getElementById("3dbutton");
         //const textarea = document.getElementById('inputText');
 
@@ -1906,8 +1675,11 @@ jsonOld=json0
         }else if (reset_json==3){//repeat ctrl+r
             json0=jsonOld
         }
-    var dot = processTextSafe(inputText.value,json0)
-    if (dot!==''){
+    json0 = processTextSafe(inputText.value,json0)
+    console.log(json0)
+    var dot_simple = processTextSafe(inputText.value,'',true)
+    console.log(dot_simple)
+    if (json0!==''){
             // Create the loading icon element
             var tmp=document.getElementById('loading-icon')
             if (tmp)
@@ -1932,23 +1704,36 @@ jsonOld=json0
             // Show the loading icon before running the code
             loadingIcon.style.display = 'block';
     
-    Viz.instance().then(function(viz) {
+    //Viz.instance().then(function(viz) {
         
         //console.log(dot)
-                json0 = viz.renderString(dot, {
-                    engine: "neato",format:"json0"
-                });
-let J=JSON.parse(json0)
-let secondJson=JSON.parse(SECONDJSON(dot))
-                J.objects.forEach(obj => {
-  const node = secondJson.nodes.find(node => node.name === obj.name);
-  if (node) {
-    const pos = node.position.slice(0, DIM).join(',');
-    obj.pos =pos
+      //          json0 = viz.renderString(dot, {
+       //             engine: "neato",format:"json0"
+       //         });
+//let J=JSON.parse(json0)
+//let secondJson=JSON.parse(SECONDJSON(dot))
+//                J.objects.forEach(obj => {
+//  const node = secondJson.nodes.find(node => node.name === obj.name);
+//  if (node) {
+//    const pos = node.position.slice(0, DIM).join(',');
+//    obj.pos =pos
     // `${pos},${obj.pos.substring(obj.pos.lastIndexOf(',') + 1)}`;
-  }
-});
-json0=JSON.stringify(J)
+//  }
+//});
+//json0=JSON.stringify(J)
+
+    //let input = dotContent;
+    let inputLength = lengthBytesUTF8(dot_simple);
+    let inputPointer = Module._malloc(inputLength + 1);
+    Module.stringToUTF8(dot_simple, inputPointer, inputLength + 1);
+    let resultPointer = Module.ccall('performLayout', 'number', ['number'], [inputPointer]);
+    let result = Module.UTF8ToString(resultPointer);
+    var json1='['+result.slice(0,-1)+']';
+    json1=json1.replace('"},]','"}]')
+    console.log(json1);
+    Module._free(inputPointer);
+    console.log(json0)
+    json0=transformJsonWithPos(json0,json1)
 
                 console.log(json0)
 
@@ -1970,7 +1755,7 @@ json0=JSON.stringify(J)
                                 scene1=a[10]
                                 saveSvg=a[11]
                 
-            });
+            //});
         }
 
 
@@ -2004,7 +1789,7 @@ json0=JSON.stringify(J)
 
         function processToDotFile() {
             var text = document.getElementById("inputText").value;
-            dot = processTextSafe(text, json0)
+            dot = processTextSafe(text, json0, simple = true)
             if (dot !== '') {
                 var file = new Blob([dot], {
                     type: "text/plain"
