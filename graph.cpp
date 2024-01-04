@@ -77,7 +77,7 @@ struct EdgeInfo {
 };
 
 
-Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* deflate,int* embedding_dimensions,double* learningRate,bool*deflateQ) {
+Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* inflate,int* embedding_dimensions,double* learningRate,bool*inflateQ) {
     std::unordered_map<std::string, int> nodeIndexMap;
     std::vector<EdgeInfo> edges;
 
@@ -130,12 +130,12 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
                 }
             }
             {
-                size_t found = line.find("deflate");
+                size_t found = line.find("inflate");
                 if (found != std::string::npos) {
                     found = line.find_first_of("0123456789.", found);
                     size_t end = line.find_first_not_of("0123456789.", found);
-                    *deflate = std::stod(line.substr(found, end - found));
-                    *deflateQ=true;
+                    *inflate = std::stod(line.substr(found, end - found));
+                    *inflateQ=true;
                 }
             }
             {
@@ -248,11 +248,11 @@ extern "C" const char* performLayout(const char* jsInput) {
     int Ndim;
     int seed=rand();
     int iterations = 500;
-    double deflate=1.0;
+    double inflate=2.0;
     int embedding_dimensions;
     double learningRate = 0.1;
-    bool deflateQ=false;
-    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&deflate,&embedding_dimensions,&learningRate,&deflateQ);
+    bool inflateQ=false;
+    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&inflate,&embedding_dimensions,&learningRate,&inflateQ);
     const int numDimensions =embedding_dimensions;
     //const int num_threads = 1; // Set the desired number of threads
     //omp_set_num_threads(num_threads);
@@ -317,6 +317,7 @@ extern "C" const char* performLayout(const char* jsInput) {
         double extraF = sqrt(1 - projection_factor) + 1.e-3;
         double F = learningRate;
         double sINF=sqrt(INF)-1;
+        double deflating_exponent=pow(projection_factor,inflate)+1;
         //double error=0.0;
         
         //#pragma omp parallel// reduction(+:error)
@@ -345,11 +346,12 @@ extern "C" const char* performLayout(const char* jsInput) {
                         
                         if (!graph.flat_immediate_neighbor[i * graph.num_nodes + j]) {
                             
-                            //if ((iter>0.667*iterations))
+                            //if ((iter>0.8*iterations))
+                            //    graph.flat_distance_matrix[i * graph.num_nodes + j]=sqrt(d2);
                             //    force=0.0;
                             //else
-                            if (deflateQ)
-                                force *= extraF/(pow(len,deflate)+0.001); //(std::max(d2, len));
+                            if (inflateQ)
+                                force *= extraF/(pow(len,deflating_exponent)+0.001); //(std::max(d2, len));
                             else 
                                 force *= extraF/(len+0.001);
                             //force *= extraF/std::max(d2, len*len);

@@ -455,6 +455,7 @@ sc2inc*9
 ]*7
 83sc,ss@[%,0]
 
+DOT: inflate=2.0
 `
 
 
