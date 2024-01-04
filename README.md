@@ -48,7 +48,7 @@ wear crochet hats and sweaters that match real-world crochet projects.
     
 ## ACKNOWLEDGEMENTS
 
-CrochetPARADE uses the following libraries: <a href="https://viz-js.com/">Viz.js</a>, <a href="https://svgjs.dev/">SVG.js</a> and
+CrochetPARADE uses the following libraries: <a href="https://svgjs.dev/">SVG.js</a> and
     <a href="https://threejs.org/">three.js</a>.
 
 
