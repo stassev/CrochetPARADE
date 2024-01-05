@@ -181,9 +181,9 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
                 std::string posStr = matchResult[2];
                 std::vector<double> pos;
                 std::istringstream posStream(posStr);
-                double coord;
-                while (posStream >> coord) {
-                    pos.push_back(coord);
+                std::string token;
+                while (std::getline(posStream, token, ',')) {
+                    pos.push_back(std::stod(token));
                 }
 
                 tempNodes.emplace_back(nodeName, pos);
@@ -372,10 +372,8 @@ extern "C" const char* performLayout(const char* jsInput) {
                                 //    error+=force*force;
                                 for (int dim = 0; dim < numDimensions; ++dim) {
                                     double df = force * delta[dim];
-                                    //if (!graph.flat_specified_positions[i])
-                                        flat_forces[i * numDimensions + dim] += df;
-                                    //if (!graph.flat_specified_positions[j])
-                                        flat_forces[j * numDimensions + dim] -= df;
+                                    flat_forces[i * numDimensions + dim] += df;
+                                    flat_forces[j * numDimensions + dim] -= df;
                                 }
                             }
                         }
@@ -404,14 +402,16 @@ extern "C" const char* performLayout(const char* jsInput) {
                         flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim];
                         flat_forces[i * numDimensions + dim]=0;
                     }
-                } else {
+                } 
+                else {
                     for (int dim = 0; dim < numDimensions; ++dim) {
                         flat_positions[i * numDimensions + dim] -= F * ave_forces[dim];
                         flat_forces[i * numDimensions + dim]=0;
                     }
                 }
             }
-            
+            for (int dim = 0; dim < numDimensions; ++dim) 
+                ave_forces[dim]=0;
         }
 
         for (int i = 0; i < graph.num_nodes; ++i) {
@@ -480,10 +480,8 @@ extern "C" const char* performLayout(const char* jsInput) {
                                 //    error+=force*force;
                                 for (int dim = 0; dim < numDimensions; ++dim) {
                                     double df = force * delta[dim];
-                                    //if (!graph.flat_specified_positions[i])
-                                        flat_forces[i * numDimensions + dim] += df;
-                                    //if (!graph.flat_specified_positions[j])
-                                        flat_forces[j * numDimensions + dim] -= df;
+                                    flat_forces[i * numDimensions + dim] += df;
+                                    flat_forces[j * numDimensions + dim] -= df;
                                 }
                             }
                         }
@@ -491,7 +489,8 @@ extern "C" const char* performLayout(const char* jsInput) {
                 }
             }
 
-            n_ave_F=0;
+
+            n_ave_F=0.0;
             for (int i = 0; i < graph.num_nodes; ++i) {
                 if (graph.flat_specified_positions[i]){
                     for (int dim = 0; dim < numDimensions; ++dim) {
@@ -511,14 +510,16 @@ extern "C" const char* performLayout(const char* jsInput) {
                         flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim];
                         flat_forces[i * numDimensions + dim]=0;
                     }
-                } else {
+                } 
+                else {
                     for (int dim = 0; dim < numDimensions; ++dim) {
                         flat_positions[i * numDimensions + dim] -= F * ave_forces[dim];
                         flat_forces[i * numDimensions + dim]=0;
                     }
                 }
             }
-            
+            for (int dim = 0; dim < numDimensions; ++dim) 
+                ave_forces[dim]=0;
         }
 
         for (int i = 0; i < graph.num_nodes; ++i) {
