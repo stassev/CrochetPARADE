@@ -494,6 +494,7 @@ ch,54_,3ch,turn
 4sk,O,OX,O,O,O,O,O,OX,O,O,O,OX,O,OX,O,OX,O,O,OX,O,O,O,OX,O,O,OX,O,O,OX,O,OX,O,O,O,O,O,O,O,O,O,O,O,O,O,3ch,turn
 4sk,O,O,O,O,O,O,O,O,OX,X,X,X,X,O,O,OX,X,X,X,X,O,OX,O,O,O,OX,O,OX,O,O,OX,O,OX,O,O,O,OX,O,O,O,O,O,OX,O,O,3ch,turn
 4sk,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
+DOT: start=1
 `
 
 var textFlower = `# Irish crochet showcase
@@ -670,8 +671,9 @@ sc2tog,sc,sc2tog
 3sc
 sc2tog,sc
 #Sewing:
-#DOT:"41,0|1058" -- "49,16|1131" [color=gray,len=0.01]
-DOT: start=18
+DOT:"41,0|1058" -- "50,10|1145" 0.01
+DOT: start=1
+DOT: inflate=1.
 `
 //start_anew: '&start_anew^A(hidden):~::!-skip-A',
 var Dictionary = {
