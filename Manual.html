@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Dec 22, 2023.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Jan 6, 2024.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -432,8 +432,12 @@
                 not.</p>
         </li>
         <li>
-            <p>Save the project to a DOT Graphviz file. Note that positions of
-                stitches will be included if the model was calculated already.</p>
+            <p>Save the project's nodes and edges to a DOT-like file. Node coordinates (if precalculated) are included
+                as a tuple after the node name. Edge lengths are included as a float after each edge. 
+                Note that positions of stitches will be included if the model was calculated already.
+                Also, note that the file is not fully 
+                compatible with Graphviz. 
+            </p>
         </li>
         <li>
             <p>Export 3D GLTF model. The model that is exported can be previewed
@@ -503,7 +507,7 @@
         see the dedicated chapter on color. The background color can be changed
         by setting <code>BACKGROUND: color of background</code>, appearing alone on a new line.</p>
     <pre><code>COLOR: rgb(126,8,80)
-DOT: any extra arguments to neato or the dot language
+DOT: any extra arguments to the physics engine
 # This is a comment. # This is also a comment
 \this is a comment\ dc,dc, \this is also a comment\
 dc
@@ -526,10 +530,20 @@ BACKGROUND: white</code></pre>
     DOT: &quot;3,27B&quot;
     # creating a new connection outside of a stitch of length 9.0:
     DOT: &quot;1,54&quot; -- &quot;1,44&quot; 9.0
-    # iterations
+    # iterations (default: 500) until the code terminates the computation
     DOT: iterations=1000
     # seed for the random number generator:
     DOT: start=10 </code></pre>
+    # Factor by which to separate disjoint crochet pieces (default: 1.5)
+    DOT: separate=0.8 
+    #The inflate keyword sets how much to "inflate" the project. It controls how much 
+    #distant stitches (which are not directly connected) push off of each other. Setting this
+    #parameter slows down the code by a factor of two or so.
+    #The default value for inflate is infinity. Reasonable values to try are 0.5-3.0.
+    DOT: inflate=2.0
+    #The learning rate controls the rate at which the code converges. Setting it 
+    # too high (above 0.15 or so) can cause failure to converge. Default: 0.1
+    DOT: learning_rate=0.02</code></pre>
     <h2 id="specifying-attachment-points">Specifying attachment points</h2>
     <p>Stitches on a given row/round are automatically attached one-by-one
         to consecutive stitches in the previous row/round. If the work is turned
