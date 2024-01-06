@@ -2945,7 +2945,7 @@ function findPosByNameFromJson(json, name) {
 }
 
 function export_to_dot(Stitches, json, simple = false) {
-    console.log(json)
+    //console.log(json)
     //var json = null
 
     if (json !== '') {

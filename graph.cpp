@@ -318,6 +318,14 @@ extern "C" const char* performLayout(const char* jsInput) {
     
     std::vector<int> ave_forces(3,0.0);
     double n_ave_F=0.0;
+    double n_edges=0.0;
+
+    for (int i = 0; i < graph.num_nodes-1; ++i) {
+        for (int j = i+1; j < graph.num_nodes; ++j) {
+            if (graph.flat_immediate_neighbor[i * graph.num_nodes + j]) 
+                n_edges++;
+        }
+    }
 
     if (((Ndim==2)&&(numDimensions==2))){
         std::vector<double> flat_positions(graph.num_nodes * numDimensions, 0.0);
@@ -345,7 +353,7 @@ extern "C" const char* performLayout(const char* jsInput) {
             double extraF = sqrt(1 - projection_factor) + 1.e-3;
             double F = learningRate;
             double deflating_exponent=pow(projection_factor,inflate)+1;
-            //double error=0.0;
+            double error=0.0;
             {
                 std::vector<double> delta(numDimensions, 0.0);
                 for (int i = 0; i < graph.num_nodes-1; ++i) {
@@ -368,8 +376,8 @@ extern "C" const char* performLayout(const char* jsInput) {
                                     else 
                                         force *= extraF/(len+0.001);
                                 }
-                                //else
-                                //    error+=force*force;
+                                else
+                                    error+=force*force;
                                 for (int dim = 0; dim < numDimensions; ++dim) {
                                     double df = force * delta[dim];
                                     flat_forces[i * numDimensions + dim] += df;
@@ -380,7 +388,7 @@ extern "C" const char* performLayout(const char* jsInput) {
                     }
                 }
             }
-
+            std::cout<<"Iteration = "<<iter<<" Error = "<<sqrt(error/n_edges)<<std::endl;
 
             n_ave_F=0.0;
             for (int i = 0; i < graph.num_nodes; ++i) {
@@ -424,7 +432,7 @@ extern "C" const char* performLayout(const char* jsInput) {
             jsOutput << '\n';
         }
         std::string outputString = jsOutput.str();
-        std::cout<<outputString;    
+        //std::cout<<outputString;    
         // Duplicate the C-style string to ensure its memory is managed correctly
         return strdup(outputString.c_str());
     } else if (((Ndim==3)&&(numDimensions==3))){ // code below is duplicate. this helps compiler speed up code by about a factor of 3.
@@ -453,7 +461,7 @@ extern "C" const char* performLayout(const char* jsInput) {
             double extraF = sqrt(1 - projection_factor) + 1.e-3;
             double F = learningRate;
             double deflating_exponent=pow(projection_factor,inflate)+1;
-            //double error=0.0;
+            double error=0.0;
             {
                 std::vector<double> delta(numDimensions, 0.0);
                 for (int i = 0; i < graph.num_nodes-1; ++i) {
@@ -476,8 +484,8 @@ extern "C" const char* performLayout(const char* jsInput) {
                                     else 
                                         force *= extraF/(len+0.001);
                                 }
-                                //else
-                                //    error+=force*force;
+                                else
+                                    error+=force*force;
                                 for (int dim = 0; dim < numDimensions; ++dim) {
                                     double df = force * delta[dim];
                                     flat_forces[i * numDimensions + dim] += df;
@@ -488,7 +496,7 @@ extern "C" const char* performLayout(const char* jsInput) {
                     }
                 }
             }
-
+            std::cout<<"Iteration = "<<iter<<" Error = "<<sqrt(error/n_edges)<<std::endl;
 
             n_ave_F=0.0;
             for (int i = 0; i < graph.num_nodes; ++i) {
@@ -532,7 +540,7 @@ extern "C" const char* performLayout(const char* jsInput) {
             jsOutput << '\n';
         }
         std::string outputString = jsOutput.str();
-        std::cout<<outputString;    
+        //std::cout<<outputString;    
         // Duplicate the C-style string to ensure its memory is managed correctly
         return strdup(outputString.c_str());
     }
