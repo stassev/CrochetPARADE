@@ -2944,11 +2944,12 @@ function findPosByNameFromJson(json, name) {
     //    return posToFind.slice(0, 3)
 }
 
-function export_to_dot(Stitches, json0, simple = false) {
-    //console.log(json0)
-    var json = null
-    if (json0 !== '') {
-        json = JSON.parse(json0)
+function export_to_dot(Stitches, json, simple = false) {
+    console.log(json)
+    //var json = null
+
+    if (json !== '') {
+        //json = JSON.parse(json0)
         for (var o of json.objects) {
             var pos = o.pos.split(',').map(Number);
             if (pos.length == 2) {
@@ -2994,7 +2995,7 @@ function export_to_dot(Stitches, json0, simple = false) {
                     if (!simple)
                         text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '","pos":"' + POS + '!"}\n';
                     else
-                        text += name + '\n';
+                        text += name + ' {' + POS + '}\n';
                 } else {
                     if (!simple)
                         text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
@@ -3030,7 +3031,7 @@ function export_to_dot(Stitches, json0, simple = false) {
                     if (!simple)
                         text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '","pos":"' + POS + '!"';
                     else
-                        text += name
+                        text += name + ' {' + POS + '}';
                 } else {
 
                     if (!simple)
@@ -3148,7 +3149,7 @@ function export_to_dot(Stitches, json0, simple = false) {
                             if (!simple)
                                 text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0","pos":"' + POS + '!"}\n';
                             else
-                                text += name + '\n'
+                                text += name + ' {' + POS + '}\n';
                         } else {
                             if (!simple)
                                 text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0"}\n';

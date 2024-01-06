@@ -54,8 +54,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     //    rendererSVG.domElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
 
-    var str = json0 //JSON.parse(json0)
-    // console.log(str)
+    var str = JSON.parse(JSON.stringify(json0)) //JSON.parse(json0)
+    //console.log(str)
     // Create a scene
     scene = new THREE.Scene();
     scene1 = new THREE.Scene();
@@ -144,6 +144,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         r2 = 0.,
         tot = 0.;
     for (var o of str.objects) {
+        //console.log(o.pos)
         var pos = o.pos.split('|')[0].split(',').map(Number);
         if (pos.length == 2)
             pos[2] = 0

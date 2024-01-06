@@ -1577,8 +1577,8 @@
         function transformJsonWithPos(inputJson, inputJson2) {
             const data = JSON.parse(inputJson);
             const posData = JSON.parse('{"elements":' + inputJson2 + '}');
-            console.log(data)
-            console.log(posData)
+            //console.log(data)
+            //console.log(posData)
 
             const objects = data.elements.filter(element => element.type === 'node').map((node, index) => {
                 const posInfo = posData.elements.find(item => item.name === node.name);
@@ -1666,10 +1666,12 @@ jsonOld=json0
         }else if (reset_json==3){//repeat ctrl+r
             json0=jsonOld
         }
+    
+    
+    var dot_simple = processTextSafe(inputText.value,json0,true)
     json0 = processTextSafe(inputText.value,json0)
-    console.log(json0)
-    var dot_simple = processTextSafe(inputText.value,'',true)
     console.log(dot_simple)
+    //console.log(json0)
     if (json0!==''){
             // Create the loading icon element
             var tmp=document.getElementById('loading-icon')
@@ -1721,12 +1723,12 @@ jsonOld=json0
     let result = Module.UTF8ToString(resultPointer);
     var json1='['+result.slice(0,-1)+']';
     json1=json1.replace('"},]','"}]')
-    console.log(json1);
+    //console.log(json1);
     Module._free(inputPointer);
-    console.log(json0)
+    //console.log(json0)
     json0=transformJsonWithPos(json0,json1)
 
-                console.log(json0)
+      //          console.log(json0)
 
                                 // Hide the loading icon once the code has finished running
                                 loadingIcon.style.display = 'none';
