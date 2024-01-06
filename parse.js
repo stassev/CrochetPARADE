@@ -454,7 +454,9 @@ sc2inc*9
 [84sc
 ]*7
 83sc,ss@[%,0]
-
+#Ensure the hat is not overinflated. Setting this
+#parameter slows down the code by a factor of two.
+#The default value for inflate is infinity.
 DOT: inflate=2.0
 `
 
@@ -603,9 +605,6 @@ $c=0,c7=0,c8=0$,{sc@Ch[c++],(2sc@Ch[c++])*5,4ch.C10b[c7]+!,6ch.C10a[c7++]+!,turn
 `
 
 var textSnowman = `#Simple amigurumi showcase
-# Head is not attached since if I "sew" it on, then the repulsion between the stitches distorts the spheres too much.
-# One can attach the head in Blender (https://www.blender.org/) though.
-# To do that, first export the project as a GLTF file by pressing the "Save 3D model to GLTF file" button. Then import into Blender and move the objects there.
 COLOR:white
 ring.R
 5sc@R
@@ -633,10 +632,10 @@ sc2tog, 3sc, sc2tog, 4sc, sc2tog, 3sc, sc2tog, 4sc, sc2tog, 3sc
 sc2tog, 2sc, sc2tog, 2sc, sc2tog, 3sc, sc2tog, 2sc, sc2tog, 3sc
 sc2tog, sc, sc2tog, sc, sc2tog, sc, sc2tog, sc2tog, sc, sc2tog, sc
 sc2tog, sc2tog, sc3tog, sc2tog, sc2tog
-#sc5tog
-#start_anew
-#ring.R2
-#5sc@R2
+sc5tog
+start_anew
+ring.R2
+5sc@R2
 sc2inc, sc2inc, sc2inc, sc2inc, sc3inc
 sc2inc, sc, sc2inc, sc, sc2inc, sc, sc2inc, sc, sc2inc, sc, sc2inc
 2sc, sc2inc, 4sc, sc2inc, 3sc, sc2inc, 3sc, sc2inc, sc
@@ -671,9 +670,26 @@ sc2tog,sc,sc2tog
 3sc
 sc2tog,sc
 #Sewing:
-DOT:"41,0|1058" -- "50,10|1145" 0.01
+# The coortinates of these nodes/stitches are chosen 
+# to place/sew together the spheres on top of each other. 
+# I found the node names by first running the model without 
+# the lines below. Then I hovered over the nodes on a main 
+# diagonal of each sphere and wrote them down below. The coordinates
+# are along the x-axis, and I picked them by knowing the circumference
+# of each spheres (given by the largest number of stitches). 
+DOT: "0,0|0" {-16,0,0}
+DOT: "26,0|748" {0,0,0}
+DOT: "28,0|750" {0,0,0}
+DOT: "45,0|1066" {11,0,0}
+DOT: "53,9|1132" {11,0,0}
+DOT: "53,0|1123" {17,0,0}
 DOT: start=1
-DOT: inflate=1.
+# Prevent repulsion between the disjoint balls, which would normally
+# separate the spheres apart.
+DOT: spread=false
+# When nodes are fixed in position as above, the code needs a lot
+# more iterations to converge well.
+DOT: iterations=3000
 `
 //start_anew: '&start_anew^A(hidden):~::!-skip-A',
 var Dictionary = {
