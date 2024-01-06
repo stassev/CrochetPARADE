@@ -678,21 +678,21 @@ sc2tog,sc
 # I found the node names by first running the model without 
 # the lines below. Then I hovered over the nodes on a main 
 # diagonal of each sphere and wrote them down below. The coordinates
-# are along the x-axis, and I picked them by knowing the circumference
+# are along the x-axis. I picked them by knowing the circumference
 # of each spheres (given by the largest number of stitches). 
-DOT: "0,0|0" {-16,0,0}
+DOT: "0,0|0" {-19,0,0}
 DOT: "26,0|748" {0,0,0}
 DOT: "28,0|750" {0,0,0}
-DOT: "45,0|1066" {11,0,0}
-DOT: "53,9|1132" {11,0,0}
-DOT: "53,0|1123" {17,0,0}
+DOT: "45,0|1066" {12,0,0}
+DOT: "53,9|1132" {12,0,0}
+DOT: "53,0|1123" {19,0,0}
 DOT: start=1
 # Prevent repulsion between the disjoint balls, which would normally
 # separate the spheres apart.
 DOT: separate=0
 # When nodes are fixed in position as above, the code needs a lot
 # more iterations to converge well.
-DOT: iterations=3000
+DOT: iterations=4000
 `
 //start_anew: '&start_anew^A(hidden):~::!-skip-A',
 var Dictionary = {
