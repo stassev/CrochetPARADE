@@ -514,7 +514,13 @@ $s=0,sp=0$,sc.base[1,5]@base[0,5],(5ch.chain_space[1,sp++]+!,>,sc.base[1,s]@base
 $sp=0,s=0$,ch,[sc,hdc,5dc,hdc,>,sc]@chain_space[1,sp++]*6,ss@[%,0]
 $sp=0,s=0$,sc@base[1,5],(7ch.chain_space[2,sp++]+!,>,sc@base[1,s++])*6,ss@[%,0]
 $sp=0,s=0$,ch,[sc,hdc,7dc,hdc,>,sc]@chain_space[2,sp++]*6,ss@[%,0]
-DOT: start=20
+DOT: start=175
+
+#Flower
+$petal=0$,(start_a_new_chain,3ch).Petal[petal++],(3ch.Petal[petal++])*3,2ch.Petal[petal],ss.Petal[petal]@[%,0]
+$c6=0$,ch,sk,[6ch.chain_space[c6++],2sk,>,sc]*5,sc@[%,0]
+$c6=0$,ch,[sc,hdc,dc,8tr,dc,hdc,>,sc]@chain_space[c6++]*5,ss@[%,0],ch
+$petal=0$,ss@Petal[petal],[hdc,5dc,hdc]@Petal[petal++]*5,ss@[%,0]
 
 # Elements of design No 8422-A
 # Stem
@@ -534,12 +540,6 @@ sk,18sc.Row1,sc3inc.Row1,turn
 $s=0$,[18sc,3sc2inc,18sc]@Row1,4ch.chain_spaceA[s++],turn
 ,@[-1,-1],sk@[sc:@+1],[3sk@[sc:@+1],sc,4ch.chain_spaceA[s++]]*4,[2sk@[sc:@+1],sc,4ch.chain_spaceA[s++]]*3,[3sk@[sc:@+1],sc,>,4ch.chain_spaceA[s++]]*4,turn
 ([2sc,p,2sc]@chain_spaceA[--s])*4,([3sc,p,2sc]@chain_spaceA[--s])*3,([2sc,p,2sc]@chain_spaceA[--s])*3,[2sc,p,2sc]@chain_spaceA[--s]~
-
-#Flower
-$petal=0$,(start_a_new_chain,3ch).Petal[petal++],(3ch.Petal[petal++])*3,2ch.Petal[petal],ss.Petal[petal]@[%,0]
-$c6=0$,ch,sk,[6ch.chain_space[c6++],2sk,>,sc]*5,sc@[%,0]
-$c6=0$,ch,[sc,hdc,dc,8tr,dc,hdc,>,sc]@chain_space[c6++]*5,ss@[%,0],ch
-$petal=0$,ss@Petal[petal],[hdc,5dc,hdc]@Petal[petal++]*5,ss@[%,0]
 
 #Control the separation between the disjoint pieces. Default is 1.5
 DOT: separate=0.8
