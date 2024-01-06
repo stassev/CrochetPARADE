@@ -540,6 +540,9 @@ $petal=0$,(start_a_new_chain,3ch).Petal[petal++],(3ch.Petal[petal++])*3,2ch.Peta
 $c6=0$,ch,sk,[6ch.chain_space[c6++],2sk,>,sc]*5,sc@[%,0]
 $c6=0$,ch,[sc,hdc,dc,8tr,dc,hdc,>,sc]@chain_space[c6++]*5,ss@[%,0],ch
 $petal=0$,ss@Petal[petal],[hdc,5dc,hdc]@Petal[petal++]*5,ss@[%,0]
+
+#Control the separation between the disjoint pieces. Default is 1.5
+DOT: separate=0.8
 `
 
 var textFlower2 = `# Irish crochet flower showcase
@@ -686,7 +689,7 @@ DOT: "53,0|1123" {17,0,0}
 DOT: start=1
 # Prevent repulsion between the disjoint balls, which would normally
 # separate the spheres apart.
-DOT: spread=false
+DOT: separate=0
 # When nodes are fixed in position as above, the code needs a lot
 # more iterations to converge well.
 DOT: iterations=3000

@@ -88,7 +88,7 @@ struct EdgeInfo {
 };
 
 
-Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* inflate,double* learningRate,bool*inflateQ,bool*spread) {
+Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* inflate,double* learningRate,bool*inflateQ,double*separate) {
     std::unordered_map<std::string, int> nodeIndexMap;
     std::vector<EdgeInfo> edges;
 
@@ -160,14 +160,11 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
                 }
             }
             {
-                size_t found = line.find("spread");
+                size_t found = line.find("separate");
                 if (found != std::string::npos) {
-                    found = line.find("false");
-                    if (found != std::string::npos) 
-                        *spread=false;
-                    found = line.find("true");
-                    if (found != std::string::npos) 
-                        *spread=true;
+                    found = line.find_first_of("0123456789.", found);
+                    size_t end = line.find_first_not_of("0123456789.", found);
+                    *separate = std::stod(line.substr(found, end - found));
                 }
             }
         }
@@ -288,8 +285,8 @@ extern "C" const char* performLayout(const char* jsInput) {
     double inflate=2.0;
     double learningRate = 0.1;
     bool inflateQ=false;
-    bool spread=true;
-    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&inflate,&learningRate,&inflateQ,&spread);
+    double separate=1.5;
+    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&inflate,&learningRate,&inflateQ,&separate);
     const int numDimensions =Ndim;
     {
         //#pragma omp for nowait
@@ -298,7 +295,7 @@ extern "C" const char* performLayout(const char* jsInput) {
         }
     }
     double sINF=sqrt(INF)-1;
-    if (spread){
+    if (separate>0.01){
         double maxD=-1.;//find max_distance
         for (int i = 0; i < graph.num_nodes-1; ++i) {
             for (int j = i+1; j < graph.num_nodes; ++j) {
@@ -311,7 +308,7 @@ extern "C" const char* performLayout(const char* jsInput) {
         for (int i = 0; i < graph.num_nodes-1; ++i) {
             for (int j = i+1; j < graph.num_nodes; ++j) {
                 if (graph.flat_distance_matrix[i * graph.num_nodes + j]>maxD)
-                    graph.flat_distance_matrix[i * graph.num_nodes + j]=maxD*1.5; // separate disjoint crochet elements.
+                    graph.flat_distance_matrix[i * graph.num_nodes + j]=maxD*separate; // separate disjoint crochet elements.
             }
         }
     }
