@@ -857,7 +857,7 @@
             ['Hat (~3min)', textHat, 3],
             ['Mixed styles: lacy hat (~12sec)', textLacyHat, 3],
             ['Filet crochet: logo (~45sec)', textFilet, 3],
-            ['Irish crochet: doily (~7min or more!)', textDoily, 2],
+            ['Irish crochet: doily (~5min!)', textDoily, 2],
             ['Simple flower with post stitches (~1sec)', textFlower3, 3]
         ];
 
@@ -1337,14 +1337,14 @@
 
 
     <script>
-        function processTextSafe(text, json0, simple = false) {
+        function processTextSafe(text, json0) {
             if (text.trim() === '') {
                 alert('There are no instructions to parse. Write your own or use one of the examples from the drop down menu.');
                 //throw new Error('Error during processing of text. See alert box.')
                 return ''
             }
             try {
-                return processText(text, json0, simple = simple)
+                return processText(text, json0)
 
             } catch (error) {
                 alert(error.message);
@@ -1548,7 +1548,7 @@
     <script>
         function showStats() {
             var text = 'Information about the current project.\n\nStitch count per row:\n'
-            var dot = processTextSafe(inputText.value, json0)
+            var [dot, _] = processTextSafe(inputText.value, json0)
             if (dot !== '') {
                 for (var row of Object.keys(STATS)) {
                     text += "Row " + row + ": "
@@ -1702,10 +1702,10 @@ jsonOld=json0
     
             var dot_simple;
             setTimeout(function() {
-                dot_simple = processTextSafe(inputText.value, json0, true)
+                 [json0,dot_simple] = processTextSafe(inputText.value, json0)
             }, 0);
             setTimeout(async function() {
-    json0 = processTextSafe(inputText.value,json0)
+                 //json0 = processTextSafe(inputText.value, json0)
                 //console.log(dot_simple)
     //console.log(json0)
 
@@ -1779,13 +1779,13 @@ jsonOld=json0
             }
         }
 
-        var dot;
+        //var dot;
 
 
 
         function processToDotFile() {
             var text = document.getElementById("inputText").value;
-            dot = processTextSafe(text, json0, simple = true)
+            var [_, dot] = processTextSafe(text, json0)
             if (dot !== '') {
                 var file = new Blob([dot], {
                     type: "text/plain"

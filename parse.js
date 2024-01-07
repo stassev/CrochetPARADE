@@ -2967,7 +2967,7 @@ function findPosByNameFromJson(json, name) {
     //    return posToFind.slice(0, 3)
 }
 
-function export_to_dot(Stitches, json, simple = false) {
+function export_to_dot(Stitches, json) {
     //console.log(json)
     //var json = null
 
@@ -2991,10 +2991,11 @@ function export_to_dot(Stitches, json, simple = false) {
         //console.log(json)
     }
     var text = ''
-    if (!simple)
-        text += '{"dimen":"' + String(DIM) + '",\n"elements":['
-    else
-        text += String(DIM) + '\n';
+    var textS = ''
+    //if (!simple)
+    text += '{"dimen":"' + String(DIM) + '",\n"elements":['
+    //else
+    textS += String(DIM) + '\n';
     k = 0
 
     var startID_row = []
@@ -3015,21 +3016,21 @@ function export_to_dot(Stitches, json, simple = false) {
                 let POS = findPosByNameFromJson(json, name)
                 //console.log(POS)
                 if (POS.length > 0) {
-                    if (!simple)
-                        text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '","pos":"' + POS + '!"}\n';
-                    else
-                        text += name + ' {' + POS + '}\n';
+                    //if (!simple)
+                    text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '","pos":"' + POS + '!"}\n';
+                    //else
+                    textS += name + ' {' + POS + '}\n';
                 } else {
-                    if (!simple)
-                        text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
-                    else
-                        text += name + '\n'
+                    //if (!simple)
+                    text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
+                    //else
+                    textS += name + '\n'
                 }
             } else {
-                if (!simple)
-                    text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
-                else
-                    text += name + '\n'
+                //if (!simple)
+                text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
+                //else
+                textS += name + '\n'
             }
         }
         for (var ni of Object.keys(s.otherNodes)) {
@@ -3051,32 +3052,32 @@ function export_to_dot(Stitches, json, simple = false) {
                 if (POS.length > 0) {
 
 
-                    if (!simple)
-                        text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '","pos":"' + POS + '!"';
-                    else
-                        text += name + ' {' + POS + '}';
+                    //if (!simple)
+                    text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '","pos":"' + POS + '!"';
+                    //else
+                    textS += name + ' {' + POS + '}';
                 } else {
 
-                    if (!simple)
-                        text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"';
-                    else
-                        text += name
+                    //if (!simple)
+                    text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"';
+                    //else
+                    textS += name
                 }
 
             } else {
-                if (!simple)
-                    text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"';
-                else
-                    text += name
+                //if (!simple)
+                text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"';
+                //else
+                textS += name
             }
 
-            if (!simple) {
-                if (n.type === 'hidden')
-                    text += ',"style":"invis","width":"0","height":"0"}\n';
-                else
-                    text += '}\n';
-            } else
-                text += '\n'
+            //if (!simple) {
+            if (n.type === 'hidden')
+                text += ',"style":"invis","width":"0","height":"0"}\n';
+            else
+                text += '}\n';
+            //} else
+            textS += '\n'
         }
     }
 
@@ -3157,33 +3158,33 @@ function export_to_dot(Stitches, json, simple = false) {
                     } //else
                     //  p1 += '|' + find_stitch_by_id(Stitches, parseInt(p1.split('|')[0], 10)).uid
                     //TOFIX???
-                    if (!simple) {
-                        text += '{"type":"edge","tail":"' + p0 + '","head":"' + b.id + '|' + buid + '","penwidth":"1","color":"gray","len":"' + evaluateExpression(d0) + '","label":"' + s['Color'] + '"}\n'
-                        text += '{"type":"edge","tail":"' + b.id + '|' + buid + '","head":"' + p1 + '","penwidth":"1","color":"gray","len":"' + evaluateExpression(d1) + '","label":"' + s['Color'] + '"}\n'
-                    } else {
-                        text += '"' + p0 + '" -- "' + b.id + '|' + buid + '" ' + evaluateExpression(d0) + '\n'
-                        text += '"' + b.id + '|' + buid + '" -- "' + p1 + '" ' + evaluateExpression(d1) + '\n'
-                    }
+                    //if (!simple) {
+                    text += '{"type":"edge","tail":"' + p0 + '","head":"' + b.id + '|' + buid + '","penwidth":"1","color":"gray","len":"' + evaluateExpression(d0) + '","label":"' + s['Color'] + '"}\n'
+                    text += '{"type":"edge","tail":"' + b.id + '|' + buid + '","head":"' + p1 + '","penwidth":"1","color":"gray","len":"' + evaluateExpression(d1) + '","label":"' + s['Color'] + '"}\n'
+                    //} else {
+                    textS += '"' + p0 + '" -- "' + b.id + '|' + buid + '" ' + evaluateExpression(d0) + '\n'
+                    textS += '"' + b.id + '|' + buid + '" -- "' + p1 + '" ' + evaluateExpression(d1) + '\n'
+                    //}
 
                     let name = '"' + b.id + '|' + buid + '"'
                     if (json) {
                         let POS = findPosByNameFromJson(json, name)
                         if (POS.length > 0) {
-                            if (!simple)
-                                text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0","pos":"' + POS + '!"}\n';
-                            else
-                                text += name + ' {' + POS + '}\n';
+                            //if (!simple)
+                            text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0","pos":"' + POS + '!"}\n';
+                            //else
+                            textS += name + ' {' + POS + '}\n';
                         } else {
-                            if (!simple)
-                                text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0"}\n';
-                            else
-                                text += name + '\n';
+                            //if (!simple)
+                            text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0"}\n';
+                            //else
+                            textS += name + '\n';
                         }
                     } else {
-                        if (!simple)
-                            text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0"}\n';
-                        else
-                            text += name + '\n'
+                        //if (!simple)
+                        text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0"}\n';
+                        //else
+                        textS += name + '\n'
                     }
                     //text += name + ' [label="hidden|' + s['Color'] + '",style=invis,width=0,height=0]\n';
                     pos0 = b.id + '|' + buid
@@ -3232,34 +3233,34 @@ function export_to_dot(Stitches, json, simple = false) {
                 pos1 = String([x.nrow, b.id - startID_row[x.nrow]]) + '|' + x.uid
             } else throw new Error('Cannot find node ' + n1 + ' in the connections of stitch: ' + s)
 
-            if (!simple) {
-                if (hidden) {
-                    text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"1","color":"gray","len":"' + len + '","label":"' + s['Color'] + '"}\n'
-                } else if ((!(pos1 in BlueConnectionEstablished)) && ((((n0 === '!') || ((s.topNodesNames.length > 0) && s.topNodesNames.includes(n0))) && ((n1 === '!') || ((s.topNodesNames.length > 0) && s.topNodesNames.includes(n1)))))) {
-                    text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"4","color":"blue","len":"' + len + '","label":"' + s['Color'] + '"}\n'
-                    BlueConnectionEstablished[pos1] = true
-                } else {
-                    text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"4","color":"red","len":"' + len + '","label":"' + s['Color'] + '"}\n'
-                }
-            } else
-                text += '"' + pos0 + '" -- "' + pos1 + '" ' + len + '\n'
+            //if (!simple) {
+            if (hidden) {
+                text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"1","color":"gray","len":"' + len + '","label":"' + s['Color'] + '"}\n'
+            } else if ((!(pos1 in BlueConnectionEstablished)) && ((((n0 === '!') || ((s.topNodesNames.length > 0) && s.topNodesNames.includes(n0))) && ((n1 === '!') || ((s.topNodesNames.length > 0) && s.topNodesNames.includes(n1)))))) {
+                text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"4","color":"blue","len":"' + len + '","label":"' + s['Color'] + '"}\n'
+                BlueConnectionEstablished[pos1] = true
+            } else {
+                text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"4","color":"red","len":"' + len + '","label":"' + s['Color'] + '"}\n'
+            }
+            //} else
+            textS += '"' + pos0 + '" -- "' + pos1 + '" ' + len + '\n'
         }
     }
-    if (simple)
-        text += EXTRA_DOTS
+    //if (simple)
+    textS += EXTRA_DOTS
 
-    if (!simple) {
-        text += ']}'
-        text = text.replace('"elements":[,{"', '"elements":[{"')
-    }
+    //if (!simple) {
+    text += ']}'
+    text = text.replace('"elements":[,{"', '"elements":[{"')
+    //}
 
-    DEBUG += '=======After export to dot:=======\n' + text + '\n'
-    return text
+    DEBUG += '=======After export to dot; simple=false:=======\n' + text + '\n' + '=======After export to dot; simple=true:=======\n' + textS + '\n'
+    return [text, textS]
 }
 
 
-function processText(text, json0, simple = false) {
+function processText(text, json0) {
     text = text.replace(/\t/g, '    ').replace(/\r/g, '')
     DEBUG = ''
-    return export_to_dot(final(text), json0, simple = simple)
+    return export_to_dot(final(text), json0)
 }
