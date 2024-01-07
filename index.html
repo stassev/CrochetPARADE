@@ -539,7 +539,14 @@
         }
     </script>
 
-    <script src="./parse.js"></script>
+    <!-- <script src="./parse.js"></script> -->
+    <script type="text/javascript" language="javascript">
+        var versionUpdate = (new Date()).getTime();
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "./parse.js?v=" + versionUpdate;
+        document.body.appendChild(script);
+    </script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
 
