@@ -1618,6 +1618,21 @@
 
             return transformedJson;
         }
+
+        function performLayoutAsync(dot_simple) {
+            return new Promise((resolve, reject) => {
+                let inputLength = lengthBytesUTF8(dot_simple);
+                let inputPointer = Module._malloc(inputLength + 1);
+                Module.stringToUTF8(dot_simple, inputPointer, inputLength + 1);
+                let resultPointer = Module.ccall('performLayout', 'number', ['number'], [inputPointer]);
+                let result = Module.UTF8ToString(resultPointer);
+                var json1 = '[' + result.slice(0, -1) + ']';
+                json1 = json1.replace('"},]', '"}]');
+                Module._free(inputPointer);
+                DEBUG += '=======JSON1:=======\n' + JSON.stringify(json1) + '\n';
+                resolve(json1);
+            });
+        }
     </script>
     <script type="module">
 
@@ -1651,7 +1666,11 @@
                 }, 0);
             }
         });
-        function show3DModel() {
+
+        async function show3DModel() {
+            var loadingIcon = document.getElementById('loading-icon')
+            loadingIcon.style.display = 'block';
+
 
 document.removeEventListener('mousemove',onMouseMove)
 document.removeEventListener('mousedown',onMouseDown)
@@ -1667,79 +1686,48 @@ var inputText = document.getElementById("inputText");
 if (reset_json==1){//default
 jsonOld=''
 json0=''
-        }
-        else if (reset_json==2){//continue ctrl+c
+            } else if (reset_json == 2) { //continue ctrl+c
 jsonOld=json0
         }else if (reset_json==3){//repeat ctrl+r
             json0=jsonOld
         }
     
-    
-    var dot_simple = processTextSafe(inputText.value,json0,true)
+            var dot_simple;
+            setTimeout(function() {
+                dot_simple = processTextSafe(inputText.value, json0, true)
+            }, 0);
+            setTimeout(async function() {
     json0 = processTextSafe(inputText.value,json0)
-    console.log(dot_simple)
+                //console.log(dot_simple)
     //console.log(json0)
+
     if (json0!==''){
-            // Create the loading icon element
-            var tmp=document.getElementById('loading-icon')
-            if (tmp)
-            tmp.parentNode.removeChild(tmp)
-            const loadingIcon = document.createElement('div');
-            loadingIcon.setAttribute('id', 'loading-icon');
-            loadingIcon.innerHTML = 'Calculating... This may take up to a few minutes.';
 
-            // Add the loading icon to the HTML
-            document.body.appendChild(loadingIcon);
+                    //let inputLength = lengthBytesUTF8(dot_simple);
+                    //let inputPointer = Module._malloc(inputLength + 1);
+                    //Module.stringToUTF8(dot_simple, inputPointer, inputLength + 1);
+                    //let resultPointer = Module.ccall('performLayout', 'number', ['number'], [inputPointer]);
+                    //let result = Module.UTF8ToString(resultPointer);
+                    //var json1 = '[' + result.slice(0, -1) + ']';
+                    //json1 = json1.replace('"},]', '"}]')
+                    ////console.log(json1);
+                    //Module._free(inputPointer);
+                    ////console.log(json0)
+                    //DEBUG += '=======JSON1:=======\n' + JSON.stringify(json1) + '\n'
 
-            // Set the CSS properties for the loading icon
-            loadingIcon.style.position = 'fixed';
-            loadingIcon.style.top = '50%';
-            loadingIcon.style.left = '50%';
-            loadingIcon.style.transform = 'translate(-50%, -50%)';
-            loadingIcon.style.backgroundColor = 'white';
-            loadingIcon.style.padding = '10px';
-            loadingIcon.style.fontSize = '30pt';
+                    try {
+                        var json1 = await performLayoutAsync(dot_simple);
+                        json0 = transformJsonWithPos(json0, json1);
+                    } catch (error) {
+                        // Handle error if needed
+                        console.error(error);
+                    } finally {
             loadingIcon.style.display = 'none';
-
-            // Show the loading icon before running the code
-            loadingIcon.style.display = 'block';
-    
-    //Viz.instance().then(function(viz) {
-        
-        //console.log(dot)
-      //          json0 = viz.renderString(dot, {
-       //             engine: "neato",format:"json0"
-       //         });
-//let J=JSON.parse(json0)
-//let secondJson=JSON.parse(SECONDJSON(dot))
-//                J.objects.forEach(obj => {
-//  const node = secondJson.nodes.find(node => node.name === obj.name);
-//  if (node) {
-//    const pos = node.position.slice(0, DIM).join(',');
-//    obj.pos =pos
-    // `${pos},${obj.pos.substring(obj.pos.lastIndexOf(',') + 1)}`;
-//  }
-//});
-//json0=JSON.stringify(J)
-
-    //let input = dotContent;
-    let inputLength = lengthBytesUTF8(dot_simple);
-    let inputPointer = Module._malloc(inputLength + 1);
-    Module.stringToUTF8(dot_simple, inputPointer, inputLength + 1);
-    let resultPointer = Module.ccall('performLayout', 'number', ['number'], [inputPointer]);
-    let result = Module.UTF8ToString(resultPointer);
-    var json1='['+result.slice(0,-1)+']';
-    json1=json1.replace('"},]','"}]')
-    //console.log(json1);
-    Module._free(inputPointer);
-    //console.log(json0)
-    DEBUG+=  '=======JSON1:=======\n' + JSON.stringify(json1) + '\n'
-    json0=transformJsonWithPos(json0,json1)
-
+                    }
       //          console.log(json0)
 
                                 // Hide the loading icon once the code has finished running
-                                loadingIcon.style.display = 'none';
+
                                 DEBUG+=  '=======JSON0:=======\n' + JSON.stringify(json0) + '\n'
                                 
                                 var a =Generate3DModel(json0,renderer,scene,scene1,backgroundColor)
@@ -1755,16 +1743,15 @@ jsonOld=json0
                                 exportGLTF=a[9]
                                 scene1=a[10]
                                 saveSvg=a[11]
+                    //loadingIcon.style.display = 'none';
                 
             //});
         }
-
-
+                loadingIcon.style.display = 'none';
+            }, 0);
 }
 
         button.addEventListener("click", show3DModel);
-
-
       </script>
 
     <script>
@@ -1866,6 +1853,32 @@ jsonOld=json0
         }
         textarea.value = ''
         onMyInput()
+    </script>
+    <script>
+        // Create the loading icon element
+        //var tmp=document.getElementById('loading-icon')
+        //if (tmp)
+        //tmp.parentNode.removeChild(tmp)
+        const loadingIcon = document.createElement('div');
+        loadingIcon.setAttribute('id', 'loading-icon');
+        loadingIcon.innerHTML = 'Calculating... This may take up to a few minutes.';
+
+        // Add the loading icon to the HTML
+
+
+        // Set the CSS properties for the loading icon
+        loadingIcon.style.position = 'fixed';
+        loadingIcon.style.top = '50%';
+        loadingIcon.style.left = '50%';
+        loadingIcon.style.transform = 'translate(-50%, -50%)';
+        loadingIcon.style.backgroundColor = 'white';
+        loadingIcon.style.padding = '10px';
+        loadingIcon.style.fontSize = '30pt';
+        loadingIcon.style.display = 'none';
+
+        // Show the loading icon before running the code
+        document.body.appendChild(loadingIcon);
+        loadingIcon.style.display = 'none';
     </script>
 </body>
 
