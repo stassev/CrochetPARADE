@@ -369,7 +369,11 @@ DEF: ss2togA=ss1@[@+1],ss0@1[@1+1]
 ss1@[-1,-2],ss0@1X,ss2togA*6
 
 DOT: start=2
-
+#The stocking is a bit overinflated, causing increased tension in the stitches.
+#You can see that if you press 's'. The red stitches are the ones that are
+#too tense. To reduce the tension in the model, uncomment the line below by
+#removing the leading '#'. That does slow down the calculation a couple of times.
+#DOT: inflate=1.0
 `
 
 
