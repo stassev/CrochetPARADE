@@ -522,14 +522,10 @@
             <p class="author">Svetlin Tassev</p>
         </div>
     </div>
-    <div id="announcement" style="background-color:rgb(253, 151, 79); font-size: 14pt; position: relative;">
+    <div id="announcement" style="background-color:rgb(253, 79, 79);color:#ffffff; font-size: 14pt; position: relative;">
         <span style="cursor: pointer; position: absolute; top: 5px; right: 5px;font-size:20pt;font-weight:600" onclick="closeAnnouncement()">×</span>
-        <b>Update: The codebase of CrochetPARADE was updated to drop Graphviz as a dependency.</b><br>
-        The computation now works about 3 times faster for large projects. The new computation engine allows better fine-tuning
-        of the final result. The changes are reflected in new keywords that can be used after the "DOT:" command. See the Manual
-        for further information. The showcase examples were updated to reflect the changes. They include a working amigurumi example 
-        containing pieces sewn together. Note that the CrochetPARADE language is not affected, so any designs you have created previously
-        should work. If not, please file a bug report through the Help menu.
+        <b>The platform has been tested with the latest Chrome, Brave and Firefox browsers. <br>
+            Some Safari versions have issues loading it correctly.</b>
     </div>
 
     <script>
@@ -827,9 +823,11 @@
 
 
     <script>
+
         var json0 = '';
         var jsonOld = '';
         var reset_json = 1
+document.addEventListener('DOMContentLoaded', setTimeout(function() {
 
         const radioButtons = document.querySelectorAll('input[type="radio"]');
 
@@ -920,6 +918,7 @@
             onMyInput()
             update(inputText.value)
         }
+    },0));
     </script>
 
     <div class="editor_container" id="edc">
