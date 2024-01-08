@@ -37,8 +37,12 @@ struct Graph {
     std::vector<std::vector<int>> neighbors;
     std::vector<int> N_neighbors;
     std::vector<std::vector<double>> dist_to_neighbor; 
+    std::vector<bool> flat_specified_positions;
+    std::vector<std::vector<double>> nodes_pos;  // Added vector for node positions
 
-    Graph(int n) : num_nodes(n), nodes(n, ""), N_neighbors(n, 0),dist_to_neighbor(n,std::vector<double>()) {
+
+    Graph(int n) : num_nodes(n), nodes(n, ""), N_neighbors(n, 0),nodes_pos(n, std::vector<double>()),
+        dist_to_neighbor(n,std::vector<double>()), flat_specified_positions(n, false) {
         flat_distance_matrix.resize(n * n, INF);
         flat_immediate_neighbor.resize(n * n, false);
         neighbors.resize(n);
@@ -62,8 +66,15 @@ struct Graph {
         N_neighbors[destination]++;
     }
 
-    void addNode(int n, std::string str) {
+    void addNode(int n, std::string str, const std::vector<double>& pos = {}) {
         nodes[n] = str;
+        if (!pos.empty()) {
+            // If coordinates are specified, update the positions and set specified_positions flag
+            nodes_pos[n] = pos;//pos.size() == 2 ? std::vector<double>{pos[0], pos[1], 0.0} : pos;
+            flat_specified_positions[n] = true;
+        } else {
+            flat_specified_positions[n] = false;
+        }
     }
 
 
@@ -77,7 +88,7 @@ struct EdgeInfo {
 };
 
 
-Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* inflate,double* learningRate,bool*inflateQ) {
+Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* inflate,double* learningRate,bool*inflateQ,double*separate) {
     std::unordered_map<std::string, int> nodeIndexMap;
     std::vector<EdgeInfo> edges;
 
@@ -92,6 +103,8 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
 
     // Update the position to start reading from the next line
     size_t prevPos = pos + 1;
+    std::vector<std::pair<std::string, std::vector<double>>> tempNodes;
+
 
     //size_t pos = 0;
     //size_t prevPos = 0;
@@ -146,15 +159,40 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
                     *learningRate = std::stod(line.substr(found, end - found));
                 }
             }
+            {
+                size_t found = line.find("separate");
+                if (found != std::string::npos) {
+                    found = line.find_first_of("0123456789.", found);
+                    size_t end = line.find_first_not_of("0123456789.", found);
+                    *separate = std::stod(line.substr(found, end - found));
+                }
+            }
         }
 
         if (isNodeDefinition) {
             std::smatch matchResult;
-            if (std::regex_search(line, matchResult, std::regex("\"([^\"]+)\"\\s*"))) {
+            if (std::regex_search(line, matchResult, std::regex("\"([^\"]+)\"\\s*\\{([^}]+)\\}\\s*"))) {
                 std::string nodeName = matchResult[1];
                 nodeIndexMap[nodeName] = static_cast<int>(i_nodes++);
+
+                std::string posStr = matchResult[2];
+                std::vector<double> pos;
+                std::istringstream posStream(posStr);
+                std::string token;
+                while (std::getline(posStream, token, ',')) {
+                    pos.push_back(std::stod(token));
+                }
+
+                tempNodes.emplace_back(nodeName, pos);
+            } else if (std::regex_search(line, matchResult, std::regex("\"([^\"]+)\"\\s*"))) {
+                // If only the node name is specified, add the node without positions
+                std::string nodeName = matchResult[1];
+                nodeIndexMap[nodeName] = static_cast<int>(i_nodes++);
+                tempNodes.emplace_back(nodeName, std::vector<double>());
             }
         }
+
+
 
         if (isEdgeDefinition) {
             std::smatch matchResult;
@@ -172,9 +210,13 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
 
     Graph graph(i_nodes);
 
-    for (auto it = nodeIndexMap.begin(); it != nodeIndexMap.end(); ++it) {
-        graph.addNode(it->second, it->first);
+    for (const auto& tempNode : tempNodes) {
+        graph.addNode(nodeIndexMap[tempNode.first], tempNode.first, tempNode.second);
     }
+
+    //for (auto it = nodeIndexMap.begin(); it != nodeIndexMap.end(); ++it) {
+    //    graph.addNode(it->second, it->first);
+    //}
 
     for (const auto& edge : edges) {
         auto sourceIt = nodeIndexMap.find(edge.source);
@@ -30985,7 +31027,8 @@ std::string jsInput = R"(2
     double inflate=2.0;
     double learningRate = 0.1;
     bool inflateQ=false;
-    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&inflate,&learningRate,&inflateQ);
+    double separate=1.5;
+    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&inflate,&learningRate,&inflateQ,&separate);
     const int numDimensions =Ndim;
     {
         //#pragma omp for nowait
@@ -30993,7 +31036,35 @@ std::string jsInput = R"(2
             dijkstra(graph, i);
         }
     }
+    double sINF=sqrt(INF)-1;
+    if (separate>0.01){
+        double maxD=-1.;//find max_distance
+        for (int i = 0; i < graph.num_nodes-1; ++i) {
+            for (int j = i+1; j < graph.num_nodes; ++j) {
+                double len = graph.flat_distance_matrix[i * graph.num_nodes + j];
+                if ((len < sINF) && (len >= 0)&& (maxD<len)) {
+                        maxD=len;
+                }
+            }
+        }
+        for (int i = 0; i < graph.num_nodes-1; ++i) {
+            for (int j = i+1; j < graph.num_nodes; ++j) {
+                if (graph.flat_distance_matrix[i * graph.num_nodes + j]>maxD)
+                    graph.flat_distance_matrix[i * graph.num_nodes + j]=maxD*separate; // separate disjoint crochet elements.
+            }
+        }
+    }
+    
+    std::vector<int> ave_forces(3,0.0);
+    double n_ave_F=0.0;
+    double n_edges=0.0;
 
+    for (int i = 0; i < graph.num_nodes-1; ++i) {
+        for (int j = i+1; j < graph.num_nodes; ++j) {
+            if (graph.flat_immediate_neighbor[i * graph.num_nodes + j]) 
+                n_edges++;
+        }
+    }
 
     if (((Ndim==2)&&(numDimensions==2))){
         std::vector<double> flat_positions(graph.num_nodes * numDimensions, 0.0);
@@ -31002,7 +31073,11 @@ std::string jsInput = R"(2
         // Initialize positions
         srand(seed);   // Seed the random number generator
         for (int i = 0; i < graph.num_nodes*numDimensions; ++i) {
-                flat_positions[i] = (static_cast<double>(rand()) / static_cast<double>(RAND_MAX) - 0.5) *10.;
+            if (graph.flat_specified_positions[i / numDimensions]) {
+                flat_positions[i] = graph.nodes_pos[i / numDimensions][i % numDimensions];
+            } else {
+                flat_positions[i] = (static_cast<double>(rand()) / static_cast<double>(RAND_MAX) - 0.5) * 10.0;
+            }
         }
 
         // forces
@@ -31016,50 +31091,74 @@ std::string jsInput = R"(2
             pf = (1 - learningRate * pf);
             double extraF = sqrt(1 - projection_factor) + 1.e-3;
             double F = learningRate;
-            double sINF=sqrt(INF)-1;
             double deflating_exponent=pow(projection_factor,inflate)+1;
-            //double error=0.0;
+            double error=0.0;
             {
                 std::vector<double> delta(numDimensions, 0.0);
                 for (int i = 0; i < graph.num_nodes-1; ++i) {
                     for (int j = i+1; j < graph.num_nodes; ++j) {
-                        double len = graph.flat_distance_matrix[i * graph.num_nodes + j];
-                        if ((len < sINF) && (len > 0)) {
-                            len *= len;//
-                            double d2 = 0.0;
+                        if ((!graph.flat_specified_positions[i]) || (!graph.flat_specified_positions[j])){
+                            double len = graph.flat_distance_matrix[i * graph.num_nodes + j];
+                            if ((len < sINF) && (len > 0)) {
+                                len *= len;//
+                                double d2 = 0.0;
 
-                            for (int dim = 0; dim < numDimensions; ++dim) {
-                                delta[dim]=flat_positions[i * numDimensions + dim] - flat_positions[j * numDimensions + dim];
-                                d2 += pow(delta[dim], 2);
-                            }
-                            double force = 0.5*(d2 - len) / (d2+0.001);
+                                for (int dim = 0; dim < numDimensions; ++dim) {
+                                    delta[dim]=flat_positions[i * numDimensions + dim] - flat_positions[j * numDimensions + dim];
+                                    d2 += pow(delta[dim], 2);
+                                }
+                                double force = 0.5*(d2 - len) / (d2+0.001);
 
-                            if (!graph.flat_immediate_neighbor[i * graph.num_nodes + j]) {
-                                if (inflateQ)
-                                    force *= extraF/(pow(len,deflating_exponent)+0.001); //(std::max(d2, len));
-                                else 
-                                    force *= extraF/(len+0.001);
-                            }
-                            //else
-                            //    error+=force*force;
-                            for (int dim = 0; dim < numDimensions; ++dim) {
-                                double df = force * delta[dim];
-                                flat_forces[i * numDimensions + dim] += df;
-                                flat_forces[j * numDimensions + dim] -= df;
+                                if (!graph.flat_immediate_neighbor[i * graph.num_nodes + j]) {
+                                    if (inflateQ)
+                                        force *= extraF/(pow(len,deflating_exponent)+0.001); //(std::max(d2, len));
+                                    else 
+                                        force *= extraF/(len+0.001);
+                                }
+                                else
+                                    error+=force*force;
+                                for (int dim = 0; dim < numDimensions; ++dim) {
+                                    double df = force * delta[dim];
+                                    flat_forces[i * numDimensions + dim] += df;
+                                    flat_forces[j * numDimensions + dim] -= df;
+                                }
                             }
                         }
                     }
                 }
             }
+            std::cout<<"Iteration = "<<iter<<" Error = "<<sqrt(error/n_edges)<<std::endl;
 
-            { 
+            n_ave_F=0.0;
             for (int i = 0; i < graph.num_nodes; ++i) {
-                for (int dim = 0; dim < numDimensions; ++dim) {
-                    flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim];
-                    flat_forces[i * numDimensions + dim]=0;
+                if (graph.flat_specified_positions[i]){
+                    for (int dim = 0; dim < numDimensions; ++dim) {
+                        ave_forces[dim]+=flat_forces[i * numDimensions + dim];
+                    }
+                    n_ave_F++;
                 }
             }
+            if (n_ave_F>0){
+                for (int dim = 0; dim < numDimensions; ++dim) {
+                    ave_forces[dim]/=n_ave_F;
+                }
             }
+            for (int i = 0; i < graph.num_nodes; ++i) {
+                if (!graph.flat_specified_positions[i]){
+                    for (int dim = 0; dim < numDimensions; ++dim) {
+                        flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim];
+                        flat_forces[i * numDimensions + dim]=0;
+                    }
+                } 
+                else {
+                    for (int dim = 0; dim < numDimensions; ++dim) {
+                        flat_positions[i * numDimensions + dim] -= F * ave_forces[dim];
+                        flat_forces[i * numDimensions + dim]=0;
+                    }
+                }
+            }
+            for (int dim = 0; dim < numDimensions; ++dim) 
+                ave_forces[dim]=0;
         }
 
         for (int i = 0; i < graph.num_nodes; ++i) {
@@ -31082,7 +31181,11 @@ std::string jsInput = R"(2
         // Initialize positions
         srand(seed);   // Seed the random number generator
         for (int i = 0; i < graph.num_nodes*numDimensions; ++i) {
-                flat_positions[i] = (static_cast<double>(rand()) / static_cast<double>(RAND_MAX) - 0.5) *10.;
+            if (graph.flat_specified_positions[i / numDimensions]) {
+                flat_positions[i] = graph.nodes_pos[i / numDimensions][i % numDimensions];
+            } else {
+                flat_positions[i] = (static_cast<double>(rand()) / static_cast<double>(RAND_MAX) - 0.5) * 10.0;
+            }
         }
 
         // forces
@@ -31096,50 +31199,74 @@ std::string jsInput = R"(2
             pf = (1 - learningRate * pf);
             double extraF = sqrt(1 - projection_factor) + 1.e-3;
             double F = learningRate;
-            double sINF=sqrt(INF)-1;
             double deflating_exponent=pow(projection_factor,inflate)+1;
-            //double error=0.0;
+            double error=0.0;
             {
                 std::vector<double> delta(numDimensions, 0.0);
                 for (int i = 0; i < graph.num_nodes-1; ++i) {
                     for (int j = i+1; j < graph.num_nodes; ++j) {
-                        double len = graph.flat_distance_matrix[i * graph.num_nodes + j];
-                        if ((len < sINF) && (len > 0)) {
-                            len *= len;//
-                            double d2 = 0.0;
+                        if ((!graph.flat_specified_positions[i]) || (!graph.flat_specified_positions[j])){
+                            double len = graph.flat_distance_matrix[i * graph.num_nodes + j];
+                            if ((len < sINF) && (len > 0)) {
+                                len *= len;//
+                                double d2 = 0.0;
 
-                            for (int dim = 0; dim < numDimensions; ++dim) {
-                                delta[dim]=flat_positions[i * numDimensions + dim] - flat_positions[j * numDimensions + dim];
-                                d2 += pow(delta[dim], 2);
-                            }
-                            double force = 0.5*(d2 - len) / (d2+0.001);
+                                for (int dim = 0; dim < numDimensions; ++dim) {
+                                    delta[dim]=flat_positions[i * numDimensions + dim] - flat_positions[j * numDimensions + dim];
+                                    d2 += pow(delta[dim], 2);
+                                }
+                                double force = 0.5*(d2 - len) / (d2+0.001);
 
-                            if (!graph.flat_immediate_neighbor[i * graph.num_nodes + j]) {
-                                if (inflateQ)
-                                    force *= extraF/(pow(len,deflating_exponent)+0.001); //(std::max(d2, len));
-                                else 
-                                    force *= extraF/(len+0.001);
-                            }
-                            //else
-                            //    error+=force*force;
-                            for (int dim = 0; dim < numDimensions; ++dim) {
-                                double df = force * delta[dim];
-                                flat_forces[i * numDimensions + dim] += df;
-                                flat_forces[j * numDimensions + dim] -= df;
+                                if (!graph.flat_immediate_neighbor[i * graph.num_nodes + j]) {
+                                    if (inflateQ)
+                                        force *= extraF/(pow(len,deflating_exponent)+0.001); //(std::max(d2, len));
+                                    else 
+                                        force *= extraF/(len+0.001);
+                                }
+                                else
+                                    error+=force*force;
+                                for (int dim = 0; dim < numDimensions; ++dim) {
+                                    double df = force * delta[dim];
+                                    flat_forces[i * numDimensions + dim] += df;
+                                    flat_forces[j * numDimensions + dim] -= df;
+                                }
                             }
                         }
                     }
                 }
             }
+            std::cout<<"Iteration = "<<iter<<" Error = "<<sqrt(error/n_edges)<<std::endl;
 
-            { 
+            n_ave_F=0.0;
             for (int i = 0; i < graph.num_nodes; ++i) {
-                for (int dim = 0; dim < numDimensions; ++dim) {
-                    flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim];
-                    flat_forces[i * numDimensions + dim]=0;
+                if (graph.flat_specified_positions[i]){
+                    for (int dim = 0; dim < numDimensions; ++dim) {
+                        ave_forces[dim]+=flat_forces[i * numDimensions + dim];
+                    }
+                    n_ave_F++;
                 }
             }
+            if (n_ave_F>0){
+                for (int dim = 0; dim < numDimensions; ++dim) {
+                    ave_forces[dim]/=n_ave_F;
+                }
             }
+            for (int i = 0; i < graph.num_nodes; ++i) {
+                if (!graph.flat_specified_positions[i]){
+                    for (int dim = 0; dim < numDimensions; ++dim) {
+                        flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim];
+                        flat_forces[i * numDimensions + dim]=0;
+                    }
+                } 
+                else {
+                    for (int dim = 0; dim < numDimensions; ++dim) {
+                        flat_positions[i * numDimensions + dim] -= F * ave_forces[dim];
+                        flat_forces[i * numDimensions + dim]=0;
+                    }
+                }
+            }
+            for (int dim = 0; dim < numDimensions; ++dim) 
+                ave_forces[dim]=0;
         }
 
         for (int i = 0; i < graph.num_nodes; ++i) {
@@ -31156,6 +31283,6 @@ std::string jsInput = R"(2
         // Duplicate the C-style string to ensure its memory is managed correctly
         //return strdup(outputString.c_str());
     }
-    return 0;
+   return 0;
 }
 
