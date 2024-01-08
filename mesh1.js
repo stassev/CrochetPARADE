@@ -80,7 +80,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
     var Dimen = 3;
 
-    const container = document.getElementById('3dview'); // Replace 'yourContainerId' with the actual ID of your predefined HTML element
+    const container = document.getElementById('view3d'); // Replace 'yourContainerId' with the actual ID of your predefined HTML element
 
 
     renderer = new THREE.WebGLRenderer();
@@ -124,7 +124,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     }
 
     // Event listener for the class change in '3dview'
-    var view = document.getElementById('3dview');
+    var view = document.getElementById('view3d');
     var observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.attributeName === "class") {

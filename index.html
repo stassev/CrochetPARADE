@@ -17,7 +17,7 @@
 
  -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="utf-8">
@@ -205,7 +205,7 @@
             width: 80%;
         }
 
-        #close-btn {
+        .close-btn {
             color: #aaa;
             float: right;
             font-size: 26px;
@@ -213,13 +213,13 @@
             cursor: pointer;
         }
 
-        #close-btn:hover {
+        .close-btn:hover {
             color: #000;
         }
 
 
         .editor_container,
-        #3dview {
+        #view3d {
             box-sizing: border-box;
         }
 
@@ -523,7 +523,7 @@
         </div>
     </div>
     <div id="announcement" style="background-color:rgb(253, 151, 79); font-size: 14pt; position: relative;">
-        <span style="cursor: pointer; position: absolute; top: 5px; right: 5px;font-size:20pt;font-weight:600%" onclick="closeAnnouncement()">×</span>
+        <span style="cursor: pointer; position: absolute; top: 5px; right: 5px;font-size:20pt;font-weight:600" onclick="closeAnnouncement()">×</span>
         <b>Update: The codebase of CrochetPARADE was updated to drop Graphviz as a dependency.</b><br>
         The computation now works about 3 times faster for large projects. The new computation engine allows better fine-tuning
         of the final result. The changes are reflected in new keywords that can be used after the "DOT:" command. See the Manual
@@ -937,9 +937,10 @@
             </div>
         </div>
     </div>
-    <div id="3dview" class="side-by-side" style="background: rgb(230, 230, 230);;font-size:16pt; 
-    justify-content: center; align-items: center;"><br><b>Getting Started</b><br>
-        Write your crochet pattern instructions in the text field on the left. The instructions should be in the CrochetPARADE language.
+    <div id="view3d" class="side-by-side" style="background: rgb(230, 230, 230);;font-size:16pt; 
+     justify-content: center; align-items: center;"><b>Getting Started</b><br>
+        <iframe width="267" height="150" src="https://www.youtube-nocookie.com/embed/videoseries?si=0an24KsR98Qq0CtQ&amp;list=PLDmfqmiN1WWyEp3MI8ik4IvnMARbm_ZMf" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+        <br> Write your crochet pattern instructions in the text field on the left. The instructions should be in the CrochetPARADE language.
         <br><br>
         For examples, click on the dropdown menu.
         <br><br> 3D view will be displayed here once the calculation button is pressed. Calculation can take a long time. The computational times in the example names are approximate and are for my laptop. Scale them for your device.<br><br>
@@ -1405,7 +1406,7 @@
         }
     </script>
     <div id="about" class="info-box">
-        <span id="close-btn" onclick="document.getElementById('about').style.display='none'" style="float: right; cursor: pointer;">&times;</span>
+        <span class="close-btn" onclick="document.getElementById('about').style.display='none'" style="float: right; cursor: pointer;">&times;</span>
         <h2 style="font-weight:400">About</h2>
         <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
             platform that allows users to create, visualize, and analyze both 2D and 3D crochet patterns.
@@ -1419,7 +1420,7 @@
             encountered with instructions
             in plain English. The code parses and checks any user provided pattern for correctness and
             then creates a virtual model of the project, which is then rendered in 3D.
-            <p></p>
+        </p><p>
             After rendering a pattern, users can review ('debug') the final project's
             shape and make adjustments. The platform identifies overly loose or tight
             stitches, enabling users to replace them with more suitable ones before crocheting,
@@ -1470,7 +1471,8 @@
         <p> LICENSE AND COPYRIGHT
             <ul>
                 <li>The website and all of its computational components are free and open source and are released under
-                    the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html#license-text">GPLv3 license</a>.
+                    the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html#license-text">GPLv3 license</a>. This ensures that the 
+                    platform will be free and open to all in perpetuity.
                 </li>
                 <li>The showcase patterns are either in the public domain (as specified in the pattern description)
                     or are created by the author and are released in the public domain. </li>
@@ -1488,7 +1490,7 @@
         <p>Svetlin Tassev (2023)</p>
     </div>
     <div id="info" class="info-box">
-        <span id="close-btn" onclick="document.getElementById('info').style.display='none'" style="float: right; cursor: pointer;">&times;</span>
+        <span class="close-btn" onclick="document.getElementById('info').style.display='none'" style="float: right; cursor: pointer;">&times;</span>
         <h2 style="font-weight:400">Key bindings</h2>
         <p> General shortcuts.</p>
         <p>
@@ -1540,7 +1542,7 @@
         background-color: #f2f2f2;
         border: 1px solid #ccc;
         z-index: 1;">
-            <span id="close-btn" onclick="closeDialog()" style="float: right; cursor: pointer;">&times;</span>
+            <span class="close-btn" onclick="closeDialog()" style="float: right; cursor: pointer;">&times;</span>
             <pre id="dialog-text"></pre>
         </div>
     </div>
@@ -1644,7 +1646,7 @@
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh.js';
+        import Generate3DModel from './mesh1.js';
         //import  "./viz-standalone.js";
         const button = document.getElementById("3dbutton");
         //const textarea = document.getElementById('inputText');
@@ -1685,7 +1687,7 @@ document.removeEventListener('mousedown',onMouseDown)
 document.removeEventListener('keydown', handleKeyDown);
 document.removeEventListener('keydown', handleKeyDownHide);
 document.removeEventListener('keydown', handleKeyDownHideAnim);
-document.getElementById("3dview").innerText=''
+             document.getElementById("view3d").innerText = ''
 
 document.removeEventListener('keyup', handleKeyUp);
 var select = document.getElementById("examples");
@@ -1814,10 +1816,10 @@ jsonOld=json0
 
 
     <script>
-        //const view = document.getElementById('3dview');
+        //const view = document.getElementById('view3d');
         //view.classList.add('stacked');
         const editor = document.getElementById('edc');
-        const view = document.getElementById('3dview');
+        const view = document.getElementById('view3d');
 
         editor.classList.remove('side-by-side', 'stacked');
         view.classList.remove('side-by-side', 'stacked');
@@ -1827,7 +1829,7 @@ jsonOld=json0
 
         function toggleLayout(layout) {
             const editor = document.getElementById('edc');
-            const view = document.getElementById('3dview');
+            const view = document.getElementById('view3d');
             editor.classList.remove('side-by-side', 'stacked');
             view.classList.remove('side-by-side', 'stacked');
             editor.style.display = 'block';
