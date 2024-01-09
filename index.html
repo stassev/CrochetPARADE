@@ -535,7 +535,7 @@
         }
     </script>
 
-    <script src="./parse1.js"></script>
+    <script src="./parse2.js"></script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
 
@@ -551,18 +551,18 @@
     <div id="display"></div>
 
     <script>
-        var showinfo = false
-        document.getElementById('mouse').style.display = 'none'
-        document.getElementById('display').style.display = 'none'
+        var showinfo = false;
+        document.getElementById('mouse').style.display = 'none';
+        document.getElementById('display').style.display = 'none';
         document.addEventListener('keydown', function(event) {
             if ((event.altKey) && ((event.ctrlKey)) && (event.key === '1'))
-                showinfo = !showinfo
+                showinfo = !showinfo;
             if (showinfo) {
-                document.getElementById('mouse').style.display = 'flex'
-                document.getElementById('display').style.display = 'block'
+                document.getElementById('mouse').style.display = 'flex';
+                document.getElementById('display').style.display = 'block';
             } else {
-                document.getElementById('mouse').style.display = 'none'
-                document.getElementById('display').style.display = 'none'
+                document.getElementById('mouse').style.display = 'none';
+                document.getElementById('display').style.display = 'none';
             }
         })
         var renderer = null;
@@ -575,8 +575,8 @@
         });
 
 
-        var timeoutID = null
-        var timeoutID1 = null
+        var timeoutID = null;
+        var timeoutID1 = null;
         // Map of special keys
         const specialKeys = {
             "Control": "Ctrl",
@@ -589,29 +589,29 @@
 
             var message = event.deltaY > 0 ? "~down" : "~up";
 
-            display(message)
+            display(message);
         });
 
         document.addEventListener("auxdown", function(event) {
             if (event.button === 1) { // 1 is the code for the middle mouse button
 
-                display("~middle")
+                display("~middle");
             }
         });
         document.addEventListener("auxup", function(event) {
             if (event.button === 1) { // 1 is the code for the middle mouse button
 
-                display("!middle")
+                display("!middle");
             }
         });
 
         function display(text) {
             if (timeoutID != null)
-                clearTimeout(timeoutID)
+                clearTimeout(timeoutID);
             if (timeoutID1 != null)
-                clearTimeout(timeoutID1)
+                clearTimeout(timeoutID1);
 
-            var myLabel = document.getElementById("display")
+            var myLabel = document.getElementById("display");
             if (canvasClicked) {
                 if (text[0] === '~' && text.length > 1) {
                     if (!(['up', 'down'].includes(text.slice(1))))
@@ -621,9 +621,9 @@
                 } else if (text[0] === '!' && text.length > 1) {
                     if (['right', 'left', 'middle'].includes(text.slice(1))) document.getElementById(text.slice(1)).classList.remove("highlight");
                 } else
-                    myLabel.innerText = text
+                    myLabel.innerText = text;
             } else if (text.length > 1 && (!(['~', '!'].includes(text[0])))) {
-                myLabel.innerText = text
+                myLabel.innerText = text;
             }
 
 
@@ -654,7 +654,7 @@
         // Function to update the display
         function updateDisplay() {
             const pressed = Object.values(pressedSpecialKeys).join("+");
-            document.getElementById("display").innerText = (pressed)
+            document.getElementById("display").innerText = (pressed);
         }
 
         // Capture and display key press including special keys
@@ -668,21 +668,21 @@
                 if (!event.ctrlKey)
                     delete pressedSpecialKeys['Control']
                 else
-                    pressedSpecialKeys['Control'] = specialKeys['Control']
+                    pressedSpecialKeys['Control'] = specialKeys['Control'];
                 if (!event.altKey)
-                    delete pressedSpecialKeys['Alt']
+                    delete pressedSpecialKeys['Alt'];
                 else
-                    pressedSpecialKeys['Alt'] = specialKeys['Alt']
+                    pressedSpecialKeys['Alt'] = specialKeys['Alt'];
                 if (!event.shiftKey)
-                    delete pressedSpecialKeys['Shift']
+                    delete pressedSpecialKeys['Shift'];
                 else
-                    pressedSpecialKeys['Shift'] = specialKeys['Shift']
+                    pressedSpecialKeys['Shift'] = specialKeys['Shift'];
 
                 if (Object.values(pressedSpecialKeys).join("+").length > 0)
                     keyCombination = Object.values(pressedSpecialKeys).join("+") + "+" + event.key.toUpperCase();
                 else
                     keyCombination = event.key.toUpperCase();
-                display(keyCombination)
+                display(keyCombination);
             }
         });
 
@@ -699,18 +699,18 @@
             var buttonClicked = event.button;
             var buttonName = buttonClicked === 0 ? "left" : (buttonClicked === 1 ? "middle" : "right");
             // console.log('!' + buttonName)
-            display("!" + buttonName)
+            display("!" + buttonName);
         });
 
         document.addEventListener("mousedown", function(event) {
 
             var buttonClicked = event.button;
             var buttonName = buttonClicked === 0 ? "left" : (buttonClicked === 1 ? "middle" : "right");
-            display("~" + buttonName)
+            display("~" + buttonName);
         });
         document.addEventListener("contextmenu", function(event) {
 
-            display("~right")
+            display("~right");
         });
     </script>
     <div>
@@ -776,12 +776,15 @@
             </div>
         </div>
 
+        <script src="https://liberapay.com/CrochetPARADE/widgets/button.js"></script>
+        <noscript><a href="https://liberapay.com/CrochetPARADE/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript>
+
     </div>
 
     <script>
-        var layoutNumber = 0
+        var layoutNumber = 0;
         // var layouts = ['sideBySide', 'stacked', 'editorOnly', '3dViewOnly']
-        var layouts = ['sideBySide', 'editorOnly', '3dViewOnly']
+        var layouts = ['sideBySide', 'editorOnly', '3dViewOnly'];
         document.addEventListener('keydown', function(event) {
             if (event.ctrlKey && event.key === 'r') {
                 event.preventDefault();
@@ -789,7 +792,7 @@
             if (event.ctrlKey && event.key === 'l') {
                 event.preventDefault();
                 // Call the function to toggle the layout
-                let l = layouts[((++layoutNumber) % 3)]
+                let l = layouts[((++layoutNumber) % 3)];
                 toggleLayout(l); // Replace 'sideBySide' with the desired layout
 
                 // Select the corresponding radio button
@@ -825,102 +828,101 @@
 
 
     <script>
-
         var json0 = '';
         var jsonOld = '';
-        var reset_json = 1
-document.addEventListener('DOMContentLoaded', setTimeout(function() {
+        var reset_json = 1;
+        setTimeout(function() {
 
-        const radioButtons = document.querySelectorAll('input[type="radio"]');
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
 
-        radioButtons.forEach((radioButton) => {
-            radioButton.addEventListener('change', () => {
-                if (radioButton.value === '2D') {
-                    DIM = 2;
-                } else if (radioButton.value === '3D') {
-                    DIM = 3;
-                }
-            });
-        });
-
-        var textOptions = [
-            ['Write your own instructions', "", 3],
-            ['Baby bootie (~2sec)', textBootie, 3],
-            ['Irish crochet: flower 1 (~1sec)', textFlower2, 2],
-            ['Irish crochet: flowers 2 (~5sec)', textFlower, 3],
-            ['Granny square (~2sec)', textSquare, 2],
-            ['Edging (~1sec)', textEdging, 2],
-            ['Amigurumi: simplistic snowman (~15sec)', textSnowman, 3],
-            ['Baby blanket (~7sec)', textBlanket, 3],
-            ['Swatch (~8sec)', textSwatch, 3],
-            ['Stocking (~12sec)', textStocking, 3],
-            ['Hat (~3min)', textHat, 3],
-            ['Mixed styles: lacy hat (~12sec)', textLacyHat, 3],
-            ['Filet crochet: logo (~45sec)', textFilet, 3],
-            ['Irish crochet: doily (~5min!)', textDoily, 2],
-            ['Simple flower with post stitches (~1sec)', textFlower3, 3]
-        ];
-
-        var select = document.getElementById('examples');
-
-        // Create a wrapper div
-        var wrapperDiv = document.createElement('div');
-        wrapperDiv.style.position = 'relative';
-        wrapperDiv.style.display = 'inline-block';
-
-        // Replace the select element with the wrapper div
-        select.parentNode.replaceChild(wrapperDiv, select);
-
-        // Append the select element to the wrapper div
-        wrapperDiv.appendChild(select);
-
-        // Clear any existing options
-        select.innerHTML = "";
-
-        // Add the default option
-        var defaultOption = document.createElement("option");
-        defaultOption.classList.add("button-examples");
-        defaultOption.text = textOptions[0][0]
-        defaultOption.value = textOptions[0][0]
-        select.appendChild(defaultOption);
-
-        for (var i = 1; i < textOptions.length; i++) {
-            var option = document.createElement("option");
-            option.classList.add("button-examples");
-            option.text = textOptions[i][0];
-            option.value = textOptions[i][0];
-            select.appendChild(option);
-        }
-
-        var arrowDiv = document.createElement('div');
-        arrowDiv.innerHTML = '&#9660;';
-        arrowDiv.style.position = 'absolute';
-        arrowDiv.style.right = '4pt'; // Adjust this value to position the arrow
-        arrowDiv.style.top = '6pt'; // Adjust this value to position the arrow
-        wrapperDiv.appendChild(arrowDiv); // Append the arrow div to the wrapper div instead of the select element
-
-
-        select.onchange = function() {
-            var inputText = document.getElementById("inputText");
-            var selectedValue = select.value;
-
-            var index = textOptions.findIndex(option => option[0] === selectedValue);
-            var selectedNdim = textOptions[index][2];
-
-            //console.log(index, textValues, selectedValue)
-            inputText.value = textOptions[index][1]
             radioButtons.forEach((radioButton) => {
-                if (radioButton.value === String(selectedNdim) + 'D') {
-                    radioButton.checked = true;
-                    DIM = selectedNdim;
-                }
-            })
+                radioButton.addEventListener('change', () => {
+                    if (radioButton.value === '2D') {
+                        DIM = 2;
+                    } else if (radioButton.value === '3D') {
+                        DIM = 3;
+                    }
+                });
+            });
 
-            inputText.value = inputText.value.replace(/\t/g, '    ').replace(/\r/g, '')
-            onMyInput()
-            update(inputText.value)
-        }
-    },0));
+            var textOptions = [
+                ['Write your own instructions', "", 3],
+                ['Baby bootie (~2sec)', textBootie, 3],
+                ['Irish crochet: flower 1 (~1sec)', textFlower2, 2],
+                ['Irish crochet: flowers 2 (~5sec)', textFlower, 3],
+                ['Granny square (~2sec)', textSquare, 2],
+                ['Edging (~1sec)', textEdging, 2],
+                ['Amigurumi: simplistic snowman (~15sec)', textSnowman, 3],
+                ['Baby blanket (~7sec)', textBlanket, 3],
+                ['Swatch (~8sec)', textSwatch, 3],
+                ['Stocking (~12sec)', textStocking, 3],
+                ['Hat (~3min)', textHat, 3],
+                ['Mixed styles: lacy hat (~12sec)', textLacyHat, 3],
+                ['Filet crochet: logo (~45sec)', textFilet, 3],
+                ['Irish crochet: doily (~5min!)', textDoily, 2],
+                ['Simple flower with post stitches (~1sec)', textFlower3, 3]
+            ];
+
+            var select = document.getElementById('examples');
+
+            // Create a wrapper div
+            var wrapperDiv = document.createElement('div');
+            wrapperDiv.style.position = 'relative';
+            wrapperDiv.style.display = 'inline-block';
+
+            // Replace the select element with the wrapper div
+            select.parentNode.replaceChild(wrapperDiv, select);
+
+            // Append the select element to the wrapper div
+            wrapperDiv.appendChild(select);
+
+            // Clear any existing options
+            select.innerHTML = "";
+
+            // Add the default option
+            var defaultOption = document.createElement("option");
+            defaultOption.classList.add("button-examples");
+            defaultOption.text = textOptions[0][0];
+            defaultOption.value = textOptions[0][0];
+            select.appendChild(defaultOption);
+
+            for (var i = 1; i < textOptions.length; i++) {
+                var option = document.createElement("option");
+                option.classList.add("button-examples");
+                option.text = textOptions[i][0];
+                option.value = textOptions[i][0];
+                select.appendChild(option);
+            }
+
+            var arrowDiv = document.createElement('div');
+            arrowDiv.innerHTML = '&#9660;';
+            arrowDiv.style.position = 'absolute';
+            arrowDiv.style.right = '4pt'; // Adjust this value to position the arrow
+            arrowDiv.style.top = '6pt'; // Adjust this value to position the arrow
+            wrapperDiv.appendChild(arrowDiv); // Append the arrow div to the wrapper div instead of the select element
+
+
+            select.onchange = function() {
+                var inputText = document.getElementById("inputText");
+                var selectedValue = select.value;
+
+                var index = textOptions.findIndex(option => option[0] === selectedValue);
+                var selectedNdim = textOptions[index][2];
+
+                //console.log(index, textValues, selectedValue)
+                inputText.value = textOptions[index][1];
+                radioButtons.forEach((radioButton) => {
+                    if (radioButton.value === String(selectedNdim) + 'D') {
+                        radioButton.checked = true;
+                        DIM = selectedNdim;
+                    }
+                })
+
+                inputText.value = inputText.value.replace(/\t/g, '    ').replace(/\r/g, '')
+                onMyInput();
+                update(inputText.value);
+            }
+        }, 0);
     </script>
 
     <div class="editor_container" id="edc">
@@ -1030,7 +1032,7 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
             setTimeout(function() {
 
                 update(textarea.value), 0
-            })
+            });
         })
 
 
@@ -1040,28 +1042,28 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
             setTimeout(function() {
 
                 update(textarea.value), 0
-            })
+            });
         })
 
         function update(text) {
             const cursorPosition = textarea.selectionStart;
 
             const inputString = textarea.value;
-            let bracket = inputString[cursorPosition]
-            let bracketIndex = cursorPosition
+            let bracket = inputString[cursorPosition];
+            let bracketIndex = cursorPosition;
             var matchingBracketIndex = findMatchingClosingBracketIndex(inputString, cursorPosition);
             if (matchingBracketIndex == -1) {
-                matchingBracketIndex = findMatchingOpeningBracketIndex(inputString, cursorPosition)
+                matchingBracketIndex = findMatchingOpeningBracketIndex(inputString, cursorPosition);
             }
             if (matchingBracketIndex == -1) {
-                matchingBracketIndex = findMatchingClosingBracketIndex(inputString, cursorPosition - 1)
-                bracket = inputString[cursorPosition - 1]
-                bracketIndex = cursorPosition - 1
+                matchingBracketIndex = findMatchingClosingBracketIndex(inputString, cursorPosition - 1);
+                bracket = inputString[cursorPosition - 1];
+                bracketIndex = cursorPosition - 1;
             }
             if (matchingBracketIndex == -1) {
-                matchingBracketIndex = findMatchingOpeningBracketIndex(inputString, cursorPosition - 1)
-                bracket = inputString[cursorPosition - 1]
-                bracketIndex = cursorPosition - 1
+                matchingBracketIndex = findMatchingOpeningBracketIndex(inputString, cursorPosition - 1);
+                bracket = inputString[cursorPosition - 1];
+                bracketIndex = cursorPosition - 1;
             }
 
             //console.log(cursorPosition, matchingBracketIndex, bracketIndex, bracket, inputString[matchingBracketIndex])
@@ -1088,81 +1090,81 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
             let insideColorText = 0;
             let insideDollarText = false;
             let insideSpecialText = false;
-            let label = true
-            let dollarCount = 0
-            let backslashCount = 0
-            let background = 'transparent'
+            let label = true;
+            let dollarCount = 0;
+            let backslashCount = 0;
+            let background = 'transparent';
 
             for (let i = 0; i < text.length; i++) {
                 if (i == bracketIndex)
                     if (inputString[i] && inputString[i] !== '' && '[](){}'.includes(inputString[i]))
-                        background = 'rgb(255,100,100)'
+                        background = 'rgb(255,100,100)';
                 if (i == matchingBracketIndex) {
-                    background = 'rgb(200,200,200)' // 'rgb(100,100,255)'
+                    background = 'rgb(200,200,200)'; // 'rgb(100,100,255)'
                     if (inputString[i] !== getMatchingBracket(bracket))
-                        background = 'rgb(255,100,100)'
+                        background = 'rgb(255,100,100)';
                 }
                 if ((matchingBracketIndex != -1) && (i == bracketIndex)) {
-                    background = 'rgb(200,200,200)' // 'rgb(100,100,255)'
+                    background = 'rgb(200,200,200)'; // 'rgb(100,100,255)'
                     if (inputString[matchingBracketIndex] !== getMatchingBracket(inputString[bracketIndex]))
-                        background = 'rgb(255,100,100)'
+                        background = 'rgb(255,100,100)';
                 }
 
                 if (text[i] === '#')
-                    insideCommentText = true
+                    insideCommentText = true;
                 if (text[i] === '\n')
-                    insideCommentText = false
+                    insideCommentText = false;
 
                 if (text.slice(i, i + 11) === 'BACKGROUND:')
-                    insideColorText = 1
+                    insideColorText = 1;
                 if (text.slice(i, i + 6) === 'COLOR:')
-                    insideColorText = 1
+                    insideColorText = 1;
                 if (text[i] === '\n')
-                    insideColorText = 0
+                    insideColorText = 0;
                 if ((insideColorText == 1) && (text[i]) === '(')
-                    insideColorText = 2
+                    insideColorText = 2;
                 if ((text[i]) === ')')
-                    insideColorText -= 1
+                    insideColorText -= 1;
                 if (([',', ']', '}', ].includes(text[i])) && insideColorText == 1)
-                    insideColorText = 0
+                    insideColorText = 0;
 
                 if (text.slice(i, i + 4) === 'DOT:')
-                    insideDotText = true
+                    insideDotText = true;
                 if (text[i] === '\n')
-                    insideDotText = false
+                    insideDotText = false;
 
                 if (text.slice(i, i + 4) === 'DEF:')
-                    insideDefText = true
+                    insideDefText = true;
                 if (text[i] === '\n')
-                    insideDefText = false
+                    insideDefText = false;
 
                 if ([text.slice(i - 2, i + 1), text.slice(i - 1, i + 2), text.slice(i, i + 3)].includes('...') || ['<', '>'].includes(text[i]))
-                    insideSpecialText = true
+                    insideSpecialText = true;
 
                 if ((text[i] === '#') || (text.slice(i - 3, i + 1) === 'DEF:') || (text.slice(i - 3, i + 1) === 'DOT:')) {
-                    balance = 1000000
+                    balance = 1000000;
                 }
                 if (text[i] === '$')
-                    dollarCount++
+                    dollarCount++;
                 if (dollarCount % 2 == 1)
-                    insideDollarText = true
+                    insideDollarText = true;
 
                 if (text[i] === '\\')
-                    backslashCount++
+                    backslashCount++;
                 if (backslashCount % 2 == 1)
-                    insideCommentText1 = true
+                    insideCommentText1 = true;
 
 
                 if (text[i] === '@' || (text[i] === '.' && text[i - 1] !== '.' && text[i + 1] !== '.')) {
                     if (balance < 10000) {
                         if (!insideLabelText)
-                            balance = 0
-                        insideLabelText = true
+                            balance = 0;
+                        insideLabelText = true;
                     }
                     if (text[i] === '@')
-                        label = true
+                        label = true;
                     else
-                        label = false
+                        label = false;
                 }
 
                 if (text[i] === '(' || text[i] === '[' || text[i] === '{') {
@@ -1172,10 +1174,10 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
                 }
 
                 if ((text[i] === '\n') || (balance < 0) || ((balance == 0) && ((text[i] === ',' && (dollarCount % 2 == 0)) || (text[i] === '*' && (dollarCount % 2 == 0))))) {
-                    insideLabelText = false
-                    balance = 0
+                    insideLabelText = false;
+                    balance = 0;
                 }
-                var texti = text[i].replaceAll(' ', '&nbsp;').replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;")
+                var texti = text[i].replaceAll(' ', '&nbsp;').replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;");
 
                 if (insideCommentText1) {
                     highlightedText += '<span style="color:rgb(128,128,128);background-color:' + background + '">' + texti + '</span>';
@@ -1204,11 +1206,11 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
                 }
 
                 if (dollarCount % 2 == 0)
-                    insideDollarText = false
+                    insideDollarText = false;
                 if (backslashCount % 2 == 0)
-                    insideCommentText1 = false
-                insideSpecialText = false
-                background = 'transparent'
+                    insideCommentText1 = false;
+                insideSpecialText = false;
+                background = 'transparent';
 
             }
             result_element.innerHTML = highlightedText.replaceAll('\n', '<br>');
@@ -1247,20 +1249,20 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
             //const textarea = document.getElementById('inputText');
             const numbers = document.querySelector('.numbers');
             if (textarea.value.includes('¶')) {
-                let text = ''
+                let text = '';
                 for (var l of textarea.value.split('\n')) {
                     if (l.trim()[0] === '¶') {
-                        l = l.trim().slice(1)
+                        l = l.trim().slice(1);
                         if ((l.trim().slice(0, 3) === '...'))
-                            text += l.trim().slice(3)
+                            text += l.trim().slice(3);
                         else
-                            text += '\n' + l
+                            text += '\n' + l;
                     } else
-                        text += l.trim()
+                        text += l.trim();
                 }
-                textarea.value = text.trim()
+                textarea.value = text.trim();
             }
-            textarea.value = textarea.value.replace(/\t/g, '    ').replace(/\r/g, '')
+            textarea.value = textarea.value.replace(/\t/g, '    ').replace(/\r/g, '');
             const lines1 = textarea.value.split('\n');
             let maxLength = 0;
 
@@ -1278,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
                 textarea.style.width = (edc.offsetWidth - 80) + 'px';
 
             const highlight = document.getElementById('highlighting');
-            highlight.style.width = textarea.style.width
+            highlight.style.width = textarea.style.width;
 
             const textdiv = document.getElementById('textdiv');
             //textdiv.style.width = textarea.style.width
@@ -1296,21 +1298,21 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
             document.body.removeChild(tempElement);
             //console.log(heightInPixels)
 
-            const H = (window.innerHeight / heightInPixels - 40) / 21
+            const H = (window.innerHeight / heightInPixels - 40) / 21;
 
             var numberOfLineBreaks = (textarea.value.match(/\n/g) || []).length;
             if (numberOfLineBreaks < H)
-                numberOfLineBreaks = H
+                numberOfLineBreaks = H;
 
             //numberOfLineBreaks * 21 + 40;
             const newHeight = numberOfLineBreaks * 21 + 40;
             textarea.style.height = newHeight + 'pt';
-            highlight.style.height = textarea.style.height
+            highlight.style.height = textarea.style.height;
             //edc.style.height = textarea.style.height
             //textdiv.style.height = textarea.style.height
             //const firstDiv = document.getElementById('inputText');
             //const firstDivHeight = firstDiv.clienHeight;
-            var firstDivHeight = newHeight
+            var firstDivHeight = newHeight;
             var secondDiv = document.getElementById('nums');
             secondDiv.style.height = (firstDivHeight - 15 - 21) + 'pt';
             secondDiv = document.getElementById('hrs');
@@ -1320,12 +1322,12 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
 
             const lines = textarea.value.split('\n');
             var numtext = ''
-            var num = 0
+            var num = 0;
             for (var l of lines) {
                 if ((l.trim().slice(0, 4) != 'DEF:') && (l.trim().slice(0, 3) != '...') && (l.trim().slice(0, 4) != 'DOT:') && (l.trim().slice(0, 11) != 'BACKGROUND:') && (l.split('#')[0].trim() !== '') && (l.trim() !== ""))
-                    numtext += '<span>' + (num++) + '<br></span>'
+                    numtext += '<span>' + (num++) + '<br></span>';
                 else
-                    numtext += '<span><br></span>'
+                    numtext += '<span><br></span>';
             }
 
 
@@ -1343,7 +1345,7 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
             if (text.trim() === '') {
                 alert('There are no instructions to parse. Write your own or use one of the examples from the drop down menu.');
                 //throw new Error('Error during processing of text. See alert box.')
-                return ''
+                return '';
             }
             try {
                 return processText(text, json0)
@@ -1351,19 +1353,19 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
             } catch (error) {
                 alert(error.message);
                 //throw new Error('Error during processing of text. See alert box.')
-                return ''
+                return '';
             }
         }
 
         var scene = null;
         var scene1 = null;
-        var exportGLTF
-        var saveSvg
+        var exportGLTF;
+        var saveSvg;
         var onMouseDown = null;
         var onMouseMove = null;
         var handleKeyDown = null;
-        var handleKeyDownHide = null
-        var handleKeyDownHideAnim = null
+        var handleKeyDownHide = null;
+        var handleKeyDownHideAnim = null;
         var handleKeyUp = null;
     </script>
 
@@ -1421,7 +1423,8 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
             encountered with instructions
             in plain English. The code parses and checks any user provided pattern for correctness and
             then creates a virtual model of the project, which is then rendered in 3D.
-        </p><p>
+        </p>
+        <p>
             After rendering a pattern, users can review ('debug') the final project's
             shape and make adjustments. The platform identifies overly loose or tight
             stitches, enabling users to replace them with more suitable ones before crocheting,
@@ -1472,7 +1475,7 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
         <p> LICENSE AND COPYRIGHT
             <ul>
                 <li>The website and all of its computational components are free and open source and are released under
-                    the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html#license-text">GPLv3 license</a>. This ensures that the 
+                    the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html#license-text">GPLv3 license</a>. This ensures that the
                     platform will be free and open to all in perpetuity.
                 </li>
                 <li>The showcase patterns are either in the public domain (as specified in the pattern description)
@@ -1550,17 +1553,17 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
 
     <script>
         function showStats() {
-            var text = 'Information about the current project.\n\nStitch count per row:\n'
-            var [dot, _] = processTextSafe(inputText.value, json0)
+            var text = 'Information about the current project.\n\nStitch count per row:\n';
+            var [dot, _] = processTextSafe(inputText.value, json0);
             if (dot !== '') {
                 for (var row of Object.keys(STATS)) {
-                    text += "Row " + row + ": "
-                    var x = Object.keys(STATS[row])
-                    x.sort()
+                    text += "Row " + row + ": ";
+                    var x = Object.keys(STATS[row]);
+                    x.sort();
                     for (var st of x) {
-                        text += STATS[row][st] + " " + st + ", "
+                        text += STATS[row][st] + " " + st + ", ";
                     }
-                    text = text.slice(0, -2) + "\n"
+                    text = text.slice(0, -2) + "\n";
                 }
                 text += STATSstretch;
                 text += '\n'
@@ -1568,10 +1571,10 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
                 let dict = {}
                 for (var row of Object.keys(STATS))
                     for (var k of Object.keys(STATS[row]))
-                        dict[k] = Dictionary[k]
-                text += 'Dictionary of stitches used for this project:\n'
+                        dict[k] = Dictionary[k];
+                text += 'Dictionary of stitches used for this project:\n';
                 for (let k of Object.keys(dict))
-                    text += k + '=' + dict[k] + '\n'
+                    text += k + '=' + dict[k] + '\n';
 
                 document.getElementById('dialog-text').textContent = text.replace(/\n/g, '\r\n');
                 document.getElementById('dialog-box').style.display = 'block';
@@ -1647,7 +1650,7 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh1.js';
+        import Generate3DModel from './mesh3.js';
          //import  "./viz-standalone.js";
          const button = document.getElementById("3dbutton");
          //const textarea = document.getElementById('inputText');
@@ -1679,33 +1682,33 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
          });
  
          async function show3DModel() {
-             var loadingIcon = document.getElementById('loading-icon')
+             var loadingIcon = document.getElementById('loading-icon');
              loadingIcon.style.display = 'block';
  
  
-             document.removeEventListener('mousemove', onMouseMove)
-             document.removeEventListener('mousedown', onMouseDown)
+             document.removeEventListener('mousemove', onMouseMove);
+             document.removeEventListener('mousedown', onMouseDown);
              document.removeEventListener('keydown', handleKeyDown);
              document.removeEventListener('keydown', handleKeyDownHide);
              document.removeEventListener('keydown', handleKeyDownHideAnim);
-             document.getElementById("view3d").innerText = ''
+             document.getElementById("view3d").innerText = '';
  
              document.removeEventListener('keyup', handleKeyUp);
              var select = document.getElementById("examples");
              var inputText = document.getElementById("inputText");
  
              if (reset_json == 1) { //default
-                 jsonOld = ''
-                 json0 = ''
+                 jsonOld = '';
+                 json0 = '';
              } else if (reset_json == 2) { //continue ctrl+c
-                 jsonOld = json0
+                 jsonOld = json0;
              } else if (reset_json == 3) { //repeat ctrl+r
-                 json0 = jsonOld
+                 json0 = jsonOld;
              }
  
              var dot_simple;
              setTimeout(function() {
-                 [json0,dot_simple] = processTextSafe(inputText.value, json0)
+                 [json0,dot_simple] = processTextSafe(inputText.value, json0);
              }, 0);
              setTimeout(async function() {
                  //json0 = processTextSafe(inputText.value, json0)
@@ -1742,18 +1745,18 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
                      DEBUG += '=======JSON0:=======\n' + JSON.stringify(json0) + '\n'
  
                      var a = Generate3DModel(json0, renderer, scene, scene1, backgroundColor)
-                     renderer = a[0]
-                     scene = a[1]
-                     onMouseDown = a[2]
-                     onMouseMove = a[3]
-                     handleKeyDown = a[4]
-                     handleKeyUp = a[5]
-                     STATSstretch = a[6]
-                     handleKeyDownHide = a[7]
-                     handleKeyDownHideAnim = a[8]
-                     exportGLTF = a[9]
-                     scene1 = a[10]
-                     saveSvg = a[11]
+                     renderer = a[0];
+                     scene = a[1];
+                     onMouseDown = a[2];
+                     onMouseMove = a[3];
+                     handleKeyDown = a[4];
+                     handleKeyUp = a[5];
+                     STATSstretch = a[6];
+                     handleKeyDownHide = a[7];
+                     handleKeyDownHideAnim = a[8];
+                     exportGLTF = a[9];
+                     scene1 = a[10];
+                     saveSvg = a[11];
                      //loadingIcon.style.display = 'none';
  
                      //});
@@ -1768,17 +1771,17 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
     <script>
         function do_exportGLTF() {
             try {
-                exportGLTF()
+                exportGLTF();
             } catch (error) {
-                alert('You need to press "Calculate model in 3D" first to calculate model.')
+                alert('You need to press "Calculate model in 3D" first to calculate model.');
             }
         }
 
         function do_saveSvg() {
             try {
-                saveSvg()
+                saveSvg();
             } catch (error) {
-                alert('You need to press "Calculate model in 3D" first to calculate model.')
+                alert('You need to press "Calculate model in 3D" first to calculate model.');
             }
         }
 
@@ -1788,7 +1791,7 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
 
         function processToDotFile() {
             var text = document.getElementById("inputText").value;
-            var [_, dot] = processTextSafe(text, json0)
+            var [_, dot] = processTextSafe(text, json0);
             if (dot !== '') {
                 var file = new Blob([dot], {
                     type: "text/plain"

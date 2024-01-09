@@ -14,8 +14,8 @@
 // with CrochetPARADE. If not, see <https://www.gnu.org/licenses/>.
 
 
-var EXTRA_DOTS = ''
-var backgroundColor = ''
+var EXTRA_DOTS = '';
+var backgroundColor = '';
 
 var textLacyHat = `# Lacy hat showcase
 # Own design, incorporating a modified version of the flower in the "Irish crochet flower 1" showcase.
@@ -48,7 +48,7 @@ $k=0$,sk,8ss,[13ch.chsp[2,k++],>,ss@[tr:@+1]]*8,sc@[%,7]
 [80sc
 ]*5
 79sc,ss@[%,0]
-`
+`;
 
 var textEdging = `#Edging showcase
 DEF: hdc=Copy(hdc,2) # Change height of hdc
@@ -63,7 +63,7 @@ sk,4*(8sc),sc,ch,turn
 $k=0$,sk,sc,fan_bottom*4,3ch,turn
 4sk,fan_top_beginning,fan_top*3,3ch,ss,turn
 sk,[ss,<,ch,hdc,hdc,(3ch,ss@1[%,-4]),hdc,ch]*10,ss
-DOT: start=10`
+DOT: start=10`;
 
 var textFlower3 = `# Flower showcase, demonstrating stitches in the post of a stitch.
 #Change default heights of stitches:
@@ -75,7 +75,7 @@ COLOR: Blue
 $k=0$,3ch.A[11]+!,(3ch,sk,>,dc.A[k++]^!,dc@[@].A[k++]^!)*6,dc.A[k++]^!,ss@[%,2]
 COLOR: Red
 $k=0$,@[-1,0],ch,[3ch,sc@[dc:@+1],[hdc,2dc,hdc]@A[k++]~,[hdc,2dc,hdc]@A[k++],>,sc@[dc:@]]*6,sc@[-1,-1]
-DOT: start=37`
+DOT: start=37`;
 
 var textSquare = `#Granny square showcase
 # Own design, incorporating a modified version of the flower in the "Irish crochet flower 1" showcase.
@@ -95,22 +95,22 @@ $c=0$,3ch,[3tr@chsp[c++],3ch,3tr@chsp[c++],ch,>,(4dc@chsp[c++],ch)*2]*4,4dc@chsp
 COLOR: Green
 ch,2sk,5sc,[sc,dc@[@],sc@[@],13sc,>,6sc]*4,ss@[%,0]
 DOT: start=1
-`
+`;
 
 var textTestEdgeOfSpaces1 = `10ch,turn
 sk,9sc,turn
 ch,2sc,4ch.A,4sk,3sc,turn
-4ch,5sc@A,4ch,sc`
+4ch,5sc@A,4ch,sc`;
 
 var textTestEdgeOfSpaces2 = `10ch,turn
 sk,9sc,turn
 ch,2sc,4ch.A!1,4sk,3sc,turn
-4ch,3sc@A,4ch,sc`
+4ch,3sc@A,4ch,sc`;
 
 var textTestEdgeOfSpaces3 = `10ch,turn
 sk,9sc,turn
 ch,2sc,4ch.A!,4sk,3sc
-4ch,3sc@A,4ch,sc`
+4ch,3sc@A,4ch,sc`;
 
 var textSwatch = `#Swatch showcase
 21ch,turn
@@ -173,54 +173,54 @@ DEF: funky=&funky^A(funky):B;2C;D~A-D::!-1-A;B-1-A;C-3-A;D-1-A
 [2ch,sk,[hdc,ch,funky,ch]*4,3hdc,turn
 ch,sk,19sc,turn
 ]*4
-`
+`;
 
 var textTestFunky = `DEF: funky=&funky^A(funky):B;2C;D~A-D::!-1-A;B-1-A;C-1-A;D-1-A
 9ch,turn
 9sc,turn
 9sc,turn
-3sc,funky,sc`
+3sc,funky,sc`;
 
 var textChainSpaceTest = `9ch,turn
 9sc,turn
 ch,@[-1,-1],2sc,4ch.A,3sc,turn
-2ch,sc,3sc@A,ch,sc`
+2ch,sc,3sc@A,ch,sc`;
 
 var textChainSpaceTest1 = `9ch
 9sc
 ch,@[-1,0],2sc,4ch.A,3sc
-2ch,sc,3sc@A,ch,sc`
+2ch,sc,3sc@A,ch,sc`;
 
 var textChainSpaceTest2 = `9ch
 9sc
 ch,@[-1,0],2sc,3ch.A,3sc
-2ch,sc,3sc@A,ch,sc`
+2ch,sc,3sc@A,ch,sc`;
 
 var textChainSpaceTest3 = `9ch
 9sc
 ch,@[-1,0],2sc,3ch.A,3sc
-2ch,sc,4sc@A,ch,sc`
+2ch,sc,4sc@A,ch,sc`;
 
 var textChainSpaceTest4 = `9ch
 9sc
 ch,@[-1,0],2sc,2ch.A,3sc
-2ch,sc,sc@A,ch,sc`
+2ch,sc,sc@A,ch,sc`;
 
 var textTestAt01 = `9ch,turn
 9sc,turn
-ch,@[-1,-2],sc`
+ch,@[-1,-2],sc`;
 
 var textTestAt02 = `9ch
 9sc
-ch,@[-1,-2],sc`
+ch,@[-1,-2],sc`;
 
 var textTestAt03 = `9ch
 9sc
-ch,2sc,@[%,0],sc`
+ch,2sc,@[%,0],sc`;
 
 var textTestAt04 = `9ch
 9sc
-ch,sc,sc@[%,0]`
+ch,sc,sc@[%,0]`;
 
 //parse_StitchCodeList(parse_original_text_to_list_of_structures(parse_definitions(textTestAt1).replace(/ |\t/g, '')))
 //LIST = parse_original_text_to_list_of_structures(text.replace(/ |\t/g, ''))
@@ -228,68 +228,68 @@ ch,sc,sc@[%,0]`
 
 var textTestAt1 = `9ch,turn
 2dc,2sc,dc,sc,2dc,turn
-sc,dc,tr@[sc:@-1],dc` //attach at 1,5=14
+sc,dc,tr@[sc:@-1],dc`; //attach at 1,5=14;;
 var textTestAt2 = `9ch,turn
 2dc,2sc,dc,sc,2dc,turn
-sc,dc,tr@[sc:@],dc` //attach at 1,5=14
+sc,dc,tr@[sc:@],dc`; //attach at 1,5=14;;
 var textTestAt3 = `9ch,turn
 2dc,2sc,dc,sc,2dc,turn
-sc,dc,tr@[sc:@+1],dc` //attach at 1,5=14
+sc,dc,tr@[sc:@+1],dc`; //attach at 1,5=14;;
 var textTestAt4 = `9ch,turn
 2dc,2sc,dc,sc,2dc,turn
-sc,dc,tr@[sc:@+2],dc` //attach at 1,3=12
+sc,dc,tr@[sc:@+2],dc`; //attach at 1,3=12;;
 
 var textTestAt10 = `9ch
 2dc,2sc,dc,sc,2dc
-sc,dc,tr@[sc:@-1],dc` //attach at 1,2=11
+sc,dc,tr@[sc:@-1],dc`; //attach at 1,2=11;;
 //parse_StitchCodeList(parse_original_text_to_list_of_structures(parse_definitions(textTestAt10).replace(/ |\t/g, '')))
 //parse_StitchCodeList(parse_original_text_to_list_of_structures(parse_definitions(textTestAt10).replace(/ |\t/g, ''))).slice(-2,-1)[0].id_attach
 var textTestAt20 = `9ch
 2dc,2sc,dc,sc,2dc
-sc,dc,tr@[sc:@],dc` //attach at 1,2=11
+sc,dc,tr@[sc:@],dc`; //attach at 1,2=11;;
 var textTestAt30 = `9ch
 2dc,2sc,dc,sc,2dc
-sc,dc,tr@[sc:@+1],dc` //attach at 1,2=11
+sc,dc,tr@[sc:@+1],dc`; //attach at 1,2=11;;
 var textTestAt40 = `9ch
 2dc,2sc,dc,sc,2dc
-sc,dc,tr@[sc:@+2],dc` //attach at 1,3=12
+sc,dc,tr@[sc:@+2],dc`; //attach at 1,3=12;;
 
 var textTestAt11 = `9ch,turn
 2dc,2sc,dc,sc,2dc,turn
-sc,2dc,tr@[sc:@-1],dc` //attach at 1,5=14
+sc,2dc,tr@[sc:@-1],dc`; //attach at 1,5=14;;
 var textTestAt21 = `9ch,turn
 2dc,2sc,dc,sc,2dc,turn
-sc,2dc,tr@[sc:@],dc` //attach at 1,5=14
+sc,2dc,tr@[sc:@],dc`; //attach at 1,5=14;;
 var textTestAt31 = `9ch,turn
 2dc,2sc,dc,sc,2dc,turn
-sc,2dc,tr@[sc:@+1],dc` //attach at 1,3=12
+sc,2dc,tr@[sc:@+1],dc`; //attach at 1,3=12;;
 var textTestAt41 = `9ch,turn
 2dc,2sc,dc,sc,2dc,turn
-sc,2dc,tr@[sc:@+2],dc` //attach at 1,2=11
+sc,2dc,tr@[sc:@+2],dc`; //attach at 1,2=11;;
 
 
 var textTestAt12 = `9ch
 2dc,2sc,dc,sc,2dc
-sc,2dc,tr@[sc:@-1],dc` //attach at 1,2=11
+sc,2dc,tr@[sc:@-1],dc`; //attach at 1,2=11;;
 var textTestAt22 = `9ch
 2dc,2sc,dc,sc,2dc
-sc,2dc,tr@[sc:@],dc` //attach at 1,2=11
+sc,2dc,tr@[sc:@],dc`; //attach at 1,2=11;;
 var textTestAt32 = `9ch
 2dc,2sc,dc,sc,2dc
-sc,2dc,tr@[sc:@+1],dc` //attach at 1,3=12
+sc,2dc,tr@[sc:@+1],dc`; //attach at 1,3=12;;
 var textTestAt42 = `9ch
 2dc,2sc,dc,sc,2dc
-sc,2dc,tr@[sc:@+2],dc` //attach at 1,5=14
+sc,2dc,tr@[sc:@+2],dc`; //attach at 1,5=14;;
 
 var textTestAt33 = `9ch,turn
 2dc,2sc,dc,sc,2dc,turn
-sc,2dc,tr@[sc:-1,2],dc` //attach at 1,2=11
+sc,2dc,tr@[sc:-1,2],dc`; //attach at 1,2=11;;
 var textTestAt43 = `9ch
 2dc,2sc,dc,sc,2dc
-sc,2dc,tr@[sc:-1,2],dc` //attach at 1,5=14
+sc,2dc,tr@[sc:-1,2],dc`; //attach at 1,5=14;;
 
 var textTestAttachIndexChain = `9ch
-3sc,3ch,sc`
+3sc,3ch,sc`;
 
 
 var textSwatch1 = `10ch,turn
@@ -308,7 +308,7 @@ ch,sk,9sc,turn
 DEF: funky=&funky^A(funky):B;2C;D~A-D::!-1-A;B-1-A;C-3-A;D-1-A
 3ch,sk,3dc,funky,3dc,turn
 3ch,sk,7dc,turn
-`
+`;
 
 var textStocking = `#Stocking showcase
 # adjust stitch heights:
@@ -374,7 +374,7 @@ DOT: start=2
 #too tense. To reduce the tension in the model, uncomment the line below by
 #removing the leading '#'. That does slow down the calculation a couple of times.
 #DOT: inflate=1.0
-`
+`;
 
 
 var textBootie = `#Baby booties showcase
@@ -401,7 +401,7 @@ DEF: ss1=&ss1^A(ss2tog):B~A-B::!-1-A;B-0.5-A
 DEF: ss2tog=ss1@[@-1],ss0@1[@1-1]
 ss1@[-1,-2],ss0@1X,ss2tog*8
 DOT: start=1
-`
+`;
 
 var textBlanket = `#Baby blanket showcase
 DEF: dc=Copy(dc,3)
@@ -410,7 +410,7 @@ COLOR: Ivory
 $K=0,m=0$,3ch,dc2inc,3sk,sc,[3ch.C[m,K++],3dc,3sk,sc]*10,turn
 {$m++,k=0$,3ch,dc2inc,[sc,3ch.C[m,k++],3dc]@C[m-1,K-(k)]*10,sc@[-1,2],turn
 }*15
-`
+`;
 
 var textHat = `# Hat showcase
 # Design "Lady's Crochet Tam o' Shanter"
@@ -462,7 +462,7 @@ sc2inc*9
 #parameter slows down the code by a factor of two.
 #The default value for inflate is infinity.
 DOT: inflate=2.0
-`
+`;
 
 
 
@@ -501,7 +501,7 @@ ch,54_,3ch,turn
 4sk,O,O,O,O,O,O,O,O,OX,X,X,X,X,O,O,OX,X,X,X,X,O,OX,O,O,O,OX,O,OX,O,O,OX,O,OX,O,O,O,OX,O,O,O,O,O,OX,O,O,3ch,turn
 4sk,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
 DOT: start=1
-`
+`;
 
 var textFlower = `# Irish crochet showcase
 # Designs adapted from "Irish Crochet Lace Book No. 132"
@@ -547,7 +547,7 @@ $s=0$,[18sc,3sc2inc,18sc]@Row1,4ch.chain_spaceA[s++],turn
 
 #Control the separation between the disjoint pieces. Default is 1.5
 DOT: separate=0.8
-`
+`;
 
 var textFlower2 = `# Irish crochet flower showcase
 # Design adapted from "Priscilla Irish Crochet Book, Number 1"
@@ -563,7 +563,7 @@ DEF: sc=Copy(sc,1,1)
 ch,sk,sc,[2sc,<,p]*8,ss@[%,0],sc@Ring1[][0]
 $c=0$,@Ring1[][0],[7ch.chain_space[0,c++]+!,sk,>,sc]*8,ss@[-1,-1]
 $c=0$,([5sc,p,6sc,p,4sc]@chain_space[0,c++])*8,ss@[%,0]
-DOT:start=4`
+DOT:start=4`;
 
 var textDoily = `#Doily showcase
 #"Swirls" doily pattern from "Lily Design Book No. 79 Doilies",
@@ -609,7 +609,7 @@ $c=0,c7=0,c8=0$,{sc@Ch[c++],(2sc@Ch[c++])*5,4ch.C10b[c7]+!,6ch.C10a[c7++]+!,turn
 8sc@C10a[c7-1]~,8ch.C82[c8++]+!,turn
 @[-1,-1],ss@[sc:@+4],ch,turn
 [5sc,5ch,ss@1[%,-6],5sc,ss]@C82[c8-1]~,ch,[4sc,ss]@C10b[c7-1]~,ch,[2sc@Ch[c++]]*2,sc@Ch[c++]}*36,ss@Z7
-`
+`;
 
 var textSnowman = `#Simple amigurumi showcase
 COLOR:white
@@ -697,7 +697,7 @@ DOT: separate=0
 # When nodes are fixed in position as above, the code needs a lot
 # more iterations to converge well.
 DOT: iterations=4000
-`
+`;
 //start_anew: '&start_anew^A(hidden):~::!-skip-A',
 var Dictionary = {
     ring: '&ring^A(ring):~::!-0.1-A',
@@ -725,7 +725,7 @@ var Dictionary = {
     dc4pc: '&dc4pc^A(dc4pc):B~A-B:C;D(dc);E;F(dc);G;H(dc);I;J(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;B-1.2-I;I-1.2-J;!-0.8-D;D-0.8-F;F-0.8-H;H-0.8-J;!-0.33-D;D-0.33-J;J-0.33-A',
     dc5pc: '&dc5pc^A(dc5pc):B~A-B:C;D(dc);E;F(dc);G;H(dc);I;J(dc);K;L(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;B-1.2-I;I-1.2-J;B-1.2-K;K-1.2-L;!-0.8-D;D-0.8-F;F-0.8-H;H-0.8-J;J-0.8-L;!-0.33-D;D-0.33-L;L-0.33-A',
     picot3: '&picot^A(ch);B(ch);C(ch);D(ss):~::!-1-A;A-1-B;B-1-C;C-1-D;!-0.4-D'
-}
+};
 
 var OriginalDictionary = JSON.parse(JSON.stringify(Dictionary));
 
@@ -747,9 +747,9 @@ function findAttachmentNodes(str) {
 
 function findUniqueCapitalLetters(str) {
     const uniqueLetters = new Set();
-    let caps = str.match(/([A-Z])/g)
+    let caps = str.match(/([A-Z])/g);
     if (caps == null)
-        return []
+        return [];
     for (let i of caps) {
         uniqueLetters.add(i);
     }
@@ -833,71 +833,71 @@ function findUniqueCapitalLetters(str) {
 
 function handle_changeHeightWidth(stitch, new_Type, H, W) {
     if (stitch[0] !== '&')
-        throw new Error('Stitch code needs to start with &: ' + stitch)
-    var [Type, Top, bottom, attachments, hidden, cons] = stitch.slice(1).split(/[\^\:_~]/g)
+        throw new Error('Stitch code needs to start with &: ' + stitch);
+    var [Type, Top, bottom, attachments, hidden, cons] = stitch.slice(1).split(/[\^\:_~]/g);
 
     if (hidden.trim().length > 0)
-        throw new Error('Do not know how to change width/height of stitches with internal nodes: ' + stitch)
+        throw new Error('Do not know how to change width/height of stitches with internal nodes: ' + stitch);
 
     const regex1 = /([A-Z0-9a-z_]+)\(([^\);]*)\)/g;
     let match;
 
     var nameTop = [];
     while (match = regex1.exec(Top)) {
-        nameTop.push(match[1])
+        nameTop.push(match[1]);
     }
 
     const regex = /(\d+)?([A-Za-z_0-9]+)/g;
-    var nameBottom = []
+    var nameBottom = [];
     while (match = regex.exec(bottom)) {
         const name = match[2];
-        nameBottom.push(name)
+        nameBottom.push(name);
     }
-    var resetW = false
-    var resetH = false
+    var resetW = false;
+    var resetH = false;
     if (H < 0)
-        resetH = true
+        resetH = true;
     if (W < 0)
-        resetW = true
-    var Cons = ''
+        resetW = true;
+    var Cons = '';
     for (var con of cons.split(';')) {
         if (con.trim().length > 0) {
-            let [n0, len, n1] = con.split('-')
+            let [n0, len, n1] = con.split('-');
 
             let star = '';
             if (n0[0] === '*') {
-                star = '*'
-                n0 = n0.slice(1)
+                star = '*';
+                n0 = n0.slice(1);
             }
-            let top0 = ((n0 === '!') || (nameTop.includes(n0)))
-            let top1 = ((n1 === '!') || (nameTop.includes(n1)))
-            let bottom0 = nameBottom.includes(n0)
-            let bottom1 = nameBottom.includes(n1)
+            let top0 = ((n0 === '!') || (nameTop.includes(n0)));
+            let top1 = ((n1 === '!') || (nameTop.includes(n1)));
+            let bottom0 = nameBottom.includes(n0);
+            let bottom1 = nameBottom.includes(n1);
             if (resetH)
-                H = len
+                H = len;
             if (resetW)
-                W = len
+                W = len;
             if (top0 && bottom1)
-                Cons += star + n0 + '-' + H + '-' + n1 + ';'
+                Cons += star + n0 + '-' + H + '-' + n1 + ';';
             else if (top1 && bottom0)
-                Cons += star + n0 + '-' + H + '-' + n1 + ';'
+                Cons += star + n0 + '-' + H + '-' + n1 + ';';
             else if (top0 && top1)
-                Cons += star + n0 + '-' + W + '-' + n1 + ';'
+                Cons += star + n0 + '-' + W + '-' + n1 + ';';
             else
-                Cons += star + n0 + '-' + len + '-' + n1 + ';'
+                Cons += star + n0 + '-' + len + '-' + n1 + ';';
 
         }
     }
-    Cons = Cons.slice(0, -1)
+    Cons = Cons.slice(0, -1);
 
 
-    return '&' + new_Type + '^' + Top.replace(new RegExp('\\b' + Type + '\\b', 'g'), new_Type) + ':' + bottom + '~' + attachments + '::' + Cons
+    return '&' + new_Type + '^' + Top.replace(new RegExp('\\b' + Type + '\\b', 'g'), new_Type) + ':' + bottom + '~' + attachments + '::' + Cons;
 }
 
 function handle_Ninc(stitch, N) {
     if (stitch[0] !== '&')
-        throw new Error('Stitch code needs to start with &: ' + stitch)
-    var [Type, Top, bottom, attachments, hidden, cons] = stitch.slice(1).split(/[\^\:_~]/g)
+        throw new Error('Stitch code needs to start with &: ' + stitch);
+    var [Type, Top, bottom, attachments, hidden, cons] = stitch.slice(1).split(/[\^\:_~]/g);
 
     const regex1 = /([A-Z0-9a-z_]+)\(([^\);]*)\)/g;
     let match;
@@ -907,153 +907,153 @@ function handle_Ninc(stitch, N) {
     var TopNew = '';
     for (var kb = 0; kb < N; kb++)
         while (match = regex1.exec(Top)) {
-            TopNew += match[1] + String(kb) + '(' + match[2] + ');'
-            lastNameTop = match[1]
+            TopNew += match[1] + String(kb) + '(' + match[2] + ');';
+            lastNameTop = match[1];
         }
-    TopNew = TopNew.slice(0, -1)
+    TopNew = TopNew.slice(0, -1);
 
     const regex = /(\d+)?([A-Za-z_0-9]+)/g;
     var nameBottom;
-    var Bottom = ''
-    var k = 0
+    var Bottom = '';
+    var k = 0;
     while (match = regex.exec(bottom)) {
         const name = match[2];
-        var number = match[1]
-        nameBottom = name
+        var number = match[1];
+        nameBottom = name;
         if (!number)
-            number = ''
-        Bottom += number + name
+            number = '';
+        Bottom += number + name;
         if (k > 0)
-            throw new Error('Cannot handle Ninc for stitches with more than one bottom node. Try to specify stitch dictionary entry instead for ' + stitch + String(N) + 'inc')
-        k++
+            throw new Error('Cannot handle Ninc for stitches with more than one bottom node. Try to specify stitch dictionary entry instead for ' + stitch + String(N) + 'inc');
+        k++;
     }
 
 
 
     const regexH = /([A-Z0-9a-z_]+)\(?([^;\)]*)\)?/g;
-    var Hidden = ''
+    var Hidden = '';
     for (var kH = 0; kH < N; kH++)
         while (match = regexH.exec(hidden)) {
-            let type = match[2]
+            let type = match[2];
             if (type.trim().length == 0)
-                type = 'hidden'
-            Hidden += match[1] + String(kH) + '(' + type + ');'
+                type = 'hidden';
+            Hidden += match[1] + String(kH) + '(' + type + ');';
         }
-    Hidden = Hidden.slice(0, -1)
+    Hidden = Hidden.slice(0, -1);
 
 
-    var Cons = ''
+    var Cons = '';
     for (var kC = 0; kC < N; kC++)
         for (var con of cons.split(';')) {
             if (con.trim().length > 0) {
-                let [n0, len, n1] = con.split('-')
+                let [n0, len, n1] = con.split('-');
                 let star = '';
                 if (n0[0] === '*') {
-                    star = '*'
-                    n0 = n0.slice(1)
+                    star = '*';
+                    n0 = n0.slice(1);
                 }
                 if ((n0 !== nameBottom) && (n0 !== '!'))
-                    n0 += String(kC)
+                    n0 += String(kC);
                 if ((n1 !== nameBottom) && (n1 !== '!'))
-                    n1 += String(kC)
+                    n1 += String(kC);
                 if ((n0 === '!') && (kC > 0))
-                    n0 = lastNameTop + String(kC - 1)
+                    n0 = lastNameTop + String(kC - 1);
                 if ((n1 === '!') && (kC > 0))
-                    n1 = lastNameTop + String(kC - 1)
+                    n1 = lastNameTop + String(kC - 1);
 
-                Cons += star + n0 + '-' + len + '-' + n1 + ';'
+                Cons += star + n0 + '-' + len + '-' + n1 + ';';
 
             }
         }
-    Cons = Cons.slice(0, -1)
+    Cons = Cons.slice(0, -1);
 
-    var Attachments = ''
+    var Attachments = '';
     for (var kA = 0; kA < N; kA++)
         if (attachments.trim() !== '')
             for (var a of attachments.split(';')) {
                 a = a.split('-');
-                Attachments += a[0] + String(kA) + '-' + a[1] + ';'
+                Attachments += a[0] + String(kA) + '-' + a[1] + ';';
             }
-    Attachments = Attachments.slice(0, -1)
-    return '&' + Type + String(N) + 'inc^' + TopNew + ':' + Bottom + '~' + Attachments + ':' + Hidden + ':' + Cons
+    Attachments = Attachments.slice(0, -1);
+    return '&' + Type + String(N) + 'inc^' + TopNew + ':' + Bottom + '~' + Attachments + ':' + Hidden + ':' + Cons;
 }
 
 function handle_Ntog(stitch, N) {
     if (stitch[0] !== '&')
-        throw new Error('Stitch code needs to start with &: ' + stitch)
-    var [Type, Top, bottom, attachments, hidden, cons] = stitch.slice(1).split(/[\^\:_~]/g)
+        throw new Error('Stitch code needs to start with &: ' + stitch);
+    var [Type, Top, bottom, attachments, hidden, cons] = stitch.slice(1).split(/[\^\:_~]/g);
 
     const regex1 = /([A-Z0-9a-z_]+)\(([^\);]*)\)/g;
     let match;
 
-    var k = 0
+    var k = 0;
     var nameTop;
     var TopNew = '';
     while (match = regex1.exec(Top)) {
-        nameTop = match[1]
-        TopNew = match[1] + '(' + match[2] + ')'
+        nameTop = match[1];
+        TopNew = match[1] + '(' + match[2] + ')';
         //TopNew = match[1] + '(' + match[2] + String(N) + 'tog' + ')'
         if (k > 0)
-            throw new Error('Cannot handle Ntog for stitches with more than one top node. Try to specify stitch dictionary entry instead for ' + stitch + String(N) + 'tog')
-        k++
+            throw new Error('Cannot handle Ntog for stitches with more than one top node. Try to specify stitch dictionary entry instead for ' + stitch + String(N) + 'tog');
+        k++;
     }
 
     const regex = /(\d+)?([A-Za-z_0-9]+)/g;
-    var Bottom = ''
+    var Bottom = '';
     for (var kb = 0; kb < N; kb++)
         while (match = regex.exec(bottom)) {
             const name = match[2];
-            var number = match[1]
+            var number = match[1];
             if (!number)
-                number = ''
-            Bottom += number + name + String(kb) + ';'
+                number = '';
+            Bottom += number + name + String(kb) + ';';
         }
-    Bottom = Bottom.slice(0, -1)
+    Bottom = Bottom.slice(0, -1);
 
 
     const regexH = /([A-Z0-9a-z_]+)\(?([^;\)]*)\)?/g;
-    var Hidden = ''
+    var Hidden = '';
     for (var kH = 0; kH < N; kH++)
         while (match = regexH.exec(hidden)) {
-            let type = match[2]
+            let type = match[2];
             if (type.trim().length == 0)
-                type = 'hidden'
-            Hidden += match[1] + String(kH) + '(' + type + ');'
+                type = 'hidden';
+            Hidden += match[1] + String(kH) + '(' + type + ');';
         }
-    Hidden = Hidden.slice(0, -1)
+    Hidden = Hidden.slice(0, -1);
 
 
-    var Cons = ''
+    var Cons = '';
     for (var kC = 0; kC < N; kC++)
         for (var con of cons.split(';')) {
             if (con.trim().length > 0) {
-                let [n0, len, n1] = con.split('-')
+                let [n0, len, n1] = con.split('-');
 
                 let star = '';
                 if (n0[0] === '*') {
-                    star = '*'
-                    n0 = n0.slice(1)
+                    star = '*';
+                    n0 = n0.slice(1);
                 }
                 if ((n0 !== nameTop) && (n0 !== '!'))
-                    n0 += String(kC)
+                    n0 += String(kC);
                 if ((n1 !== nameTop) && (n1 !== '!'))
-                    n1 += String(kC)
+                    n1 += String(kC);
 
-                Cons += star + n0 + '-' + len + '-' + n1 + ';'
+                Cons += star + n0 + '-' + len + '-' + n1 + ';';
 
 
 
             }
         }
-    Cons = Cons.slice(0, -1)
+    Cons = Cons.slice(0, -1);
 
-    var Attachments = ''
+    var Attachments = '';
     if (attachments.trim() !== '')
         for (var a of attachments.split(';')) {
             a = a.split('-');
-            Attachments = a[0] + '-' + a[1] + String(N - 1)
+            Attachments = a[0] + '-' + a[1] + String(N - 1);
         }
-    return '&' + Type + String(N) + 'tog^' + TopNew + ':' + Bottom + '~' + Attachments + ':' + Hidden + ':' + Cons
+    return '&' + Type + String(N) + 'tog^' + TopNew + ':' + Bottom + '~' + Attachments + ':' + Hidden + ':' + Cons;
 }
 
 function find_stitchID_by_pos(Stitches, row, pos, relative_id = -1, direction = 1, type = '') {
@@ -1061,10 +1061,10 @@ function find_stitchID_by_pos(Stitches, row, pos, relative_id = -1, direction = 
     if (type === '')
         ids = Stitches.filter(structure => {
             return structure.id.length > 0 && structure.nrow == row;
-        }).map(obj => obj.id).flat(Infinity)
+        }).map(obj => obj.id).flat(Infinity);
     else
         ids = Stitches.filter(structure => {
-            return structure.id.length > 0 && structure.nrow == row
+            return structure.id.length > 0 && structure.nrow == row;
         }).map(structure => {
             const matchingIds = Object.keys(structure.topNodes).filter(key => structure.topNodes[key].type === type).map(key => structure.topNodes[key].id);
             return matchingIds;
@@ -1072,26 +1072,26 @@ function find_stitchID_by_pos(Stitches, row, pos, relative_id = -1, direction = 
 
 
     if (ids.length == 0)
-        throw new Error('Stitch at that position not found: [row,pos,type]=' + row + ',' + pos + ',' + type)
+        throw new Error('Stitch at that position not found: [row,pos,type]=' + row + ',' + pos + ',' + type);
 
     //console.log(ids, pos)
     if ((relative_id) != -1 && type !== '') {
-        let [s, i] = find_stitch_by_id(Stitches, relative_id)
+        let [s, i] = find_stitch_by_id(Stitches, relative_id);
         if (s.topNodes[s.topNodesNames[i]].type !== type) {
             //@[sc: @] and @[sc: @ + 1] should both give the first encounter of sc in this case.
             if (pos > 0)
-                pos -= 1
+                pos -= 1;
         }
     }
 
     if (direction == -1)
-        ids.reverse()
+        ids.reverse();
 
     function findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(arr, N, direction) {
         if (direction < 0) {
-            arr = arr.map(s => -s)
+            arr = arr.map(s => -s);
             //arr.reverse() already reversed
-            N = -N
+            N = -N;
         }
         let low = 0;
         let high = arr.length - 1;
@@ -1115,145 +1115,145 @@ function find_stitchID_by_pos(Stitches, row, pos, relative_id = -1, direction = 
 
     //console.log(ids, pos, ids[pos], relative_id, findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(ids, relative_id, direction), direction)
     if (relative_id != -1)
-        pos = pos + findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(ids, relative_id, direction)
+        pos = pos + findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(ids, relative_id, direction);
     //console.log(ids, pos, ids[pos], relative_id)
     if ((type !== '') && (pos < 0) && (relative_id != -1))
-        pos = 0
+        pos = 0;
     //console.log('debug: ', Stitches, row, pos, relative_id, direction, type, ids)
     if (!Number.isInteger(ids.slice(pos)[0]))
-        throw new Error('Stitch at that position not found: [row,pos,relative_id,type]=' + row + ',' + pos + ',' + relative_id + ',' + type + '; ', Stitches)
-    return ids.slice(pos)[0]
+        throw new Error('Stitch at that position not found: [row,pos,relative_id,type]=' + row + ',' + pos + ',' + relative_id + ',' + type + '; ', Stitches);
+    return ids.slice(pos)[0];
 }
 
 function find_stitch_by_id(Stitches, id) {
     var s = Stitches.filter(structure => {
         return structure.id.includes(id);
-    })
+    });
 
     if (s.length == 1) {
-        var index = s[0].id.indexOf(id)
-        return [s[0], index]
+        var index = s[0].id.indexOf(id);
+        return [s[0], index];
     }
     if (s.length == 0)
-        throw new Error('ID not found: ' + id)
+        throw new Error('ID not found: ' + id);
     if (s.length > 1)
-        throw new Error('Duplicate IDs: ' + id)
+        throw new Error('Duplicate IDs: ' + id);
 }
 
 function last_element(arr) {
-    return arr.slice(-1)[0]
+    return arr.slice(-1)[0];
 }
 
 function count_stitches(Stitches) {
-    var k = 0
+    var k = 0;
     for (var s of Stitches) {
-        k += s.id.length
+        k += s.id.length;
     }
-    return k
+    return k;
 }
 
 function count_stitches_in_row(Stitches, row) {
     var s = Stitches.filter(structure => {
         return (structure.nrow == row) && (structure.id.length > 0);
-    })
+    });
     if (s.length == 0) {
-        return [0, -1, -1]
+        return [0, -1, -1];
     }
 
     //return last_element(last_element(s).id) - s[0].id[0]
-    return [count_stitches(s), s[0].id[0], last_element(last_element(s).id)]
+    return [count_stitches(s), s[0].id[0], last_element(last_element(s).id)];
 }
 
 
 function find_label(Stitches, label) {
-    var label0 = label
+    var label0 = label;
     if (label.split(';').length > 1)
-        label = (label.split(';')[0]).trim() + ']'
-    label = label.split('!')[0]
-    label = label.split('~')[0]
-    label = label.split('+')[0]
-    label = label.split('^')[0]
+        label = (label.split(';')[0]).trim() + ']';
+    label = label.split('!')[0];
+    label = label.split('~')[0];
+    label = label.split('+')[0];
+    label = label.split('^')[0];
     var s = Stitches.filter(structure => {
         let g = [...structure.label].map(l => l.split('!')[0].split('+')[0].split('^')[0]);
         //console.log(label, g, structure.label)
         return (g.includes(label)) && (structure.id.length > 0);
-    })
+    });
     if (count_stitches(s) == 0)
-        throw new Error('Label not found: ' + label)
+        throw new Error('Label not found: ' + label);
     return {
         'attach_id': last_element(last_element(s).id),
         'attach_ref': label0,
         'n': count_stitches(s)
-    }
+    };
 }
 
 function find_label_ALL(Stitches, label) {
     if (label.split(';').length > 1)
-        label = ((label.split(';')[0]).trim() + ']')
-    label = label.split('!')[0]
-    label = label.split('~')[0]
-    label = label.split('+')[0].split('^')[0]
+        label = ((label.split(';')[0]).trim() + ']');
+    label = label.split('!')[0];
+    label = label.split('~')[0];
+    label = label.split('+')[0].split('^')[0];
 
     var s = Stitches.filter(structure => {
-        let g = [...structure.label].map(l => l.split('!')[0].split('+')[0].split('^')[0])
+        let g = [...structure.label].map(l => l.split('!')[0].split('+')[0].split('^')[0]);
         return (g.includes(label)) && (structure.id.length > 0);
-    })
+    });
     if (count_stitches(s) == 0)
-        throw new Error('Label not found: ' + label)
-    return s
+        throw new Error('Label not found: ' + label);
+    return s;
 }
 
 function find_repeated_labels(Stitches) {
-    var labels = {}
+    var labels = {};
     for (var s of Stitches) {
         if (Array.isArray(s.label) && s.label.length > 0) {
             for (var label of s.label) {
-                let label1 = label.split('!')[0]
-                label1 = label1.split('+')[0].split('^')[0]
+                let label1 = label.split('!')[0];
+                label1 = label1.split('+')[0].split('^')[0];
                 if (!(label1 in labels)) {
-                    let ls = find_label_ALL(Stitches, label1).map(obj => obj.id).flat(Infinity)
+                    let ls = find_label_ALL(Stitches, label1).map(obj => obj.id).flat(Infinity);
                     if (ls.length > 1 || label.includes('+') || label.includes('^'))
                         labels[label1] = {
                             label_ids: ls,
                             raw_label: label
-                        }
+                        };
                 }
             }
         }
     }
-    return labels
+    return labels;
 }
 
 function find_and_fix_references_in_repeated_labels(Stitches, turns) {
-    var rep_labels = find_repeated_labels(Stitches)
+    var rep_labels = find_repeated_labels(Stitches);
     //find all stitches that attach to repeated labels.
-    var REV = {}
+    var REV = {};
     for (var si = 0; si < Stitches.length; si++) {
-        var s = Stitches[si]
+        var s = Stitches[si];
         if (typeof(s.attach_ref) === 'string' && s.attach_ref.length > 0 && s.id_attach.length > 0) {
-            let label = s.attach_ref
-            let label1 = label
-            let num = 0
+            let label = s.attach_ref;
+            let label1 = label;
+            let num = 0;
             if (label1.split(';').length > 1) {
-                label1 = (label1.split(';')[0]).trim() + ']'
-                num = parseInt(label.split(';')[1], 10)
+                label1 = (label1.split(';')[0]).trim() + ']';
+                num = parseInt(label.split(';')[1], 10);
             }
-            label1 = label1.split('!')[0]
-            let rev = false
+            label1 = label1.split('!')[0];
+            let rev = false;
             if (label.includes('~'))
-                rev = true
-            label1 = label1.split('~')[0]
-            label1 = label1.split('+')[0].split('^')[0]
+                rev = true;
+            label1 = label1.split('~')[0];
+            label1 = label1.split('+')[0].split('^')[0];
             if (label1 in rep_labels) {
                 if (!('attached' in rep_labels[label1]))
-                    rep_labels[label1]['attached'] = {}
+                    rep_labels[label1]['attached'] = {};
                 if (!(String(num) in rep_labels[label1]['attached']))
-                    rep_labels[label1]['attached'][num] = [si]
+                    rep_labels[label1]['attached'][num] = [si];
                 else
-                    rep_labels[label1]['attached'][num].push(si)
+                    rep_labels[label1]['attached'][num].push(si);
                 if (!(label1 in REV))
-                    REV[label1] = {}
-                REV[label1][num] = rev
+                    REV[label1] = {};
+                REV[label1][num] = rev;
 
                 //rep_labels[label1]['attached'][num] = rep_labels[label1]['attached'][num].flat()
             }
@@ -1262,146 +1262,145 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
 
     //Collect all stitch groups (such as @A[2;i]) into one.
     //console.log(REV)
-    for (var k of Object.keys(rep_labels)) {
-        let inds = []
+    for (let k of Object.keys(rep_labels)) {
+        let inds = [];
         if ('attached' in rep_labels[k]) {
-            for (var i of Object.keys(rep_labels[k]['attached']).map(a => parseInt(a, 10)).sort((a, b) => a - b).map(a => String(a))) { //sort numerically
+            for (let i of Object.keys(rep_labels[k]['attached']).map(a => parseInt(a, 10)).sort((a, b) => a - b).map(a => String(a))) { //sort numerically
                 if (REV[k][i])
-                    inds.push(rep_labels[k]['attached'][i].reverse())
+                    inds.push(rep_labels[k]['attached'][i].reverse());
                 else
-                    inds.push(rep_labels[k]['attached'][i])
+                    inds.push(rep_labels[k]['attached'][i]);
             }
         }
-        inds = inds.flat(Infinity)
-        delete rep_labels[k].attached
-        rep_labels[k]['ref_inds'] = inds
+        inds = inds.flat(Infinity);
+        delete rep_labels[k].attached;
+        rep_labels[k]['ref_inds'] = inds;
         if (inds.length == 0)
-            delete rep_labels[k]
+            delete rep_labels[k];
     }
 
-    DEBUG += '=======Stitches that attach to multi-stitch labels:=======\n' + JSON.stringify(rep_labels) + '\n'
+    DEBUG += '=======Stitches that attach to multi-stitch labels:=======\n' + JSON.stringify(rep_labels) + '\n';
 
-    for (var k of Object.keys(rep_labels)) {
-        var c = rep_labels[k]
+    for (let k of Object.keys(rep_labels)) {
+        var c = rep_labels[k];
         //console.log('HA: ', Stitches, rep_labels, c['ref_inds'], Stitches[c['ref_inds'][0]])
-        var n1 = Stitches[c['ref_inds'][0]].nrow
-        var n0 = find_stitch_by_id(Stitches, c['label_ids'][0])[0].nrow
-        var turn = 0
+        var n1 = Stitches[c['ref_inds'][0]].nrow;
+        var n0 = find_stitch_by_id(Stitches, c['label_ids'][0])[0].nrow;
+        var turn = 0;
 
-        var L = 0
+        var L = 0;
         for (var r of c['ref_inds']) {
-            L += Stitches[r].bottomNodesNames.length
+            L += Stitches[r].bottomNodesNames.length;
         }
 
-        var SP_offset = 0
-        var Psp = [...c['label_ids']]
+        var SP_offset = 0;
+        var Psp = [...c['label_ids']];
 
         if (c.raw_label.includes('+')) {
-            let S = parseInt(c.raw_label.split('+')[1], 10)
+            let S = parseInt(c.raw_label.split('+')[1], 10);
             if (Number.isNaN(S))
-                Psp = [c['label_ids'][0] - 1, ...c['label_ids'], last_element(c['label_ids']) + 1]
+                Psp = [c['label_ids'][0] - 1, ...c['label_ids'], last_element(c['label_ids']) + 1];
             else if (S == 0)
-                Psp = [c['label_ids'][0] - 1, ...c['label_ids']]
+                Psp = [c['label_ids'][0] - 1, ...c['label_ids']];
             else if (S == 1)
-                Psp = [...c['label_ids'], last_element(c['label_ids']) + 1]
+                Psp = [...c['label_ids'], last_element(c['label_ids']) + 1];
             else
-                throw new Error('Integer after "+" operator in label should be none, 0 or 1: ' + JSON.stringify(c))
+                throw new Error('Integer after "+" operator in label should be none, 0 or 1: ' + JSON.stringify(c));
         }
-        var CarrotNum = -2
+        var CarrotNum = -2;
         if (c.raw_label.includes('^')) {
             if (c.raw_label.includes('+'))
-                throw new Error('Cannot combine "^" and "+" operators in label: ' + JSON.stringify(c))
+                throw new Error('Cannot combine "^" and "+" operators in label: ' + JSON.stringify(c));
             if (Psp.length != 1)
-                throw new Error('Cannot use "^" operator in multi-stitch labels: ' + JSON.stringify(c))
+                throw new Error('Cannot use "^" operator in multi-stitch labels: ' + JSON.stringify(c));
             //Psp = [-1, ...Psp]
-            CarrotNum = parseInt(c.raw_label.split('^')[1], 10)
+            CarrotNum = parseInt(c.raw_label.split('^')[1], 10);
             if (Number.isNaN(CarrotNum))
-                CarrotNum = -1
+                CarrotNum = -1;
         }
-        var partialSkip = false
+        var partialSkip = false;
         if (c.raw_label.split('!').length == 2) {
-            let S = parseInt(c.raw_label.split('!')[1], 10)
+            let S = parseInt(c.raw_label.split('!')[1], 10);
             if (Number.isNaN(S)) {
-                L += 2
-                SP_offset = 1
+                L += 2;
+                SP_offset = 1;
             } else if (S == 0 || S == 1) {
-                partialSkip = true
-                L += 1
-                SP_offset = 1 - S // !0 means skip first stitch, !1 means skip last; ! means skip both
-            } else throw new Error('Syntax error after "!" in: ' + JSON.stringify(c))
+                partialSkip = true;
+                L += 1;
+                SP_offset = 1 - S; // !0 means skip first stitch, !1 means skip last; ! means skip both;;
+            } else throw new Error('Syntax error after "!" in: ' + JSON.stringify(c));
         } else if (c.raw_label.split('!').length > 2)
-            throw new Error('Syntax error after "!" in: ' + JSON.stringify(c))
+            throw new Error('Syntax error after "!" in: ' + JSON.stringify(c));
 
-        var Lsp = Psp.length
+        var Lsp = Psp.length;
 
-        var turn = sum(turns.slice(n0, n1)) % 2
-        var not_done = true
+        turn = sum(turns.slice(n0, n1)) % 2;
+        var not_done = true;
 
         if (CarrotNum != -2) { //Attaching to the post of a stitch
-            Lsp = 2
+            Lsp = 2;
 
 
-            let [s0, ind1] = find_stitch_by_id(Stitches, Psp[0])
+            let [s0, ind1] = find_stitch_by_id(Stitches, Psp[0]);
             //  console.log('A', s0, ind1, s0.topNodesNames)
-            let top_attach_node = s0.topNodesNames[ind1]
-            let attach_names = []
+            let top_attach_node = s0.topNodesNames[ind1];
+            let attach_names = [];
             for (let c of Object.keys(s0.connections).sort()) { //Make list of all connections in the stitch.
-                let n0 = c.split('--')[0]
-                n0 = n0[0] === '*' ? n0.slice(1) : n0
+                let n0 = c.split('--')[0];
+                n0 = n0[0] === '*' ? n0.slice(1) : n0;
                 if (c.split('--')[1] == top_attach_node && (!s0.topNodesNames.includes(n0) && n0 !== '!'))
-                    attach_names.push([n0, s0.connections[c], c])
+                    attach_names.push([n0, s0.connections[c], c]);
             }
-            let [bottom_attach_node, d, con] = attach_names.slice(CarrotNum)[0] //extract the CarrotNum connection
+            let [bottom_attach_node, d, con] = attach_names.slice(CarrotNum)[0]; //extract the CarrotNum connection;;
             if (s0.bottomNodesNames.includes(bottom_attach_node)) { //If bottom of connection is a bottom node, then we can use the rest of the algorithm to do the calculation; so leave not_done=true
-                s0.bottomNodes[bottom_attach_node].id
-                Psp = [s0.bottomNodes[bottom_attach_node].id, ...Psp]
+                Psp = [s0.bottomNodes[bottom_attach_node].id, ...Psp];
             } else { //if bottom of post to which we are attaching is an "other node"
-                Psp = ['^' + String(Psp[0]) + '-' + bottom_attach_node, ...Psp]
-                not_done = false
+                Psp = ['^' + String(Psp[0]) + '-' + bottom_attach_node, ...Psp];
+                not_done = false;
                 if (Lsp == L) { //If exactly two stitches attach to the post, and the ends are not skipped; then no interpolation nodes need to be created.
-                    var i = 0
-                    for (var r of c['ref_inds']) {
-                        for (var b of Stitches[r].bottomNodesNames) {
+                    let i = 0;
+                    for (let r of c['ref_inds']) {
+                        for (let b of Stitches[r].bottomNodesNames) {
                             if (turn == 0)
-                                Stitches[r].bottomNodes[b].id = Psp[i + SP_offset]
+                                Stitches[r].bottomNodes[b].id = Psp[i + SP_offset];
                             else {
                                 if (partialSkip)
-                                    SP_offset = 1 - SP_offset
-                                Stitches[r].bottomNodes[b].id = Psp[Lsp - (i) - (SP_offset) - 1]
+                                    SP_offset = 1 - SP_offset;
+                                Stitches[r].bottomNodes[b].id = Psp[Lsp - (i) - (SP_offset) - 1];
                             }
-                            i++
+                            i++;
                         }
-                        Stitches[r].id_attach = Stitches[r].bottomNodesNames.map(b => Stitches[r].bottomNodes[b].id)
+                        Stitches[r].id_attach = Stitches[r].bottomNodesNames.map(b => Stitches[r].bottomNodes[b].id);
                     }
                 } else { //Create interpolation nodes
 
                     if (turn == 1) {
-                        Psp.reverse()
+                        Psp.reverse();
                         if (partialSkip)
-                            SP_offset = 1 - SP_offset
+                            SP_offset = 1 - SP_offset;
                     }
-                    var i = 0
-                    for (var r of c['ref_inds']) {
-                        var originalBottomNodesNames = [...Stitches[r].bottomNodesNames]
-                        for (var b of originalBottomNodesNames) {
+                    let i = 0;
+                    for (let r of c['ref_inds']) {
+                        var originalBottomNodesNames = [...Stitches[r].bottomNodesNames];
+                        for (let b of originalBottomNodesNames) {
                             if (L > 1)
-                                isp = (i + SP_offset) * (Lsp - 1) / (L - 1)
+                                isp = (i + SP_offset) * (Lsp - 1) / (L - 1);
                             else
-                                isp = (0.5) * (Lsp - 1)
+                                isp = (0.5) * (Lsp - 1);
 
-                            i0 = Math.floor(isp)
-                            i1 = Math.ceil(isp)
+                            i0 = Math.floor(isp);
+                            i1 = Math.ceil(isp);
 
                             if (i0 == i1) {
-                                Stitches[r].bottomNodes[b].id = Psp[i0]
+                                Stitches[r].bottomNodes[b].id = Psp[i0];
                             } else {
-                                var p0 = Psp[i0]
-                                var p1 = Psp[i1]
-                                Stitches[r].bottomNodes[b].id = '$' + p0 + '--' + p1 + ':' + String(d * (isp - i0)) + ':' + String(d * (i1 - isp))
+                                var p0 = Psp[i0];
+                                var p1 = Psp[i1];
+                                Stitches[r].bottomNodes[b].id = '$' + p0 + '--' + p1 + ':' + String(d * (isp - i0)) + ':' + String(d * (i1 - isp));
                             }
-                            i++
+                            i++;
                         }
-                        Stitches[r].id_attach = Stitches[r].bottomNodesNames.map(b => Stitches[r].bottomNodes[b].id)
+                        Stitches[r].id_attach = Stitches[r].bottomNodesNames.map(b => Stitches[r].bottomNodes[b].id);
                     }
                     ///FIXME end
 
@@ -1410,129 +1409,129 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
         }
 
         if ((Lsp == L) && (not_done)) {
-            var i = 0
-            for (var r of c['ref_inds']) {
-                for (var b of Stitches[r].bottomNodesNames) {
+            let i = 0;
+            for (let r of c['ref_inds']) {
+                for (let b of Stitches[r].bottomNodesNames) {
                     if (turn == 0)
-                        Stitches[r].bottomNodes[b].id = Psp[i + SP_offset]
+                        Stitches[r].bottomNodes[b].id = Psp[i + SP_offset];
                     else {
                         if (partialSkip)
-                            SP_offset = 1 - SP_offset
-                        Stitches[r].bottomNodes[b].id = Psp[Lsp - (i) - (SP_offset) - 1]
+                            SP_offset = 1 - SP_offset;
+                        Stitches[r].bottomNodes[b].id = Psp[Lsp - (i) - (SP_offset) - 1];
                     }
 
-                    i++
+                    i++;
                 }
-                Stitches[r].id_attach = Stitches[r].bottomNodesNames.map(b => Stitches[r].bottomNodes[b].id)
+                Stitches[r].id_attach = Stitches[r].bottomNodesNames.map(b => Stitches[r].bottomNodes[b].id);
             }
         } else if (not_done) {
             if (turn == 1) {
-                Psp.reverse()
+                Psp.reverse();
                 if (partialSkip)
-                    SP_offset = 1 - SP_offset
+                    SP_offset = 1 - SP_offset;
             }
-            var i = 0
-            for (var r of c['ref_inds']) {
-                var originalBottomNodesNames = [...Stitches[r].bottomNodesNames]
-                for (var b of originalBottomNodesNames) {
+            var i = 0;
+            for (let r of c['ref_inds']) {
+                let originalBottomNodesNames = [...Stitches[r].bottomNodesNames];
+                for (let b of originalBottomNodesNames) {
 
 
                     if (L > 1)
-                        isp = (i + SP_offset) * (Lsp - 1) / (L - 1)
+                        isp = (i + SP_offset) * (Lsp - 1) / (L - 1);
                     else
-                        isp = (0.5) * (Lsp - 1)
+                        isp = (0.5) * (Lsp - 1);
 
-                    i0 = Math.floor(isp)
-                    i1 = Math.ceil(isp)
+                    i0 = Math.floor(isp);
+                    i1 = Math.ceil(isp);
 
                     if (i0 == i1) {
-                        Stitches[r].bottomNodes[b].id = Psp[i0]
+                        Stitches[r].bottomNodes[b].id = Psp[i0];
                     } else {
 
-                        var p0 = Psp[i0]
-                        var p1 = Psp[i1]
+                        let p0 = Psp[i0];
+                        let p1 = Psp[i1];
 
                         //var pm = p0 + ((p1 - p0) * (isp - i0));
 
-                        let bi = Stitches[r].bottomNodesNames.indexOf(b)
-                        Stitches[r].bottomNodesNames.splice(bi, 0, b + '_split_0_')
-                        Stitches[r].bottomNodesNames[bi + 1] = b + '_split_1_'
+                        let bi = Stitches[r].bottomNodesNames.indexOf(b);
+                        Stitches[r].bottomNodesNames.splice(bi, 0, b + '_split_0_');
+                        Stitches[r].bottomNodesNames[bi + 1] = b + '_split_1_';
                         Stitches[r].otherNodes[b] = {
                             type: 'hidden'
-                        }
-                        let depth = Stitches[r].bottomNodes[b].attachment_depth
-                        delete Stitches[r].bottomNodes[b]
+                        };
+                        let depth = Stitches[r].bottomNodes[b].attachment_depth;
+                        delete Stitches[r].bottomNodes[b];
                         Stitches[r].bottomNodes[b + '_split_0_'] = {
                             attachment_depth: depth,
                             id: p0
-                        }
+                        };
                         Stitches[r].bottomNodes[b + '_split_1_'] = {
                             attachment_depth: depth,
                             id: p1
-                        }
+                        };
 
                         //let d = parseFloat(Dictionary['ch'].split('!-')[1]) //find length of chain
                         //Find distance between p0 and p1. 
                         //if (Math.abs(p0 - p1) != 1)
                         //    throw new Error('Cannot use same label over multiple stitches that are not adjacent. Consider using different labels: ' + JSON.stringify(c))
 
-                        let pmax = p0
-                        let pmin = p1
+                        let pmax = p0;
+                        let pmin = p1;
                         if (p1 > p0) {
-                            pmax = p1
-                            pmin = p0
+                            pmax = p1;
+                            pmin = p0;
                         }
-                        let [s0, ind1] = find_stitch_by_id(Stitches, pmax)
+                        let [s0, ind1] = find_stitch_by_id(Stitches, pmax);
                         //  console.log('A', s0, ind1, s0.topNodesNames)
-                        let name1 = s0.topNodesNames[ind1]
+                        let name1 = s0.topNodesNames[ind1];
                         let d = 0;
 
                         if (s0.id.includes(pmin)) { //if p0 and p1 are on the same stitch.
-                            let [_, ind0] = find_stitch_by_id(Stitches, pmin)
-                            let name0 = s0.topNodesNames[ind0]
-                            if (!(name0 + '--' + name1) in s0.connections)
-                                throw new Error('Expected connection ' + (name0 + '--' + name1) + ' is missing from stitch: ' + s0)
-                            d = s0.connections[name0 + '--' + name1]
-                            console.log('debug1', d, s0.connections, name0, name1, ind0, ind1)
+                            let [_, ind0] = find_stitch_by_id(Stitches, pmin);
+                            let name0 = s0.topNodesNames[ind0];
+                            if (!((name0 + '--' + name1) in s0.connections))
+                                throw new Error('Expected connection ' + (name0 + '--' + name1) + ' is missing from stitch: ' + s0);
+                            d = s0.connections[name0 + '--' + name1];
+                            console.log('debug1', d, s0.connections, name0, name1, ind0, ind1);
                         } else if (s0.id_attach.includes(pmin)) {
-                            let letter_bottom = s0.bottomNodesNames.filter(s => s0.bottomNodes[s].id == pmin)[0]
+                            let letter_bottom = s0.bottomNodesNames.filter(s => s0.bottomNodes[s].id == pmin)[0];
                             if (s0.bottomNodes[letter_bottom].attachment_depth != 1)
-                                throw new Error('Cannot use multiple labels across stitches separated by depth more than 1: ' + +JSON.stringify(c))
-                            let letter_top = s0.topNodesNames.filter(s => s0.topNodes[s].attach == letter_bottom)[0]
+                                throw new Error('Cannot use multiple labels across stitches separated by depth more than 1: ' + JSON.stringify(c));
+                            let letter_top = s0.topNodesNames.filter(s => s0.topNodes[s].attach == letter_bottom)[0];
                             if (!letter_top)
-                                letter_top = s0.topNodesNames[0]
+                                letter_top = s0.topNodesNames[0];
                             if ((letter_bottom + '--' + letter_top) in s0.connections)
-                                d = s0.connections[(letter_bottom + '--' + letter_top)]
+                                d = s0.connections[(letter_bottom + '--' + letter_top)];
                             else
-                                throw new Error('Cannot find direct connection between stitches using same label. Consider using different labels: ' + JSON.stringify(c))
+                                throw new Error('Cannot find direct connection between stitches using same label. Consider using different labels: ' + JSON.stringify(c));
                         } else if (Math.abs(p0 - p1) == 1) { //if pmax follows the stitch containing pmin
-                            if (!('!--' + name1) in s0.connections)
-                                throw new Error('Expected connection ' + ('!--' + name1) + ' is missing from stitch: ' + JSON.stringify(s0))
-                            d = s0.connections['!--' + name1]
+                            if (!(('!--' + name1) in s0.connections))
+                                throw new Error('Expected connection ' + ('!--' + name1) + ' is missing from stitch: ' + JSON.stringify(s0));
+                            d = s0.connections['!--' + name1];
                             //console.log('debug2', d, s0.connections, name1, ind1)
                         } else
-                            throw new Error('Cannot use same label over non-adjacent stitches. Consider using different labels: ' + JSON.stringify(c))
+                            throw new Error('Cannot use same label over non-adjacent stitches. Consider using different labels: ' + JSON.stringify(c));
 
                         //console.log('debug__', d, s0.connections)
 
-                        Stitches[r].connections['*' + b + '_split_0_--' + b] = d * (isp - i0)
-                        Stitches[r].connections['*' + b + '_split_1_--' + b] = d * (i1 - isp)
+                        Stitches[r].connections['*' + b + '_split_0_--' + b] = d * (isp - i0);
+                        Stitches[r].connections['*' + b + '_split_1_--' + b] = d * (i1 - isp);
 
                         let tnn = Stitches[r].topNodesNames.filter(t =>
                             Stitches[r].topNodes[t].attach === b
-                        )
+                        );
                         for (let tn of tnn) {
-                            Stitches[r].topNodes[tn].attach = b + '_split_1_'
+                            Stitches[r].topNodes[tn].attach = b + '_split_1_';
                         }
                     }
-                    i++
+                    i++;
                 }
-                Stitches[r].id_attach = Stitches[r].bottomNodesNames.map(b => Stitches[r].bottomNodes[b].id)
+                Stitches[r].id_attach = Stitches[r].bottomNodesNames.map(b => Stitches[r].bottomNodes[b].id);
             }
         }
 
     }
-    return Stitches
+    return Stitches;
 }
 
 function evaluateExpression(expression) {
@@ -1541,42 +1540,42 @@ function evaluateExpression(expression) {
 
 function update_attachment_points(Stitches, node, attach, turns, attach_row) {
     //console.log(attach, node)
-    var at = node['at']
+    var at = node['at'];
     //console.log('U: ', at, node, attach, Stitches)
-    var key = Object.keys(node['at'])[0] //assumes node has only one key. Should be true.
-    at = at[key]
-    var Nrows = node['nrow']
+    var key = Object.keys(node['at'])[0]; //assumes node has only one key. Should be true.;;
+    at = at[key];
+    var Nrows = node['nrow'];
 
     if (at == null)
-        return null
+        return null;
     if (at === '') {
-        let direction = 1
+        let direction = 1;
         if (sum(turns.slice(attach_row[key])) % 2 == 1)
-            direction = -1
-        attach[key] += direction
-        return attach
+            direction = -1;
+        attach[key] += direction;
+        return attach;
     }
     if (at.includes('][') && (at.slice(-1) == ']')) {
-        var at1 = at.split('][')[0] + ']'
-        var l = find_label(Stitches, at1)
-        var a = l['attach_id']
-        attach_row[key] = find_stitch_by_id(Stitches, a)[0].nrow
+        var at1 = at.split('][')[0] + ']';
+        var l = find_label(Stitches, at1);
+        var a = l['attach_id'];
+        attach_row[key] = find_stitch_by_id(Stitches, a)[0].nrow;
         if (sum(turns.slice(attach_row[key])) % 2 == 0)
-            attach[key] = a + (evaluateExpression(at.split('][')[1].slice(0, -1)) - l['n'] + 1)
+            attach[key] = a + (evaluateExpression(at.split('][')[1].slice(0, -1)) - l['n'] + 1);
         else
-            attach[key] = a - evaluateExpression(at.split('][')[1].slice(0, -1))
-        return attach
+            attach[key] = a - evaluateExpression(at.split('][')[1].slice(0, -1));
+        return attach;
     }
     if ((at[0] === '[') && (at.slice(-1) == ']')) {
-        at = at.slice(1, -1)
-        var count_by_stitch_name = ''
+        at = at.slice(1, -1);
+        var count_by_stitch_name = '';
         if (at.includes(':')) {
-            count_by_stitch_name = at.split(':')[0].trim() //handle case such as [sc:0,1] or [sc:@+1]
-            at = at.split(':')[1].trim()
+            count_by_stitch_name = at.split(':')[0].trim(); //handle case such as [sc:0,1] or [sc:@+1];;
+            at = at.split(':')[1].trim();
         }
-        var x
-        var y
-        var relative_id = -1
+        var x;
+        var y;
+        var relative_id = -1;
 
         var atTrue = false;
         if (at.includes('@')) {
@@ -1584,43 +1583,43 @@ function update_attachment_points(Stitches, node, attach, turns, attach_row) {
             const regex = /@(\d*)/;
             var keyToExtract = at.match(regex)[1];
             if (keyToExtract === '')
-                keyToExtract = '0'
-            y = evaluateExpression(at.replace(regex, '0'))
-            var at3 = attach[keyToExtract]
+                keyToExtract = '0';
+            y = evaluateExpression(at.replace(regex, '0'));
+            var at3 = attach[keyToExtract];
             if ((!Number.isInteger(at3)) && 'attach_id' in at3)
-                at3 = at3['attach_id']
-            relative_id = at3
-            x = find_stitch_by_id(Stitches, relative_id)[0].nrow
+                at3 = at3['attach_id'];
+            relative_id = at3;
+            x = find_stitch_by_id(Stitches, relative_id)[0].nrow;
         } else {
-            at = at.split(',')
-            var [count, first, last] = count_stitches_in_row(Stitches, Nrows) //FIXME
-            y = evaluateExpression(at[1].replace('%', count))
-            x = evaluateExpression(at[0].replace('%', Nrows))
+            at = at.split(',');
+            var [count, first, last] = count_stitches_in_row(Stitches, Nrows);
+            y = evaluateExpression(at[1].replace('%', count));
+            x = evaluateExpression(at[0].replace('%', Nrows));
         }
 
         if (x < 0)
-            x += Nrows
+            x += Nrows;
 
         //console.log(x, y, relative_id, count_by_stitch_name, Stitches, node)
 
-        attach_row[key] = x
+        attach_row[key] = x;
 
-        var direction = 1
+        var direction = 1;
         if (sum(turns.slice(x)) % 2 == 1)
-            direction = -1
+            direction = -1;
 
 
         if ((atTrue) || count_by_stitch_name !== '')
-            attach[key] = find_stitchID_by_pos(Stitches, x, y, relative_id, direction, count_by_stitch_name)
+            attach[key] = find_stitchID_by_pos(Stitches, x, y, relative_id, direction, count_by_stitch_name);
         else
-            attach[key] = find_stitchID_by_pos(Stitches, x, y, relative_id, 1, count_by_stitch_name)
-        return attach
+            attach[key] = find_stitchID_by_pos(Stitches, x, y, relative_id, 1, count_by_stitch_name);
+        return attach;
     }
-    attach[key] = find_label(Stitches, at)
-    attach_row[key] = find_stitch_by_id(Stitches, attach[key].attach_id)[0].nrow
+    attach[key] = find_label(Stitches, at);
+    attach_row[key] = find_stitch_by_id(Stitches, attach[key].attach_id)[0].nrow;
     if (sum(turns.slice(attach_row[key])) % 2 == 1)
-        attach[key]['attach_id'] = attach[key].attach_id - attach[key].n + 1
-    return attach
+        attach[key]['attach_id'] = attach[key].attach_id - attach[key].n + 1;
+    return attach;
 }
 
 //text = parse_definitions(textSwatch)
@@ -1629,96 +1628,97 @@ function update_attachment_points(Stitches, node, attach, turns, attach_row) {
 
 
 function parse_StitchCodeList(rList) {
-    var id = -1
-    var turns = []
+    var id = -1;
+    var turns = [];
     var attach_row = {
         0: -1
-    }
+    };
     var attach = {
         0: -1
-    }
-    var Nrows = 0
-    var Stitches = []
+    };
+    var Nrows = 0;
+    var Stitches = [];
 
     for (var row of rList) {
         if (Nrows >= 1) {
-            var [count, first, last] = count_stitches_in_row(Stitches, Nrows - 1)
+            var [count, first, last] = count_stitches_in_row(Stitches, Nrows - 1);
             if (last_element(turns) == 0)
                 for (let k of Object.keys(attach)) {
-                    attach[k] = first - 1
-                    attach_row[k] = Nrows - 1
+                    attach[k] = first - 1;
+                    attach_row[k] = Nrows - 1;
                 }
             else
                 for (let k of Object.keys(attach)) {
-                    attach[k] = last + 1
-                    attach_row[k] = Nrows - 1
+                    attach[k] = last + 1;
+                    attach_row[k] = Nrows - 1;
                 }
         }
-        var k = 0
-        var Stitch
+        var k = 0;
+        var Stitch;
         for (var node of row) {
 
-            attach = update_attachment_points(Stitches, node, attach, turns, attach_row) //attach now holds the first attachment point of the current node.
+            attach = update_attachment_points(Stitches, node, attach, turns, attach_row); //attach now holds the first attachment point of the current node.;;
             //            console.log(node, JSON.stringify(attach), Stitches)
 
-            var key = Object.keys(node['at'])[0]
+            var key = Object.keys(node['at'])[0];
             if (node['contents'] !== '' && !(['turn'].includes(node['contents']))) {
                 //                console.log(JSON.stringify(Stitches), attach, key, attach[key])
-                Stitch = parse_StitchCode(node, id, attach[key], Stitches, turns)
+                Stitch = parse_StitchCode(node, id, attach[key], Stitches, turns);
                 if (Stitch.id_attach.length > 0) {
-                    attach[key] = last_element(Stitch.id_attach)
+                    attach[key] = last_element(Stitch.id_attach);
                 } else {
                     //Undoing default shift by one if no attachment points.
                     if (node['at'][key] === '') {
-                        let direction = 1
+                        let direction = 1;
                         if (sum(turns.slice(attach_row[key])) % 2 == 1)
-                            direction = -1
-                        attach[key] -= direction
+                            direction = -1;
+                        attach[key] -= direction;
                     }
                 }
                 if (Stitch.id.length > 0)
-                    id = last_element(Stitch.id)
-                Stitches.push(Stitch)
+                    id = last_element(Stitch.id);
+                Stitches.push(Stitch);
             } else {
                 if (attach[key]['attach_id'])
-                    attach[key] = attach[key]['attach_id']
+                    attach[key] = attach[key]['attach_id'];
             }
             if ((node['contents'] === 'turn') || k > 0)
-                k++
+                k++;
         }
         if (k > 1)
-            throw new Error('Turning can happen only at the end of a row. Error at : ' + JSON.stringify(row))
+            throw new Error('Turning can happen only at the end of a row. Error at : ' + JSON.stringify(row));
         if (last_element(row)['contents'] === 'turn')
-            turns.push(1)
+            turns.push(1);
         else
-            turns.push(0)
-        Nrows++
+            turns.push(0);
+        Nrows++;
     }
 
-    DEBUG += '=======After parsing the stitch codes:=======\n' + JSON.stringify(Stitches) + '\n'
+    DEBUG += '=======After parsing the stitch codes:=======\n' + JSON.stringify(Stitches) + '\n';
 
-    Stitches = find_and_fix_references_in_repeated_labels(Stitches, turns)
-    DEBUG += '=======After fixing the references to repeated labels:=======\n' + JSON.stringify(Stitches) + '\n'
+    Stitches = find_and_fix_references_in_repeated_labels(Stitches, turns);
+    DEBUG += '=======After fixing the references to repeated labels:=======\n' + JSON.stringify(Stitches) + '\n';
     for (var i = 0; i < Stitches.length; i++)
-        Stitches[i]['uid'] = i
-    return Stitches
+        Stitches[i]['uid'] = i;
+    return Stitches;
 }
 
 function parse_StitchCode(r, id, id_attach, Stitches, turns) {
-    var attach_ref = null
+    var stitch;
+    var attach_ref = null;
     //console.log(id_attach)
 
     if ((id_attach != '') && (!Number.isInteger(id_attach)) && ('attach_id' in id_attach) && (!(['ch', 'turn'].includes(r['contents'])))) {
-        attach_ref = id_attach['attach_ref']
-        id_attach = id_attach['attach_id']
+        attach_ref = id_attach['attach_ref'];
+        id_attach = id_attach['attach_id'];
     }
-    var sign = 1
-    var StitchName = r['contents']
+    var sign = 1;
+    var StitchName = r['contents'];
     if (StitchName in Dictionary)
-        stitch = Dictionary[StitchName]
+        stitch = Dictionary[StitchName];
     else {
-        var N_TogInc = 1
-        var OrigStitchName = StitchName
+        var N_TogInc = 1;
+        var OrigStitchName = StitchName;
         var TogOrInc = StitchName.slice(-3);
         if (['inc', 'tog'].includes(TogOrInc)) {
             let matches = StitchName.slice(0, -3).match(/\d+$/);
@@ -1727,91 +1727,91 @@ function parse_StitchCode(r, id, id_attach, Stitches, turns) {
                 let matches1 = StitchName.slice(0, -3).match(/(.*?)(?=\d*$)/);
                 StitchName = matches1[0];
             } else
-                N_TogInc = 1
+                N_TogInc = 1;
         }
 
         if (!(StitchName in Dictionary))
-            throw new Error('Stitch type not defined in Dictionary. Please, add it. Stitch: ' + r['contents'])
-        var stitch = Dictionary[StitchName]
+            throw new Error('Stitch type not defined in Dictionary. Please, add it. Stitch: ' + r['contents']);
+        stitch = Dictionary[StitchName];
         if (N_TogInc > 1) {
             if (TogOrInc === 'tog')
-                stitch = handle_Ntog(stitch, N_TogInc)
+                stitch = handle_Ntog(stitch, N_TogInc);
             else
-                stitch = handle_Ninc(stitch, N_TogInc)
+                stitch = handle_Ninc(stitch, N_TogInc);
 
-            Dictionary[OrigStitchName] = stitch
+            Dictionary[OrigStitchName] = stitch;
         }
     }
     //console.log(r['contents'])
     if (stitch[0] !== '&')
-        throw new Error('Stitch code needs to start with &: ' + stitch)
-    var [type, Top, bottom, attachments, hidden, cons] = stitch.slice(1).split(/[\^\:~]/g)
+        throw new Error('Stitch code needs to start with &: ' + stitch);
+    var [type, Top, bottom, attachments, hidden, cons] = stitch.slice(1).split(/[\^\:~]/g);
 
     const regex1 = /([A-Z0-9a-z_]+)\(([^\);]*)\)/g;
-    var topNodesNames = []
-    var topNodes = {}
+    var topNodesNames = [];
+    var topNodes = {};
 
     let match;
-    var k = 1
+    var k = 1;
     while (match = regex1.exec(Top)) {
-        topNodesNames.push(match[1])
-        topNodes[match[1]] = {}
+        topNodesNames.push(match[1]);
+        topNodes[match[1]] = {};
         topNodes[match[1]] = {
             id: id + k
-        }
+        };
 
-        let type = match[2]
+        let type = match[2];
         if ((!match[2]) || (type.trim().length == 0))
-            throw new Error('Type of stitch needs to be specified for all top nodes in parenthesis: ' + stitch)
+            throw new Error('Type of stitch needs to be specified for all top nodes in parenthesis: ' + stitch);
         //    type = 'hidden'
-        topNodes[match[1]]['type'] = type
-        k++
+        topNodes[match[1]]['type'] = type;
+        k++;
     }
     if ((k == 1) && (Top.trim().length > 0))
-        throw new Error('Top stitch unparseable. Type of stitch needs to be specified for all top nodes in parenthesis: ' + stitch)
+        throw new Error('Top stitch unparseable. Type of stitch needs to be specified for all top nodes in parenthesis: ' + stitch);
 
     const regex = /(\d+)?([A-Za-z_0-9]+)/g;
     const bottomNodesNames = [];
 
-    var bottomNodes = {}
-    k = 0
+    var bottomNodes = {};
+    k = 0;
     if (/[\)\(]/.test(bottom))
-        throw new Error('Bottom nodes cannot carry type defined in parenthesis: ' + bottom)
+        throw new Error('Bottom nodes cannot carry type defined in parenthesis: ' + bottom);
     while (match = regex.exec(bottom)) {
         if (k == 0) {
             if (id_attach > 0) {
                 if (sum(turns.slice(find_stitch_by_id(Stitches, id_attach)[0].nrow)) % 2 == 1)
-                    sign = -1
+                    sign = -1;
             } else {
                 if (sum(turns) % 2 == 1)
-                    sign = -1
+                    sign = -1;
             }
         }
         const name = match[2];
         const number = match[1] ? parseInt(match[1]) : 1;
         bottomNodesNames.push(name);
 
-        bottomNodes[name] = {}
-        bottomNodes[name]['attachment_depth'] = number
-        bottomNodes[name]['id'] = id_attach + k * sign
-        k++
+        bottomNodes[name] = {};
+        bottomNodes[name]['attachment_depth'] = number;
+        bottomNodes[name]['id'] = id_attach + k * sign;
+        k++;
     }
 
     const regexH = /([A-Z0-9a-z_]+)\(?([^;\)]*)\)?/g;
-    otherNodes = {}
+    otherNodes = {};
     while (match = regexH.exec(hidden)) {
-        otherNodes[match[1]] = {}
-        let type = match[2]
+        otherNodes[match[1]] = {};
+        let type = match[2];
         if (type.trim().length == 0)
-            type = 'hidden'
-        otherNodes[match[1]]['type'] = type
+            type = 'hidden';
+        otherNodes[match[1]]['type'] = type;
     }
 
-    var label = null
-    var inherit = ''
-    var labelToInherit
+    var label = null;
+    var inherit = '';
+    var labelToInherit;
     if ((r['dot'] !== '') && (r['dot'] != null)) {
-        label = r['dot']
+        label = r['dot'];
         /////let k = 0
         /////for (let i = 0; i < label.length; i++)
         /////    if (label[i].includes('^')) {
@@ -1832,24 +1832,24 @@ function parse_StitchCode(r, id, id_attach, Stitches, turns) {
 
     //if ((cons.length > 0) && (cons[0] !== '!'))
     //    throw new Error('First connection should start with previous stitch, denoted with "!": ' + stitch)
-    connections = {}
-    var conArr = []
+    connections = {};
+    var conArr = [];
     for (var con of cons.split(';')) {
         if (con.trim().length > 0) {
-            let [n0, len, n1] = con.split('-')
-            n0 = n0.trim()
-            n1 = n1.trim()
+            let [n0, len, n1] = con.split('-');
+            n0 = n0.trim();
+            n1 = n1.trim();
 
             if (len !== 'skip') {
                 try {
-                    len = evaluateExpression(len)
+                    len = evaluateExpression(len);
                 } catch (error) {
-                    throw new Error('Length of connection is not a parseable number in stitch: ' + stitch)
+                    throw new Error('Length of connection is not a parseable number in stitch: ' + stitch);
                 }
                 //let n0 = con[0]
                 //let n1 = con.slice(-1)
                 //let len = eval(con.slice(1, -1))
-                connections[[n0, n1].join('--')] = len
+                connections[[n0, n1].join('--')] = len;
                 ////if (n0[0] === '*')
                 ////    n0 = n0.slice(1)
                 ////if (topNodesNames.includes(n1) && bottomNodesNames.includes(n0))
@@ -1886,14 +1886,14 @@ function parse_StitchCode(r, id, id_attach, Stitches, turns) {
 
     if (attachments.trim() !== '')
         for (var a of attachments.split(';')) {
-            a = a.split('-')
+            a = a.split('-');
             //console.log('log', a[0], topNodesNames, a[1], bottomNodesNames, topNodesNames.includes(a[0]), bottomNodesNames.includes(a[1]))
             if (!topNodesNames.includes(a[0]) || !bottomNodesNames.includes(a[1]))
-                throw new Error('Attachment list in stitch raw format should start with top stitch first, and then bottom stitch: ' + a)
-            topNodes[a[0]]['attach'] = a[1]
+                throw new Error('Attachment list in stitch raw format should start with top stitch first, and then bottom stitch: ' + a);
+            topNodes[a[0]]['attach'] = a[1];
         }
-    var id_attach_arr = Array.from(Array(bottomNodesNames.length), (_, i) => id_attach + i * sign) //id_attach is the first attachment point, so start counting from zero
-    var id_arr = Array.from(Array(topNodesNames.length), (_, i) => id + i + 1) //id was the previous stitch id. so count from 1.
+    var id_attach_arr = Array.from(Array(bottomNodesNames.length), (_, i) => id_attach + i * sign); //id_attach is the first attachment point, so start counting from zero;;
+    var id_arr = Array.from(Array(topNodesNames.length), (_, i) => id + i + 1); //id was the previous stitch id. so count from 1.;;
 
 
 
@@ -1916,8 +1916,8 @@ function parse_StitchCode(r, id, id_attach, Stitches, turns) {
         low_level_type: stitch,
         nrow: r['nrow'],
         Color: r['Color']
-    }
-    return Stitch
+    };
+    return Stitch;
 }
 
 
@@ -1933,60 +1933,61 @@ function parse_StitchCode(r, id, id_attach, Stitches, turns) {
 var DIM = 3;
 
 function parse_definitions(text) {
-    var text0 = ''
-    EXTRA_DOTS = ''
-    let k = 0
+    var text0 = '';
+    EXTRA_DOTS = '';
+    let k = 0;
 
     for (var l of text.split('\\')) {
         if (k % 2 == 0)
-            text0 += l
-        k++
+            text0 += l;
+        k++;
     }
-    text = text0
-    text0 = ''
+    text = text0;
+    text0 = '';
 
 
-    for (var l of text.split('\n')) {
+    for (let l of text.split('\n')) {
         if ((l.trim().slice(0, 4) !== 'DEF:') && (l.trim()[0] !== '#') && (l.trim().slice(0, 4) !== 'DOT:')) { //remove lines starting with Def. or #
-            let l0 = ''
+            let l0 = '';
             for (let c of l) {
                 if (c === '#') //remove string after a #
-                    break
-                l0 += c
+                    break;
+                l0 += c;
             }
-            text0 += l0 + '\n'
+            text0 += l0 + '\n';
         } else if (l.trim().slice(0, 4) === 'DOT:') {
-            EXTRA_DOTS += l.trim().slice(4).split('#')[0].trim() + '\n'
+            EXTRA_DOTS += l.trim().slice(4).split('#')[0].trim() + '\n';
         }
     }
-
-    for (var l of text.split('\n'))
+    var name, V, H;
+    for (let l of text.split('\n'))
         if (l.trim().slice(0, 4) == 'DEF:') {
-            l = l.trim().split('#')[0] //remove any comments
-            var [a, b] = l.slice(4).split('=')
-            a = a.trim()
-            b = b.trim()
+            l = l.trim().split('#')[0]; //remove any comments;;
+            var [a, b] = l.slice(4).split('=');
+            a = a.trim();
+            b = b.trim();
             if (b[0] === '&') // Include dictionary entry.
-                Dictionary[a] = b
+                Dictionary[a] = b;
             else if (b.slice(0, 5) == 'Copy(') {
                 try {
-                    var spl = b.slice(5, -1).split(',')
-                    var name = spl[0].trim()
-                    var H = -1
-                    var W = -1
+                    var spl = b.slice(5, -1).split(',');
+                    name = spl[0].trim();
+                    H = -1;
+                    W = -1;
                     if (spl.length >= 2)
-                        H = parseFloat(spl[1])
+                        H = parseFloat(spl[1]);
                     if (spl.length == 3)
-                        W = parseFloat(spl[2])
+                        W = parseFloat(spl[2]);
                 } catch (error) {
-                    throw new Error('Changing W,H of stitch requires a definition of the kind: dc=Copy(dc,H,W), with H and W being floats.')
+                    throw new Error('Changing W,H of stitch requires a definition of the kind: dc=Copy(dc,H,W), with H and W being floats.');
                 }
 
                 ////
+                var dict;
                 if (name in Dictionary)
-                    dict = Dictionary[name]
+                    dict = Dictionary[name];
                 else {
-                    var N_TogInc = 1
+                    var N_TogInc = 1;
                     var TogOrInc = name.slice(-3);
                     if (['inc', 'tog'].includes(TogOrInc)) {
                         let matches = name.slice(0, -3).match(/\d+$/);
@@ -1995,76 +1996,76 @@ function parse_definitions(text) {
                             let matches1 = name.slice(0, -3).match(/(.*?)(?=\d*$)/);
                             name = matches1[0];
                         } else
-                            N_TogInc = 1
+                            N_TogInc = 1;
                     }
 
                     if (!(name in Dictionary))
-                        throw new Error('Stitch type not defined in Dictionary. Please, add it. Stitch: ' + name)
-                    var dict = Dictionary[name]
+                        throw new Error('Stitch type not defined in Dictionary. Please, add it. Stitch: ' + name);
+                    dict = Dictionary[name];
                     if (N_TogInc > 1) {
                         if (TogOrInc === 'tog')
-                            dict = handle_Ntog(dict, N_TogInc)
+                            dict = handle_Ntog(dict, N_TogInc);
                         else
-                            dict = handle_Ninc(dict, N_TogInc)
+                            dict = handle_Ninc(dict, N_TogInc);
                     }
                 }
                 ////
 
-                Dictionary[a] = handle_changeHeightWidth(dict, a, H, W)
+                Dictionary[a] = handle_changeHeightWidth(dict, a, H, W);
             } else
                 text0 = text0.replace(new RegExp('\\b(\\d*)' + a.trim() + '\\b', 'g'), function(match, p1) {
                     return p1 ? p1 + '(' + b.trim() + ')' : '(' + b.trim() + ')';
                 });
         }
 
-    backgroundColor = ''
+    backgroundColor = '';
     if (text0.split('BACKGROUND:').length > 2)
-        throw new Error('Background color cannot be defined more than once using BACKGROUND.')
+        throw new Error('Background color cannot be defined more than once using BACKGROUND.');
     if (text0.split('BACKGROUND:').length == 2) {
-        backgroundColor = text0.split('BACKGROUND:')[1].split('\n')[0].split('#')[0].trim()
-        text0 = text0.split('BACKGROUND:')[0] + '\n' + text0.split('BACKGROUND:')[1].split('\n').slice(1).join('\n')
+        backgroundColor = text0.split('BACKGROUND:')[1].split('\n')[0].split('#')[0].trim();
+        text0 = text0.split('BACKGROUND:')[0] + '\n' + text0.split('BACKGROUND:')[1].split('\n').slice(1).join('\n');
     }
 
 
     //hack colors:
-    text = ''
+    text = '';
     for (let l of text0.split('\n')) {
         if (l.split('COLOR:').length >= 2) {
-            let S = l.split('COLOR:')
-            let l0 = S[0]
+            let S = l.split('COLOR:');
+            let l0 = S[0];
             for (var s of S.slice(1)) {
-                let insideColor = 1
-                let col = ''
-                let j = 0
-                let t = ''
+                let insideColor = 1;
+                let col = '';
+                let j = 0;
+                let t = '';
                 while (insideColor > 0 && j < s.length) {
 
-                    t = s[j]
-                    j++
+                    t = s[j];
+                    j++;
                     if (t === '\n')
-                        insideColor = 0
+                        insideColor = 0;
                     if ((insideColor == 1) && (t) === '(')
-                        insideColor = 2
+                        insideColor = 2;
                     if ((t) === ')')
-                        insideColor -= 1
+                        insideColor -= 1;
                     if (([',', ']', '}', ].includes(t)) && insideColor == 1)
-                        insideColor = 0
+                        insideColor = 0;
                     if (insideColor > 0)
-                        col += t
+                        col += t;
                 }
                 //                console.log(col)
-                l0 += 'COLOR:' + col.replaceAll(',', '~').replace('(', '+').replace(')', '-') + s.slice(col.length)
+                l0 += 'COLOR:' + col.replaceAll(',', '~').replace('(', '+').replace(')', '-') + s.slice(col.length);
                 //                console.log(l0)
             }
-            text += l0 + '\n'
+            text += l0 + '\n';
         } else
-            text += l + '\n'
+            text += l + '\n';
     }
 
 
 
 
-    return text.trim()
+    return text.trim();
 }
 
 
@@ -2076,7 +2077,7 @@ function find_vars(text) {
         });
     } catch (error) {}
     variable_names = Array.from(new Set(variable_names));
-    return [text, variable_names]
+    return [text, variable_names];
 }
 
 function evaluate_indices(text) {
@@ -2087,60 +2088,60 @@ function evaluate_indices(text) {
         var lines = text.split(new RegExp('\\b' + v + '\\b=', 'g')); //Handle i=0
         var R = lines[0];
         for (var sublines of lines.slice(1)) { //handle i++
-            sublines = sublines.trim()
-            var i = String(parseInt(sublines, 10)) //sublines.match(/^\d+/)[0]; //Handle i=0
+            sublines = sublines.trim();
+            var i = String(parseInt(sublines, 10)); //sublines.match(/^\d+/)[0]; //Handle i=0;;
 
             //const pattern = /(k\+\+|--k|k--|\+\+k)/;
-            const pattern = new RegExp('(\\\+\\\+' + v + '\\b|--' + v + '\\b|\\b' + v + "--|\\b" + v + '\\\+\\\+|next[ ]+\\b' + v + '\\b|prev[ ]+\\b' + v + '\\b)', 'g')
-            var tosplit = sublines.slice(i.length)
+            const pattern = new RegExp('(\\\+\\\+' + v + '\\b|--' + v + '\\b|\\b' + v + "--|\\b" + v + '\\\+\\\+|next[ ]+\\b' + v + '\\b|prev[ ]+\\b' + v + '\\b)', 'g');
+            var tosplit = sublines.slice(i.length);
             const FirstSplit = tosplit.split(pattern);
-            const split = FirstSplit.flatMap(item => item.split(new RegExp('(\\b' + v + '\\b)', 'g')))
+            const split = FirstSplit.flatMap(item => item.split(new RegExp('(\\b' + v + '\\b)', 'g')));
 
-            var together = []
-            var s = 0
+            var together = [];
+            var s = 0;
             while (s < split.length - 1) {
                 if (split[s] == v && split[s + 1] == '++')
-                    together.push(v + '++')
+                    together.push(v + '++');
                 else if (split[s] == v && split[s + 1] == '--')
-                    together.push(v + '--')
+                    together.push(v + '--');
                 else if (split[s] == '++' && split[s + 1] == v)
-                    together.push("++" + v)
+                    together.push("++" + v);
                 else if (split[s].trim() == 'next' && split[s + 1] == v)
-                    together.push("++" + v)
+                    together.push("++" + v);
                 else if (split[s].trim() == 'prev' && split[s + 1] == v)
-                    together.push("--" + v)
+                    together.push("--" + v);
                 else if (split[s] == '--' && split[s + 1] == v)
-                    together.push("--" + v)
+                    together.push("--" + v);
                 else {
-                    together.push(split[s])
-                    s--
+                    together.push(split[s]);
+                    s--;
                 }
-                s += 2
+                s += 2;
             }
             if (s == split.length - 1)
-                together.push(split[s])
+                together.push(split[s]);
             if (together.join('') != tosplit)
-                throw new Error('Splitting into index increments failed: ', tosplit)
+                throw new Error('Splitting into index increments failed: ', tosplit);
             together = together.filter(str => str.trim() !== '');
 
-            var r = ''
-            for (var t of together) {
+            var r = '';
+            for (let t of together) {
                 if (t == v)
-                    r += i
+                    r += i;
                 else if (t == v + '++') {
-                    r += i
+                    r += i;
                     i = String(Number(i) + 1);
                 } else if (t == v + '--') {
-                    r += i
+                    r += i;
                     i = String(Number(i) - 1);
                 } else if (t == '++' + v) {
                     i = String(Number(i) + 1);
-                    r += i
+                    r += i;
                 } else if (t == '--' + v) {
                     i = String(Number(i) - 1);
                     r += i;
                 } else
-                    r += t
+                    r += t;
             }
             R += r;
         }
@@ -2150,7 +2151,7 @@ function evaluate_indices(text) {
     text = t[0];
     for (var tt of t.slice(2).filter((_, i) => i % 2 === 0)) { //Drop the expressions enclosed in $$. Those were evaluated above.
         if ((!['\n', ','].includes(text.slice(-1)[0])) && (!['\n', ','].includes(tt[0])))
-            text += ','
+            text += ',';
         text += tt;
     }
 
@@ -2160,8 +2161,8 @@ function evaluate_indices(text) {
     //const parser = math.parser()
 
     while (m = matches.next(), !m.done) {
-        for (var i of m.value[1].split(',')) {
-            i = i.split(';')[0]
+        for (let i of m.value[1].split(',')) {
+            i = i.split(';')[0];
             if (!(i.includes(':'))) {
                 try {
                     if (Number.isInteger(evaluateExpression((i)))) {
@@ -2194,26 +2195,26 @@ function getMatchingClosingBracket(openingBracket) {
 }
 
 function duplicateRepeated_before_evaluating_indices(str, i_start0 = 0, stitch_ind_in_text = []) {
-    var main = ''
-    var at = ''
-    var dot = ''
-    var mult = ''
-    var multT = true
-    var multTAnyTime = false
-    var dotT = false
-    var atT = false
-    var mainT = false
+    var main = '';
+    var at = '';
+    var dot = '';
+    var mult = '';
+    var multT = true;
+    var multTAnyTime = false;
+    var dotT = false;
+    var atT = false;
+    var mainT = false;
     var stack = [];
     var holdT = false;
     var out = '';
     var sep = ',';
     var out1 = '';
     var atOrder = -1;
-    var i_start = i_start0
-    var i_start_AT
+    var i_start = i_start0;
+    var i_start_AT;
 
     if (str[0] === '\n')
-        throw new Error('Expression cannot begin with a new line: ' + str)
+        throw new Error('Expression cannot begin with a new line: ' + str);
 
     const openingBrackets = ['(', '[', '{'];
     const closingBrackets = [')', ']', '}'];
@@ -2222,7 +2223,7 @@ function duplicateRepeated_before_evaluating_indices(str, i_start0 = 0, stitch_i
 
         const char = str[i];
         if (openingBrackets.includes(char)) {
-            stack.push(char)
+            stack.push(char);
         }
         if ((closingBrackets.includes(char)) && (stack.length > 0) && (char === getMatchingClosingBracket(stack[stack.length - 1]))) {
             stack.pop();
@@ -2231,102 +2232,102 @@ function duplicateRepeated_before_evaluating_indices(str, i_start0 = 0, stitch_i
         }
         if (char === '*' && (stack.length == 0) && (!multT)) {
             if (mult !== '' && (!multTAnyTime))
-                throw new Error('Cannot handle two integers multiplying stitches (e.g. 7sc.A*3). Use parenthesis instead (e.g. [7sc.A]*3): ' + main)
-            multTAnyTime = true
-            multT = true
-            holdT = false
-            mainT = false
-            dotT = false
-            atT = false
+                throw new Error('Cannot handle two integers multiplying stitches (e.g. 7sc.A*3). Use parenthesis instead (e.g. [7sc.A]*3): ' + main);
+            multTAnyTime = true;
+            multT = true;
+            holdT = false;
+            mainT = false;
+            dotT = false;
+            atT = false;
         } else if (char === '*' && (stack.length == 0) && (multT)) {
-            multT = false
-            mainT = true
+            multT = false;
+            mainT = true;
 
-            i_start = i_start0 + i + 1
-            atT = false
-            dotT = false
+            i_start = i_start0 + i + 1;
+            atT = false;
+            dotT = false;
         } else if (!/\d|\s/.test(char) && (multT) && ![',', '\n', '@', '.'].includes(char) && i != str.length - 1) {
             if (/[a-zA-Z_]/.test(char) && (mult).trim() !== '')
-                holdT = true
-            multT = false
-            mainT = true
+                holdT = true;
+            multT = false;
+            mainT = true;
 
-            i_start = i_start0 + i
-            atT = false
-            dotT = false
-            main += char
+            i_start = i_start0 + i;
+            atT = false;
+            dotT = false;
+            main += char;
         } else if ((char === '@') && (stack.length == 0)) {
             if (dotT)
-                atOrder = 2
+                atOrder = 2;
             else
-                atOrder = 1
+                atOrder = 1;
             if (at !== '')
-                throw new Error('Multiple labels defined without parenthesis: ' + str)
-            atT = true
-            i_start_AT = i_start0 + i
-            multT = false
-            mainT = false
-            dotT = false
+                throw new Error('Multiple labels defined without parenthesis: ' + str);
+            atT = true;
+            i_start_AT = i_start0 + i;
+            multT = false;
+            mainT = false;
+            dotT = false;
         } else if ((char === '.') && (stack.length == 0)) {
             if (dot !== '')
-                throw new Error('Multiple references defined without parenthesis: ' + str)
-            atT = false
-            multT = false
-            mainT = false
-            dotT = true
+                throw new Error('Multiple references defined without parenthesis: ' + str);
+            atT = false;
+            multT = false;
+            mainT = false;
+            dotT = true;
         } else if ((([',', '\n'].includes(char)) && (stack.length == 0)) || i == str.length - 1) {
-            sep = char
+            sep = char;
             if (char !== '\n')
-                sep = ','
+                sep = ',';
             //console.log('finish off')
             //console.log('finishing: ', at, dot, main)
             if ((i == str.length - 1) && (![',', '\n'].includes(char))) {
                 if (multT && (/\d|\s/.test(char))) {
-                    mult += char
+                    mult += char;
                 } else if (dotT) {
-                    dot += char
+                    dot += char;
                 } else if (atT) {
-                    at += char
+                    at += char;
                 } else {
                     if (main === '')
-                        i_start = i_start0 + i
-                    main += char
+                        i_start = i_start0 + i;
+                    main += char;
                 }
             }
             for (let c of main) {
                 if (/ |\t/.test(c))
-                    i_start++
+                    i_start++;
                 else
-                    break
+                    break;
             }
             main = main.replace(/ +|\t+/g, "");
-            at = at.trim()
-            dot = dot.trim()
-            mult = mult.trim()
+            at = at.trim();
+            dot = dot.trim();
+            mult = mult.trim();
 
             if ((parseInt(mult, 10) < 0) || (mult !== '' && Number.isNaN(parseInt(mult, 10))))
-                throw new Error('Multiplier needs fixing: ' + mult)
+                throw new Error('Multiplier needs fixing: ' + mult);
 
             if (parseInt(mult, 10) == 1)
-                mult = ''
+                mult = '';
             if ((mult === '') || parseInt(mult, 10) > 0) {
                 if (openingBrackets.includes(main[0]) && closingBrackets.includes(main.slice(-1)[0])) {
                     //console.log('finishing2: ', at, dot, main)
                     if (getMatchingClosingBracket(main[0]) !== main.slice(-1)[0])
-                        throw new Error('Unmatched brackets: ' + main)
-                    var stitch_ind_in_text_tmp = []
-                    var out0 = duplicateRepeated_before_evaluating_indices(main.slice(1, -1), i_start + 1, stitch_ind_in_text_tmp)
+                        throw new Error('Unmatched brackets: ' + main);
+                    var stitch_ind_in_text_tmp = [];
+                    var out0 = duplicateRepeated_before_evaluating_indices(main.slice(1, -1), i_start + 1, stitch_ind_in_text_tmp);
                     //out1 = '[' + out0 + ']'
                     //console.log('bug? ', main, main.slice(1, -1), out1)
-                    out1 = ''
+                    out1 = '';
                     if (atOrder == 1) {
                         if (at !== '')
                             out1 += '@' + at;
                         if (dot !== '')
-                            out1 += '.' + dot
+                            out1 += '.' + dot;
                     } else {
                         if (dot !== '')
-                            out1 += '.' + dot
+                            out1 += '.' + dot;
                         if (at !== '')
                             out1 += '@' + at;
                     }
@@ -2349,172 +2350,172 @@ function duplicateRepeated_before_evaluating_indices(str, i_start0 = 0, stitch_i
                             return -1;
                         };
                         //
-                        let out2 = ''
-                        var stitch_ind_in_text_tmp2 = [...stitch_ind_in_text_tmp]
+                        let out2 = '';
+                        var stitch_ind_in_text_tmp2 = [...stitch_ind_in_text_tmp];
 
                         if (out0.split('>').length > 1) { // handle iteration interruption symbol 
-                            let out0a = ''
-                            let notdone = 0
-                            let indDrop = -1
+                            let out0a = '';
+                            let notdone = 0;
+                            let indDrop = -1;
                             for (let h of out0.split('>')) {
-                                out0a += h
+                                out0a += h;
                                 if (notdone == 0) {
-                                    out2 += h
-                                    indDrop++
+                                    out2 += h;
+                                    indDrop++;
                                 }
                                 if (areBracketsBalanced(out2))
-                                    notdone++
+                                    notdone++;
                                 if (notdone == 0)
-                                    out2 += '>'
+                                    out2 += '>';
                                 if (notdone == 1) {
-                                    out0a = out0a
+                                    out0a = out0a;
                                     if (last_element(out0a) === ',')
-                                        out0a = out0a.slice(0, -1)
+                                        out0a = out0a.slice(0, -1);
                                 } else
-                                    out0a += '>'
+                                    out0a += '>';
                             }
                             if (indDrop != -1) {
 
                                 //stitch_ind_in_text_tmp2 = [...stitch_ind_in_text_tmp]
-                                let ii = getIndex(stitch_ind_in_text_tmp, '>', indDrop + 1)
-                                stitch_ind_in_text_tmp.splice(ii, 1)
-                                stitch_ind_in_text_tmp2.splice(ii)
+                                let ii = getIndex(stitch_ind_in_text_tmp, '>', indDrop + 1);
+                                stitch_ind_in_text_tmp.splice(ii, 1);
+                                stitch_ind_in_text_tmp2.splice(ii);
                             }
-                            out0 = out0a
+                            out0 = out0a;
                             if (last_element(out0) === '>')
-                                out0 = out0.slice(0, -1)
-                            out2 = out2
+                                out0 = out0.slice(0, -1);
+                            out2 = out2;
                             if (last_element(out2) === ',')
-                                out2 = out2.slice(0, -1)
+                                out2 = out2.slice(0, -1);
                         } else
-                            out2 = out0
+                            out2 = out0;
 
                         /// HANDLE ITERATION INTERRUPTION <
-                        let outM1 = ''
-                        var stitch_ind_in_text_tmpM1 = [...stitch_ind_in_text_tmp]
+                        let outM1 = '';
+                        var stitch_ind_in_text_tmpM1 = [...stitch_ind_in_text_tmp];
 
                         if (out0.split('<').length > 1) { // handle iteration interruption symbol  <
-                            let out0a = ''
-                            let notdone = 0
-                            let indDrop = -1
-                            let i_drop_out2 = 0
+                            let out0a = '';
+                            let notdone = 0;
+                            let indDrop = -1;
+                            let i_drop_out2 = 0;
                             for (let h of out0.split('<')) {
-                                out0a += h
+                                out0a += h;
                                 if (notdone == 0) {
-                                    indDrop++
-                                    i_drop_out2 = out0a.length
+                                    indDrop++;
+                                    i_drop_out2 = out0a.length;
                                 }
                                 if (notdone > 0)
-                                    outM1 += h + '<'
+                                    outM1 += h + '<';
                                 if (areBracketsBalanced(out0a))
-                                    notdone++
+                                    notdone++;
                                 if (notdone == 1) {
-                                    out0a = out0a
+                                    out0a = out0a;
                                     if (last_element(out0a) === ',')
-                                        out0a = out0a.slice(0, -1)
+                                        out0a = out0a.slice(0, -1);
                                 } else
-                                    out0a += '<'
+                                    out0a += '<';
                             }
                             if (indDrop != -1) {
-                                let ii = getIndex(stitch_ind_in_text_tmp, '<', indDrop + 1)
-                                stitch_ind_in_text_tmp.splice(ii, 1)
-                                stitch_ind_in_text_tmp2.splice(ii, 1)
-                                stitch_ind_in_text_tmpM1 = stitch_ind_in_text_tmpM1.slice(ii + 1)
+                                let ii = getIndex(stitch_ind_in_text_tmp, '<', indDrop + 1);
+                                stitch_ind_in_text_tmp.splice(ii, 1);
+                                stitch_ind_in_text_tmp2.splice(ii, 1);
+                                stitch_ind_in_text_tmpM1 = stitch_ind_in_text_tmpM1.slice(ii + 1);
 
                                 out2 = out2.slice(0, i_drop_out2) + out2.slice(i_drop_out2 + 1);
                             }
-                            out0 = out0a
+                            out0 = out0a;
                             if (out0[0] === '<')
-                                out0 = out0.slice(1)
+                                out0 = out0.slice(1);
                             if (last_element(out0) === '<')
-                                out0 = out0.slice(0, -1)
-                            outM1 = outM1
+                                out0 = out0.slice(0, -1);
+                            outM1 = outM1;
                             if (last_element(outM1) === ',' || last_element(outM1) === '<')
-                                outM1 = outM1.slice(0, -1)
+                                outM1 = outM1.slice(0, -1);
                             if (outM1[0] === ',')
-                                outM1 = outM1.slice(1)
+                                outM1 = outM1.slice(1);
                         } else
-                            outM1 = out0
+                            outM1 = out0;
                         ///////
-                        outM1 = '[' + outM1 + ']' + out1
-                        out2 = '[' + out2 + ']' + out1
-                        out1 = '[' + out0 + ']' + out1
-                        out1 = outM1 + ',' + (out1 + ',').repeat(parseInt(mult, 10) - 2) + out2 + sep
-                        stitch_ind_in_text_tmp = Array((parseInt(mult, 10) - 2)).fill(stitch_ind_in_text_tmp).flat().concat(stitch_ind_in_text_tmp2)
-                        stitch_ind_in_text_tmp = stitch_ind_in_text_tmpM1.concat(stitch_ind_in_text_tmp)
+                        outM1 = '[' + outM1 + ']' + out1;
+                        out2 = '[' + out2 + ']' + out1;
+                        out1 = '[' + out0 + ']' + out1;
+                        out1 = outM1 + ',' + (out1 + ',').repeat(parseInt(mult, 10) - 2) + out2 + sep;
+                        stitch_ind_in_text_tmp = Array((parseInt(mult, 10) - 2)).fill(stitch_ind_in_text_tmp).flat().concat(stitch_ind_in_text_tmp2);
+                        stitch_ind_in_text_tmp = stitch_ind_in_text_tmpM1.concat(stitch_ind_in_text_tmp);
                     } else if (mult !== '') {
-                        out1 = '[' + out0 + ']' + out1
-                        out1 = mult + '*' + out1 + sep
+                        out1 = '[' + out0 + ']' + out1;
+                        out1 = mult + '*' + out1 + sep;
                     } else {
-                        out1 = '[' + out0 + ']' + out1
-                        out1 = out1 + sep
+                        out1 = '[' + out0 + ']' + out1;
+                        out1 = out1 + sep;
                     }
-                    out += out1
-                    let tmp = stitch_ind_in_text.concat(stitch_ind_in_text_tmp)
+                    out += out1;
+                    let tmp = stitch_ind_in_text.concat(stitch_ind_in_text_tmp);
                     stitch_ind_in_text.splice(0, stitch_ind_in_text.length, ...tmp); //in place!
                 } else if (openingBrackets.includes(main[0]) || closingBrackets.includes(main.slice(-1)[0])) {
-                    throw new Error('Unbalanced brackets: ' + main)
+                    throw new Error('Unbalanced brackets: ' + main);
 
                 } else {
 
-                    out1 = main
+                    out1 = main;
 
                     if (atOrder == 1) {
                         if (at !== '')
                             out1 += '@' + at;
                         if (dot !== '')
-                            out1 += '.' + dot
+                            out1 += '.' + dot;
                     } else {
                         if (dot !== '')
-                            out1 += '.' + dot
+                            out1 += '.' + dot;
                         if (at !== '')
                             out1 += '@' + at;
 
                     }
 
                     if ((mult !== '') && (!holdT)) {
-                        out1 = (out1 + ',').repeat(parseInt(mult, 10)).slice(0, -1) + sep
-                        let tmp = stitch_ind_in_text.concat(Array((parseInt(mult, 10) - 1)).fill([i_start, main.trim()]))
+                        out1 = (out1 + ',').repeat(parseInt(mult, 10)).slice(0, -1) + sep;
+                        let tmp = stitch_ind_in_text.concat(Array((parseInt(mult, 10) - 1)).fill([i_start, main.trim()]));
                         stitch_ind_in_text.splice(0, stitch_ind_in_text.length, ...tmp);
                         //stitch_ind_in_text.push(...([i_start].repeat(parseInt(mult, 10) - 1)))
                     } else if (mult !== '')
-                        out1 = mult + '*' + out1 + sep
+                        out1 = mult + '*' + out1 + sep;
                     else
-                        out1 = out1 + sep
-                    out += out1
+                        out1 = out1 + sep;
+                    out += out1;
 
                     if ((main.trim() + at.trim() + dot.trim()) !== '') {
                         if (main.trim() === '')
-                            i_start = i_start_AT
+                            i_start = i_start_AT;
 
                         if (main.trim().slice(0, 4) !== 'DOT:' && main.trim().slice(0, 4) !== 'DEF:' && main.trim().slice(0, 6) !== 'COLOR:' && main.trim()[0] !== '#')
-                            stitch_ind_in_text.push([i_start, main.trim()]) ///HERE!
+                            stitch_ind_in_text.push([i_start, main.trim()]); ///HERE!;;
                     }
                 }
             }
-            mult = ''
-            dot = ''
-            at = ''
-            main = ''
-            atT = false
-            mainT = false
-            holdT = false
-            multT = true
-            dotT = false
-            multTAnyTime = false
+            mult = '';
+            dot = '';
+            at = '';
+            main = '';
+            atT = false;
+            mainT = false;
+            holdT = false;
+            multT = true;
+            dotT = false;
+            multTAnyTime = false;
         } else {
             if (multT) {
                 if (!/\d|\s/.test(char))
-                    throw new Error('Not a digit in multiplier when a number was expected.')
-                mult += char
+                    throw new Error('Not a digit in multiplier when a number was expected.');
+                mult += char;
             } else if (dotT) {
-                dot += char
+                dot += char;
             } else if (atT) {
-                at += char
+                at += char;
             } else if (mainT)
-                main += char
+                main += char;
             else
-                throw new Error('Unhandled char at: ' + str)
+                throw new Error('Unhandled char at: ' + str);
         }
         //console.log(char, stack, multT, mainT, dotT, atT, 'M: ', mult, 'MA: ', main, 'D: ', dot, 'A: ', at, 'out1: ' + out1, 'out: ' + out)
     }
@@ -2522,21 +2523,21 @@ function duplicateRepeated_before_evaluating_indices(str, i_start0 = 0, stitch_i
     if (stack.length != 0) throw new Error('Unbalanced brackets in: ' + str);
     //console.log(main, dot, at)
     if (out.slice(-1) === ',')
-        out = out.slice(0, -1)
+        out = out.slice(0, -1);
     //console.log('returning: ', out)
     //console.log(stitch_ind_in_text)
-    return out
+    return out;
 }
 
 
 function which_Nrow(str, i) {
-    var n = -1
-    var str1 = str.slice(0, i + 1)
+    var n = -1;
+    var str1 = str.slice(0, i + 1);
     for (var l of str1.split('\n')) {
         if (/.*[a-zA-Z_\^&\-\/\:;\@\.\*]+.*/.test(l))
-            n++
+            n++;
     }
-    return n
+    return n;
 }
 
 function getColorByIndex(index, colorMap) {
@@ -2546,17 +2547,17 @@ function getColorByIndex(index, colorMap) {
 }
 
 
-var III = 0
+var III = 0;
 
 function parse_text_instruction_to_structure(input, original = '', COLOR = {}) {
-    var main = ''
-    var at = ''
-    var dot = ''
-    var mult = ''
-    var multT = true
-    var dotT = false
-    var atT = false
-    var mainT = false
+    var main = '';
+    var at = '';
+    var dot = '';
+    var mult = '';
+    var multT = true;
+    var dotT = false;
+    var atT = false;
+    var mainT = false;
     var stack = [];
     var str = input;
 
@@ -2564,52 +2565,52 @@ function parse_text_instruction_to_structure(input, original = '', COLOR = {}) {
     if (typeof(str) === 'string') {
         COLOR = {
             '-1': '#969696'
-        }
-        var ind = 0
-        var str0 = ''
-        str = str.trim()
+        };
+        var ind = 0;
+        var str0 = '';
+        str = str.trim();
         for (let l of str.split('\n')) {
             if (l.split('COLOR:').length >= 2) {
-                let ind0 = ind
-                let S = l.split('COLOR:')
-                let l0 = S[0]
+                let ind0 = ind;
+                let S = l.split('COLOR:');
+                let l0 = S[0];
                 for (var s of S.slice(1)) {
-                    ind = ind0 + l0.length
-                    let insideColor = 1
-                    let col = ''
-                    let t = ''
-                    let j = 0
+                    ind = ind0 + l0.length;
+                    let insideColor = 1;
+                    let col = '';
+                    let t = '';
+                    let j = 0;
                     while (insideColor > 0 && j < s.length) {
-                        t = s[j]
-                        j++
+                        t = s[j];
+                        j++;
                         if (t === '\n')
-                            insideColor = 0
+                            insideColor = 0;
                         if ((insideColor == 1) && (t) === '(')
-                            insideColor = 2
+                            insideColor = 2;
                         if ((t) === ')')
-                            insideColor -= 1
+                            insideColor -= 1;
                         if (([',', ']', '}', ].includes(t)) && insideColor == 1)
-                            insideColor = 0
+                            insideColor = 0;
                         if (insideColor > 0)
-                            col += t
+                            col += t;
                     }
                     //console.log(col.replaceAll('~', ',').replace('+', '(').replace('-', ')'))
-                    COLOR[ind] = col.replaceAll('~', ',').replace('+', '(').replace('-', ')').trim()
-                    l0 += s.slice(col.length)
+                    COLOR[ind] = col.replaceAll('~', ',').replace('+', '(').replace('-', ')').trim();
+                    l0 += s.slice(col.length);
                 }
                 if (l0 !== '') {
-                    ind = ind0 + l0.length + 1
-                    l = l0
-                    str0 += l + '\n'
+                    ind = ind0 + l0.length + 1;
+                    l = l0;
+                    str0 += l + '\n';
                 }
             } else if (l !== '') {
-                ind += l.length + 1
-                str0 += l + '\n'
+                ind += l.length + 1;
+                str0 += l + '\n';
             }
         }
-        str = str0
+        str = str0;
         //console.log(COLOR, str0)
-        original = str
+        original = str;
         str = {
             contents: str,
             at: {},
@@ -2617,23 +2618,23 @@ function parse_text_instruction_to_structure(input, original = '', COLOR = {}) {
             index: [0, str.length],
             nrow: 0,
             color: getColorByIndex(0, COLOR)
-        }
+        };
     }
     var out = [];
-    var i_start = str.index[0]
-    var i_start_AT = str.index[0]
+    var i_start = str.index[0];
+    var i_start_AT = str.index[0];
 
     const openingBrackets = ['(', '[', '{'];
     const closingBrackets = [')', ']', '}'];
     for (let i = 0; i < str.contents.length; i++) {
 
-        Nrows = which_Nrow(original, i + str.index[0])
+        Nrows = which_Nrow(original, i + str.index[0]);
 
 
         const char = str.contents[i];
         //console.log('logs: ', char, original[i + str.index[0]])
         if (openingBrackets.includes(char)) {
-            stack.push(char)
+            stack.push(char);
         }
         if ((closingBrackets.includes(char)) && (stack.length > 0) && (char === getMatchingClosingBracket(stack[stack.length - 1]))) {
             stack.pop();
@@ -2641,122 +2642,122 @@ function parse_text_instruction_to_structure(input, original = '', COLOR = {}) {
             throw new Error('Unbalanced brackets in: ' + str.contents);
         }
         if (char === '*' && (stack.length == 0) && (!multT)) {
-            multT = true
-            mainT = false
-            dotT = false
-            atT = false
+            multT = true;
+            mainT = false;
+            dotT = false;
+            atT = false;
         } else if (char === '*' && (stack.length == 0) && (multT)) {
-            multT = false
-            mainT = true
+            multT = false;
+            mainT = true;
 
-            i_start = str.index[0] + i + 1
-            atT = false
-            dotT = false
+            i_start = str.index[0] + i + 1;
+            atT = false;
+            dotT = false;
         } else if (!/\d|\s/.test(char) && (multT) && ![',', '\n', '@', '.'].includes(char) && i != str.contents.length - 1) {
-            multT = false
-            mainT = true
+            multT = false;
+            mainT = true;
 
-            i_start = str.index[0] + i
-            atT = false
-            dotT = false
-            main += char
+            i_start = str.index[0] + i;
+            atT = false;
+            dotT = false;
+            main += char;
         } else if ((char === '@') && (stack.length == 0)) {
-            atT = true
-            i_start_AT = str.index[0] + i
-            multT = false
-            mainT = false
-            dotT = false
+            atT = true;
+            i_start_AT = str.index[0] + i;
+            multT = false;
+            mainT = false;
+            dotT = false;
         } else if ((char === '.') && (stack.length == 0)) {
-            atT = false
-            multT = false
-            mainT = false
-            dotT = true
+            atT = false;
+            multT = false;
+            mainT = false;
+            dotT = true;
         } else if ((([',', '\n'].includes(char)) && (stack.length == 0)) || i == str.contents.length - 1) {
 
             if ((i == str.contents.length - 1) && (![',', '\n'].includes(char))) {
                 if (multT && (/\d|\s/.test(char))) {
-                    mult += char
+                    mult += char;
                 } else if (dotT) {
-                    dot += char
+                    dot += char;
                 } else if (atT) {
-                    at += char
+                    at += char;
                 } else {
                     if (main === '')
-                        i_start = str.index[0] + i
-                    main += char
+                        i_start = str.index[0] + i;
+                    main += char;
                 }
             }
-            var at0 = at
-            var dot0 = dot
+            var at0 = at;
+            var dot0 = dot;
             if (at === '') {
-                at = str.at
+                at = str.at;
                 if (Object.keys(at).length == 0)
                     at = {
                         0: ''
-                    }
+                    };
             } else {
                 var num = parseInt(at, 10);
                 if (Number.isNaN(num))
                     at = {
                         0: at
-                    }
+                    };
                 else {
-                    var at1 = {}
-                    at1[num] = at.replace(/^\d+\s*/, '').trim()
-                    at = at1
+                    var at1 = {};
+                    at1[num] = at.replace(/^\d+\s*/, '').trim();
+                    at = at1;
                 }
             }
 
             for (let c of main) {
                 if (/ |\t/.test(c))
-                    i_start++
+                    i_start++;
                 else
-                    break
+                    break;
             }
             main = main.replace(/ +|\t+/g, "");
 
-            let tmpDot = [...str.dot]
+            let tmpDot = [...str.dot];
             if (dot !== '')
-                tmpDot.push(dot)
+                tmpDot.push(dot);
             if (openingBrackets.includes(main[0]) && closingBrackets.includes(main.slice(-1)[0])) {
                 if (getMatchingClosingBracket(main[0]) !== main.slice(-1)[0])
-                    throw new Error('Unmatched brackets: ' + main)
+                    throw new Error('Unmatched brackets: ' + main);
                 let out1 = parse_text_instruction_to_structure({
                     contents: main.slice(1, -1),
                     at: at,
                     dot: tmpDot,
                     nrow: Nrows,
                     index: [i_start + 1, str.index[0] + i]
-                }, original, COLOR)
+                }, original, COLOR);
 
                 if (mult !== '')
                     out1 = Array(parseInt(mult, 10)).fill(out1).flat();
-                out.push(out1)
+                out.push(out1);
             } else if (openingBrackets.includes(main[0]) || closingBrackets.includes(main.slice(-1)[0])) {
-                throw new Error('Unbalanced brackets: ' + main)
+                throw new Error('Unbalanced brackets: ' + main);
             } else {
                 if ((main.trim() + at0.trim() + dot0.trim()) !== '') {
                     if (main.trim() === '')
-                        i_start = i_start_AT
-                    let i0 = i_start - 40
-                    let i1 = str.index[0] + i + 1 + 40
-                    if (i0 < 0) i0 = 0
-                    if (i1 > original.length - 1) i1 = original.length - 1
-                    let i_end = str.index[0] + i + 1
+                        i_start = i_start_AT;
+                    let i0 = i_start - 40;
+                    let i1 = str.index[0] + i + 1 + 40;
+                    if (i0 < 0) i0 = 0;
+                    if (i1 > original.length - 1) i1 = original.length - 1;
+                    let i_end = str.index[0] + i + 1;
                     if ([',', '\n'].includes(original.slice(i_end - 1)[0]))
-                        i_end--
+                        i_end--;
 
-                    let context = original.slice(i0, i_start) + "<span style='color: red;'>" + original.slice(i_start, i_end) + "</span>" + original.slice(i_end, i1)
-                    context = context.replaceAll('\n', '&crarr;&nbsp;')
+                    let context = original.slice(i0, i_start) + "<span style='color: red;'>" + original.slice(i_start, i_end) + "</span>" + original.slice(i_end, i1);
+                    context = context.replaceAll('\n', '&crarr;&nbsp;');
 
 
-                    let start = TextIndex[III][0]
-                    let end = TextIndex[III][0] + TextIndex[III][1].length
-                    III++
-                    i0 = start - 40 >= 0 ? start - 40 : 0
-                    i1 = end + 40 < TextToBeIndexed.length ? end + 40 : TextToBeIndexed.length
-                    var context_short = TextToBeIndexed.slice(i0, start) + "<span style='color: red;'>" + TextToBeIndexed.slice(start, end) + "</span>" + TextToBeIndexed.slice(end, i1)
-                    context_short = context_short.replaceAll('\n', '&crarr;&nbsp;')
+                    let start = TextIndex[III][0];
+                    let end = TextIndex[III][0] + TextIndex[III][1].length;
+                    III++;
+                    i0 = start - 40 >= 0 ? start - 40 : 0;
+                    i1 = end + 40 < TextToBeIndexed.length ? end + 40 : TextToBeIndexed.length;
+                    var context_short = TextToBeIndexed.slice(i0, start) + "<span style='color: red;'>" + TextToBeIndexed.slice(start, end) + "</span>" + TextToBeIndexed.slice(end, i1);
+                    context_short = context_short.replaceAll('\n', '&crarr;&nbsp;');
 
                     // i['context_short'] = context
                     //i['context'] = context
@@ -2770,48 +2771,48 @@ function parse_text_instruction_to_structure(input, original = '', COLOR = {}) {
                         context: context_short + '&hellip;<br><b>C2</b>: &hellip;' + context,
                         //context_short: context_short,
                         Color: getColorByIndex(i_start, COLOR)
-                    }
+                    };
                     if (mult !== '')
                         out1 = Array(parseInt(mult, 10)).fill(out1).flat();
-                    out.push(out1)
+                    out.push(out1);
                 } else {
                     if (mult.trim() !== '')
-                        throw new Error('Multiplier set, but no stitch found: ' + str.contents)
+                        throw new Error('Multiplier set, but no stitch found: ' + str.contents);
                 }
             }
-            mult = ''
-            dot = ''
-            at = ''
+            mult = '';
+            dot = '';
+            at = '';
             main = '';
 
 
-            atT = false
-            mainT = false
-            multT = true
-            dotT = false
+            atT = false;
+            mainT = false;
+            multT = true;
+            dotT = false;
 
         } else {
             if (multT) {
                 if (!/\d|\s/.test(char))
-                    throw new Error('Not a digit in multiplier when a number was expected.')
-                mult += char
+                    throw new Error('Not a digit in multiplier when a number was expected.');
+                mult += char;
             } else if (dotT) {
-                dot += char
+                dot += char;
             } else if (atT) {
-                at += char
+                at += char;
             } else if (mainT)
-                main += char
+                main += char;
             else
-                throw new Error('Unhandled char at: ' + str.contents)
+                throw new Error('Unhandled char at: ' + str.contents);
         }
     }
 
     if (stack.length != 0) throw new Error('Unbalanced brackets in: ' + str);
     //console.log(main, dot, at)
-    return out
+    return out;
 }
-var TextToBeIndexed = ''
-var TextIndex = []
+var TextToBeIndexed = '';
+var TextIndex = [];
 
 const countOccurrences = (str, char) => {
     return str.split(char).length - 1;
@@ -2821,61 +2822,61 @@ function parse_original_text_to_list_of_structures(text) {
 
     //parse_single_text_instruction_to_structure(((duplicateRepeated(' [ 3[ a \n s ] \n \n ] * 4 ' )))).flat(Infinity)
     //var A = []
-    TextToBeIndexed = text
-    TextIndex = []
+    TextToBeIndexed = text;
+    TextIndex = [];
     text = duplicateRepeated_before_evaluating_indices(text, 0, TextIndex);
-    DEBUG += '=======Text index:=======\n' + TextIndex + '\n'
-    let tmp = []
-    let K = 0
+    DEBUG += '=======Text index:=======\n' + TextIndex + '\n';
+    let tmp = [];
+    let K = 0;
     //console.log(TextIndex)
     for (let t of TextIndex) {
         if (t[1].includes("$"))
-            K += countOccurrences(t[1], '$')
+            K += countOccurrences(t[1], '$');
         else if (K % 2 == 0)
-            tmp.push(t)
+            tmp.push(t);
     }
-    TextIndex.splice(0, TextIndex.length, ...tmp)
+    TextIndex.splice(0, TextIndex.length, ...tmp);
 
     //console.log('A', A)
-    DEBUG += '=======After duplicating repeated stitches:=======\n' + text + '\n'
-    text = evaluate_indices(text)
-    DEBUG += '=======After evaluating indices:=======\n' + text + '\n'
-    III = 0
-    var LIST = parse_text_instruction_to_structure(text).flat(Infinity)
-    DEBUG += '=======After parsing to structure:=======\n' + JSON.stringify(LIST) + '\n'
-    var node = []
-    var nrow = 0
-    var row = []
-    var I = 0
+    DEBUG += '=======After duplicating repeated stitches:=======\n' + text + '\n';
+    text = evaluate_indices(text);
+    DEBUG += '=======After evaluating indices:=======\n' + text + '\n';
+    III = 0;
+    var LIST = parse_text_instruction_to_structure(text).flat(Infinity);
+    DEBUG += '=======After parsing to structure:=======\n' + JSON.stringify(LIST) + '\n';
+    var node = [];
+    var nrow = 0;
+    var row = [];
+    var I = 0;
     for (var i of LIST) {
         //TextToBeIndexed = ''
 
         if (i.nrow !== nrow) {
-            node.push(row)
-            row = []
-            nrow = i.nrow
+            node.push(row);
+            row = [];
+            nrow = i.nrow;
         }
-        row.push(i)
+        row.push(i);
     }
     if (row.length > 0)
-        node.push(row)
+        node.push(row);
 
-    STATS = {}
-    for (var i = 0; i < node.length; i++) {
-        var stat = {}
+    STATS = {};
+    for (let i = 0; i < node.length; i++) {
+        var stat = {};
         for (var j of node[i]) {
             if ((j['contents'] != "") && (!(["turn", "end", "start"].includes(j['contents'])))) {
                 if (j['contents'] in stat)
-                    stat[j['contents']] += 1
+                    stat[j['contents']] += 1;
                 else
-                    stat[j['contents']] = 1
+                    stat[j['contents']] = 1;
             }
         }
-        STATS[i] = stat
+        STATS[i] = stat;
     }
 
-    DEBUG += '=======After parsing original text to list of list of instructions:=======\n' + JSON.stringify(node) + '\n'
-    return node
+    DEBUG += '=======After parsing original text to list of list of instructions:=======\n' + JSON.stringify(node) + '\n';
+    return node;
 }
 
 
@@ -2884,7 +2885,7 @@ function sum(arr) {
     arr.forEach(x => {
         sum += x;
     });
-    return sum
+    return sum;
 }
 
 
@@ -2909,46 +2910,46 @@ function areBracketsBalanced(str) {
 
 
 function final(text) {
-    Dictionary = JSON.parse(JSON.stringify(OriginalDictionary))
-    text = text.trim()
-    DEBUG += '=======Original text:=======\n' + text + '\n'
+    Dictionary = JSON.parse(JSON.stringify(OriginalDictionary));
+    text = text.trim();
+    DEBUG += '=======Original text:=======\n' + text + '\n';
     if (!(areBracketsBalanced(text)))
-        throw new Error('Unbalanced brackets in original text.')
-    text = text.replace(/\,*\s*\.\.\.\s*\,*/g, ',')
+        throw new Error('Unbalanced brackets in original text.');
+    text = text.replace(/\,*\s*\.\.\.\s*\,*/g, ',');
     if (!(areBracketsBalanced(text)))
-        throw new Error('Unbalanced brackets after parsing ellipses.')
-    text = parse_definitions(text).replace(/\bnext\s/g, '++').replace('/\bprev\s/g', '--').replace(/ |\t/g, '')
+        throw new Error('Unbalanced brackets after parsing ellipses.');
+    text = parse_definitions(text).replace(/\bnext\s/g, '++').replace('/\bprev\s/g', '--').replace(/ |\t/g, '');
     if (!(areBracketsBalanced(text)))
-        throw new Error('Unbalanced brackets in original text after parsing definitions.')
-    DEBUG += '=======After parsing definitions:=======\n' + text + '\n'
-    LIST = parse_original_text_to_list_of_structures(text)
+        throw new Error('Unbalanced brackets in original text after parsing definitions.');
+    DEBUG += '=======After parsing definitions:=======\n' + text + '\n';
+    LIST = parse_original_text_to_list_of_structures(text);
 
-    Stitches = parse_StitchCodeList(LIST)
+    Stitches = parse_StitchCodeList(LIST);
 
-    return Stitches
+    return Stitches;
 }
 
 function RoundString(pos) {
-    var a = String(Math.round(pos[0] * 1000))
-    var after_decimal = a.slice(-3)
-    var before_decimal = a.slice(0, -3)
+    var a = String(Math.round(pos[0] * 1000));
+    var after_decimal = a.slice(-3);
+    var before_decimal = a.slice(0, -3);
     if (after_decimal === '000')
-        a = before_decimal
+        a = before_decimal;
     else if (after_decimal === '0')
-        a = '0'
+        a = '0';
     else
-        a = before_decimal + '.' + '0'.repeat(3 - after_decimal.length) + after_decimal
+        a = before_decimal + '.' + '0'.repeat(3 - after_decimal.length) + after_decimal;
 
-    var b = String(Math.round(pos[1] * 1000))
-    after_decimal = b.slice(-3)
-    before_decimal = b.slice(0, -3)
+    var b = String(Math.round(pos[1] * 1000));
+    after_decimal = b.slice(-3);
+    before_decimal = b.slice(0, -3);
     if (after_decimal === '000')
-        b = before_decimal
+        b = before_decimal;
     else if (after_decimal === '0')
-        b = '0'
+        b = '0';
     else
-        b = before_decimal + '.' + '0'.repeat(3 - after_decimal.length) + after_decimal
-    return (a + ',' + b)
+        b = before_decimal + '.' + '0'.repeat(3 - after_decimal.length) + after_decimal;
+    return (a + ',' + b);
 }
 
 function findPosByNameFromJson(json, name) {
@@ -2976,44 +2977,44 @@ function export_to_dot(Stitches, json) {
         for (var o of json.objects) {
             var pos = o.pos.split(',').map(Number);
             if (pos.length == 2) {
-                pos[2] = 0
+                pos[2] = 0;
             }
-            o['pos'] = [pos[0], pos[1], pos[2]]
+            o['pos'] = [pos[0], pos[1], pos[2]];
 
         }
-        lenF = 1.0
-        for (var o of json.objects) {
+        lenF = 1.0;
+        for (let o of json.objects) {
             if (DIM == 3)
-                o['pos'] = String([o.pos[0] / lenF, o.pos[1] / lenF, o.pos[2] / lenF])
+                o['pos'] = String([o.pos[0] / lenF, o.pos[1] / lenF, o.pos[2] / lenF]);
             else
-                o['pos'] = String([o.pos[0] / lenF, o.pos[1] / lenF])
+                o['pos'] = String([o.pos[0] / lenF, o.pos[1] / lenF]);
         }
         //console.log(json)
     }
-    var text = ''
-    var textS = ''
+    var text = '';
+    var textS = '';
     //if (!simple)
-    text += '{"dimen":"' + String(DIM) + '",\n"elements":['
+    text += '{"dimen":"' + String(DIM) + '",\n"elements":[';
     //else
     textS += String(DIM) + '\n';
-    k = 0
+    k = 0;
 
-    var startID_row = []
+    var startID_row = [];
     for (var i = 0; i <= Stitches.slice(-1)[0].nrow; i++) {
-        let n = count_stitches_in_row(Stitches, i)[1]
+        let n = count_stitches_in_row(Stitches, i)[1];
         if (n == -1)
-            throw new Error('No stitches in row = ' + i)
-        startID_row.push(n)
+            throw new Error('No stitches in row = ' + i);
+        startID_row.push(n);
     }
 
     //add the nodes
     for (var s of Stitches) {
         for (var ni of s.topNodesNames) {
-            let n = s.topNodes[ni]
-            let pos = [s.nrow, n.id - startID_row[s.nrow]]
-            let name = '"' + String(pos) + '|' + s.uid + '"'
+            let n = s.topNodes[ni];
+            let pos = [s.nrow, n.id - startID_row[s.nrow]];
+            let name = '"' + String(pos) + '|' + s.uid + '"';
             if (json) {
-                let POS = findPosByNameFromJson(json, name)
+                let POS = findPosByNameFromJson(json, name);
                 //console.log(POS)
                 if (POS.length > 0) {
                     //if (!simple)
@@ -3024,31 +3025,31 @@ function export_to_dot(Stitches, json) {
                     //if (!simple)
                     text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
                     //else
-                    textS += name + '\n'
+                    textS += name + '\n';
                 }
             } else {
                 //if (!simple)
                 text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
                 //else
-                textS += name + '\n'
+                textS += name + '\n';
             }
         }
-        for (var ni of Object.keys(s.otherNodes)) {
-            let n = s.otherNodes[ni]
-            let pos
+        for (let ni of Object.keys(s.otherNodes)) {
+            let n = s.otherNodes[ni];
+            let pos;
             if (s.id.length > 0) {
-                pos = [s.nrow, s.id[0] - startID_row[s.nrow]]
+                pos = [s.nrow, s.id[0] - startID_row[s.nrow]];
             } else {
-                let sPrev = s
+                let sPrev = s;
                 while (sPrev.id.length == 0) {
-                    sPrev = Stitches[Stitches.indexOf(sPrev) - 1]
+                    sPrev = Stitches[Stitches.indexOf(sPrev) - 1];
                 }
-                pos = [sPrev.nrow, last_element(sPrev.id) - startID_row[sPrev.nrow]]
+                pos = [sPrev.nrow, last_element(sPrev.id) - startID_row[sPrev.nrow]];
             }
 
-            let name = '"' + String(pos) + ni + '|' + s.uid + '"'
+            let name = '"' + String(pos) + ni + '|' + s.uid + '"';
             if (json) {
-                let POS = findPosByNameFromJson(json, name)
+                let POS = findPosByNameFromJson(json, name);
                 if (POS.length > 0) {
 
 
@@ -3061,14 +3062,14 @@ function export_to_dot(Stitches, json) {
                     //if (!simple)
                     text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"';
                     //else
-                    textS += name
+                    textS += name;
                 }
 
             } else {
                 //if (!simple)
                 text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"';
                 //else
-                textS += name
+                textS += name;
             }
 
             //if (!simple) {
@@ -3077,98 +3078,98 @@ function export_to_dot(Stitches, json) {
             else
                 text += '}\n';
             //} else
-            textS += '\n'
+            textS += '\n';
         }
     }
 
     //add the edges
-    var BlueConnectionEstablished = {}
-    for (var s of Stitches) {
+    var BlueConnectionEstablished = {};
+    for (let s of Stitches) {
         for (var c of Object.keys(s.connections)) {
             //console.log(s, c)
-            let len = s.connections[c]
-            let hidden = false
+            let len = s.connections[c];
+            let hidden = false;
             if (c[0] === '*') {
-                hidden = true
-                c = c.slice(1)
+                hidden = true;
+                c = c.slice(1);
             }
-            let [n0, n1] = c.split('--')
-            let pos0
+            let [n0, n1] = c.split('--');
+            let pos0;
             if (n0 === '!') {
                 if (s.id[0] <= 0)
-                    break
+                    break;
                 if (s.id.length > 0) {
-                    let x = (find_stitch_by_id(Stitches, s.id[0] - 1))[0]
-                    pos0 = String([x.nrow, s.id[0] - 1 - startID_row[x.nrow]]) + '|' + x.uid
+                    let x = (find_stitch_by_id(Stitches, s.id[0] - 1))[0];
+                    pos0 = String([x.nrow, s.id[0] - 1 - startID_row[x.nrow]]) + '|' + x.uid;
                 } else {
-                    let sPrev = s
+                    let sPrev = s;
                     while (sPrev.id.length == 0) {
                         //console.log(sPrev, Stitches.indexOf(sPrev))
-                        sPrev = Stitches[Stitches.indexOf(sPrev) - 1]
+                        sPrev = Stitches[Stitches.indexOf(sPrev) - 1];
                     }
-                    pos0 = String([sPrev.nrow, last_element(sPrev.id) - startID_row[sPrev.nrow]]) + '|' + sPrev.uid
+                    pos0 = String([sPrev.nrow, last_element(sPrev.id) - startID_row[sPrev.nrow]]) + '|' + sPrev.uid;
                 }
             } else if ((s.topNodesNames.length > 0) && s.topNodesNames.includes(n0)) {
-                pos0 = String([s.nrow, s.topNodes[n0].id - startID_row[s.nrow]]) + '|' + s.uid
+                pos0 = String([s.nrow, s.topNodes[n0].id - startID_row[s.nrow]]) + '|' + s.uid;
             } else if (n0 in s.otherNodes) {
                 if (s.id.length > 0) {
-                    pos0 = String([s.nrow, s.id[0] - startID_row[s.nrow]]) + n0 + '|' + s.uid
+                    pos0 = String([s.nrow, s.id[0] - startID_row[s.nrow]]) + n0 + '|' + s.uid;
                 } else {
-                    let sPrev = s
+                    let sPrev = s;
                     while (sPrev.id.length == 0) {
-                        sPrev = Stitches[Stitches.indexOf(sPrev) - 1]
+                        sPrev = Stitches[Stitches.indexOf(sPrev) - 1];
                     }
-                    pos0 = String([sPrev.nrow, last_element(sPrev.id) - startID_row[sPrev.nrow]]) + n0 + '|' + s.uid
+                    pos0 = String([sPrev.nrow, last_element(sPrev.id) - startID_row[sPrev.nrow]]) + n0 + '|' + s.uid;
                 }
             } else if (n0 in s.bottomNodes) {
-                let buid = -1
-                let b = s.bottomNodes[n0]
-                let depth = b.attachment_depth - 1
+                let buid = -1;
+                let b = s.bottomNodes[n0];
+                let depth = b.attachment_depth - 1;
                 while (depth > 0) {
-                    let bS = find_stitch_by_id(Stitches, b.id)
-                    b = bS[0].bottomNodes[bS[0].topNodes[bS[0].topNodesNames[bS[1]]].attach]
-                    buid = bS[0].uid
-                    depth += -1 //b.attachment_depth - 2 //NOT CLEAR WHAT ONE WOULD WANT. FIXME if needed.
+                    let bS = find_stitch_by_id(Stitches, b.id);
+                    b = bS[0].bottomNodes[bS[0].topNodes[bS[0].topNodesNames[bS[1]]].attach];
+                    buid = bS[0].uid;
+                    depth += -1; //b.attachment_depth - 2 //NOT CLEAR WHAT ONE WOULD WANT. FIXME if needed.;;
                 }
                 if ((typeof(b.id) === 'string') && b.id[0] === '^') {
-                    let [id, bottom_attach_node] = b.id.slice(1).split('-')
-                    let x = find_stitch_by_id(Stitches, parseInt(id, 10))[0]
-                    pos0 = String([x.nrow, parseInt(id, 10) - startID_row[x.nrow]]) + bottom_attach_node + '|' + x.uid
+                    let [id, bottom_attach_node] = b.id.slice(1).split('-');
+                    let x = find_stitch_by_id(Stitches, parseInt(id, 10))[0];
+                    pos0 = String([x.nrow, parseInt(id, 10) - startID_row[x.nrow]]) + bottom_attach_node + '|' + x.uid;
                 } else if ((typeof(b.id) === 'string') && b.id[0] === '$') { //this occurs when attaching to post.
-                    let [p0, tmp] = b.id.slice(1).split('--')
-                    let [p1, d0, d1] = tmp.split(':')
+                    let [p0, tmp] = b.id.slice(1).split('--');
+                    let [p1, d0, d1] = tmp.split(':');
                     if (p0[0] === '^') {
-                        let [id, bottom_attach_node] = p0.slice(1).split('-')
-                        let x = find_stitch_by_id(Stitches, parseInt(id, 10))[0]
-                        buid = x.uid
-                        p0 = String([x.nrow, parseInt(id, 10) - startID_row[x.nrow]]) + bottom_attach_node + '|' + x.uid
-                        x = find_stitch_by_id(Stitches, parseInt(p1, 10))[0]
-                        p1 = String([x.nrow, parseInt(p1, 10) - startID_row[x.nrow]]) + '|' + x.uid
-                        buid += '..' + x.uid
+                        let [id, bottom_attach_node] = p0.slice(1).split('-');
+                        let x = find_stitch_by_id(Stitches, parseInt(id, 10))[0];
+                        buid = x.uid;
+                        p0 = String([x.nrow, parseInt(id, 10) - startID_row[x.nrow]]) + bottom_attach_node + '|' + x.uid;
+                        x = find_stitch_by_id(Stitches, parseInt(p1, 10))[0];
+                        p1 = String([x.nrow, parseInt(p1, 10) - startID_row[x.nrow]]) + '|' + x.uid;
+                        buid += '..' + x.uid;
                     } //else
                     // p0 += '|' + find_stitch_by_id(Stitches, parseInt(p0, 10)).uid
                     if (p1[0] === '^') {
-                        let [id, bottom_attach_node] = p1.slice(1).split('-')
-                        let x = find_stitch_by_id(Stitches, parseInt(id, 10))[0]
-                        p1 = String([x.nrow, parseInt(id, 10) - startID_row[x.nrow]]) + bottom_attach_node + '|' + x.uid
-                        buid = x.uid
-                        x = find_stitch_by_id(Stitches, parseInt(p0, 10))[0]
-                        p0 = String([x.nrow, parseInt(p0, 10) - startID_row[x.nrow]]) + '|' + x.uid
-                        buid += '..' + x.uid
+                        let [id, bottom_attach_node] = p1.slice(1).split('-');
+                        let x = find_stitch_by_id(Stitches, parseInt(id, 10))[0];
+                        p1 = String([x.nrow, parseInt(id, 10) - startID_row[x.nrow]]) + bottom_attach_node + '|' + x.uid;
+                        buid = x.uid;
+                        x = find_stitch_by_id(Stitches, parseInt(p0, 10))[0];
+                        p0 = String([x.nrow, parseInt(p0, 10) - startID_row[x.nrow]]) + '|' + x.uid;
+                        buid += '..' + x.uid;
                     } //else
                     //  p1 += '|' + find_stitch_by_id(Stitches, parseInt(p1.split('|')[0], 10)).uid
                     //TOFIX???
                     //if (!simple) {
-                    text += '{"type":"edge","tail":"' + p0 + '","head":"' + b.id + '|' + buid + '","penwidth":"1","color":"gray","len":"' + evaluateExpression(d0) + '","label":"' + s['Color'] + '"}\n'
-                    text += '{"type":"edge","tail":"' + b.id + '|' + buid + '","head":"' + p1 + '","penwidth":"1","color":"gray","len":"' + evaluateExpression(d1) + '","label":"' + s['Color'] + '"}\n'
+                    text += '{"type":"edge","tail":"' + p0 + '","head":"' + b.id + '|' + buid + '","penwidth":"1","color":"gray","len":"' + evaluateExpression(d0) + '","label":"' + s['Color'] + '"}\n';
+                    text += '{"type":"edge","tail":"' + b.id + '|' + buid + '","head":"' + p1 + '","penwidth":"1","color":"gray","len":"' + evaluateExpression(d1) + '","label":"' + s['Color'] + '"}\n';
                     //} else {
-                    textS += '"' + p0 + '" -- "' + b.id + '|' + buid + '" ' + evaluateExpression(d0) + '\n'
-                    textS += '"' + b.id + '|' + buid + '" -- "' + p1 + '" ' + evaluateExpression(d1) + '\n'
+                    textS += '"' + p0 + '" -- "' + b.id + '|' + buid + '" ' + evaluateExpression(d0) + '\n';
+                    textS += '"' + b.id + '|' + buid + '" -- "' + p1 + '" ' + evaluateExpression(d1) + '\n';
                     //}
 
-                    let name = '"' + b.id + '|' + buid + '"'
+                    let name = '"' + b.id + '|' + buid + '"';
                     if (json) {
-                        let POS = findPosByNameFromJson(json, name)
+                        let POS = findPosByNameFromJson(json, name);
                         if (POS.length > 0) {
                             //if (!simple)
                             text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0","pos":"' + POS + '!"}\n';
@@ -3184,83 +3185,83 @@ function export_to_dot(Stitches, json) {
                         //if (!simple)
                         text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0"}\n';
                         //else
-                        textS += name + '\n'
+                        textS += name + '\n';
                     }
                     //text += name + ' [label="hidden|' + s['Color'] + '",style=invis,width=0,height=0]\n';
-                    pos0 = b.id + '|' + buid
+                    pos0 = b.id + '|' + buid;
 
                     //                    Stitches[r].bottomNodes[b].id = '$' + p0 + '--' + p1 + ':' + String(d * (isp - i0)) + ':' + String(d * (i1 - isp))
                 } else {
-                    let x = find_stitch_by_id(Stitches, b.id)[0]
-                    pos0 = String([x.nrow, b.id - startID_row[x.nrow]]) + '|' + x.uid
+                    let x = find_stitch_by_id(Stitches, b.id)[0];
+                    pos0 = String([x.nrow, b.id - startID_row[x.nrow]]) + '|' + x.uid;
                 }
-            } else throw new Error('Cannot find node ' + n0 + ' in the connections of stitch: ' + JSON.stringify(s))
+            } else throw new Error('Cannot find node ' + n0 + ' in the connections of stitch: ' + JSON.stringify(s));
 
-            let pos1
+            let pos1;
             //console.log(s)
             if (n1 === '!') {
                 if (s.id.length > 0) {
-                    let x = (find_stitch_by_id(Stitches, s.id[0] - 1))[0]
-                    pos1 = String([x.nrow, s.id[0] - 1 - startID_row[x.nrow]]) + '|' + x.uid
+                    let x = (find_stitch_by_id(Stitches, s.id[0] - 1))[0];
+                    pos1 = String([x.nrow, s.id[0] - 1 - startID_row[x.nrow]]) + '|' + x.uid;
                 } else {
-                    let sPrev = s
+                    let sPrev = s;
                     while (sPrev.id.length == 0) {
-                        sPrev = Stitches[Stitches.indexOf(sPrev) - 1]
+                        sPrev = Stitches[Stitches.indexOf(sPrev) - 1];
                     }
-                    pos1 = String([sPrev.nrow, last_element(sPrev.id) - startID_row[sPrev.nrow]]) + '|' + sPrev.uid
+                    pos1 = String([sPrev.nrow, last_element(sPrev.id) - startID_row[sPrev.nrow]]) + '|' + sPrev.uid;
                 }
             } else if ((s.topNodesNames.length > 0) && s.topNodesNames.includes(n1)) {
-                pos1 = String([s.nrow, s.topNodes[n1].id - startID_row[s.nrow]]) + '|' + s.uid
+                pos1 = String([s.nrow, s.topNodes[n1].id - startID_row[s.nrow]]) + '|' + s.uid;
             } else if (n1 in s.otherNodes) {
                 if (s.id.length > 0) {
-                    pos1 = String([s.nrow, s.id[0] - startID_row[s.nrow]]) + n1 + '|' + s.uid
+                    pos1 = String([s.nrow, s.id[0] - startID_row[s.nrow]]) + n1 + '|' + s.uid;
                 } else {
-                    let sPrev = s
+                    let sPrev = s;
                     while (sPrev.id.length == 0) {
-                        sPrev = Stitches[Stitches.indexOf(sPrev) - 1]
+                        sPrev = Stitches[Stitches.indexOf(sPrev) - 1];
                     }
-                    pos1 = String([sPrev.nrow, last_element(sPrev.id) - startID_row[sPrev.nrow]]) + n1 + '|' + s.uid
+                    pos1 = String([sPrev.nrow, last_element(sPrev.id) - startID_row[sPrev.nrow]]) + n1 + '|' + s.uid;
                 }
             } else if (n1 in s.bottomNodes) {
-                let b = s.bottomNodes[n1]
-                let depth = b.attachment_depth - 1
+                let b = s.bottomNodes[n1];
+                let depth = b.attachment_depth - 1;
                 while (depth > 0) {
-                    let bS = find_stitch_by_id(Stitches, b.id)
-                    b = bS[0].bottomNodes[bS[0].topNodes[bS[0].topNodesNames[bS[1]]].attach]
-                    depth += b.attachment_depth - 2
+                    let bS = find_stitch_by_id(Stitches, b.id);
+                    b = bS[0].bottomNodes[bS[0].topNodes[bS[0].topNodesNames[bS[1]]].attach];
+                    depth += b.attachment_depth - 2;
                 }
-                let x = find_stitch_by_id(Stitches, b.id)[0]
-                pos1 = String([x.nrow, b.id - startID_row[x.nrow]]) + '|' + x.uid
-            } else throw new Error('Cannot find node ' + n1 + ' in the connections of stitch: ' + s)
+                let x = find_stitch_by_id(Stitches, b.id)[0];
+                pos1 = String([x.nrow, b.id - startID_row[x.nrow]]) + '|' + x.uid;
+            } else throw new Error('Cannot find node ' + n1 + ' in the connections of stitch: ' + s);
 
             //if (!simple) {
             if (hidden) {
-                text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"1","color":"gray","len":"' + len + '","label":"' + s['Color'] + '"}\n'
+                text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"1","color":"gray","len":"' + len + '","label":"' + s['Color'] + '"}\n';
             } else if ((!(pos1 in BlueConnectionEstablished)) && ((((n0 === '!') || ((s.topNodesNames.length > 0) && s.topNodesNames.includes(n0))) && ((n1 === '!') || ((s.topNodesNames.length > 0) && s.topNodesNames.includes(n1)))))) {
-                text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"4","color":"blue","len":"' + len + '","label":"' + s['Color'] + '"}\n'
-                BlueConnectionEstablished[pos1] = true
+                text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"4","color":"blue","len":"' + len + '","label":"' + s['Color'] + '"}\n';
+                BlueConnectionEstablished[pos1] = true;
             } else {
-                text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"4","color":"red","len":"' + len + '","label":"' + s['Color'] + '"}\n'
+                text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"4","color":"red","len":"' + len + '","label":"' + s['Color'] + '"}\n';
             }
             //} else
-            textS += '"' + pos0 + '" -- "' + pos1 + '" ' + len + '\n'
+            textS += '"' + pos0 + '" -- "' + pos1 + '" ' + len + '\n';
         }
     }
     //if (simple)
-    textS += EXTRA_DOTS
+    textS += EXTRA_DOTS;
 
     //if (!simple) {
-    text += ']}'
-    text = text.replace('"elements":[,{"', '"elements":[{"')
+    text += ']}';
+    text = text.replace('"elements":[,{"', '"elements":[{"');
     //}
 
-    DEBUG += '=======After export to dot; simple=false:=======\n' + text + '\n' + '=======After export to dot; simple=true:=======\n' + textS + '\n'
-    return [text, textS]
+    DEBUG += '=======After export to dot; simple=false:=======\n' + text + '\n' + '=======After export to dot; simple=true:=======\n' + textS + '\n';
+    return [text, textS];
 }
 
 
 function processText(text, json0) {
-    text = text.replace(/\t/g, '    ').replace(/\r/g, '')
-    DEBUG = ''
-    return export_to_dot(final(text), json0)
+    text = text.replace(/\t/g, '    ').replace(/\r/g, '');
+    DEBUG = '';
+    return export_to_dot(final(text), json0);
 }

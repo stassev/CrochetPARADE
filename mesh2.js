@@ -31,7 +31,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
 
     if (renderer != null)
-        renderer.dispose()
+        renderer.dispose();
 
     if (scene1 != null) {
         while (scene1.children.length > 0) {
@@ -44,7 +44,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         }
     }
     if (renderer != null)
-        renderer.dispose()
+        renderer.dispose();
 
 
     //    const rendererSVG = new SVGRenderer();
@@ -54,7 +54,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     //    rendererSVG.domElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
 
-    var str = JSON.parse(JSON.stringify(json0)) //JSON.parse(json0)
+    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse(json0);
     //console.log(str)
     // Create a scene
     scene = new THREE.Scene();
@@ -64,7 +64,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     if (backgroundColor === '')
         scene.background = new THREE.Color("rgb(210, 210, 210)");
     else
-        scene.background = new THREE.Color(backgroundColor)
+        scene.background = new THREE.Color(backgroundColor);
 
 
     // Create a camera
@@ -94,16 +94,16 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     var height = container.clientHeight; // Use the client height of the container
 
     if (width < 50)
-        width = window.innerWidth
+        width = window.innerWidth;
     if (height < 50)
-        height = window.innerHeight
+        height = window.innerHeight;
 
     renderer.setSize(width, height);
 
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 100);
 
 
-    renderer.domElement.setAttribute("id", "3DRender")
+    renderer.domElement.setAttribute("id", "3DRender");
     //document.body.appendChild(renderer.domElement);
     container.appendChild(renderer.domElement);
 
@@ -138,39 +138,39 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     });
 
     //normalize node positions
-    var xm = 0.,
-        ym = 0.,
-        zm = 0.,
-        r2 = 0.,
-        tot = 0.;
+    var xm = 0.0,
+        ym = 0.0,
+        zm = 0.0,
+        r2 = 0.0,
+        tot = 0.0;
     for (var o of str.objects) {
         //console.log(o.pos)
         var pos = o.pos.split('|')[0].split(',').map(Number);
         if (pos.length == 2)
-            pos[2] = 0
-        xm += pos[0]
-        ym += pos[1]
-        zm += pos[2]
-        tot += 1.0
+            pos[2] = 0;
+        xm += pos[0];
+        ym += pos[1];
+        zm += pos[2];
+        tot += 1.0;
     }
     //var std = Math.sqrt((xm2 - xm * xm / tot + ym2 - ym * ym / tot + zm2 - zm * zm / tot) / (tot))
-    xm = xm / tot
-    ym = ym / tot
-    zm = zm / tot
-    for (var o of str.objects) {
-        var pos = o.pos.split('|')[0].split(',').map(Number);
+    xm = xm / tot;
+    ym = ym / tot;
+    zm = zm / tot;
+    for (let o of str.objects) {
+        let pos = o.pos.split('|')[0].split(',').map(Number);
         if (pos.length == 2)
-            pos[2] = 0
-        r2 = Math.max(r2, (pos[0] - xm) ** 2 + (pos[1] - ym) ** 2 + (pos[2] - zm) ** 2)
+            pos[2] = 0;
+        r2 = Math.max(r2, (pos[0] - xm) ** 2 + (pos[1] - ym) ** 2 + (pos[2] - zm) ** 2);
     }
-    r2 = Math.sqrt(r2)
-    for (var o of str.objects) {
-        var pos = o.pos.split('|')[0].split(',').map(Number);
+    r2 = Math.sqrt(r2);
+    for (let o of str.objects) {
+        let pos = o.pos.split('|')[0].split(',').map(Number);
         if (pos.length == 2) {
-            pos[2] = 0
+            pos[2] = 0;
             Dimen = 2;
         }
-        o['pos'] = [(pos[0] - xm) / r2, (pos[1] - ym) / r2, (pos[2] - zm) / r2]
+        o['pos'] = [(pos[0] - xm) / r2, (pos[1] - ym) / r2, (pos[2] - zm) / r2];
     }
 
 
@@ -186,48 +186,48 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         color: new THREE.Color(0, 0.8, 0)
     });
 
-    var NODES = []
-    var NODEShidden = []
-    var NODES1 = []
+    var NODES = [];
+    var NODEShidden = [];
+    var NODES1 = [];
     // Create the nodes
     str.objects.forEach((obj) => {
         if (obj.label.split('|')[0] !== "hidden") {
             const pos = obj.pos; //.split(',').map(Number);
             const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
             node.position.set(pos[0], pos[1], pos[2]);
-            node['name_long'] = "<span style='font-size: 16px; font-weight: bold;'>(" + obj.name + ") [" + obj.label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + obj.label.split('|')[1] + "&hellip;"
-            node['name'] = "<span style='font-size: 16px; font-weight: bold;'>(" + obj.name + ") [" + obj.label.split('|')[0] + "]</span>"
-            node['type'] = 0
-            node['id0'] = obj.name.split('|')[0]
-            node['row'] = [parseInt(obj.name.split('|')[0].split(',')[0]), parseInt(obj.name.split('|')[0].split(',')[1])]
-            node['Color'] = obj.label.split('|')[2]
+            node['name_long'] = "<span style='font-size: 16px; font-weight: bold;'>(" + obj.name + ") [" + obj.label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + obj.label.split('|')[1] + "&hellip;";
+            node['name'] = "<span style='font-size: 16px; font-weight: bold;'>(" + obj.name + ") [" + obj.label.split('|')[0] + "]</span>";
+            node['type'] = 0;
+            node['id0'] = obj.name.split('|')[0];
+            node['row'] = [parseInt(obj.name.split('|')[0].split(',')[0]), parseInt(obj.name.split('|')[0].split(',')[1])];
+            node['Color'] = obj.label.split('|')[2];
             scene.add(node);
-            NODES.push(node)
+            NODES.push(node);
         }
     });
 
     //Find average edge scaling factor
     var lenF = 0.0,
-        totLen = 0.0
-    for (var edge of str.edges) {
-        edge['Color'] = edge.label
+        totLen = 0.0;
+    for (let edge of str.edges) {
+        edge['Color'] = edge.label;
 
         const tail = str.objects.find((obj) => obj._gvid === edge.tail);
         const head = str.objects.find((obj) => obj._gvid === edge.head);
 
-        edge['length'] = Math.sqrt((tail.pos[0] - head.pos[0]) ** 2 + (tail.pos[1] - head.pos[1]) ** 2 + (tail.pos[2] - head.pos[2]) ** 2)
+        edge['length'] = Math.sqrt((tail.pos[0] - head.pos[0]) ** 2 + (tail.pos[1] - head.pos[1]) ** 2 + (tail.pos[2] - head.pos[2]) ** 2);
         if (['red', 'blue'].includes(edge.color)) {
-            lenF += edge.length
-            totLen += parseFloat(edge.len)
+            lenF += edge.length;
+            totLen += parseFloat(edge.len);
         }
     }
-    lenF = (lenF / totLen)
+    lenF = (lenF / totLen);
     var STATS = '';
-    STATS += '\n'
-    STATS += ("Radius of the sphere bounding the project is " + String(Math.round(10 / lenF) / 10) + " chain stitches.\nThe sphere is centered at center of the 3D view,\ncoinciding with the center of mass of the stitches.\n")
+    STATS += '\n';
+    STATS += ("Radius of the sphere bounding the project is " + String(Math.round(10 / lenF) / 10) + " chain stitches.\nThe sphere is centered at center of the 3D view,\ncoinciding with the center of mass of the stitches.\n");
     //console.log(lenF)
-    for (var edge of str.edges) {
-        edge['stretch'] = (edge.length / lenF) / parseFloat(edge.len)
+    for (let edge of str.edges) {
+        edge['stretch'] = (edge.length / lenF) / parseFloat(edge.len);
         //console.log(edge.stretch)
     }
 
@@ -296,17 +296,17 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         4: [0.6, 0.6, 0.6],
         5: [0.9, 0, 0],
         6: [0.9, 0, 0]
-    }
+    };
 
     function color(key) {
         if (key >= 6)
             return colorscale[6].map(function(channel) {
                 return channel;
-            })
+            });
         else if (key <= 0)
             return colorscale[0].map(function(channel) {
                 return channel;
-            })
+            });
         var keys = Object.keys(colorscale).map(Number);
         var lowerKey = Math.max.apply(null, keys.filter(function(k) {
             return k <= key;
@@ -334,32 +334,32 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         const tail = str.objects.find((obj) => obj._gvid === edge.tail);
         const head = str.objects.find((obj) => obj._gvid === edge.head);
 
-        edge['start'] = [tail.pos[0], tail.pos[1], tail.pos[2]]
-        edge['end'] = [head.pos[0], head.pos[1], head.pos[2]]
+        edge['start'] = [tail.pos[0], tail.pos[1], tail.pos[2]];
+        edge['end'] = [head.pos[0], head.pos[1], head.pos[2]];
 
         const A = (new THREE.Vector3(tail.pos[0], tail.pos[1], tail.pos[2]));
         const B = (new THREE.Vector3(head.pos[0], head.pos[1], head.pos[2]));
 
-        var row = [parseInt(head.name.split('|')[0].split(',')[0]), parseInt(head.name.split('|')[0].split(',')[1])]
+        var row = [parseInt(head.name.split('|')[0].split(',')[0]), parseInt(head.name.split('|')[0].split(',')[1])];
         if ((head.label.split('|')[0] == 'ch')) {
             if (!('ch' in stLen)) {
-                stLen['ch'] = 0
-                stTot['ch'] = 0
+                stLen['ch'] = 0;
+                stTot['ch'] = 0;
             }
-            stLen['ch'] += edge.stretch
-            stTot['ch']++
+            stLen['ch'] += edge.stretch;
+            stTot['ch']++;
         } else if ((edge.color == "red")) {
             if (!(head.label.split('|')[0] in stLen)) {
-                stLen[head.label.split('|')[0]] = 0
-                stTot[head.label.split('|')[0]] = 0
+                stLen[head.label.split('|')[0]] = 0;
+                stTot[head.label.split('|')[0]] = 0;
             }
-            stLen[head.label.split('|')[0]] += edge.stretch
-            stTot[head.label.split('|')[0]]++
+            stLen[head.label.split('|')[0]] += edge.stretch;
+            stTot[head.label.split('|')[0]]++;
         }
 
 
         // const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        var material
+        var material;
         if (edge.color === "red")
             material = edgeMaterialRed;
         else
@@ -377,13 +377,13 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         ///
         const distance = A.distanceTo(B);
         var radius = 0.003;
-        var non = false
-        edge['gray'] = 0
+        var non = false;
+        edge['gray'] = 0;
         if (edge.color === 'gray') {
-            edge['gray'] = 1
-            radius /= 5.
-            material = edgeMaterialGray
-            non = true
+            edge['gray'] = 1;
+            radius /= 5.0;
+            material = edgeMaterialGray;
+            non = true;
         }
         // 2. Create a THREE.CylinderGeometry object
         const geometry = new THREE.CylinderGeometry(radius, radius, distance, 5);
@@ -400,20 +400,20 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
         ///
 
-        line['Color'] = edge.Color
-        line['color'] = edge.color
-        line['type'] = 1
+        line['Color'] = edge.Color;
+        line['color'] = edge.color;
+        line['type'] = 1;
         //"(" + obj.name + ") [" + obj.label.split('|')[0] + "]<br>" + obj.label.split('|')[1]
-        line['name_long'] = "<span style='font-size: 16px; font-weight: bold;'>(" + head.name + ") [" + head.label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + head.label.split('|')[1] + "&hellip;<br>" + 'stretched by ' + Math.round(100 * (edge['stretch'] - 1)) + '%'
-        line['name'] = "<span style='font-size: 16px; font-weight: bold;'>(" + head.name + ") [" + head.label.split('|')[0] + '] stretched by ' + Math.round(100 * (edge['stretch'] - 1)) + '%</span>'
-        line['id0'] = (edge.head).toString() + "-" + (edge.tail).toString()
-        line['row'] = row
-        line['stretch'] = edge.stretch
+        line['name_long'] = "<span style='font-size: 16px; font-weight: bold;'>(" + head.name + ") [" + head.label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + head.label.split('|')[1] + "&hellip;<br>" + 'stretched by ' + Math.round(100 * (edge['stretch'] - 1)) + '%';
+        line['name'] = "<span style='font-size: 16px; font-weight: bold;'>(" + head.name + ") [" + head.label.split('|')[0] + '] stretched by ' + Math.round(100 * (edge['stretch'] - 1)) + '%</span>';
+        line['id0'] = (edge.head).toString() + "-" + (edge.tail).toString();
+        line['row'] = row;
+        line['stretch'] = edge.stretch;
         scene.add(line);
 
 
 
-
+        var arrowhead;
 
         // Create a cylinder for the arrowhead; create scene1 objects
         if (!non) {
@@ -423,7 +423,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 transparent: true,
                 opacity: 0.8
             });
-            var arrowhead = new THREE.Mesh(arrowheadGeometry, arrowheadMaterial);
+            arrowhead = new THREE.Mesh(arrowheadGeometry, arrowheadMaterial);
 
             // Position the arrowhead at the midpoint between points A and B
             const arrowheadMidpoint = new THREE.Vector3().addVectors(A, B).divideScalar(2);
@@ -433,11 +433,11 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             const arrowheadDirection = new THREE.Vector3().subVectors(B, A).normalize();
             const arrowheadQuaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), arrowheadDirection);
             arrowhead.setRotationFromQuaternion(arrowheadQuaternion);
-            arrowhead['row'] = row
-            arrowhead['stretch'] = edge.stretch
-            arrowhead['is_arrow'] = true
-            arrowhead['Color'] = edge.Color
-            arrowhead['type'] = 2
+            arrowhead['row'] = row;
+            arrowhead['stretch'] = edge.stretch;
+            arrowhead['is_arrow'] = true;
+            arrowhead['Color'] = edge.Color;
+            arrowhead['type'] = 2;
             // Add the arrowhead to the scene
             scene.add(arrowhead);
 
@@ -460,29 +460,29 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
             // Add the line to the scene
             scene1.add(line1);
-            NODES1.push(line1)
+            NODES1.push(line1);
         }
         ///
 
 
 
         if (!(non)) {
-            NODES.push(line)
-            NODES.push(arrowhead)
+            NODES.push(line);
+            NODES.push(arrowhead);
         } else
-            NODEShidden.push(line)
+            NODEShidden.push(line);
 
     });
     //console.log(NODES)
 
-    STATS += '\n'
-    STATS += 'Average vertical (horizontal for chains) stretching of stitches:\n'
+    STATS += '\n';
+    STATS += 'Average vertical (horizontal for chains) stretching of stitches:\n';
     //console.log(stLen)
     for (let g of Object.keys(stLen))
         if (g !== 'hidden')
-            STATS += g + '=' + String(Math.round((stLen[g] / stTot[g] - 1) * 100)) + '%\n'
+            STATS += g + '=' + String(Math.round((stLen[g] / stTot[g] - 1) * 100)) + '%\n';
 
-    STATS += '\n'
+    STATS += '\n';
     var originalMaterials = [];
     for (var i = 0; i < NODES.length; i++)
         originalMaterials.push(NODES[i].material);
@@ -512,14 +512,14 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
     function onMouseDown(event) {
         if (event.shiftKey && event.button === 0 && event.target === renderer.domElement)
-            timeoutQ = !timeoutQ
+            timeoutQ = !timeoutQ;
         if (!timeoutQ) {
             if (timeoutID != null)
-                clearTimeout(timeoutID)
+                clearTimeout(timeoutID);
         } else {
             var myLabel = document.getElementById('myLabel');
             try {
-                document.body.removeChild(myLabel)
+                document.body.removeChild(myLabel);
             } catch (error) {}
         }
         if ((event.button === 0) && (canvasClicked)) { // Left mouse button
@@ -539,8 +539,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
     var mouse = new THREE.Vector2();
 
-    var I = null
-    var Iold = null
+    var I = null;
+    var Iold = null;
 
     // Handle the click event
     var oldmaterial = null;
@@ -559,9 +559,9 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         label.style.padding = '5px';
         label.style.fontSize = '14pt';
         label.style.width = renderer.domElement.offsetWidth * 0.9 + 'px';
-        return label
+        return label;
     }
-    var requestedInfo = true
+    var requestedInfo = true;
 
     function onMove(event) {
 
@@ -584,43 +584,43 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             // If there is an intersected object, display its name
             //console.log(intersects[0])
             //if (intersects.length > 0) {
-            var label = false
+            var label = false;
             if (intersects.length != 0) {
-                label = createLabel()
+                label = createLabel();
             }
             if (intersects.length == 0) {
-                I = null
+                I = null;
             } else if (intersects.length == 1) {
-                I = intersects[0]
+                I = intersects[0];
                 label.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'>" + I.object.name_long + "</span>";
             } else {
-                I = null
+                I = null;
                 for (var i of intersects) {
                     if (i.object.type == 0) {
                         //console.log(i)
-                        I = i
-                        break
+                        I = i;
+                        break;
                     }
                 }
                 if (I == null)
-                    I = intersects[0]
+                    I = intersects[0];
 
                 label.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'>" + I.object.name_long + "</span>";
             }
 
             if ((Iold != null) && ((I == null) || (Iold.object.id0 != I.object.id0)))
-                Iold.object.material = oldmaterial
+                Iold.object.material = oldmaterial;
             //change colors of selected
             if ((I != null) && (Iold == null || (Iold.object.id0 != I.object.id0))) {
-                oldmaterial = I.object.material
+                oldmaterial = I.object.material;
                 if (I.object.type == 0)
-                    I.object.material = selectedNodeMaterial
+                    I.object.material = selectedNodeMaterial;
                 else
-                    I.object.material = selectedEdgeMaterial
+                    I.object.material = selectedEdgeMaterial;
             }
 
 
-            Iold = I
+            Iold = I;
             //
 
 
@@ -628,11 +628,11 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             var labelOld = document.getElementById('myLabel');
             try {
                 if ((I == null) && (labelOld))
-                    document.body.removeChild(labelOld)
+                    document.body.removeChild(labelOld);
                 if ((!(labelOld)) && (label))
                     document.body.appendChild(label);
                 if ((I != null) && (labelOld)) {
-                    document.body.removeChild(labelOld)
+                    document.body.removeChild(labelOld);
                     document.body.appendChild(label);
                     //document.body.replaceChild(label, labelOld);
                 }
@@ -654,13 +654,13 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
         //renderer.setSize(window.innerWidth, window.innerHeight);
 
-        on3dViewResize()
+        on3dViewResize();
 
     }
 
 
     window.addEventListener('resize', onWindowResize);
-    var showArrows = true
+    var showArrows = true;
 
     var rowNumber = -1000;
     document.addEventListener('keydown', handleKeyDown);
@@ -676,106 +676,105 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     function ScaleRadii(f) {
         for (let i of NODES) {
             if (i.type == 1 || i.type == 2) {
-                let h = i.geometry.parameters.height
-                let rt = i.geometry.parameters.radiusTop * f
-                let rb = i.geometry.parameters.radiusBottom * f
-                let n = i.geometry.parameters.radialSegments
-                i.geometry.dispose()
+                let h = i.geometry.parameters.height;
+                let rt = i.geometry.parameters.radiusTop * f;
+                let rb = i.geometry.parameters.radiusBottom * f;
+                let n = i.geometry.parameters.radialSegments;
+                i.geometry.dispose();
                 i.geometry = new THREE.CylinderGeometry(rt, rb, h, n);
             } else if (i.type == 0) {
-                let r = i.geometry.parameters.radius * f
-                i.geometry.dispose()
+                let r = i.geometry.parameters.radius * f;
+                i.geometry.dispose();
                 i.geometry = new THREE.SphereGeometry(r, 8, 4);
             }
         }
         for (let i of NODEShidden)
             if (i.type == 1 || i.type == 2) {
-                let h = i.geometry.parameters.height
-                let rt = i.geometry.parameters.radiusTop * f
-                let rb = i.geometry.parameters.radiusBottom * f
-                let n = i.geometry.parameters.radialSegments
-                i.geometry.dispose()
+                let h = i.geometry.parameters.height;
+                let rt = i.geometry.parameters.radiusTop * f;
+                let rb = i.geometry.parameters.radiusBottom * f;
+                let n = i.geometry.parameters.radialSegments;
+                i.geometry.dispose();
                 i.geometry = new THREE.CylinderGeometry(rt, rb, h, n);
             }
         for (let i of NODES1) {
-            let h = i.geometry.parameters.height
-            let rt = i.geometry.parameters.radiusTop * f
-            let rb = i.geometry.parameters.radiusBottom * f
-            let n = i.geometry.parameters.radialSegments
-            i.geometry.dispose()
+            let h = i.geometry.parameters.height;
+            let rt = i.geometry.parameters.radiusTop * f;
+            let rb = i.geometry.parameters.radiusBottom * f;
+            let n = i.geometry.parameters.radialSegments;
+            i.geometry.dispose();
             i.geometry = new THREE.CylinderGeometry(rt, rb, h, n);
         }
     }
 
-    var c_was_pressed = false
-    var factor_radius = 1.0
+    var c_was_pressed = false;
+    var factor_radius = 1.0;
 
     var RESETCOLORS = true;
-    var HIDE = str.objects.length - 1
+    var HIDE = str.objects.length - 1;
 
     //Search and highlight
     function handleKeyDown(event) {
         if (canvasClicked && (event.key === 'i')) {
-            requestedInfo = !requestedInfo
+            requestedInfo = !requestedInfo;
             if (timeoutID != null)
-                clearTimeout(timeoutID)
+                clearTimeout(timeoutID);
             let myLabel = document.getElementById('myLabel');
             //myLabel.style.display = 'none';
             try {
-                document.body.removeChild(myLabel)
+                document.body.removeChild(myLabel);
             } catch (error) {}
         }
         if (canvasClicked && (event.key === 'c')) {
             setTimeout(function() {
-                c_was_pressed = true
-                showArrows = false
+                c_was_pressed = true;
+                showArrows = false;
                 for (let i of NODES) {
                     i.material = new THREE.MeshLambertMaterial({
                         color: new THREE.Color(i.Color)
-                    })
+                    });
                     if (('is_arrow' in i) || i.type == 0)
-                        i.visible = false
+                        i.visible = false;
                 }
                 for (let i of NODEShidden)
-                    i.visible = false
-
-                ScaleRadii(4 / factor_radius) // show all radii as twice the default
-                factor_radius = 4
-            }, 200)
+                    i.visible = false;
+                ScaleRadii(4 / factor_radius); // show all radii as twice the default;
+                factor_radius = 4;
+            }, 200);
         }
         if (canvasClicked && ((event.key === '+') || (event.key === '=') || (event.key === '-')) && (event.ctrlKey || event.metaKey)) {
             //console.log(NODES)
             event.preventDefault();
             setTimeout(function() {
 
-                let f = 1.259921
+                let f = 1.259921;
                 if (event.key === '-')
-                    f = 1. / f
-                factor_radius *= f
-                ScaleRadii(f)
-            }, 300)
+                    f = 1.0 / f;
+                factor_radius *= f;
+                ScaleRadii(f);
+            }, 300);
         }
         if (canvasClicked && (event.key === 'v')) {
             setTimeout(function() {
                 event.preventDefault();
-                showArrows = !showArrows
+                showArrows = !showArrows;
                 if (showArrows) {
-                    var [x, y] = str.objects[HIDE].name.split('|')[0].split(',')
+                    var [x, y] = str.objects[HIDE].name.split('|')[0].split(',');
 
                     for (var i = 0; i < NODES.length; i++) {
                         if (((NODES[i].row[0] == parseInt(x)) && (NODES[i].row[1] <= parseInt(y))) ||
                             ((NODES[i].row[0] < parseInt(x)))) {
                             if ('is_arrow' in NODES[i])
-                                NODES[i].visible = true
+                                NODES[i].visible = true;
                         }
                     }
 
                 } else {
                     for (let i of NODES)
                         if ('is_arrow' in i)
-                            i.visible = false
+                            i.visible = false;
                 }
-            }, 300)
+            }, 300);
         }
         if (canvasClicked && (event.key === 's')) {
             event.preventDefault();
@@ -784,48 +783,48 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 for (var i = 0; i < NODES.length; i++) {
                     if ('stretch' in NODES[i])
                         NODES[i].material = new THREE.MeshLambertMaterial({
-                            color: new THREE.Color(...color(7 * (NODES[i].stretch - 1.) + 3))
-                        })
+                            color: new THREE.Color(...color(7 * (NODES[i].stretch - 1.0) + 3))
+                        });
                     else
-                        NODES[i].material = edgeMaterialGray
+                        NODES[i].material = edgeMaterialGray;
                 }
-            }, 200)
+            }, 200);
         }
         if (canvasClicked && (event.key === 'f' && (event.ctrlKey || event.metaKey))) {
             event.preventDefault();
             setTimeout(function() {
 
                 if (rowNumber != -1000) {
-                    for (var i = 0; i < NODES.length; i++) {
+                    for (let i = 0; i < NODES.length; i++) {
                         NODES[i].material = originalMaterials[i];
                     }
                 }
-                var rn = null
+                var rn = null;
                 rn = (prompt('Enter a row number or stitch coordinate (row,stitch number; e.g. 2,4) to be highlighted'));
-                var rr = []
+                var rr = [];
                 if (rn) {
                     for (var r of rn.split(new RegExp('[^0-9]+')))
                         if (r !== '')
-                            rr.push(parseInt(r))
+                            rr.push(parseInt(r));
                     if (rr.length == 1) {
-                        rowNumber = rr[0]
+                        rowNumber = rr[0];
                         //console.log(NODES)
-                        for (var i = 0; i < NODES.length; i++) {
+                        for (let i = 0; i < NODES.length; i++) {
                             if (NODES[i].row[0] == rowNumber) {
-                                NODES[i].material = selectedRowMaterial
+                                NODES[i].material = selectedRowMaterial;
                             }
                         }
                     } else if (rr.length == 2) {
                         //console.log(NODES)
-                        rowNumber = rr[0]
-                        for (var i = 0; i < NODES.length; i++) {
+                        rowNumber = rr[0];
+                        for (let i = 0; i < NODES.length; i++) {
                             if ((NODES[i].row[0] == rowNumber) && (NODES[i].row[1] == rr[1])) {
-                                NODES[i].material = selectedRowMaterial
+                                NODES[i].material = selectedRowMaterial;
                             }
                         }
                     }
                 }
-            }, 300)
+            }, 300);
         }
     }
 
@@ -834,29 +833,29 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         if (canvasClicked && event.key === 'Escape') {
             event.preventDefault();
             if (!(event.ctrlKey || event.metaKey)) {
-                c_was_pressed = false
-                for (var i = 0; i < NODES.length; i++) {
+                c_was_pressed = false;
+                for (let i = 0; i < NODES.length; i++) {
                     NODES[i].material = originalMaterials[i];
                     NODES[i].visible = true;
                 }
-                for (var i = 0; i < NODEShidden.length; i++) {
+                for (let i = 0; i < NODEShidden.length; i++) {
                     NODEShidden[i].visible = true;
                 }
-                RESETCOLORS = true
-                HIDE = str.objects.length - 1
+                RESETCOLORS = true;
+                HIDE = str.objects.length - 1;
 
-                ScaleRadii(1 / factor_radius) // show all radii as normal
-                factor_radius = 1
+                ScaleRadii(1 / factor_radius); // show all radii as normal;
+                factor_radius = 1;
             } else {
-                HIDE = 0
-                RESETCOLORS = false
-                NODES[0].visible = true
+                HIDE = 0;
+                RESETCOLORS = false;
+                NODES[0].visible = true;
                 NODES[0].material = originalMaterials[0];
-                for (var i = 1; i < NODES.length; i++) {
+                for (let i = 1; i < NODES.length; i++) {
                     NODES[i].material = originalMaterials[i];
                     NODES[i].visible = false;
                 }
-                for (var i = 0; i < NODEShidden.length; i++) {
+                for (let i = 0; i < NODEShidden.length; i++) {
                     //NODEShidden[i].material = originalMaterials[i];
                     NODEShidden[i].visible = false;
                 }
@@ -869,12 +868,12 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
     function handleKeyDownHide(event) {
         if ((canvasClicked) && (event.key === 'r')) {
-            wasMouseDown = false
+            wasMouseDown = false;
         }
         if (canvasClicked && (event.key === 'p')) {
             setTimeout(function() {
-                saveSvg()
-            }, 300)
+                saveSvg();
+            }, 300);
         }
         if (canvasClicked && (event.key === 'h' && (event.ctrlKey || event.metaKey))) {
 
@@ -882,7 +881,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             event.preventDefault();
             setTimeout(function() {
                 if (rowNumber != -1000) {
-                    for (var i = 0; i < NODES.length; i++) {
+                    for (let i = 0; i < NODES.length; i++) {
                         NODES[i].material = originalMaterials[i];
                         NODES[i].visible = true;
                     }
@@ -890,80 +889,80 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 //var rn = null
                 //rn = (prompt('Enter a row number or stitch coordinate (row,stitch number; e.g. 2,4). All stitches after that will be hidden'));
 
-                var rn = null
+                var rn = null;
                 rn = (prompt('Enter a row number or stitch coordinate (row,stitch number; e.g. 2,4). All stitches after that will be hidden'));
-                var rr = []
+                var rr = [];
                 if (rn) {
-                    for (var r of rn.split(new RegExp('[^0-9]+')))
+                    for (let r of rn.split(new RegExp('[^0-9]+')))
                         if (r !== '')
-                            rr.push(parseInt(r))
+                            rr.push(parseInt(r));
                     if (rr.length == 1) {
-                        rowNumber = rr[0]
+                        rowNumber = rr[0];
                         //console.log(NODES)
-                        for (var i = 0; i < NODES.length; i++) {
+                        for (let i = 0; i < NODES.length; i++) {
                             if (NODES[i].row[0] > rowNumber) {
                                 NODES[i].visible = false;
                             }
                         }
-                        for (var i = 0; i < NODEShidden.length; i++) {
+                        for (let i = 0; i < NODEShidden.length; i++) {
                             if (NODEShidden[i].row[0] > rowNumber) {
                                 NODEShidden[i].visible = false;
                             }
                         }
 
-                        RESETCOLORS = false
+                        RESETCOLORS = false;
 
                         HIDE = str.objects.findIndex((obj) => obj.name.split('|')[0] === String(rr[0] + 1) + ',' + String(0));
-                        HIDE--
+                        HIDE--;
                         if (HIDE == -2) { //searching for last element
-                            HIDE = str.objects.length - 1
+                            HIDE = str.objects.length - 1;
                             //while ((str.objects[HIDE].label.split('|')[0] === "hidden") && HIDE >= 0)
                             //    HIDE--
                         }
 
                         if (HIDE == -1)
-                            HIDE = 0
+                            HIDE = 0;
                     } else if (rr.length == 2) {
                         //console.log(NODES)
-                        rowNumber = rr[0]
+                        rowNumber = rr[0];
                         for (var i = 0; i < NODES.length; i++) {
                             if (((NODES[i].row[0] == rowNumber) && (NODES[i].row[1] > rr[1])) || (NODES[i].row[0] > rowNumber)) {
                                 NODES[i].visible = false;
                             }
                         }
 
-                        for (var i = 0; i < NODEShidden.length; i++) {
+                        for (let i = 0; i < NODEShidden.length; i++) {
                             if (((NODEShidden[i].row[0] == rowNumber) && (NODEShidden[i].row[1] > rr[1])) || (NODEShidden[i].row[0] > rowNumber)) {
                                 NODEShidden[i].visible = false;
                             }
                         }
 
-                        RESETCOLORS = false
+                        RESETCOLORS = false;
 
                         HIDE = str.objects.findIndex((obj) => obj.name.split('|')[0] === String(rr[0]) + ',' + String(rr[1]));
                         if (HIDE == -1)
-                            HIDE = 0
+                            HIDE = 0;
 
                     } {
                         let myLabel = document.getElementById('myLabel');
                         //myLabel.style.display = 'none';
                         try {
-                            document.body.removeChild(myLabel)
+                            document.body.removeChild(myLabel);
                         } catch (error) {}
                     }
                     if (requestedInfo) {
-                        let label = createLabel()
+                        let label = createLabel();
                         //console.log(str.objects[HIDE].name)
-                        label.innerHTML = "<span style='font-size: 16px; font-weight: bold;'>" + str.objects[HIDE].name + '</span>'
+                        label.innerHTML = "<span style='font-size: 16px; font-weight: bold;'>" + str.objects[HIDE].name + '</span>';
                         document.body.appendChild(label);
                         if (timeoutID != null)
-                            clearTimeout(timeoutID)
+                            clearTimeout(timeoutID);
                         if (timeoutQ)
                             timeoutID = setTimeout(() => {
                                 var myLabel = document.getElementById('myLabel');
                                 //myLabel.style.display = 'none';
                                 try {
-                                    document.body.removeChild(myLabel)
+                                    document.body.removeChild(myLabel);
                                 } catch (error) {}
                             }, 10000);
                     }
@@ -984,89 +983,89 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             event.preventDefault();
             if ((event.ctrlKey || event.metaKey)) {
                 if (RESETCOLORS) {
-                    RESETCOLORS = false
-                    HIDE = str.objects.length - 1
+                    RESETCOLORS = false;
+                    HIDE = str.objects.length - 1;
                 }
                 if (HIDE > str.objects.length)
-                    HIDE = str.objects.length - 1
-                HIDE--
+                    HIDE = str.objects.length - 1;
+                HIDE--;
                 while ((HIDE >= 0) && (str.objects[HIDE].label.split('|')[0] === "hidden"))
-                    HIDE--
+                    HIDE--;
 
                 if (HIDE < 0)
-                    HIDE = 0
-                var [x, y] = str.objects[HIDE].name.split('|')[0].split(',')
+                    HIDE = 0;
+                let [x, y] = str.objects[HIDE].name.split('|')[0].split(',');
 
-                for (var i = 0; i < NODES.length; i++) {
+                for (let i = 0; i < NODES.length; i++) {
                     if (((NODES[i].row[0] >= parseInt(x)) && (NODES[i].row[1] > parseInt(y))) ||
                         ((NODES[i].row[0] > parseInt(x)))) {
-                        NODES[i].visible = false
+                        NODES[i].visible = false;
                     }
                 }
 
-                for (var i = 0; i < NODEShidden.length; i++) {
+                for (let i = 0; i < NODEShidden.length; i++) {
                     if (((NODEShidden[i].row[0] >= parseInt(x)) && (NODEShidden[i].row[1] > parseInt(y))) ||
                         ((NODEShidden[i].row[0] > parseInt(x)))) {
-                        NODEShidden[i].visible = false
+                        NODEShidden[i].visible = false;
                     }
                 }
 
             } else {
-                HIDE++
+                HIDE++;
                 if (HIDE > str.objects.length - 1)
-                    HIDE = str.objects.length - 1
+                    HIDE = str.objects.length - 1;
                 //while ((str.objects[HIDE].label.split('|')[0] === "hidden") && HIDE >= 0)
                 //    HIDE--
 
                 while ((HIDE < str.objects.length) && (str.objects[HIDE].label.split('|')[0] === "hidden"))
-                    HIDE++
+                    HIDE++;
 
 
                 if (HIDE >= str.objects.length)
-                    HIDE = str.objects.length - 1
+                    HIDE = str.objects.length - 1;
                 if (HIDE == str.objects.length - 1 && str.objects[HIDE].label.split('|')[0] === "hidden")
                     while ((HIDE >= 0) && (str.objects[HIDE].label.split('|')[0] === "hidden"))
-                        HIDE--
+                        HIDE--;
                 if ((HIDE < str.objects.length)) {
                     if (str.objects[HIDE].label.split('|')[0] !== "hidden") {
-                        var [x, y] = str.objects[HIDE].name.split('|')[0].split(',')
+                        let [x, y] = str.objects[HIDE].name.split('|')[0].split(',');
 
-                        for (var i = 0; i < NODES.length; i++) {
+                        for (let i = 0; i < NODES.length; i++) {
                             if ((NODES[i].row[0] <= parseInt(x)) && (NODES[i].row[1] <= parseInt(y))) {
                                 if (!((!showArrows) && ('is_arrow' in NODES[i])))
-                                    NODES[i].visible = true
+                                    NODES[i].visible = true;
                             }
                         }
 
-                        for (var i = 0; i < NODEShidden.length; i++) {
+                        for (let i = 0; i < NODEShidden.length; i++) {
                             if ((NODEShidden[i].row[0] <= parseInt(x)) && (NODEShidden[i].row[1] <= parseInt(y))) {
-                                NODEShidden[i].visible = true
+                                NODEShidden[i].visible = true;
                             }
                         }
                     }
                 }
-            };
+            }
 
             if (requestedInfo) {
                 {
                     let myLabel = document.getElementById('myLabel');
                     //myLabel.style.display = 'none';
                     try {
-                        document.body.removeChild(myLabel)
+                        document.body.removeChild(myLabel);
                     } catch (error) {}
                 }
-                let label = createLabel()
+                let label = createLabel();
 
                 //label.innerHTML = "<span style='font-size: 16px; font-weight: bold;'>" + str.objects[HIDE].name + '</span>'
-                label.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'><span style='font-size: 16px; font-weight: bold;'>(" + str.objects[HIDE].name + ") [" + str.objects[HIDE].label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + str.objects[HIDE].label.split('|')[1] + "&hellip;</span>"
+                label.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'><span style='font-size: 16px; font-weight: bold;'>(" + str.objects[HIDE].name + ") [" + str.objects[HIDE].label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + str.objects[HIDE].label.split('|')[1] + "&hellip;</span>";
                 document.body.appendChild(label);
                 if (timeoutID != null)
-                    clearTimeout(timeoutID)
+                    clearTimeout(timeoutID);
                 if (timeoutQ)
                     timeoutID = setTimeout(() => {
                         var myLabel = document.getElementById('myLabel');
                         try {
-                            document.body.removeChild(myLabel)
+                            document.body.removeChild(myLabel);
                         } catch (error) {}
                     }, 10000);
             }
@@ -1074,10 +1073,10 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             if (c_was_pressed) {
                 for (let i of NODES) {
                     if (('is_arrow' in i) || i.type == 0)
-                        i.visible = false
+                        i.visible = false;
                 }
                 for (let i of NODEShidden)
-                    i.visible = false
+                    i.visible = false;
             }
 
         }
@@ -1089,16 +1088,16 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         var size;
         while (true) {
             try {
-                let s = prompt('Enter the height (in pixels) of the SVG file. This will affect size of labels. Default: 1500')
+                let s = prompt('Enter the height (in pixels) of the SVG file. This will affect size of labels. Default: 1500');
                 if (s === '')
-                    size = 1500
+                    size = 1500;
                 else
                     size = parseInt(s);
             } catch (error) {
-                size = -1
+                size = -1;
             }
             if ((size > 50) && (size < 15000))
-                break
+                break;
         }
 
         const draw = SVG().size(size, size);
@@ -1108,37 +1107,37 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         var xC = camera.position.x;
         var yC = camera.position.y;
         var zC = camera.position.z;
-        var xU = camera.up.x
-        var yU = camera.up.y
-        var zU = camera.up.z
-        var xR = -(yC * zU - zC * yU)
-        var yR = -(-(xC * zU - zC * xU))
-        var zR = -(xC * yU - yC * xU)
-        var nR = Math.sqrt(xR * xR + yR * yR + zR * zR)
-        var nC = Math.sqrt(xC * xC + yC * yC + zC * zC)
-        xR /= nR
-        yR /= nR
-        zR /= nR
-        xC /= nC
-        yC /= nC
-        zC /= nC
-        xU = -(yC * zR - zC * yR)
-        yU = -(-(xC * zR - zC * xR))
-        zU = -(xC * yR - yC * xR)
+        var xU = camera.up.x;
+        var yU = camera.up.y;
+        var zU = camera.up.z;
+        var xR = -(yC * zU - zC * yU);
+        var yR = -(-(xC * zU - zC * xU));
+        var zR = -(xC * yU - yC * xU);
+        var nR = Math.sqrt(xR * xR + yR * yR + zR * zR);
+        var nC = Math.sqrt(xC * xC + yC * yC + zC * zC);
+        xR /= nR;
+        yR /= nR;
+        zR /= nR;
+        xC /= nC;
+        yC /= nC;
+        zC /= nC;
+        xU = -(yC * zR - zC * yR);
+        yU = -(-(xC * zR - zC * xR));
+        zU = -(xC * yR - yC * xR);
         //r-(r.hatrC)hatC
-        var k = -1
+        var k = -1;
         graphData.objects.forEach(node => {
             k++;
             if ((node.label.split('|')[0] !== "hidden") && (k <= HIDE)) {
                 var x, y;
                 if (Dimen == 2) {
-                    x = (node.pos[0] + 1) * size / 2.;
-                    y = (-node.pos[1] + 1) * size / 2.;
+                    x = (node.pos[0] + 1) * size / 2.0;
+                    y = (-node.pos[1] + 1) * size / 2.0;
                 } else {
-                    x = node.pos[0] * xR + node.pos[1] * yR + node.pos[2] * zR
-                    y = node.pos[0] * xU + node.pos[1] * yU + node.pos[2] * zU
-                    x = (x + 1) * size / 2.;
-                    y = (y + 1) * size / 2.;
+                    x = node.pos[0] * xR + node.pos[1] * yR + node.pos[2] * zR;
+                    y = node.pos[0] * xU + node.pos[1] * yU + node.pos[2] * zU;
+                    x = (x + 1) * size / 2.0;
+                    y = (y + 1) * size / 2.0;
                 }
                 const circle = nodes.circle(5).center(x, y).fill('white').stroke('gray');
                 var text = nodes.text(node.label.split('|')[0] + '(' + node.name.split('|')[0] + ')').cx(x).cy(y); //node.id0
@@ -1152,12 +1151,12 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 //    });
                 //    fontSize *= 1.5;
                 //}
-                var fontSize = 1.5 * 1.5 * 5
+                var fontSize = 1.5 * 1.5 * 5;
                 text.font({
                     size: fontSize / 1.5 / 1.5
                 });
                 //text.cx(x + text.bbox().width / 2. - 0 * circle.bbox().width / 2.).cy(y - text.bbox().height / 2. + 0 * circle.bbox().height / 2.)
-                text.cx(x + circle.bbox().width + text.bbox().width / 2).cy(y)
+                text.cx(x + circle.bbox().width + text.bbox().width / 2).cy(y);
             }
         });
 
@@ -1167,17 +1166,17 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         graphData.edges.forEach(edge => {
             const start = edge.start;
             const end = edge.end;
-            var x0, y0, x1, y1
+            var x0, y0, x1, y1;
             if (Dimen == 2) {
-                x0 = start[0]
-                y0 = -start[1]
-                x1 = end[0]
-                y1 = -end[1]
+                x0 = start[0];
+                y0 = -start[1];
+                x1 = end[0];
+                y1 = -end[1];
             } else {
-                x0 = start[0] * xR + start[1] * yR + start[2] * zR
-                y0 = start[0] * xU + start[1] * yU + start[2] * zU
-                x1 = end[0] * xR + end[1] * yR + end[2] * zR
-                y1 = end[0] * xU + end[1] * yU + end[2] * zU
+                x0 = start[0] * xR + start[1] * yR + start[2] * zR;
+                y0 = start[0] * xU + start[1] * yU + start[2] * zU;
+                x1 = end[0] * xR + end[1] * yR + end[2] * zR;
+                y1 = end[0] * xU + end[1] * yU + end[2] * zU;
             }
 
 
@@ -1185,12 +1184,12 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 //    &&                    (str.objects.findIndex((obj) => obj._gvid === edge.tail) <= HIDE)
             ) {
                 if (edge.gray == 1)
-                    edges.line((x0 + 1) * size / 2., (y0 + 1) * size / 2., (x1 + 1) * size / 2., (y1 + 1) * size / 2.).stroke({
+                    edges.line((x0 + 1) * size / 2.0, (y0 + 1) * size / 2.0, (x1 + 1) * size / 2.0, (y1 + 1) * size / 2.0).stroke({
                         color: 'gray',
                         width: 0.2
-                    }) //.marker('end', arrowhead);
+                    }); //.marker('end', arrowhead);;
                 else
-                    edges.line((x0 + 1) * size / 2., (y0 + 1) * size / 2., (x1 + 1) * size / 2., (y1 + 1) * size / 2.).stroke(edge.color).marker('end', arrowhead);
+                    edges.line((x0 + 1) * size / 2.0, (y0 + 1) * size / 2.0, (x1 + 1) * size / 2.0, (y1 + 1) * size / 2.0).stroke(edge.color).marker('end', arrowhead);
             }
         });
 
@@ -1216,10 +1215,10 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
 
     function exportGLTF() {
-        var input = scene1
+        var input = scene1;
         if (scene1 == null || (scene1.children.length == 0)) {
-            alert('Re-run model by pressing "Show model in 3D".')
-            return
+            alert('Re-run model by pressing "Show model in 3D".');
+            return;
         }
         const link = document.createElement('a');
         link.style.display = 'none';
@@ -1295,10 +1294,10 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         //console.log(camera.up.x, camera.up.y, camera.up.z, camera.position, camera., XU, YU, ZU)
         if (!wasMouseDown) {
 
-            controls.autoRotate = true //updateCamera();
+            controls.autoRotate = true; //updateCamera();;
             controls.update();
         } else {
-            controls.autoRotate = false //updateCamera();
+            controls.autoRotate = false; //updateCamera();;
             controls.update();
         }
 
@@ -1311,5 +1310,5 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         //     console.log(rendererSVG.domElement.outerHTML);
     }
     animate();
-    return [renderer, scene, onMouseDown, onMove, handleKeyDown, handleKeyUp, STATS, handleKeyDownHide, handleKeyDownHideAnim, exportGLTF, scene1, saveSvg]
+    return [renderer, scene, onMouseDown, onMove, handleKeyDown, handleKeyUp, STATS, handleKeyDownHide, handleKeyDownHideAnim, exportGLTF, scene1, saveSvg];
 }
