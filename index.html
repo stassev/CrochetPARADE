@@ -25,11 +25,11 @@
 
     <script type="importmap">
         {
-          "imports": {
-            "three": "./three.module.js"
-          }
-        }
-      </script>
+           "imports": {
+             "three": "./three.module.js"
+           }
+         }
+       </script>
     <style>
         #examples {
             appearance: none;
@@ -729,11 +729,11 @@
 
 
         <!-- <div class="dropdown">
-        <button class="dropbtn" onclick="toggleDropdown('calculateDropdown')">Calculate</button>
-        <div class="dropdown-content" id="calculateDropdown">
-            <button class="button" id="3dbutton">Calculate and show model in 3D</button>
-        </div>
-    </div> -->
+         <button class="dropbtn" onclick="toggleDropdown('calculateDropdown')">Calculate</button>
+         <div class="dropdown-content" id="calculateDropdown">
+             <button class="button" id="3dbutton">Calculate and show model in 3D</button>
+         </div>
+     </div> -->
 
         <button class="button" id="3dbutton">Calculate and show model in 3D</button>
         <div class="dropdown">
@@ -769,11 +769,13 @@
                 <button class="button" onclick="document.getElementById('info').style.display='block'">Keyboard shortcuts</button>
 
                 <button class="button" onclick="window.open('./Manual.html', '_blank')">Manual</button>
+                <button class="button" onclick="window.open('https://codeberg.org/crochetparade/CrochetPARADE/issues', '_blank')">Ask a question or file a bug report</button>
 
 
                 <button class="button" onclick="document.getElementById('about').style.display='block'">About</button>
             </div>
         </div>
+
     </div>
 
     <script>
@@ -1374,13 +1376,13 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
             var printWindow = window.open('', '', 'height=400,width=800');
             printWindow.document.write('<html><head><title>Crochet Instructions</title>');
             printWindow.document.write(`<style>#highlighting { font-family: monospace;
-            font-size: 9pt;
-            line-height: 14pt;
-            tab-size: 2;
-            overflow-wrap: break-word; /* For modern browsers */
-            word-wrap: break-word; /* For older browsers */}
-           </style>
-            </head>`)
+             font-size: 9pt;
+             line-height: 14pt;
+             tab-size: 2;
+             overflow-wrap: break-word; /* For modern browsers */
+             word-wrap: break-word; /* For older browsers */}
+            </style>
+             </head>`)
             printWindow.document.write('<body><div id="highlighting">');
             printWindow.document.write(divContents);
 
@@ -1532,15 +1534,15 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
 
 
     <div id="dialog-box" style="display: none;position: absolute;
-    top: 0%;
-    margin-top:0;
-    left: 50%;
-    transform: translate(-50%, 0%);">
+     top: 0%;
+     margin-top:0;
+     left: 50%;
+     transform: translate(-50%, 0%);">
         <div id="dialog-content" style="
-        padding: 20px;
-        background-color: #f2f2f2;
-        border: 1px solid #ccc;
-        z-index: 1;">
+         padding: 20px;
+         background-color: #f2f2f2;
+         border: 1px solid #ccc;
+         z-index: 1;">
             <span class="close-btn" onclick="closeDialog()" style="float: right; cursor: pointer;">&times;</span>
             <pre id="dialog-text"></pre>
         </div>
@@ -1646,122 +1648,122 @@ document.addEventListener('DOMContentLoaded', setTimeout(function() {
     <script type="module">
 
         import Generate3DModel from './mesh1.js';
-        //import  "./viz-standalone.js";
-        const button = document.getElementById("3dbutton");
-        //const textarea = document.getElementById('inputText');
-
-
-        textarea.addEventListener('keydown', function(event) {
-          
-            if ((event.ctrlKey || event.metaKey)  && event.key === 'r') {
-                event.preventDefault();
-                reset_json = 3;
-                
-                show3DModel();
-                reset_json = 1;
-            } else if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-                event.preventDefault();
-                reset_json = 2;
-                show3DModel();
-                reset_json = 1;
-            } else if ((event.shiftKey) && event.key === 'Enter') {
-                event.preventDefault();
-                reset_json = 1;
-                show3DModel();
-                
-            } else {
-                setTimeout(function() {
-                    update(textarea.value);
-                }, 0);
-            }
-        });
-
-        async function show3DModel() {
-            var loadingIcon = document.getElementById('loading-icon')
-            loadingIcon.style.display = 'block';
-
-
-document.removeEventListener('mousemove',onMouseMove)
-document.removeEventListener('mousedown',onMouseDown)
-document.removeEventListener('keydown', handleKeyDown);
-document.removeEventListener('keydown', handleKeyDownHide);
-document.removeEventListener('keydown', handleKeyDownHideAnim);
+         //import  "./viz-standalone.js";
+         const button = document.getElementById("3dbutton");
+         //const textarea = document.getElementById('inputText');
+ 
+ 
+         textarea.addEventListener('keydown', function(event) {
+ 
+             if ((event.ctrlKey || event.metaKey) && event.key === 'r') {
+                 event.preventDefault();
+                 reset_json = 3;
+ 
+                 show3DModel();
+                 reset_json = 1;
+             } else if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                 event.preventDefault();
+                 reset_json = 2;
+                 show3DModel();
+                 reset_json = 1;
+             } else if ((event.shiftKey) && event.key === 'Enter') {
+                 event.preventDefault();
+                 reset_json = 1;
+                 show3DModel();
+ 
+             } else {
+                 setTimeout(function() {
+                     update(textarea.value);
+                 }, 0);
+             }
+         });
+ 
+         async function show3DModel() {
+             var loadingIcon = document.getElementById('loading-icon')
+             loadingIcon.style.display = 'block';
+ 
+ 
+             document.removeEventListener('mousemove', onMouseMove)
+             document.removeEventListener('mousedown', onMouseDown)
+             document.removeEventListener('keydown', handleKeyDown);
+             document.removeEventListener('keydown', handleKeyDownHide);
+             document.removeEventListener('keydown', handleKeyDownHideAnim);
              document.getElementById("view3d").innerText = ''
-
-document.removeEventListener('keyup', handleKeyUp);
-var select = document.getElementById("examples");
-var inputText = document.getElementById("inputText");
-
-if (reset_json==1){//default
-jsonOld=''
-json0=''
-            } else if (reset_json == 2) { //continue ctrl+c
-jsonOld=json0
-        }else if (reset_json==3){//repeat ctrl+r
-            json0=jsonOld
-        }
-    
-            var dot_simple;
-            setTimeout(function() {
+ 
+             document.removeEventListener('keyup', handleKeyUp);
+             var select = document.getElementById("examples");
+             var inputText = document.getElementById("inputText");
+ 
+             if (reset_json == 1) { //default
+                 jsonOld = ''
+                 json0 = ''
+             } else if (reset_json == 2) { //continue ctrl+c
+                 jsonOld = json0
+             } else if (reset_json == 3) { //repeat ctrl+r
+                 json0 = jsonOld
+             }
+ 
+             var dot_simple;
+             setTimeout(function() {
                  [json0,dot_simple] = processTextSafe(inputText.value, json0)
-            }, 0);
-            setTimeout(async function() {
+             }, 0);
+             setTimeout(async function() {
                  //json0 = processTextSafe(inputText.value, json0)
-                //console.log(dot_simple)
-    //console.log(json0)
-
-    if (json0!==''){
-
-                    //let inputLength = lengthBytesUTF8(dot_simple);
-                    //let inputPointer = Module._malloc(inputLength + 1);
-                    //Module.stringToUTF8(dot_simple, inputPointer, inputLength + 1);
-                    //let resultPointer = Module.ccall('performLayout', 'number', ['number'], [inputPointer]);
-                    //let result = Module.UTF8ToString(resultPointer);
-                    //var json1 = '[' + result.slice(0, -1) + ']';
-                    //json1 = json1.replace('"},]', '"}]')
-                    ////console.log(json1);
-                    //Module._free(inputPointer);
-                    ////console.log(json0)
-                    //DEBUG += '=======JSON1:=======\n' + JSON.stringify(json1) + '\n'
-
-                    try {
-                        var json1 = await performLayoutAsync(dot_simple);
-                        json0 = transformJsonWithPos(json0, json1);
-                    } catch (error) {
-                        // Handle error if needed
-                        console.error(error);
-                    } finally {
-            loadingIcon.style.display = 'none';
-                    }
-      //          console.log(json0)
-
-                                // Hide the loading icon once the code has finished running
-
-                                DEBUG+=  '=======JSON0:=======\n' + JSON.stringify(json0) + '\n'
-                                
-                                var a =Generate3DModel(json0,renderer,scene,scene1,backgroundColor)
-                                renderer=a[0]
-                                scene=a[1]
-                                onMouseDown=a[2]
-                                onMouseMove=a[3]
-                                handleKeyDown=a[4]
-                                handleKeyUp=a[5]
-                                STATSstretch=a[6]
-                                handleKeyDownHide=a[7]
-                                handleKeyDownHideAnim=a[8]
-                                exportGLTF=a[9]
-                                scene1=a[10]
-                                saveSvg=a[11]
-                    //loadingIcon.style.display = 'none';
-                
-            //});
-        }
-                loadingIcon.style.display = 'none';
-            }, 0);
-}
-
-        button.addEventListener("click", show3DModel);
-      </script>
+                 //console.log(dot_simple)
+                 //console.log(json0)
+ 
+                 if (json0 !== '') {
+ 
+                     //let inputLength = lengthBytesUTF8(dot_simple);
+                     //let inputPointer = Module._malloc(inputLength + 1);
+                     //Module.stringToUTF8(dot_simple, inputPointer, inputLength + 1);
+                     //let resultPointer = Module.ccall('performLayout', 'number', ['number'], [inputPointer]);
+                     //let result = Module.UTF8ToString(resultPointer);
+                     //var json1 = '[' + result.slice(0, -1) + ']';
+                     //json1 = json1.replace('"},]', '"}]')
+                     ////console.log(json1);
+                     //Module._free(inputPointer);
+                     ////console.log(json0)
+                     //DEBUG += '=======JSON1:=======\n' + JSON.stringify(json1) + '\n'
+ 
+                     try {
+                         var json1 = await performLayoutAsync(dot_simple);
+                         json0 = transformJsonWithPos(json0, json1);
+                     } catch (error) {
+                         // Handle error if needed
+                         console.error(error);
+                     } finally {
+                         loadingIcon.style.display = 'none';
+                     }
+                     //          console.log(json0)
+ 
+                     // Hide the loading icon once the code has finished running
+ 
+                     DEBUG += '=======JSON0:=======\n' + JSON.stringify(json0) + '\n'
+ 
+                     var a = Generate3DModel(json0, renderer, scene, scene1, backgroundColor)
+                     renderer = a[0]
+                     scene = a[1]
+                     onMouseDown = a[2]
+                     onMouseMove = a[3]
+                     handleKeyDown = a[4]
+                     handleKeyUp = a[5]
+                     STATSstretch = a[6]
+                     handleKeyDownHide = a[7]
+                     handleKeyDownHideAnim = a[8]
+                     exportGLTF = a[9]
+                     scene1 = a[10]
+                     saveSvg = a[11]
+                     //loadingIcon.style.display = 'none';
+ 
+                     //});
+                 }
+                 loadingIcon.style.display = 'none';
+             }, 0);
+         }
+ 
+         button.addEventListener("click", show3DModel);
+     </script>
 
     <script>
         function do_exportGLTF() {
