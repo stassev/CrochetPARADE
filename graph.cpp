@@ -41,8 +41,8 @@ struct Graph {
     std::vector<std::vector<double>> nodes_pos;  // Added vector for node positions
 
 
-    Graph(int n) : num_nodes(n), nodes(n, ""), N_neighbors(n, 0),nodes_pos(n, std::vector<double>()),
-        dist_to_neighbor(n,std::vector<double>()), flat_specified_positions(n, false) {
+    Graph(int n) : num_nodes(n), nodes(n, ""), N_neighbors(n, 0),
+        dist_to_neighbor(n,std::vector<double>()), flat_specified_positions(n, false) ,nodes_pos(n, std::vector<double>()){
         flat_distance_matrix.resize(n * n, INF);
         flat_immediate_neighbor.resize(n * n, false);
         neighbors.resize(n);
@@ -328,97 +328,117 @@ extern "C" const char* performLayout(const char* jsInput) {
         std::vector<double> flat_positions(graph.num_nodes * numDimensions, 0.0);
         std::vector<double> flat_forces(graph.num_nodes * numDimensions, 0.0);
 
-        // Initialize positions
-        srand(seed);   // Seed the random number generator
-        for (int i = 0; i < graph.num_nodes*numDimensions; ++i) {
-            if (graph.flat_specified_positions[i / numDimensions]) {
-                flat_positions[i] = graph.nodes_pos[i / numDimensions][i % numDimensions];
-            } else {
-                flat_positions[i] = (static_cast<double>(rand()) / static_cast<double>(RAND_MAX) - 0.5) * 10.0;
-            }
-        }
-
-        // forces
-
+        int check_convergence=0;
+        bool not_converged=true;
         std::ostringstream jsOutput;
+        while (not_converged&&(check_convergence<11)){
+            not_converged=false;
+            check_convergence++;
+            // Initialize positions
+            srand(seed);   // Seed the random number generator
+            for (int i = 0; i < graph.num_nodes*numDimensions; ++i) {
+                if (graph.flat_specified_positions[i / numDimensions]) {
+                    flat_positions[i] = graph.nodes_pos[i / numDimensions][i % numDimensions];
+                } else {
+                    flat_positions[i] = (static_cast<double>(rand()) / static_cast<double>(RAND_MAX) - 0.5) * 10.0;
+                }
+            }
+
+            // forces
+
+            
 
 
-        for (int iter = 0; iter < iterations; iter++) {
-            double projection_factor = (double(iter)) / (double(iterations));
-            double pf = 1.0 - pow(10., -4. * (projection_factor));
-            pf = (1 - learningRate * pf);
-            double extraF = sqrt(1 - projection_factor) + 1.e-3;
-            double F = learningRate;
-            double deflating_exponent=pow(projection_factor,inflate)+1;
-            double error=0.0;
-            {
-                std::vector<double> delta(numDimensions, 0.0);
-                for (int i = 0; i < graph.num_nodes-1; ++i) {
-                    for (int j = i+1; j < graph.num_nodes; ++j) {
-                        if ((!graph.flat_specified_positions[i]) || (!graph.flat_specified_positions[j])){
-                            double len = graph.flat_distance_matrix[i * graph.num_nodes + j];
-                            if ((len < sINF) && (len > 0)) {
-                                len *= len;//
-                                double d2 = 0.0;
+            for (int iter = 0; iter < iterations; iter++) {
+                double projection_factor = (double(iter)) / (double(iterations));
+                double pf = 1.0 - pow(10., -4. * (projection_factor));
+                pf = (1 - learningRate * pf);
+                double extraF = sqrt(1 - projection_factor) + 1.e-3;
+                double F = learningRate;
+                double deflating_exponent=pow(projection_factor,inflate)+1;
+                double error=0.0;
+                {
+                    std::vector<double> delta(numDimensions, 0.0);
+                    for (int i = 0; i < graph.num_nodes-1; ++i) {
+                        for (int j = i+1; j < graph.num_nodes; ++j) {
+                            if ((!graph.flat_specified_positions[i]) || (!graph.flat_specified_positions[j])){
+                                double len = graph.flat_distance_matrix[i * graph.num_nodes + j];
+                                if ((len < sINF) && (len > 0)) {
+                                    len *= len;//
+                                    double d2 = 0.0;
 
-                                for (int dim = 0; dim < numDimensions; ++dim) {
-                                    delta[dim]=flat_positions[i * numDimensions + dim] - flat_positions[j * numDimensions + dim];
-                                    d2 += pow(delta[dim], 2);
-                                }
-                                double force = 0.5*(d2 - len) / (d2+0.001);
+                                    for (int dim = 0; dim < numDimensions; ++dim) {
+                                        delta[dim]=flat_positions[i * numDimensions + dim] - flat_positions[j * numDimensions + dim];
+                                        d2 += pow(delta[dim], 2);
+                                    }
+                                    double force = 0.5*(d2 - len) / (d2+0.001);
 
-                                if (!graph.flat_immediate_neighbor[i * graph.num_nodes + j]) {
-                                    if (inflateQ)
-                                        force *= extraF/(pow(len,deflating_exponent)+0.001); //(std::max(d2, len));
-                                    else 
-                                        force *= extraF/(len+0.001);
-                                }
-                                else
-                                    error+=force*force;
-                                for (int dim = 0; dim < numDimensions; ++dim) {
-                                    double df = force * delta[dim];
-                                    flat_forces[i * numDimensions + dim] += df;
-                                    flat_forces[j * numDimensions + dim] -= df;
+                                    if (!graph.flat_immediate_neighbor[i * graph.num_nodes + j]) {
+                                        if (inflateQ)
+                                            force *= extraF/(pow(len,deflating_exponent)+0.001); //(std::max(d2, len));
+                                        else 
+                                            force *= extraF/(len+0.001);
+                                    }
+                                    else
+                                        error+=force*force;
+                                    for (int dim = 0; dim < numDimensions; ++dim) {
+                                        double df = force * delta[dim];
+                                        flat_forces[i * numDimensions + dim] += df;
+                                        flat_forces[j * numDimensions + dim] -= df;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            std::cout<<"Iteration = "<<iter<<" Error = "<<sqrt(error/n_edges)<<std::endl;
+                std::cout<<"Iteration = "<<iter<<" Error = "<<sqrt(error/n_edges)<<std::endl;
 
-            n_ave_F=0.0;
-            for (int i = 0; i < graph.num_nodes; ++i) {
-                if (graph.flat_specified_positions[i]){
-                    for (int dim = 0; dim < numDimensions; ++dim) {
-                        ave_forces[dim]+=flat_forces[i * numDimensions + dim];
-                    }
-                    n_ave_F++;
-                }
-            }
-            if (n_ave_F>0){
-                for (int dim = 0; dim < numDimensions; ++dim) {
-                    ave_forces[dim]/=n_ave_F;
-                }
-            }
-            for (int i = 0; i < graph.num_nodes; ++i) {
-                if (!graph.flat_specified_positions[i]){
-                    for (int dim = 0; dim < numDimensions; ++dim) {
-                        flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim];
-                        flat_forces[i * numDimensions + dim]=0;
-                    }
-                } 
-                else {
-                    for (int dim = 0; dim < numDimensions; ++dim) {
-                        flat_positions[i * numDimensions + dim] -= F * ave_forces[dim];
-                        flat_forces[i * numDimensions + dim]=0;
+                n_ave_F=0.0;
+                for (int i = 0; i < graph.num_nodes; ++i) {
+                    if (graph.flat_specified_positions[i]){
+                        for (int dim = 0; dim < numDimensions; ++dim) {
+                            ave_forces[dim]+=flat_forces[i * numDimensions + dim];
+                        }
+                        n_ave_F++;
                     }
                 }
+                if (n_ave_F>0){
+                    for (int dim = 0; dim < numDimensions; ++dim) {
+                        ave_forces[dim]/=n_ave_F;
+                    }
+                }
+                for (int i = 0; i < graph.num_nodes; ++i) {
+                    if (!graph.flat_specified_positions[i]){
+                        for (int dim = 0; dim < numDimensions; ++dim) {
+                            flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim];
+                            flat_forces[i * numDimensions + dim]=0;
+                            double x=flat_positions[i * numDimensions + dim];
+                            if (abs(x)>1.e5 || isnan(x)){
+                                not_converged=true;
+                            }
+                        }
+                    } 
+                    else {
+                        for (int dim = 0; dim < numDimensions; ++dim) {
+                            flat_positions[i * numDimensions + dim] -= F * ave_forces[dim];
+                            flat_forces[i * numDimensions + dim]=0;
+                            double x=flat_positions[i * numDimensions + dim];
+                            if (abs(x)>1.e5 || isnan(x)){
+                                not_converged=true;
+                            }
+                        }
+                    }
+                    
+                }
+                for (int dim = 0; dim < numDimensions; ++dim) 
+                    ave_forces[dim]=0;
+                if (not_converged){
+                    learningRate/=3.;
+                    std::cout<<"Failed to converge. Learning rate reduced to: "<<learningRate<<std::endl;
+                    break;
+                }
             }
-            for (int dim = 0; dim < numDimensions; ++dim) 
-                ave_forces[dim]=0;
         }
-
         for (int i = 0; i < graph.num_nodes; ++i) {
             jsOutput << "{\"name\": \""<<graph.nodes[i]<<"\",\"pos\": \"";
             jsOutput << flat_positions[i * numDimensions];
@@ -436,97 +456,117 @@ extern "C" const char* performLayout(const char* jsInput) {
         std::vector<double> flat_positions(graph.num_nodes * numDimensions, 0.0);
         std::vector<double> flat_forces(graph.num_nodes * numDimensions, 0.0);
 
-        // Initialize positions
-        srand(seed);   // Seed the random number generator
-        for (int i = 0; i < graph.num_nodes*numDimensions; ++i) {
-            if (graph.flat_specified_positions[i / numDimensions]) {
-                flat_positions[i] = graph.nodes_pos[i / numDimensions][i % numDimensions];
-            } else {
-                flat_positions[i] = (static_cast<double>(rand()) / static_cast<double>(RAND_MAX) - 0.5) * 10.0;
-            }
-        }
-
-        // forces
-
+        int check_convergence=0;
+        bool not_converged=true;
         std::ostringstream jsOutput;
+        while (not_converged&&(check_convergence<11)){
+            not_converged=false;
+            check_convergence++;
+            // Initialize positions
+            srand(seed);   // Seed the random number generator
+            for (int i = 0; i < graph.num_nodes*numDimensions; ++i) {
+                if (graph.flat_specified_positions[i / numDimensions]) {
+                    flat_positions[i] = graph.nodes_pos[i / numDimensions][i % numDimensions];
+                } else {
+                    flat_positions[i] = (static_cast<double>(rand()) / static_cast<double>(RAND_MAX) - 0.5) * 10.0;
+                }
+            }
+
+            // forces
+
+            
 
 
-        for (int iter = 0; iter < iterations; iter++) {
-            double projection_factor = (double(iter)) / (double(iterations));
-            double pf = 1.0 - pow(10., -4. * (projection_factor));
-            pf = (1 - learningRate * pf);
-            double extraF = sqrt(1 - projection_factor) + 1.e-3;
-            double F = learningRate;
-            double deflating_exponent=pow(projection_factor,inflate)+1;
-            double error=0.0;
-            {
-                std::vector<double> delta(numDimensions, 0.0);
-                for (int i = 0; i < graph.num_nodes-1; ++i) {
-                    for (int j = i+1; j < graph.num_nodes; ++j) {
-                        if ((!graph.flat_specified_positions[i]) || (!graph.flat_specified_positions[j])){
-                            double len = graph.flat_distance_matrix[i * graph.num_nodes + j];
-                            if ((len < sINF) && (len > 0)) {
-                                len *= len;//
-                                double d2 = 0.0;
+            for (int iter = 0; iter < iterations; iter++) {
+                double projection_factor = (double(iter)) / (double(iterations));
+                double pf = 1.0 - pow(10., -4. * (projection_factor));
+                pf = (1 - learningRate * pf);
+                double extraF = sqrt(1 - projection_factor) + 1.e-3;
+                double F = learningRate;
+                double deflating_exponent=pow(projection_factor,inflate)+1;
+                double error=0.0;
+                {
+                    std::vector<double> delta(numDimensions, 0.0);
+                    for (int i = 0; i < graph.num_nodes-1; ++i) {
+                        for (int j = i+1; j < graph.num_nodes; ++j) {
+                            if ((!graph.flat_specified_positions[i]) || (!graph.flat_specified_positions[j])){
+                                double len = graph.flat_distance_matrix[i * graph.num_nodes + j];
+                                if ((len < sINF) && (len > 0)) {
+                                    len *= len;//
+                                    double d2 = 0.0;
 
-                                for (int dim = 0; dim < numDimensions; ++dim) {
-                                    delta[dim]=flat_positions[i * numDimensions + dim] - flat_positions[j * numDimensions + dim];
-                                    d2 += pow(delta[dim], 2);
-                                }
-                                double force = 0.5*(d2 - len) / (d2+0.001);
+                                    for (int dim = 0; dim < numDimensions; ++dim) {
+                                        delta[dim]=flat_positions[i * numDimensions + dim] - flat_positions[j * numDimensions + dim];
+                                        d2 += pow(delta[dim], 2);
+                                    }
+                                    double force = 0.5*(d2 - len) / (d2+0.001);
 
-                                if (!graph.flat_immediate_neighbor[i * graph.num_nodes + j]) {
-                                    if (inflateQ)
-                                        force *= extraF/(pow(len,deflating_exponent)+0.001); //(std::max(d2, len));
-                                    else 
-                                        force *= extraF/(len+0.001);
-                                }
-                                else
-                                    error+=force*force;
-                                for (int dim = 0; dim < numDimensions; ++dim) {
-                                    double df = force * delta[dim];
-                                    flat_forces[i * numDimensions + dim] += df;
-                                    flat_forces[j * numDimensions + dim] -= df;
+                                    if (!graph.flat_immediate_neighbor[i * graph.num_nodes + j]) {
+                                        if (inflateQ)
+                                            force *= extraF/(pow(len,deflating_exponent)+0.001); //(std::max(d2, len));
+                                        else 
+                                            force *= extraF/(len+0.001);
+                                    }
+                                    else
+                                        error+=force*force;
+                                    for (int dim = 0; dim < numDimensions; ++dim) {
+                                        double df = force * delta[dim];
+                                        flat_forces[i * numDimensions + dim] += df;
+                                        flat_forces[j * numDimensions + dim] -= df;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
-            std::cout<<"Iteration = "<<iter<<" Error = "<<sqrt(error/n_edges)<<std::endl;
+                std::cout<<"Iteration = "<<iter<<" Error = "<<sqrt(error/n_edges)<<std::endl;
 
-            n_ave_F=0.0;
-            for (int i = 0; i < graph.num_nodes; ++i) {
-                if (graph.flat_specified_positions[i]){
-                    for (int dim = 0; dim < numDimensions; ++dim) {
-                        ave_forces[dim]+=flat_forces[i * numDimensions + dim];
-                    }
-                    n_ave_F++;
-                }
-            }
-            if (n_ave_F>0){
-                for (int dim = 0; dim < numDimensions; ++dim) {
-                    ave_forces[dim]/=n_ave_F;
-                }
-            }
-            for (int i = 0; i < graph.num_nodes; ++i) {
-                if (!graph.flat_specified_positions[i]){
-                    for (int dim = 0; dim < numDimensions; ++dim) {
-                        flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim];
-                        flat_forces[i * numDimensions + dim]=0;
-                    }
-                } 
-                else {
-                    for (int dim = 0; dim < numDimensions; ++dim) {
-                        flat_positions[i * numDimensions + dim] -= F * ave_forces[dim];
-                        flat_forces[i * numDimensions + dim]=0;
+                n_ave_F=0.0;
+                for (int i = 0; i < graph.num_nodes; ++i) {
+                    if (graph.flat_specified_positions[i]){
+                        for (int dim = 0; dim < numDimensions; ++dim) {
+                            ave_forces[dim]+=flat_forces[i * numDimensions + dim];
+                        }
+                        n_ave_F++;
                     }
                 }
+                if (n_ave_F>0){
+                    for (int dim = 0; dim < numDimensions; ++dim) {
+                        ave_forces[dim]/=n_ave_F;
+                    }
+                }
+                for (int i = 0; i < graph.num_nodes; ++i) {
+                    if (!graph.flat_specified_positions[i]){
+                        for (int dim = 0; dim < numDimensions; ++dim) {
+                            flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim];
+                            flat_forces[i * numDimensions + dim]=0;
+                            double x=flat_positions[i * numDimensions + dim];
+                            if (abs(x)>1.e5 || isnan(x)){
+                                not_converged=true;
+                            }
+                        }
+                    } 
+                    else {
+                        for (int dim = 0; dim < numDimensions; ++dim) {
+                            flat_positions[i * numDimensions + dim] -= F * ave_forces[dim];
+                            flat_forces[i * numDimensions + dim]=0;
+                            double x=flat_positions[i * numDimensions + dim];
+                            if (abs(x)>1.e5 || isnan(x)){
+                                not_converged=true;
+                            }
+                        }
+                    }
+                    
+                }
+                for (int dim = 0; dim < numDimensions; ++dim) 
+                    ave_forces[dim]=0;
+                if (not_converged){
+                    learningRate/=3.;
+                    std::cout<<"Failed to converge. Learning rate reduced to: "<<learningRate<<std::endl;
+                    break;
+                }
             }
-            for (int dim = 0; dim < numDimensions; ++dim) 
-                ave_forces[dim]=0;
         }
-
         for (int i = 0; i < graph.num_nodes; ++i) {
             jsOutput << "{\"name\": \""<<graph.nodes[i]<<"\",\"pos\": \"";
             jsOutput << flat_positions[i * numDimensions];
