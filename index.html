@@ -1650,7 +1650,7 @@
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh3.js';
+        import Generate3DModel from './mesh4.js';
          //import  "./viz-standalone.js";
          const button = document.getElementById("3dbutton");
          //const textarea = document.getElementById('inputText');
@@ -1889,6 +1889,7 @@
         loadingIcon.style.padding = '10px';
         loadingIcon.style.fontSize = '30pt';
         loadingIcon.style.display = 'none';
+        loadingIcon.style.zIndex = '1000';
 
         // Show the loading icon before running the code
         document.body.appendChild(loadingIcon);

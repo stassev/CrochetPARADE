@@ -559,6 +559,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         label.style.padding = '5px';
         label.style.fontSize = '14pt';
         label.style.width = renderer.domElement.offsetWidth * 0.9 + 'px';
+        label.style.zIndex = '1000';
         return label;
     }
     var requestedInfo = true;
