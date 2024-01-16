@@ -24,9 +24,11 @@
 #include <limits>
 const double INF = std::numeric_limits<double>::infinity();
 
-struct Edge {
-    int source, destination;
-    double weight;
+struct Jacobian {
+    std::string jac1;
+    std::string jac2;
+    std::string jac3;
+    std::string jac4;
 };
 
 struct Graph {
@@ -39,10 +41,11 @@ struct Graph {
     std::vector<std::vector<double>> dist_to_neighbor; 
     std::vector<bool> flat_specified_positions;
     std::vector<std::vector<double>> nodes_pos;  // Added vector for node positions
+    std::vector<std::vector<int>> jacobians;  // Add the jacobians array
 
 
     Graph(int n) : num_nodes(n), nodes(n, ""), N_neighbors(n, 0),
-        dist_to_neighbor(n,std::vector<double>()), flat_specified_positions(n, false) ,nodes_pos(n, std::vector<double>()){
+        dist_to_neighbor(n,std::vector<double>()), flat_specified_positions(n, false) ,nodes_pos(n, std::vector<double>()), jacobians(){
         flat_distance_matrix.resize(n * n, INF);
         flat_immediate_neighbor.resize(n * n, false);
         neighbors.resize(n);
@@ -91,6 +94,8 @@ struct EdgeInfo {
 Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* inflate,double* learningRate,bool*inflateQ,double*separate) {
     std::unordered_map<std::string, int> nodeIndexMap;
     std::vector<EdgeInfo> edges;
+    bool isJacDef = false;  // Add this variable to track Jac definition
+    std::vector<Jacobian> jacs;  // Add a vector to store Jacobians
 
     std::string line;
     bool isNodeDefinition = false;
@@ -120,12 +125,19 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
         if (line.find("\" -- \"") != std::string::npos && line[0] == '"') {
             isEdgeDefinition = true;
             isNodeDefinition = false;
+            isJacDef=false;
+        } else if (line.find("\"---\"") != std::string::npos) {
+            isEdgeDefinition = false;
+            isNodeDefinition = false;
+            isJacDef = true;  // Set isJacDef to true when the line contains ---
         } else if (!line.empty() && line[0] == '"') {
             isNodeDefinition = true;
             isEdgeDefinition = false;
+            isJacDef=false;
         } else {
             isNodeDefinition = false;
             isEdgeDefinition = false;
+            isJacDef=false;
             {
                 size_t found = line.find("start");
                 if (found != std::string::npos) {
@@ -205,6 +217,18 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
             }
         }
 
+        if (isJacDef) {
+            std::smatch matchResult;
+            if (std::regex_search(line, matchResult, std::regex("\"([^\"]+)\"\\s*---\\s*\"([^\"]+)\"\\s*---\\s*\"([^\"]+)\"\\s*---\\s*\"([^\"]+)\""))) {
+                Jacobian jac;
+                jac.jac1 = matchResult[1];
+                jac.jac2 = matchResult[2];
+                jac.jac3 = matchResult[3];
+                jac.jac4 = matchResult[4];
+                jacs.push_back(jac);  // Push the extracted nodes into the jacs vector
+            }
+        }
+
         prevPos = pos + 1;
     }
 
@@ -231,6 +255,18 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
             std::cerr << "Error: Node not found for edge: " << edge.source << " -- " << edge.target << std::endl;
         }
     }
+
+    // Loop over jacs and find the indices of the nodes
+    for (const auto& jac : jacs) {
+        std::vector<int> indices =  {
+            nodeIndexMap[jac.jac1],
+            nodeIndexMap[jac.jac2],
+            nodeIndexMap[jac.jac3],
+            nodeIndexMap[jac.jac4]
+        };
+        graph.jacobians.push_back(indices);  // Copy the indices into the graph.jacobians array
+    }
+
 
     return graph;
 }
@@ -520,6 +556,40 @@ extern "C" const char* performLayout(const char* jsInput) {
                     }
                 }
                 std::cout<<"Iteration = "<<iter<<" Error = "<<sqrt(error/n_edges)<<std::endl;
+
+                std::array<double, 3> vx, vy, vz, vn;  // Arrays to store the vectors
+                double dot, norm;  
+                for (const auto& item : graph.jacobians) {
+                    // Extract the coordinates of the 4 points using the node indices
+                    int i1 = item[0];
+                    int i2 = item[1];
+                    int i3 = item[2];
+                    int i4 = item[3];
+                    for (int dim = 0; dim < numDimensions; ++dim) {
+                        vx[dim]=flat_positions[i3*numDimensions+dim]-flat_positions[i1*numDimensions+dim];
+                        vy[dim]=-flat_positions[i3*numDimensions+dim]+flat_positions[i2*numDimensions+dim];
+                        vz[dim]=flat_positions[i4*numDimensions+dim]-flat_positions[i3*numDimensions+dim];
+                    }
+                    vn[0]=vx[1]*vy[2]-vx[2]*vy[1];
+                    vn[1]=-vx[0]*vy[2]+vx[2]*vy[0];
+                    vn[2]=vx[0]*vy[1]-vx[1]*vy[0];
+                    norm=sqrt(vn[0]*vn[0]+vn[1]*vn[1]+vn[2]*vn[2])+1.e-7;
+                    vn[0]/=norm;
+                    vn[1]/=norm;
+                    vn[2]/=norm;
+                    dot=vz[0]*vn[0]+vz[1]*vn[1]+vz[2]*vn[2];
+                    //if (dot<=0){
+                        for (int dim = 0; dim < numDimensions; ++dim){
+                            flat_forces[i4*numDimensions+dim]+=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim];
+                            flat_forces[i1*numDimensions+dim]-=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim]/3.;
+                            flat_forces[i2*numDimensions+dim]-=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim]/3.;
+                            flat_forces[i3*numDimensions+dim]-=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim]/3.;
+                        }
+                    //}
+                }
+
+
+
 
                 n_ave_F=0.0;
                 for (int i = 0; i < graph.num_nodes; ++i) {

@@ -17,6 +17,41 @@
 var EXTRA_DOTS = '';
 var backgroundColor = '';
 
+var textBLFLtest = `10ch,turn
+ch,sk,9sc,turn
+ch,sk,9scbl,turn
+ch,sk,9scbl,turn
+ch,sk,9scfl,turn
+DOT:iterations=2000
+DOT: learning_rate=0.05`;
+
+var textMosaic = `#To see the mosaic pattern, press 'c' to show the colors.
+#Then increase the yarn thickness by pressing 'ctrl+=' 3 times, 
+#which will double the thickness.
+
+#Define a dropped double-crochet that is attached to the front loop.
+#The 2 in 2B below defines the attachment depth level (see the Manual).
+DEF: drop_dc=&drop_dc^A(drop_dc):2B[front]~A-B::!-1-A;B-2.1-A
+
+COLOR:white
+33ch
+start_at@[-1,0],ch,32sc
+start_at@[-1,1],ch,32sc
+COLOR:green,start_at@[-1,1],ch,[drop_dc,5scbl]*5,drop_dc,scbl
+COLOR:white,start_at@[-1,1],ch,scbl,[drop_dc,5scbl]*5,drop_dc
+COLOR:green,start_at@[-1,1],ch,2scbl,[drop_dc,5scbl]*5
+COLOR:white,start_at@[-1,1],ch,3scbl,[drop_dc,4scbl,>,scbl]*5
+COLOR:green,start_at@[-1,1],ch,4scbl,[drop_dc,3scbl,>,2scbl]*5
+COLOR:white,start_at@[-1,1],ch,5scbl,[drop_dc,2scbl,>,3scbl]*5
+COLOR:green,start_at@[-1,1],ch,[drop_dc,5scbl]*5,drop_dc,scbl
+COLOR:white,start_at@[-1,1],ch,[drop_dc,5scbl]*5,drop_dc,scbl
+COLOR:green,start_at@[-1,1],ch,scbl,[drop_dc,5scbl]*5,drop_dc
+COLOR:white,start_at@[-1,1],ch,2scbl,[drop_dc,5scbl]*5
+COLOR:green,start_at@[-1,1],ch,3scbl,[drop_dc,4scbl,>,scbl]*5
+COLOR:white,start_at@[-1,1],ch,4scbl,[drop_dc,3scbl,>,2scbl]*5
+COLOR:green,start_at@[-1,1],ch,5scbl,[drop_dc,2scbl,>,3scbl]*5
+DOT: start=3`;
+
 var textLacyHat = `# Lacy hat showcase
 # Own design, incorporating a modified version of the flower in the "Irish crochet flower 1" showcase.
 # Needs more work -- possibly make the dome larger, and close up the largest holes on the side. But
@@ -358,11 +393,10 @@ ch,[ch,2sk,<,33hdc,ss@[ch:%,0]
 ch,2sk,33hdc.R[],ss@[ch:%,0]
 # Cuff:
 COLOR: Crimson
-DEF: scblo=Copy(sc) # sc in back loops only
 ch.X,7ch,turn
-$k=0$,sk,7scblo,$k++$,ss@R[][k++],turn
-(sk,7scblo,ch,turn
-sk,7scblo,$k++$,ss@R[][k++],turn
+$k=0$,sk,7scbl,$k++$,ss@R[][k++],turn
+(sk,7scbl,ch,turn
+sk,7scbl,$k++$,ss@R[][k++],turn
 )*16
 #Sewing together
 DEF: ss2togA=ss1@[@+1],ss0@1[@1+1]
@@ -379,7 +413,6 @@ DOT: start=2
 
 var textBootie = `#Baby booties showcase
 COLOR: Violet
-DEF: scbl = Copy(sc,1) #sc in back loops only
 9ch,turn
 sk,(hdc2inc,3hdc,3dc,dc5inc).R,turn
 (dc@[0,1],2dc,3hdc,hdc2inc).R,ss@[0,-1]
@@ -724,7 +757,21 @@ var Dictionary = {
     dc3pc: '&dc3pc^A(dc3pc):B~A-B:C;D(dc);E;F(dc);G;H(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;!-0.8-D;D-0.8-F;F-0.8-H;!-0.33-D;D-0.33-H;H-0.33-A',
     dc4pc: '&dc4pc^A(dc4pc):B~A-B:C;D(dc);E;F(dc);G;H(dc);I;J(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;B-1.2-I;I-1.2-J;!-0.8-D;D-0.8-F;F-0.8-H;H-0.8-J;!-0.33-D;D-0.33-J;J-0.33-A',
     dc5pc: '&dc5pc^A(dc5pc):B~A-B:C;D(dc);E;F(dc);G;H(dc);I;J(dc);K;L(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;B-1.2-I;I-1.2-J;B-1.2-K;K-1.2-L;!-0.8-D;D-0.8-F;F-0.8-H;H-0.8-J;J-0.8-L;!-0.33-D;D-0.33-L;L-0.33-A',
-    picot3: '&picot^A(ch);B(ch);C(ch);D(ss):~::!-1-A;A-1-B;B-1-C;C-1-D;!-0.4-D'
+    picot3: '&picot^A(ch);B(ch);C(ch);D(ss):~::!-1-A;A-1-B;B-1-C;C-1-D;!-0.4-D',
+    scbl: '&scbl^A(scbl):B[back]~A-B::!-1-A;B-1-A',
+    ssbl: '&ssbl^A(ssbl):B[back]~A-B::!-1-A;B-0.4-A',
+    dcbl: '&dcbl^A(dcbl):B[back]~A-B::!-1-A;B-2-A',
+    hdcbl: '&hdcbl^A(hdcbl):B[back]~A-B::!-1-A;B-1.5-A',
+    trbl: '&trbl^A(trbl):B[back]~A-B::!-1-A;B-2.5-A',
+    dtrbl: '&dtrbl^A(dtrbl):B[back]~A-B::!-1-A;B-3-A',
+    trtrbl: '&trtrbl^A(trtrbl):B[back]~A-B::!-1-A;B-3.5-A',
+    scfl: '&scfl^A(scfl):B[front]~A-B::!-1-A;B-1-A',
+    ssfl: '&ssfl^A(ssfl):B[front]~A-B::!-1-A;B-0.4-A',
+    dcfl: '&dcfl^A(dcfl):B[front]~A-B::!-1-A;B-2-A',
+    hdcfl: '&hdcfl^A(hdcfl):B[front]~A-B::!-1-A;B-1.5-A',
+    trfl: '&trfl^A(trfl):B[front]~A-B::!-1-A;B-2.5-A',
+    dtrfl: '&dtrfl^A(dtrfl):B[front]~A-B::!-1-A;B-3-A',
+    trtrfl: '&trtrfl^A(trtrfl):B[front]~A-B::!-1-A;B-3.5-A'
 };
 
 var OriginalDictionary = JSON.parse(JSON.stringify(Dictionary));
@@ -1770,7 +1817,8 @@ function parse_StitchCode(r, id, id_attach, Stitches, turns) {
     if ((k == 1) && (Top.trim().length > 0))
         throw new Error('Top stitch unparseable. Type of stitch needs to be specified for all top nodes in parenthesis: ' + stitch);
 
-    const regex = /(\d+)?([A-Za-z_0-9]+)/g;
+    //const regex = /(\d+)?([A-Za-z_0-9]+)/g;
+    const regex = /(\d+)?([A-Za-z_0-9]+)\[*([back|front]*)\]*/g;
     const bottomNodesNames = [];
 
     var bottomNodes = {};
@@ -1794,6 +1842,12 @@ function parse_StitchCode(r, id, id_attach, Stitches, turns) {
         bottomNodes[name] = {};
         bottomNodes[name]['attachment_depth'] = number;
         bottomNodes[name]['id'] = id_attach + k * sign;
+        if (match[3] === 'front')
+            bottomNodes[name]['jacobian'] = -1;
+        else if (match[3] === 'back')
+            bottomNodes[name]['jacobian'] = 1;
+        else if (match[3])
+            throw new Error('Bottom node loop attachment specification can be either "[front]" or "[back]": ' + stitch);
         k++;
     }
 
@@ -2971,7 +3025,7 @@ function findPosByNameFromJson(json, name) {
 function export_to_dot(Stitches, json) {
     //console.log(json)
     //var json = null
-
+    var JACS = [];
     if (json !== '') {
         //json = JSON.parse(json0)
         for (var o of json.objects) {
@@ -3088,6 +3142,8 @@ function export_to_dot(Stitches, json) {
         for (var c of Object.keys(s.connections)) {
             //console.log(s, c)
             let len = s.connections[c];
+            var doJacobian = false;
+            var bOrig;
             let hidden = false;
             if (c[0] === '*') {
                 hidden = true;
@@ -3124,6 +3180,7 @@ function export_to_dot(Stitches, json) {
             } else if (n0 in s.bottomNodes) {
                 let buid = -1;
                 let b = s.bottomNodes[n0];
+                bOrig = s.bottomNodes[n0];
                 let depth = b.attachment_depth - 1;
                 while (depth > 0) {
                     let bS = find_stitch_by_id(Stitches, b.id);
@@ -3194,6 +3251,9 @@ function export_to_dot(Stitches, json) {
                 } else {
                     let x = find_stitch_by_id(Stitches, b.id)[0];
                     pos0 = String([x.nrow, b.id - startID_row[x.nrow]]) + '|' + x.uid;
+                    if ('jacobian' in bOrig) {
+                        doJacobian = true;
+                    }
                 }
             } else throw new Error('Cannot find node ' + n0 + ' in the connections of stitch: ' + JSON.stringify(s));
 
@@ -3234,7 +3294,28 @@ function export_to_dot(Stitches, json) {
                 pos1 = String([x.nrow, b.id - startID_row[x.nrow]]) + '|' + x.uid;
             } else throw new Error('Cannot find node ' + n1 + ' in the connections of stitch: ' + s);
 
-            //if (!simple) {
+
+            if (doJacobian) {
+                let name = '"' + pos1 + '_jacobian' + '"';
+                if (json) {
+                    let POS = findPosByNameFromJson(json, name);
+                    if (POS.length > 0) {
+                        text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0","pos":"' + POS + '!"}\n';
+                        textS += name + ' {' + POS + '}\n';
+                    } else {
+                        text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0"}\n';
+                        textS += name + '\n';
+                    }
+                } else {
+                    text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0"}\n';
+                    textS += name + '\n';
+                }
+                text += ',{"type":"edge","tail":"' + pos0 + '","head":' + name + ',"penwidth":"4","color":"red","len":"' + 0.2 + '","label":"' + s['Color'] + '"}\n';
+                textS += '"' + pos0 + '" -- ' + name + ' ' + 0.2 + '\n';
+                JACS.push([pos0, bOrig.jacobian, '"' + pos0 + '"---' + name, name.slice(1, -1)]);
+                pos0 = pos1 + '_jacobian';
+            }
+
             if (hidden) {
                 text += ',{"type":"edge","tail":"' + pos0 + '","head":"' + pos1 + '","penwidth":"1","color":"gray","len":"' + len + '","label":"' + s['Color'] + '"}\n';
             } else if ((!(pos1 in BlueConnectionEstablished)) && ((((n0 === '!') || ((s.topNodesNames.length > 0) && s.topNodesNames.includes(n0))) && ((n1 === '!') || ((s.topNodesNames.length > 0) && s.topNodesNames.includes(n1)))))) {
@@ -3248,17 +3329,56 @@ function export_to_dot(Stitches, json) {
         }
     }
     //if (simple)
-    textS += EXTRA_DOTS;
 
-    //if (!simple) {
-    text += ']}';
+
     text = text.replace('"elements":[,{"', '"elements":[{"');
-    //}
 
+    text += ']}';
+    if (JACS.length > 0) {
+        console.log(text);
+        let j = JSON.parse(text);
+        console.log(j);
+        for (let jac of JACS) {
+            let i3 = jac[0];
+            let value = jac[1];
+            let jtext = jac[2];
+            let nodes = findConnectedNodeNames(j, i3);
+            if (nodes.blue.length !== 1)
+                throw new Error('More than one blue edge connected to ' + i3);
+            if (nodes.red.length < 1)
+                console.log('Requested back/front loop attachment, but no red edges connected to ' + i3);
+            else {
+                if (value == 1)
+                    textS += '"' + nodes.blue[0] + '"---"' + nodes.red.slice(-1) + '"---' + jtext + '\n';
+                else if (value == -1)
+                    textS += '"' + nodes.red.slice(-1) + '"---"' + nodes.blue[0] + '"---' + jtext + '\n';
+                else
+                    throw new Error('Not sure what to do with a Jacobian whose values is not +/-1: ' + jac);
+            }
+        }
+    }
+    textS += EXTRA_DOTS;
     DEBUG += '=======After export to dot; simple=false:=======\n' + text + '\n' + '=======After export to dot; simple=true:=======\n' + textS + '\n';
     return [text, textS];
 }
 
+
+function findConnectedNodeNames(json, nodeName) {
+    const connectedNodes = {
+        red: [],
+        blue: [],
+        gray: []
+    };
+    json.elements.forEach(element => {
+        if (element.type === 'edge' && element.head === nodeName) {
+            const connectedNode = json.elements.find(e => e.name === element.tail);
+            if (connectedNode) {
+                connectedNodes[element.color].push(connectedNode.name);
+            }
+        }
+    });
+    return connectedNodes;
+}
 
 function processText(text, json0) {
     text = text.replace(/\t/g, '    ').replace(/\r/g, '');

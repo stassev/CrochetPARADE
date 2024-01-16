@@ -1128,8 +1128,17 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         //r-(r.hatrC)hatC
         var k = -1;
         graphData.objects.forEach(node => {
-            k++;
-            if ((node.label.split('|')[0] !== "hidden") && (k <= HIDE)) {
+            let name = node.name.split('|')[0];
+            let vis = false;
+            for (let j = 0; j < NODES.length; j++) {
+                if (name === NODES[j].id0) {
+                    // Match found
+                    vis = NODES[j].visible;
+                    break;
+                }
+            }
+
+            if (vis && (node.label.split('|')[0] !== "hidden")) {
                 var x, y;
                 if (Dimen == 2) {
                     x = (node.pos[0] + 1) * size / 2.0;
@@ -1181,9 +1190,18 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             }
 
 
-            if ((str.objects.findIndex((obj) => obj._gvid === edge.head) <= HIDE)
-                //    &&                    (str.objects.findIndex((obj) => obj._gvid === edge.tail) <= HIDE)
-            ) {
+
+            let name = str.objects[str.objects.findIndex((obj) => obj._gvid === edge.head)].name.split('|')[0];
+            let vis = false;
+            for (let j = 0; j < NODES.length; j++) {
+                if (name === NODES[j].id0) {
+                    // Match found
+                    vis = NODES[j].visible;
+                    break;
+                }
+            }
+
+            if (vis) {
                 if (edge.gray == 1)
                     edges.line((x0 + 1) * size / 2.0, (y0 + 1) * size / 2.0, (x1 + 1) * size / 2.0, (y1 + 1) * size / 2.0).stroke({
                         color: 'gray',

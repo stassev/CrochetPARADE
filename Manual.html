@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Jan 10, 2024.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Jan 16, 2024.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -483,6 +483,13 @@ sk,ch,9sc
         is an integer denoting the number of stitches of the increase or decrease. For example: <code>sc2inc</code>
         corresponds to two single-crochet stitches worked into the same stitch; and <code>sc2tog</code> implies
         that one is doing a decrease by combining two single-crochet stitches.
+    </p>
+    <p>Stitching in the front and back loops is done by adding 'fl' or 'bl' at the end of a stitch name, such as
+        <code>scbl</code> (single crochet in the back loop), <code>dcfl</code> (double crochet in the front loop), etc. By default,
+        only the basic stitches (ss, sc, hdc, dc, tr, dtr,trtr) are supported with the 'bl' and 'fl' options.
+        Also, one cannot combine 'fl/bl' with 'Ninc/Ntog'.
+        If you want to add the 'fl/bl' option to other stitches, then
+        one should use a raw stitch definition (see "Raw stitch definitions and grammar").
     </p>
     <p>Stitches can be repeated by multiplying them with an integer, say
         <code>10*sc</code> or <code>10 sc</code> or <code>10sc</code> would
@@ -940,6 +947,11 @@ DEF: p=3ch,ss@5[%,-4]
         when no number is specified), where <code>C</code> has an attachment
         depth of 2, meaning Stitch A attaches to the attachment point of
         <code>C</code>, and not to <code>C</code> directly.</p>
+    <p>A bottom node followed by <code>[front]</code> or <code>[back]</code>
+        specifies that the stitch is worked in the front/back loop. For example, the
+        default definition of double crochet in the back loop is
+        <code>&dcbl^A(dcbl):B[back]~A-B::!-1-A;B-2-A</code>.
+    </p>
     <p>The order in which the bottom nodes are written specifies the
         attachment order of the current stitch to the top nodes of the previous
         stitches.</p>
@@ -1015,12 +1027,9 @@ DEF: p=3ch,ss@5[%,-4]
     <h3 id="limitations">Limitations</h3>
     <ul>
         <li>
-            <p>If one wants to add a stitch in the back/front loop, one can add
-                it to the description using a comment,
-                e.g. <code>\do this in the back loops\</code>.It would be nice to
-                introduce more texture to the stitches but that would be at the expense
-                of introducing many more nodes which would slow down any computations
-                significantly.</p>
+            <p>Crocheting in the front and back loops is supported by adding 'bl' or 'fl' after standard crochet symbols such as 'scbl', 'dcbl', etc. or by
+                using the raw stitch grammar as explained previously.
+                However, the implementation is not perfect. Experiment with different starting seed values, e.g. <code>DOT: start=12 </code> if the stitches do not look quite right. </p>
         </li>
         <li>
             <p>If you want to attach stitches in the front/back post, the above

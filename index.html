@@ -523,19 +523,26 @@
         </div>
     </div>
     <div id="announcement" style="background-color:rgb(253, 79, 79);color:#ffffff; font-size: 14pt; position: relative;">
-        <span style="cursor: pointer; position: absolute; top: 5px; right: 5px;font-size:20pt;font-weight:600" onclick="closeAnnouncement()">×</span>
+        <span style="cursor: pointer; position: absolute; top: 5px; right: 5px;font-size:20pt;font-weight:600" onclick='closeAnnouncement("announcement")'>×</span>
         <b>The platform has been tested with the latest Chrome, Brave and Firefox browsers. <br>
             Some Safari versions have issues loading it correctly.</b>
     </div>
+    <div style="height:2pt"></div>
+    <div id="announcement2" style="background-color:rgb(253, 79, 79);color:#ffffff; font-size: 14pt; position: relative;height:20pt">
+        <span style="cursor: pointer; position: absolute; top: -1px; right: 5px;font-size:20pt;font-weight:600" onclick='closeAnnouncement("announcement2")'>×</span>
+        <b>CrochetPARADE was updated to support crocheting in the back and front loops. See the Mosaic crochet showcase as well as the manual.</b>
+    </div>
 
     <script>
-        function closeAnnouncement() {
-            var announcement = document.getElementById("announcement");
+        function closeAnnouncement(a) {
+            var announcement = document.getElementById(a);
             announcement.style.display = "none";
         }
     </script>
 
-    <script src="./parse2.js"></script>
+
+
+    <script src="./parse4.js"></script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
 
@@ -860,7 +867,9 @@
                 ['Mixed styles: lacy hat (~12sec)', textLacyHat, 3],
                 ['Filet crochet: logo (~45sec)', textFilet, 3],
                 ['Irish crochet: doily (~5min!)', textDoily, 2],
-                ['Simple flower with post stitches (~1sec)', textFlower3, 3]
+                ['Simple flower with post stitches (~1sec)', textFlower3, 3],
+                ['Mosaic crochet (~3sec)', textMosaic, 3]
+
             ];
 
             var select = document.getElementById('examples');
@@ -1593,7 +1602,7 @@
             }
         };
     </script>
-    <script async src="./graph1.js"></script>
+    <script async src="./graph2.js"></script>
     <script>
         function transformJsonWithPos(inputJson, inputJson2) {
             const data = JSON.parse(inputJson);
@@ -1650,7 +1659,7 @@
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh4.js';
+        import Generate3DModel from './mesh5.js';
          //import  "./viz-standalone.js";
          const button = document.getElementById("3dbutton");
          //const textarea = document.getElementById('inputText');
