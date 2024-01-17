@@ -3296,7 +3296,7 @@ function export_to_dot(Stitches, json) {
 
 
             if (doJacobian) {
-                let name = '"' + pos1 + '_jacobian' + '"';
+                let name = '"' + pos1 + '_jacobian' + bOrig.jacobian + '"';
                 if (json) {
                     let POS = findPosByNameFromJson(json, name);
                     if (POS.length > 0) {
@@ -3313,7 +3313,7 @@ function export_to_dot(Stitches, json) {
                 text += ',{"type":"edge","tail":"' + pos0 + '","head":' + name + ',"penwidth":"4","color":"red","len":"' + 0.2 + '","label":"' + s['Color'] + '"}\n';
                 textS += '"' + pos0 + '" -- ' + name + ' ' + 0.2 + '\n';
                 JACS.push([pos0, bOrig.jacobian, '"' + pos0 + '"---' + name, name.slice(1, -1)]);
-                pos0 = pos1 + '_jacobian';
+                pos0 = pos1 + '_jacobian' + bOrig.jacobian;
             }
 
             if (hidden) {

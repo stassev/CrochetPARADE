@@ -557,36 +557,6 @@ extern "C" const char* performLayout(const char* jsInput) {
                 }
                 std::cout<<"Iteration = "<<iter<<" Error = "<<sqrt(error/n_edges)<<std::endl;
 
-                std::array<double, 3> vx, vy, vz, vn;  // Arrays to store the vectors
-                double dot, norm;  
-                for (const auto& item : graph.jacobians) {
-                    // Extract the coordinates of the 4 points using the node indices
-                    int i1 = item[0];
-                    int i2 = item[1];
-                    int i3 = item[2];
-                    int i4 = item[3];
-                    for (int dim = 0; dim < numDimensions; ++dim) {
-                        vx[dim]=flat_positions[i3*numDimensions+dim]-flat_positions[i1*numDimensions+dim];
-                        vy[dim]=-flat_positions[i3*numDimensions+dim]+flat_positions[i2*numDimensions+dim];
-                        vz[dim]=flat_positions[i4*numDimensions+dim]-flat_positions[i3*numDimensions+dim];
-                    }
-                    vn[0]=vx[1]*vy[2]-vx[2]*vy[1];
-                    vn[1]=-vx[0]*vy[2]+vx[2]*vy[0];
-                    vn[2]=vx[0]*vy[1]-vx[1]*vy[0];
-                    norm=sqrt(vn[0]*vn[0]+vn[1]*vn[1]+vn[2]*vn[2])+1.e-7;
-                    vn[0]/=norm;
-                    vn[1]/=norm;
-                    vn[2]/=norm;
-                    dot=vz[0]*vn[0]+vz[1]*vn[1]+vz[2]*vn[2];
-                    //if (dot<=0){
-                        for (int dim = 0; dim < numDimensions; ++dim){
-                            flat_forces[i4*numDimensions+dim]+=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim];
-                            flat_forces[i1*numDimensions+dim]-=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim]/3.;
-                            flat_forces[i2*numDimensions+dim]-=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim]/3.;
-                            flat_forces[i3*numDimensions+dim]-=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim]/3.;
-                        }
-                    //}
-                }
 
 
 
@@ -635,6 +605,45 @@ extern "C" const char* performLayout(const char* jsInput) {
                     std::cout<<"Failed to converge. Learning rate reduced to: "<<learningRate<<std::endl;
                     break;
                 }
+
+
+
+                std::array<double, 3> vx, vy,  vn;  // Arrays to store the vectors
+                double norm;  
+                for (const auto& item : graph.jacobians) {
+                    // Extract the coordinates of the 4 points using the node indices
+                    int i1 = item[0];
+                    int i2 = item[1];
+                    int i3 = item[2];
+                    int i4 = item[3];
+                    for (int dim = 0; dim < numDimensions; ++dim) {
+                        vx[dim]=flat_positions[i3*numDimensions+dim]-flat_positions[i1*numDimensions+dim];
+                        vy[dim]=-flat_positions[i3*numDimensions+dim]+flat_positions[i2*numDimensions+dim];
+                        //vz[dim]=flat_positions[i4*numDimensions+dim]-flat_positions[i3*numDimensions+dim];
+                    }
+                    vn[0]=vx[1]*vy[2]-vx[2]*vy[1];
+                    vn[1]=-vx[0]*vy[2]+vx[2]*vy[0];
+                    vn[2]=vx[0]*vy[1]-vx[1]*vy[0];
+                    norm=sqrt(vn[0]*vn[0]+vn[1]*vn[1]+vn[2]*vn[2])+1.e-7;
+                    vn[0]/=norm;
+                    vn[1]/=norm;
+                    vn[2]/=norm;
+                    //dot=vz[0]*vn[0]+vz[1]*vn[1]+vz[2]*vn[2];
+                    //if (dot<=0){
+                        for (int dim = 0; dim < numDimensions; ++dim){
+                            flat_positions[i4*numDimensions+dim]=(flat_positions[i3*numDimensions+dim]+flat_positions[i4*numDimensions+dim])/2.+0.2*vn[dim]/2.;
+                            //flat_positions[i1*numDimensions+dim]-=0.2*vn[dim]/3.;
+                            //flat_positions[i2*numDimensions+dim]-=0.2*vn[dim]/3.;
+                            flat_positions[i3*numDimensions+dim]=flat_positions[i4*numDimensions+dim]-0.2*vn[dim];
+                            //flat_forces[i4*numDimensions+dim]+=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim];
+                            //flat_forces[i1*numDimensions+dim]-=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim]/3.;
+                            //flat_forces[i2*numDimensions+dim]-=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim]/3.;
+                            //flat_forces[i3*numDimensions+dim]-=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim]/3.;
+                        }
+                    //}
+                }
+
+
             }
         }
         for (int i = 0; i < graph.num_nodes; ++i) {
