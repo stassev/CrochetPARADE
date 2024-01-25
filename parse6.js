@@ -25,7 +25,8 @@ ch,sk,9scfl,turn
 DOT:iterations=2000
 DOT: learning_rate=0.05`;
 
-var textMosaic = `#To see the mosaic pattern, press 'c' to show the colors.
+var textMosaic = `#To see the mosaic pattern, first click on the 3D model.
+#Then press 'c' to show the colors.
 #Then increase the yarn thickness by pressing 'ctrl+=' 3 times, 
 #which will double the thickness.
 
