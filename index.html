@@ -47,7 +47,7 @@
             font-size: 14pt;
         }
 
-
+     
 
         .button-bar {
             display: flex;
@@ -62,7 +62,7 @@
         }
 
 
-        .button,
+        .button,.button1,
         .label {
             flex: 1;
             align-self: stretch;
@@ -91,6 +91,24 @@
             margin: 2px;
             /* Remove default margin */
         }
+
+        .button1 { outline: none;
+            /* Remove the outline */
+
+            font-size: 14pt;
+            background-color: #fbce1a;
+            border: none;
+            color: rgb(0, 0, 0);
+            padding: 5px 10px;
+            /* Smaller padding */
+            text-align: left;
+            text-decoration: none;
+            display: inline-block;
+            /* Smaller font size */
+            border-radius: 2px;
+            cursor: pointer;
+            margin: 2px;
+            /* Remove default margin */}
 
         .spacer {
             margin-right: 3px;
@@ -783,8 +801,8 @@
             </div>
         </div>
 
-        <script src="https://liberapay.com/CrochetPARADE/widgets/button.js"></script>
-        <noscript><a href="https://liberapay.com/CrochetPARADE/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript>
+        <button class="button1" onclick="window.open('https://donate.stripe.com/eVa6pK4XQ5Qg6vmbII', '_blank')">Leave a tip</button>
+        
 
     </div>
 
