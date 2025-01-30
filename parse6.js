@@ -608,7 +608,7 @@ BACKGROUND: rgb(126,8,80)
 DEF: hdc=Copy(hdc,2)
 DEF: dc=Copy(dc,3)
 DEF: tr=Copy(tr,4)
-DEF: long_tr=Copy(trtr,9)
+DEF: long_tr=Copy(longtr,9)
 DEF: trtr=Copy(trtr,8)
 DEF: some_space=&some space^:B~::
 COLOR:white
@@ -644,6 +644,39 @@ $c=0,c7=0,c8=0$,{sc@Ch[c++],(2sc@Ch[c++])*5,4ch.C10b[c7]+!,6ch.C10a[c7++]+!,turn
 @[-1,-1],ss@[sc:@+4],ch,turn
 [5sc,5ch,ss@1[%,-6],5sc,ss]@C82[c8-1]~,ch,[4sc,ss]@C10b[c7-1]~,ch,[2sc@Ch[c++]]*2,sc@Ch[c++]}*36,ss@Z7
 `;
+
+var textSwatch2 = `#Swatch showcase
+21ch,turn
+sk,20ss,turn
+ch,20ss,turn
+ch,20ss,turn
+ch,sk,19sc,turn
+ch,sk,19rsc,turn
+ch,sk,19rscfl,turn
+ch,sk,19rscbl,turn
+ch,sk,19scbl,turn
+ch,sk,19scfl,turn
+2ch,sk,19hdcfl,turn
+2ch,sk,19hdcbl,turn
+2ch,sk,19hdc,turn
+3ch,sk,19dcfl,turn
+3ch,sk,19dcbl,turn
+3ch,sk,19trfl,turn
+3ch,sk,19trbl,turn
+3ch,sk,19dtrfl,turn
+3ch,sk,19dtrbl,turn
+3ch,sk,19trtrfl,turn
+3ch,sk,19trtrbl,turn
+ch,sk,18fpsc,sc,turn
+ch,sk,18bpsc,sc,turn
+2ch,sk,18fphdc,hdc,turn
+2ch,sk,18bphdc,hdc,turn
+2ch,sk,18fpdc,dc,turn
+3ch,sk,18bpdc,dc,turn
+3ch,sk,18fptr,tr,turn
+3ch,sk,18bptr,tr,turn
+
+DOT: start=2`;
 
 var textSnowman = `#Simple amigurumi showcase
 COLOR:white
@@ -743,23 +776,31 @@ var Dictionary = {
     ch: '&ch^A(ch):~::!-1-A',
     ss: '&ss^A(ss):B~A-B::!-1-A;B-0.4-A',
     sc: '&sc^A(sc):B~A-B::!-1-A;B-1-A',
+    fpsc: '&fpsc^A(fpsc):B~A-B::!-1-A;B-1-A',
+    bpsc: '&bpsc^A(bpsc):B~A-B::!-1-A;B-1-A',
+    rsc: '&rsc^A(rsc):B~A-B::!-1-A;B-1-A',
     hdc: '&hdc^A(hdc):B~A-B::!-1-A;B-1.5-A',
+    bphdc: '&bphdc^A(bphdc):B~A-B::!-1-A;B-1.5-A',
+    fphdc: '&fphdc^A(fphdc):B~A-B::!-1-A;B-1.5-A',
     dc: '&dc^A(dc):B~A-B::!-1-A;B-2-A',
     bpdc: '&bpdc^A(bpdc):B~A-B::!-1-A;B-1.5-A',
     fpdc: '&fpdc^A(fpdc):B~A-B::!-1-A;B-1.5-A',
+    bptr: '&bptr^A(bptr):B~A-B::!-1-A;B-2.5-A',
+    fptr: '&fptr^A(fptr):B~A-B::!-1-A;B-2.5-A',
     tr: '&tr^A(tr):B~A-B::!-1-A;B-2.5-A',
     dtr: '&dtr^A(dtr):B~A-B::!-1-A;B-3-A',
     trtr: '&trtr^A(trtr):B~A-B::!-1-A;B-3.5-A',
-    sc3bobble: '&a sc bobble of 3 stitches^A(sc):B~A-B:C;D;E;F;G;H:!-1-A;B-0.4-C;C-0.4-D;D-0.4-A;B-0.4-E;E-0.4-F;F-0.4-A;B-0.4-G;G-0.4-H;H-0.4-A',
-    dc3bobble: '&a dc bobble of 3 stitches^A(dc):B~A-B:C;D;E;F;G;H:!-1-A;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A',
-    dc4bobble: '&a dc bobble of 4 stitches^A(dc):B~A-B:C;D;E;F;G;H;I;J:!-1-A;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A;B-0.7-I;I-0.8-J;J-0.7-A',
-    dc5bobble: '&a dc bobble of 5 stitches^A(dc):B~A-B:C;D;E;F;G;H;I;J;K;L:!-1-A;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A;B-0.7-I;I-0.8-J;J-0.7-A;B-0.7-K;K-0.8-L;L-0.7-A',
-    tr4bobble: '&a tr bobble of 4 stitches^A(dc):B~A-B:C;D;E;F;G;H;I;J:!-1-A;B-1.2-C;C-0.8-D;D-1.2-A;B-1.2-E;E-1.2-F;F-1.2-A;B-1.2-G;G-1.2-H;H-1.2-A;B-1.2-I;I-1.2-J;J-1.2-A',
-    dc3pc: '&dc3pc^A(dc3pc):B~A-B:C;D(dc);E;F(dc);G;H(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;!-0.8-D;D-0.8-F;F-0.8-H;!-0.33-D;D-0.33-H;H-0.33-A',
-    dc4pc: '&dc4pc^A(dc4pc):B~A-B:C;D(dc);E;F(dc);G;H(dc);I;J(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;B-1.2-I;I-1.2-J;!-0.8-D;D-0.8-F;F-0.8-H;H-0.8-J;!-0.33-D;D-0.33-J;J-0.33-A',
-    dc5pc: '&dc5pc^A(dc5pc):B~A-B:C;D(dc);E;F(dc);G;H(dc);I;J(dc);K;L(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;B-1.2-I;I-1.2-J;B-1.2-K;K-1.2-L;!-0.8-D;D-0.8-F;F-0.8-H;H-0.8-J;J-0.8-L;!-0.33-D;D-0.33-L;L-0.33-A',
+    sc3bobble: '&a sc bobble of 3 stitches^A(sc):B~A-B:C(line);D(line);E(line);F(line);G(line);H(line):!-1-A;B-0.4-C;C-0.4-D;D-0.4-A;B-0.4-E;E-0.4-F;F-0.4-A;B-0.4-G;G-0.4-H;H-0.4-A',
+    dc3bobble: '&a dc bobble of 3 stitches^A(dc):B~A-B:C(line);D(line);E(line);F(line);G(line);H(line):!-1-A;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A',
+    dc4bobble: '&a dc bobble of 4 stitches^A(dc):B~A-B:C(line);D(line);E(line);F(line);G(line);H(line);I(line);J(line):!-1-A;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A;B-0.7-I;I-0.8-J;J-0.7-A',
+    dc5bobble: '&a dc bobble of 5 stitches^A(dc):B~A-B:C(line);D(line);E(line);F(line);G(line);H(line);I(line);J(line);K(line);L(line):!-1-A;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A;B-0.7-I;I-0.8-J;J-0.7-A;B-0.7-K;K-0.8-L;L-0.7-A',
+    tr4bobble: '&a tr bobble of 4 stitches^A(dc):B~A-B:C(line);D(line);E(line);F(line);G(line);H(line);I(line);J(line):!-1-A;B-1.2-C;C-0.8-D;D-1.2-A;B-1.2-E;E-1.2-F;F-1.2-A;B-1.2-G;G-1.2-H;H-1.2-A;B-1.2-I;I-1.2-J;J-1.2-A',
+    dc3pc: '&dc3pc^A(dc3pc):B~A-B:C(line);D(dc);E(line);F(dc);G(line);H(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;!-0.8-D;D-0.8-F;F-0.8-H;!-0.33-D;D-0.33-H;H-0.33-A',
+    dc4pc: '&dc4pc^A(dc4pc):B~A-B:C(line);D(dc);E(line);F(dc);G(line);H(dc);I(line);J(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;B-1.2-I;I-1.2-J;!-0.8-D;D-0.8-F;F-0.8-H;H-0.8-J;!-0.33-D;D-0.33-J;J-0.33-A',
+    dc5pc: '&dc5pc^A(dc5pc):B~A-B:C(line);D(dc);E(line);F(dc);G(line);H(dc);I(line);J(dc);K(line);L(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;B-1.2-I;I-1.2-J;B-1.2-K;K-1.2-L;!-0.8-D;D-0.8-F;F-0.8-H;H-0.8-J;J-0.8-L;!-0.33-D;D-0.33-L;L-0.33-A',
     picot3: '&picot^A(ch);B(ch);C(ch);D(ss):~::!-1-A;A-1-B;B-1-C;C-1-D;!-0.4-D',
     scbl: '&scbl^A(scbl):B[back]~A-B::!-1-A;B-1-A',
+    rscbl: '&rscbl^A(rscbl):B[back]~A-B::!-1-A;B-1-A',
     ssbl: '&ssbl^A(ssbl):B[back]~A-B::!-1-A;B-0.4-A',
     dcbl: '&dcbl^A(dcbl):B[back]~A-B::!-1-A;B-2-A',
     hdcbl: '&hdcbl^A(hdcbl):B[back]~A-B::!-1-A;B-1.5-A',
@@ -767,12 +808,16 @@ var Dictionary = {
     dtrbl: '&dtrbl^A(dtrbl):B[back]~A-B::!-1-A;B-3-A',
     trtrbl: '&trtrbl^A(trtrbl):B[back]~A-B::!-1-A;B-3.5-A',
     scfl: '&scfl^A(scfl):B[front]~A-B::!-1-A;B-1-A',
+    rscfl: '&rscfl^A(rscfl):B[front]~A-B::!-1-A;B-1-A',
     ssfl: '&ssfl^A(ssfl):B[front]~A-B::!-1-A;B-0.4-A',
     dcfl: '&dcfl^A(dcfl):B[front]~A-B::!-1-A;B-2-A',
     hdcfl: '&hdcfl^A(hdcfl):B[front]~A-B::!-1-A;B-1.5-A',
     trfl: '&trfl^A(trfl):B[front]~A-B::!-1-A;B-2.5-A',
     dtrfl: '&dtrfl^A(dtrfl):B[front]~A-B::!-1-A;B-3-A',
-    trtrfl: '&trtrfl^A(trtrfl):B[front]~A-B::!-1-A;B-3.5-A'
+    trtrfl: '&trtrfl^A(trtrfl):B[front]~A-B::!-1-A;B-3.5-A',
+    longsc: '&longsc^A(longsc):B~A-B::!-1-A;B-2-A',
+    longdc: '&longdc^A(longdc):B~A-B::!-1-A;B-3-A',
+    longtr: '&longtr^A(longtr):B~A-B::!-1-A;B-3.5-A'
 };
 
 var OriginalDictionary = JSON.parse(JSON.stringify(Dictionary));

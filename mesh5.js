@@ -1083,10 +1083,297 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         }
     }
 
-
-
     function saveSvg() {
-        var size;
+        let size;
+
+        function tightenAndCenterBBox(draw, svgPath) {
+            //console.log('ok1');
+            const tempPath = draw.path(svgPath);
+            //console.log('ok2');
+            const bbox = tempPath.bbox();
+            //console.log('ok3');
+            tempPath.remove();
+            //console.log('ok4');
+
+            const centerX = bbox.x + bbox.width / 2;
+            const centerY = bbox.y + bbox.height / 2;
+            //console.log(centerX, centerY);
+
+            const centeredPath = svgPath.replace(/([MLHVCSQTAZ])([^MLHVCSQTAZ]*)/g, (match, cmd, args) => {
+                if (cmd === 'Z') return cmd;
+                const coords = args.trim().split(/[\s,]+/).map(parseFloat);
+                switch (cmd.toUpperCase()) {
+                    case 'A':
+                        coords[5] -= centerX;
+                        coords[6] -= centerY;
+                        break;
+                    case 'V':
+                        coords[0] -= centerY;
+                        break;
+                    case 'H':
+                        coords[0] -= centerX;
+                        break;
+                    default:
+                        for (let i = 0; i < coords.length; i++) {
+                            coords[i] -= (i % 2 === 0) ? centerX : centerY;
+                        }
+                }
+                return cmd + coords.join(',');
+            });
+            //console.log(centeredPath);
+            return centeredPath;
+        }
+
+        function scalePathData(pathData, scaleX, scaleY) {
+            return pathData.replace(/([MLHVCSQTAZ])([^MLHVCSQTAZ]*)/g, (match, cmd, args) => {
+                if (cmd === 'Z') return cmd;
+                const coords = args.trim().split(/[\s,]+/).map(parseFloat);
+                switch (cmd.toUpperCase()) {
+                    case 'A':
+                        coords[0] *= scaleX;
+                        coords[1] *= scaleY;
+                        coords[5] *= scaleX;
+                        coords[6] *= scaleY;
+                        break;
+                    case 'V':
+                        coords[0] *= scaleY;
+                        break;
+                    case 'H':
+                        coords[0] *= scaleX;
+                        break;
+                    default:
+                        for (let i = 0; i < coords.length; i++) {
+                            coords[i] *= (i % 2 === 0) ? scaleX : scaleY;
+                        }
+                }
+                return cmd + coords.join(',');
+            });
+        }
+
+        function addCrochetSymbolsBetweenNodes(draw, nodes, edges) {
+            const symbolMap = {
+                'ch': 'M-5,0 A5,10 0 1,1 5,0 A5,10 0 1,1 -5,0',
+                'ss': 'M0,5 A5,5 0 1,1 0,-5 A5,5 0 1,1 0,5 Z',
+                'sc': 'M171.94102,111.30121 H179.71246 M175.82674,117.09468 V105.50773',
+                'hdc': 'M181.17536,80.290159 H190.91306 M186.2474,99.048099 V80.157868',
+                'dc': 'M168.02921,73.65257 H177.76691 M172.89806,96.912628 V73.520279 M170.84091,82.837921 L174.95521,85.213321',
+                'tr': 'M102.7556,85.196435 L106.8699,87.571832 M99.9439,70.719415 H109.6816 M104.81275,102.98371 V70.587124 M102.7556,82.021436 L106.8699,84.396833',
+                'dtr': 'M120.04696,61.90545 H129.78466 M124.91581,102.3795 V61.773159 M122.85866,75.853306 L126.97296,78.228703 M122.85866,78.499138 L126.97296,80.874535 M122.85866,81.14497 L126.97296,83.520367',
+                'trtr': 'M138.66122,53.519063 H148.39892 M143.53007,101.48366 V53.386772 M141.47292,70.641918 L145.58722,73.017315 M141.47292,73.28775 L145.58722,75.663147 M141.47292,75.933582 L145.58722,78.308979 M141.47292,78.579417 L145.58722,80.954814',
+                'rsc': 'M131.74584,151.77464 H139.51728 M135.63156,157.56811 V145.98116 M132.48897,145.41015 C133.19121,144.42701 133.70618,144.28657 134.40842,144.28657 C135.11065,144.28657 136.09379,145.45696 136.93648,145.45696 C137.77917,145.45696 138.57503,144.38019 138.57503,144.38019',
+                'scbl': 'M131.74584,151.77464 H139.51728 M135.63156,157.56811 V145.98116 M132.05252,161.34418 A3.5790462,2.8758667 0 0 1 135.63156,158.46831 A3.5790462,2.8758667 0 0 1 139.21061,161.34418',
+                'scfl': 'M131.74584,151.77464 H139.51728 M135.63156,157.56811 V145.98116 M132.05252,158.33667 A3.5790462,2.8758667 0 0 0 135.63156,161.21254 A3.5790462,2.8758667 0 0 0 139.21061,158.33667',
+                'hdcfl': 'M59.828576,81.788267 H69.566276 M64.900616,100.54621 V81.655976 M61.321573,100.71371 A3.5790462,2.8758667 0 0 0 64.90062,103.58957 A3.5790462,2.8758667 0 0 0 68.479666,100.71371',
+                'dcfl': 'M77.019122,75.899733 H86.756822 M81.887972,99.159791 V75.767442 M79.830822,85.085084 L83.945122,87.460484 M78.308924,99.327293 A3.5790462,2.8758667 0 0 0 81.88797,102.20316 A3.5790462,2.8758667 0 0 0 85.46701,99.327293',
+                'trfl': 'M99.9439,70.719415 H109.6816 M104.81275,102.98371 V70.587124 M102.7556,82.021436 L106.8699,84.396833 M102.7556,85.196435 L106.8699,87.571832 M101.23371,103.15121 A3.5790462,2.8758667 0 0 0 104.81275,106.02707 A3.5790462,2.8758667 0 0 0 108.39179,103.15121',
+                'dtrfl': 'M120.04696,61.90545 H129.78466 M124.91581,102.3795 V61.773159 M122.85866,75.853306 L126.97296,78.228703 M122.85866,78.499138 L126.97296,80.874535 M122.85866,81.14497 L126.97296,83.520367 M121.33676,102.547 A3.5790462,2.8758667 0 0 0 124.91581,105.42286 A3.5790462,2.8758667 0 0 0 128.49486,102.547',
+                'trtrfl': 'M138.66122,53.519063 H148.39892 M143.53007,101.48366 V53.386772 M141.47292,70.641918 L145.58722,73.017315 M141.47292,73.28775 L145.58722,75.663147 M141.47292,75.933582 L145.58722,78.308979 M141.47292,78.579417 L145.58722,80.954814 M139.95103,101.65115 A3.5790462,2.8758667 0 0 0 143.53008,104.52702 A3.5790462,2.8758667 0 0 0 147.10912,101.65115',
+                'hdcbl': 'M59.828576,81.788267 H69.566276 M64.900616,100.54621 V81.655976 M61.321573,104.16475 A3.5790462,2.8758667 0 0 1 64.90062,101.28889 A3.5790462,2.8758667 0 0 1 68.479666,104.16475',
+                'dcbl': 'M77.019122,75.899733 H86.756822 M81.887972,99.159791 V75.767442 M79.830822,85.085084 L83.945122,87.460484 M78.308924,102.77833 A3.5790462,2.8758667 0 0 1 81.88797,99.90247 A3.5790462,2.8758667 0 0 1 85.46701,102.77833',
+                'trbl': 'M99.9439,70.719415 H109.6816 M104.81275,102.98371 V70.587124 M102.7556,82.021436 L106.8699,84.396833 M102.7556,85.196435 L106.8699,87.571832 M101.23371,106.60225 A3.5790462,2.8758667 0 0 1 104.81275,103.72639 A3.5790462,2.8758667 0 0 1 108.39179,106.60225',
+                'dtrbl': 'M120.04696,61.90545 H129.78466 M124.91581,102.3795 V61.773159 M122.85866,75.853306 L126.97296,78.228703 M122.85866,78.499138 L126.97296,80.874535 M122.85866,81.14497 L126.97296,83.520367 M121.33676,105.99804 A3.5790462,2.8758667 0 0 1 124.91581,103.12218 A3.5790462,2.8758667 0 0 1 128.49486,105.99804',
+                'trtrbl': 'M138.66122,53.519063 H148.39892 M143.53007,101.48366 V53.386772 M141.47292,70.641918 L145.58722,73.017315 M141.47292,73.28775 L145.58722,75.663147 M141.47292,75.933582 L145.58722,78.308979 M141.47292,78.579417 L145.58722,80.954814 M139.95103,105.10219 A3.5790462,2.8758667 0 0 1 143.53008,102.22633 A3.5790462,2.8758667 0 0 1 147.10912,105.10219',
+                'rscfl': 'M131.74584,151.77464 H139.51728 M135.63156,157.56811 V145.98116 M132.58916,145.41015 C133.2914,144.42701 133.80637,144.28657 134.50861,144.28657 C135.21084,144.28657 136.19398,145.45696 137.03667,145.45696 C137.87936,145.45696 138.67522,144.38019 138.67522,144.38019 M132.05252,158.33667 A3.5790462,2.8758667 0 0 0 135.63156,161.21254 A3.5790462,2.8758667 0 0 0 139.21061,158.33667',
+                'rscbl': 'M131.74584,151.77464 H139.51728 M135.63156,157.56811 V145.98116 M132.58916,145.41015 C133.2914,144.42701 133.80637,144.28657 134.50861,144.28657 C135.21084,144.28657 136.19398,145.45696 137.03667,145.45696 C137.87936,145.45696 138.67522,144.38019 138.67522,144.38019 M132.05252,161.34418 A3.5790462,2.8758667 0 0 1 135.63156,158.46831 A3.5790462,2.8758667 0 0 1 139.21061,161.34418',
+                'fphdc': 'M33.011523,141.15521 H42.749223 M37.880373,159.91315 V141.02292 M37.880363,159.78142 A4.7955728,4.7955728 0 0 1 42.310895,162.74181 A4.7955728,4.7955728 0 0 1 41.271345,167.96798 A4.7955728,4.7955728 0 0 1 36.045177,169.00753 A4.7955728,4.7955728 0 0 1 33.084791,164.577',
+                'fpdc': 'M61.912498,143.00729 H71.650198 M66.781348,166.26735 V142.875 M64.724198,152.19264 L68.838498,154.56804 M66.781342,166.13465 A4.7955728,4.7955728 0 0 1 71.211873,169.09499 A4.7955728,4.7955728 0 0 1 70.172323,174.32116 A4.7955728,4.7955728 0 0 1 64.946155,175.36071 A4.7955728,4.7955728 0 0 1 61.985769,170.93022',
+                'fptr': 'M83.918311,134.29161 H93.656011 M88.787161,166.55591 V134.15932 M86.730011,145.59363 L90.844311,147.96903 M86.730011,148.76863 L90.844311,151.14403 M88.787148,166.42292 A4.7955728,4.7955728 0 0 1 93.217679,169.38330 A4.7955728,4.7955728 0 0 1 92.178129,174.60947 A4.7955728,4.7955728 0 0 1 86.951961,175.64902 A4.7955728,4.7955728 0 0 1 83.991575,171.21849',
+                'bphdc': 'M33.011523,141.15521 H42.749223 M37.880373,159.91315 V141.02292 M37.880383,159.78142 A4.7955728,4.7955728 0 0 0 33.449851,162.74181 A4.7955728,4.7955728 0 0 0 34.489401,167.96798 A4.7955728,4.7955728 0 0 0 39.715569,169.00753 A4.7955728,4.7955728 0 0 0 42.675955,164.577',
+                'bpdc': 'M61.912498,143.00729 H71.650198 M66.781348,166.26735 V142.875 M64.724198,152.19264 L68.838498,154.56804 M66.781364,166.13465 A4.7955728,4.7955728 0 0 0 62.350833,169.09504 A4.7955728,4.7955728 0 0 0 63.390383,174.32120 A4.7955728,4.7955728 0 0 0 68.616551,175.36075 A4.7955728,4.7955728 0 0 0 71.576937,170.93022',
+                'bptr': 'M83.918311,134.29161 H93.656011 M88.787161,166.55591 V134.15932 M86.730011,145.59363 L90.844311,147.96903 M86.730011,148.76863 L90.844311,151.14403 M88.78717,166.42292 A4.7955728,4.7955728 0 0 0 84.356639,169.38330 A4.7955728,4.7955728 0 0 0 85.396189,174.60947 A4.7955728,4.7955728 0 0 0 90.622357,175.64902 A4.7955728,4.7955728 0 0 0 93.582743,171.21849',
+                'bpsc': 'M29.10417,197.88098 H36.87561 M32.98989,203.67445 V192.0875 M32.989899,203.54151 A4.7955728,4.7955728 0 0 0 28.559367,206.50190 A4.7955728,4.7955728 0 0 0 29.598917,211.72806 A4.7955728,4.7955728 0 0 0 34.825085,212.76761 A4.7955728,4.7955728 0 0 0 37.785471,208.33708',
+                'fpsc': 'M29.10417,197.88098 H36.87561 M32.98989,203.67445 V192.0875 M32.98988,203.54151 A4.7955728,4.7955728 0 0 1 37.420411,206.50190 A4.7955728,4.7955728 0 0 1 36.380862,211.72806 A4.7955728,4.7955728 0 0 1 31.154693,212.76761 A4.7955728,4.7955728 0 0 1 28.194307,208.33708',
+                'line': 'M0,-5 L0,5',
+                'long_sc': 'M86.353122,21.591733 H106.71982 M96.536472,44.851791 V21.459442 M96.536472,42.746442 A13.596,25.696 0 0 1 110.13247,68.442442 A13.596,25.696 0 0 1 96.536472,94.138442',
+                'long_dc': 'M0,0 H36.803905 M19.355965,26.333015 L34.907265,35.308015 M22.745129,0 C25.220129,10.605 30.220129,39.235 29.810129,60.815 C29.405129,82.355 26.275129,103.595 23.105129,158.375',
+                'long_tr': 'M5,0 H41.803905 M19.355965,26.333015 L34.907265,35.308015 M19.355965,36.899015 L34.907265,45.874015 M22.745129,0 C25.220129,10.605 30.220129,54.095 29.810129,75.675 C29.405129,97.215 26.275129,122.455 23.105129,177.235'
+            };
+
+
+            nodes.forEach(node => {
+                let name = node.name.split('|')[0];
+                let vis = false;
+                for (let j = 0; j < NODES.length; j++) {
+                    if (name === NODES[j].id0) {
+                        // Match found
+                        vis = NODES[j].visible;
+                        break;
+                    }
+                }
+
+                if (vis && (node.label.split('|')[0] !== "hidden")) {
+                    const nodeId = node.label.split('|')[0];
+                    const edge1 = edges.find(edge => edge.head === node._gvid && edge.color === 'blue');
+                    const edge2 = edges.find(edge => edge.tail === node._gvid && edge.color === 'blue');
+
+                    if (edge1 && edge2) {
+                        if (nodeId === 'ch') {
+                            drawChainBetweenEdges(draw, edge1, edge2, size, symbolMap['ch']);
+                        } else {
+                            drawLineBetweenEdges(draw, edge1, edge2, size, 'plum', 1);
+                        }
+                    } else if (edge2) {
+                        if (nodeId === 'ch') {
+                            drawChainBetweenEdges(draw, null, edge2, size, symbolMap['ch']);
+                        }
+                    }
+
+                    if (nodeId !== 'ch') {
+                        const incomingRedEdges = edges.filter(edge =>
+                            edge.head === node._gvid && edge.color === 'red'
+                        );
+                        incomingRedEdges.forEach(edge => {
+                            const symbol = symbolMap[nodeId] || 'M0,-2.5 L0,2.5';
+                            drawSymbolAlongEdge(draw, edge, symbol, size, false, nodeId);
+                        });
+                    }
+                }
+            });
+        }
+
+        function drawChainBetweenEdges(draw, edge1, edge2, size, symbolPath) {
+            let x1, y1, x2, y2;
+
+            // Calculate average points
+            let avgPoint1, avgPoint2;
+            if (edge1 === null) {
+                avgPoint1 = edge2.start.map((coord, i) => coord - (edge2.end[i] - edge2.start[i]) / 2);
+            } else {
+                avgPoint1 = edge1.start.map((coord, i) => (coord + edge1.end[i]) / 2);
+            }
+            avgPoint2 = edge2.start.map((coord, i) => (coord + edge2.end[i]) / 2);
+
+            if (Dimen == 2) {
+                x1 = (avgPoint1[0] + 1) * size / 2.0;
+                y1 = (-avgPoint1[1] + 1) * size / 2.0;
+                x2 = (avgPoint2[0] + 1) * size / 2.0;
+                y2 = (-avgPoint2[1] + 1) * size / 2.0;
+            } else {
+                x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR + 1) * size / 2.0;
+                y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU + 1) * size / 2.0;
+                x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR + 1) * size / 2.0;
+                y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU + 1) * size / 2.0;
+            }
+
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const edgeLength = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+            //console.log(symbolPath);
+
+            let centeredPath = tightenAndCenterBBox(draw, symbolPath);
+            //console.log(centeredPath);
+
+            const tempPath = draw.path(centeredPath);
+            const symbolBBox = tempPath.bbox();
+            tempPath.remove();
+
+            let scaleY = edgeLength * 0.95 / symbolBBox.height;
+            let scaleX = scaleY / 3;
+
+
+            const symbol = draw.path(centeredPath)
+                .fill('none')
+                .stroke({
+                    color: 'black',
+                    width: 1
+                });
+
+            const scaledPath = scalePathData(centeredPath, scaleX, scaleY);
+            symbol.plot(scaledPath);
+
+            const centerX = (x1 + x2) / 2;
+            const centerY = (y1 + y2) / 2;
+
+            symbol.transform({
+                translateX: centerX,
+                translateY: centerY,
+                rotate: (angle + Math.PI / 2.) * 180 / Math.PI,
+                originX: 'center',
+                originY: 'center'
+            });
+        }
+
+        function drawLineBetweenEdges(draw, edge1, edge2, size, lineColor = 'green', lineWidth = 1) {
+            let x1, y1, x2, y2;
+
+            // Calculate average points
+            const avgPoint1 = edge1.start.map((coord, i) => (coord + edge1.end[i]) / 2);
+            const avgPoint2 = edge2.start.map((coord, i) => (coord + edge2.end[i]) / 2);
+
+            if (Dimen == 2) {
+                x1 = (avgPoint1[0] + 1) * size / 2.0;
+                y1 = (-avgPoint1[1] + 1) * size / 2.0;
+                x2 = (avgPoint2[0] + 1) * size / 2.0;
+                y2 = (-avgPoint2[1] + 1) * size / 2.0;
+            } else {
+                x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR + 1) * size / 2.0;
+                y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU + 1) * size / 2.0;
+                x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR + 1) * size / 2.0;
+                y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU + 1) * size / 2.0;
+            }
+
+            draw.line(x1, y1, x2, y2)
+                .stroke({
+                    color: lineColor,
+                    width: lineWidth
+                });
+        }
+
+        function drawSymbolAlongEdge(draw, edge, symbolPath, size, isChain, nodeID) {
+            const start = edge.start;
+            const end = edge.end;
+
+            let x1, y1, x2, y2;
+
+            if (Dimen == 2) {
+                x1 = (start[0] + 1) * size / 2.0;
+                y1 = (-start[1] + 1) * size / 2.0;
+                x2 = (end[0] + 1) * size / 2.0;
+                y2 = (-end[1] + 1) * size / 2.0;
+            } else {
+                x1 = (start[0] * xR + start[1] * yR + start[2] * zR + 1) * size / 2.0;
+                y1 = (start[0] * xU + start[1] * yU + start[2] * zU + 1) * size / 2.0;
+                x2 = (end[0] * xR + end[1] * yR + end[2] * zR + 1) * size / 2.0;
+                y2 = (end[0] * xU + end[1] * yU + end[2] * zU + 1) * size / 2.0;
+            }
+
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const edgeLength = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+
+            let centeredPath = tightenAndCenterBBox(draw, symbolPath);
+
+            const tempPath = draw.path(centeredPath);
+            const symbolBBox = tempPath.bbox();
+            tempPath.remove();
+
+            let scaleY = edgeLength * 0.8 / symbolBBox.height; // Scale to 80% of edge length
+            let scaleX = isChain ? scaleY : 1; // For chain, maintain aspect ratio
+            let fill = 'none';
+            if (nodeID === 'ss') {
+                fill = 'black';
+            }
+            const symbol = draw.path(centeredPath)
+                .fill(fill)
+                .stroke({
+                    color: 'black',
+                    width: 1
+                });
+
+            const scaledPath = scalePathData(centeredPath, scaleX, scaleY);
+            symbol.plot(scaledPath);
+
+            // Calculate position at 50% of the edge (between 10% and 90%)
+            const centerX = x1 + (x2 - x1) * 0.5;
+            const centerY = y1 + (y2 - y1) * 0.5;
+
+            symbol.transform({
+                translateX: centerX,
+                translateY: centerY,
+                rotate: (angle + Math.PI / 2) * 180 / Math.PI,
+                originX: 'center',
+                originY: 'center'
+            });
+        }
+
         while (true) {
             try {
                 let s = prompt('Enter the height (in pixels) of the SVG file. This will affect size of labels. Default: 1500');
@@ -1101,9 +1388,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 break;
         }
 
-        const draw = SVG().size(size, size);
-        const nodes = draw.group();
-        const edges = draw.group();
+        // Set up camera and coordinate system
         const graphData = str;
         var xC = camera.position.x;
         var yC = camera.position.y;
@@ -1125,8 +1410,13 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         xU = -(yC * zR - zC * yR);
         yU = -(-(xC * zR - zC * xR));
         zU = -(xC * yR - yC * xR);
-        //r-(r.hatrC)hatC
-        var k = -1;
+
+        // Create SVG for graph elements
+        const drawGraph = SVG().size(size, size);
+        const nodes = drawGraph.group();
+        const edges = drawGraph.group();
+
+        // Draw nodes
         graphData.objects.forEach(node => {
             let name = node.name.split('|')[0];
             let vis = false;
@@ -1144,33 +1434,21 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                     x = (node.pos[0] + 1) * size / 2.0;
                     y = (-node.pos[1] + 1) * size / 2.0;
                 } else {
-                    x = node.pos[0] * xR + node.pos[1] * yR + node.pos[2] * zR;
-                    y = node.pos[0] * xU + node.pos[1] * yU + node.pos[2] * zU;
-                    x = (x + 1) * size / 2.0;
-                    y = (y + 1) * size / 2.0;
+                    x = ((node.pos[0] * xR + node.pos[1] * yR + node.pos[2] * zR) + 1) * size / 2.0;
+                    y = ((node.pos[0] * xU + node.pos[1] * yU + node.pos[2] * zU) + 1) * size / 2.0;
                 }
                 const circle = nodes.circle(5).center(x, y).fill('white').stroke('gray');
-                var text = nodes.text(node.label.split('|')[0] + '(' + node.name.split('|')[0] + ')').cx(x).cy(y); //node.id0
-
-                //text.font({
-                //    size: fontSize
-                //});
-                //while (text.bbox().width < circle.bbox().width && text.bbox().height < circle.bbox().height) {
-                //    text.font({
-                //        size: fontSize
-                //    });
-                //    fontSize *= 1.5;
-                //}
+                var text = nodes.text(node.label.split('|')[0] + '(' + node.name.split('|')[0] + ')').cx(x).cy(y);
                 var fontSize = 1.5 * 1.5 * 5;
                 text.font({
                     size: fontSize / 1.5 / 1.5
                 });
-                //text.cx(x + text.bbox().width / 2. - 0 * circle.bbox().width / 2.).cy(y - text.bbox().height / 2. + 0 * circle.bbox().height / 2.)
                 text.cx(x + circle.bbox().width + text.bbox().width / 2).cy(y);
             }
         });
 
-        var arrowhead = draw.marker(17, 3, function(add) {
+        // Draw edges
+        var arrowhead = drawGraph.marker(17, 3, function(add) {
             add.polygon('0,0 7,1.5 0,3').fill('gray');
         });
         graphData.edges.forEach(edge => {
@@ -1178,18 +1456,16 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             const end = edge.end;
             var x0, y0, x1, y1;
             if (Dimen == 2) {
-                x0 = start[0];
-                y0 = -start[1];
-                x1 = end[0];
-                y1 = -end[1];
+                x0 = (start[0] + 1) * size / 2.0;
+                y0 = (-start[1] + 1) * size / 2.0;
+                x1 = (end[0] + 1) * size / 2.0;
+                y1 = (-end[1] + 1) * size / 2.0;
             } else {
-                x0 = start[0] * xR + start[1] * yR + start[2] * zR;
-                y0 = start[0] * xU + start[1] * yU + start[2] * zU;
-                x1 = end[0] * xR + end[1] * yR + end[2] * zR;
-                y1 = end[0] * xU + end[1] * yU + end[2] * zU;
+                x0 = ((start[0] * xR + start[1] * yR + start[2] * zR) + 1) * size / 2.0;
+                y0 = ((start[0] * xU + start[1] * yU + start[2] * zU) + 1) * size / 2.0;
+                x1 = ((end[0] * xR + end[1] * yR + end[2] * zR) + 1) * size / 2.0;
+                y1 = ((end[0] * xU + end[1] * yU + end[2] * zU) + 1) * size / 2.0;
             }
-
-
 
             let name = str.objects[str.objects.findIndex((obj) => obj._gvid === edge.head)].name.split('|')[0];
             let vis = false;
@@ -1200,22 +1476,34 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                     break;
                 }
             }
-
             if (vis) {
+                let line;
                 if (edge.gray == 1)
-                    edges.line((x0 + 1) * size / 2.0, (y0 + 1) * size / 2.0, (x1 + 1) * size / 2.0, (y1 + 1) * size / 2.0).stroke({
+                    line = edges.line(x0, y0, x1, y1).stroke({
                         color: 'gray',
                         width: 0.2
-                    }); //.marker('end', arrowhead);;
+                    });
                 else
-                    edges.line((x0 + 1) * size / 2.0, (y0 + 1) * size / 2.0, (x1 + 1) * size / 2.0, (y1 + 1) * size / 2.0).stroke(edge.color).marker('end', arrowhead);
+                    line = edges.line(x0, y0, x1, y1).stroke(edge.color).marker('end', arrowhead);
+
+                edge.type = edge.label || 'ch';
             }
         });
 
-        // Render the graph
-        draw.add(nodes, edges);
+        // Save graph SVG
+        saveSVGToFile(drawGraph, 'graph.svg');
+        addCrochetSymbolsBetweenNodes(drawGraph, graphData.objects, graphData.edges);
+        saveSVGToFile(drawGraph, 'graph_with_std_crochet_symbols.svg');
 
-        // Save the SVG file
+        // Create SVG for crochet symbols
+        const drawSymbols = SVG().size(size, size);
+        addCrochetSymbolsBetweenNodes(drawSymbols, graphData.objects, graphData.edges);
+
+        // Save crochet symbols SVG
+        saveSVGToFile(drawSymbols, 'crochet_symbols.svg');
+    }
+
+    function saveSVGToFile(draw, filename) {
         const svgData = draw.svg();
         const blob = new Blob([svgData], {
             type: 'image/svg+xml'
@@ -1223,10 +1511,9 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'graph.svg';
+        a.download = filename;
         a.click();
         URL.revokeObjectURL(url);
-        //a.parentNode.removeChild(a);
     }
 
 
