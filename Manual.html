@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Aug 14, 2024.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Feb 1, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -263,10 +263,10 @@
         loose or tight stitches, enabling users to replace them with more
         suitable ones before crocheting, thus reducing the need for
         blocking.</p>
-    <p>CrochetPARADE’s export feature allows users to generate an SVG image
+    <p>CrochetPARADE’s export feature allows users to save their project as an SVG image showing the crochet pattern using standard crochet symbols. One can also export an SVG image
         that shows stitch connections and identifies stitches by their type, row
         number, and position within a row. The SVG pattern shows the same
-        information as standard crochet diagrams and can be used as a guide when
+        information as standard crochet diagrams and can be used as an alternative guide when
         crocheting. Users can also export projects to 3D files that can be
         imported in <a href="https://www.blender.org">Blender</a> for further
         manipulation and visualization.</p>
@@ -448,11 +448,11 @@
                 as gravity, cloth properties, etc.</p>
         </li>
         <li>
-            <p>Save a SVG image showing the current view (in 3D) and the face-on
-                view (in 2D) of the project. The SVG shows stitch connections and
+            <p>Exporting to SVG creates 3 SVG files: 1) SVG image containing the crochet pattern using standard crochet symbols (this is work in progress); 2) SVG image showing the current view (in 3D) or the face-on
+                view (in 2D) of the project. That SVG shows stitch connections and
                 identifies stitches by their type, row number, and position within a
                 row. The SVG pattern shows the same information as standard crochet
-                diagrams and can be used as a guide when crocheting.</p>
+                diagrams and can be used as a guide when crocheting. 3) Both diagrams overlaid on top of each other.</p>
         </li>
         <li>
             <p>Save debug info. This can be helpful when debugging the code. A
