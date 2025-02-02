@@ -124,7 +124,7 @@ $c=0$,@Ring1[][0],[5ch.chain_space[0,c++]+!,sk,>,sc]*8,ss@[-1,-1]
 $t=0,c=0$,ch,[sc,hdc,dc,p,tr.Tip[t++],dc,p,hdc,>,sc]@chain_space[0,c++]*8,ss@[%,0]
 COLOR: Green
 # This starts a new yarn with chain-3 then 3dc together in base to form a starting dc-4 bobble:
-DEF: dc4bobble_start_new= &a dc bobble of 4 stitches^B(hidden);C(ch);D(ch),A(dc):B1~A-B1:E;F;G;H;I;J:!-skip-B;B1-0.001-B;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A;B-0.7-I;I-0.8-J;J-0.7-A
+DEF: dc4bobble_start_new= &a dc bobble of 4 stitches^B(hidden);C(ch);D(ch),A(dc):B1~A-B1:E(line);F(line);G(line);H(line);I(line);J(line):!-skip-B;B1-0.001-B;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A;B-0.7-I;I-0.8-J;J-0.7-A
 $t=0,c=0$,dc4bobble_start_new@Tip[t],[dc4bobble@Tip[t],<,2ch.chsp[c++]+!,tr4bobble@Tip[t],2ch.chsp[c++]+!,dc4bobble@Tip[t],4ch.chsp[c++]+!,hdc@Tip[++t],4ch.chsp[c++]+!,$t++$]*4,sc@[%,3]
 COLOR: Pink
 $c=0$,3ch,[3tr@chsp[c++],3ch,3tr@chsp[c++],ch,>,(4dc@chsp[c++],ch)*2]*4,4dc@chsp[c++],ch,3dc@chsp[c++],ss@[%,1]
@@ -191,9 +191,9 @@ DEF: crdc_v2=&crdc_v2^A(dc);B(dc):C;D~A-D;B-C::!-1-A;A-1-B;C-2-B;D-2-A
 3ch,sk,9crdc_v2,dc,turn
 #Note how the above stitch instructions simplified.
 # Below is a bobble of 3 sc stitches
-ch,sk,sc,[sc3bobble,sc]*9,turn
+ch,sk,sc,[hdc3puff,sc]*9,turn
 # Now repeat same line 4 times. Note new line at the end:
-[ch,sk,sc,[sc3bobble,sc]*9,turn
+[ch,sk,sc,[hdc3puff,sc]*9,turn
 ]*4
 #dc3-, dc4-,dc5-bobble:
 2ch,sk,dc,[dc3bobble,dc]*9,turn
@@ -608,7 +608,7 @@ BACKGROUND: rgb(126,8,80)
 DEF: hdc=Copy(hdc,2)
 DEF: dc=Copy(dc,3)
 DEF: tr=Copy(tr,4)
-DEF: long_tr=Copy(longtr,9)
+DEF: longtr=Copy(longtr,9)
 DEF: trtr=Copy(trtr,8)
 DEF: some_space=&some space^:B~::
 COLOR:white
@@ -628,7 +628,7 @@ $c=0$,5ch,dc@[-1,4],[2ch,2sk@[ch:@+1],dc]*3,{5ch.C5[c++],dc@[@],[2ch,2sk@[ch:@+1
 $c=0,r=0$,ch.Z0,sc.Z1@[-1,2],[2sc,sc@[dc:@]]*4,{3sc@C5[c],ch,7ch.R[r]+!0,turn
 ss@1[-1,-8],ch,turn
 [sc,hdc.Ring[ring++],14dc,hdc,sc]@R[r++],3sc@C5[c++],sc@[dc:@],>,[2sc,sc@[dc:@]]*10}*6,[2sc,sc@[dc:@]]*5,sc,ss@Z0,ch,sc@Z1
-$c=0,ring=0$,{4ch.C4[c++]+!,long_tr@Ring[ring++],[4ch.C4[c++]+!,trtr]*13,4ch.C4[c++]+!,long_tr,4ch.C4[c++]+!,16sk@[sc:@+1],2sc@[sc:@+1],[sk,sc]*2,>,sc@[sc:@+1]}*6,ss@[-1,-1],ss@[%,0],6ss
+$c=0,ring=0$,{4ch.C4[c++]+!,longtr@Ring[ring++],[4ch.C4[c++]+!,trtr]*13,4ch.C4[c++]+!,longtr,4ch.C4[c++]+!,16sk@[sc:@+1],2sc@[sc:@+1],[sk,sc]*2,>,sc@[sc:@+1]}*6,ss@[-1,-1],ss@[%,0],6ss
 $c=2,c1=0$,3ch,dc@[-1,7],{[4ch.C41[c1++]+!,[some_space,2dc,some_space]@C4[c++]]*13,$c++$,$c++$,>,[some_space,2dc,some_space]@C4[c++]}*6,ss@[%,2],8ss
 $c1=1,c=0$,3ch,[some_space,2dc]@C41[c1++],{[4ch.C42[c++]+!,3dc@C41[c1++]]*10,$c1++$,$c1++$,>,3dc@C41[c1++]}*6,ss@[%,2],4ss
 $c=1,c3=0$,3ch,dc@[-1,7],{[4ch.C43[c3++]+!,4dc@C42[c++]]*8,4ch.C43[c3++]+!,2dc@C42[c++],>,2dc@C42[c++]}*6,ss@[%,2],3ss
@@ -790,14 +790,16 @@ var Dictionary = {
     tr: '&tr^A(tr):B~A-B::!-1-A;B-2.5-A',
     dtr: '&dtr^A(dtr):B~A-B::!-1-A;B-3-A',
     trtr: '&trtr^A(trtr):B~A-B::!-1-A;B-3.5-A',
-    sc3bobble: '&a sc bobble of 3 stitches^A(sc):B~A-B:C(line);D(line);E(line);F(line);G(line);H(line):!-1-A;B-0.4-C;C-0.4-D;D-0.4-A;B-0.4-E;E-0.4-F;F-0.4-A;B-0.4-G;G-0.4-H;H-0.4-A',
-    dc3bobble: '&a dc bobble of 3 stitches^A(dc):B~A-B:C(line);D(line);E(line);F(line);G(line);H(line):!-1-A;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A',
-    dc4bobble: '&a dc bobble of 4 stitches^A(dc):B~A-B:C(line);D(line);E(line);F(line);G(line);H(line);I(line);J(line):!-1-A;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A;B-0.7-I;I-0.8-J;J-0.7-A',
-    dc5bobble: '&a dc bobble of 5 stitches^A(dc):B~A-B:C(line);D(line);E(line);F(line);G(line);H(line);I(line);J(line);K(line);L(line):!-1-A;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A;B-0.7-I;I-0.8-J;J-0.7-A;B-0.7-K;K-0.8-L;L-0.7-A',
-    tr4bobble: '&a tr bobble of 4 stitches^A(dc):B~A-B:C(line);D(line);E(line);F(line);G(line);H(line);I(line);J(line):!-1-A;B-1.2-C;C-0.8-D;D-1.2-A;B-1.2-E;E-1.2-F;F-1.2-A;B-1.2-G;G-1.2-H;H-1.2-A;B-1.2-I;I-1.2-J;J-1.2-A',
-    dc3pc: '&dc3pc^A(dc3pc):B~A-B:C(line);D(dc);E(line);F(dc);G(line);H(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;!-0.8-D;D-0.8-F;F-0.8-H;!-0.33-D;D-0.33-H;H-0.33-A',
-    dc4pc: '&dc4pc^A(dc4pc):B~A-B:C(line);D(dc);E(line);F(dc);G(line);H(dc);I(line);J(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;B-1.2-I;I-1.2-J;!-0.8-D;D-0.8-F;F-0.8-H;H-0.8-J;!-0.33-D;D-0.33-J;J-0.33-A',
-    dc5pc: '&dc5pc^A(dc5pc):B~A-B:C(line);D(dc);E(line);F(dc);G(line);H(dc);I(line);J(dc);K(line);L(dc):!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;B-1.2-I;I-1.2-J;B-1.2-K;K-1.2-L;!-0.8-D;D-0.8-F;F-0.8-H;H-0.8-J;J-0.8-L;!-0.33-D;D-0.33-L;L-0.33-A',
+    hdc3puff: '&an hdc puff of 3 stitches^A(hdc3puff):B~A-B:C;D;E;F;G;H:!-1-A;B-0.55-C;C-0.55-D;D-0.55-A;B-0.55-E;E-0.55-F;F-0.55-A;B-0.55-G;G-0.55-H;H-0.55-A',
+    hdc4puff: '&an hdc puff of 4 stitches^A(hdc4puff):B~A-B:C;D;E;F;G;H;I;J:!-1-A;B-0.55-C;C-0.55-D;D-0.55-A;B-0.55-E;E-0.55-F;F-0.55-A;B-0.55-G;G-0.55-H;H-0.55-A;B-0.55-I;I-0.55-J;J-0.55-A',
+    hdc5puff: '&an hdc puff of 5 stitches^A(hdc5puff):B~A-B:C;D;E;F;G;H;I;J;K;L:!-1-A;B-0.55-C;C-0.55-D;D-0.55-A;B-0.55-E;E-0.55-F;F-0.55-A;B-0.55-G;G-0.55-H;H-0.55-A;B-0.55-I;I-0.55-J;J-0.55-A;B-0.55-K;K-0.55-L;L-0.55-A',
+    dc3bobble: '&a dc bobble of 3 stitches^A(dc3bobble):B~A-B:C;D;E;F;G;H:!-1-A;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A',
+    dc4bobble: '&a dc bobble of 4 stitches^A(dc4bobble):B~A-B:C;D;E;F;G;H;I;J:!-1-A;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A;B-0.7-I;I-0.8-J;J-0.7-A',
+    dc5bobble: '&a dc bobble of 5 stitches^A(dc5bobble):B~A-B:C;D;E;F;G;H;I;J;K;L:!-1-A;B-0.7-C;C-0.8-D;D-0.7-A;B-0.7-E;E-0.8-F;F-0.7-A;B-0.7-G;G-0.8-H;H-0.7-A;B-0.7-I;I-0.8-J;J-0.7-A;B-0.7-K;K-0.8-L;L-0.7-A',
+    tr4bobble: '&a tr bobble of 4 stitches^A(tr4bobble):B~A-B:C;D;E;F;G;H;I;J:!-1-A;B-1.2-C;C-0.8-D;D-1.2-A;B-1.2-E;E-1.2-F;F-1.2-A;B-1.2-G;G-1.2-H;H-1.2-A;B-1.2-I;I-1.2-J;J-1.2-A',
+    dc3pc: '&dc3pc^A(dc3pc):B~A-B:C;D;E;F;G;H:!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;D-0.8-F;F-0.8-H;!-0.33-D;D-0.33-H;H-0.33-A',
+    dc4pc: '&dc4pc^A(dc4pc):B~A-B:C;D;E;F;G;H;I;J:!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;B-1.2-I;I-1.2-J;D-0.8-F;F-0.8-H;H-0.8-J;!-0.33-D;D-0.33-J;J-0.33-A',
+    dc5pc: '&dc5pc^A(dc5pc):B~A-B:C;D;E;F;G;H;I;J;K;L:!-1-A;B-1.2-C;C-1.2-D;B-1-E;E-1-F;B-1.2-G;G-1.2-H;B-1.2-I;I-1.2-J;B-1.2-K;K-1.2-L;D-0.8-F;F-0.8-H;H-0.8-J;J-0.8-L;!-0.33-D;D-0.33-L;L-0.33-A',
     picot3: '&picot^A(ch);B(ch);C(ch);D(ss):~::!-1-A;A-1-B;B-1-C;C-1-D;!-0.4-D',
     scbl: '&scbl^A(scbl):B[back]~A-B::!-1-A;B-1-A',
     rscbl: '&rscbl^A(rscbl):B[back]~A-B::!-1-A;B-1-A',
