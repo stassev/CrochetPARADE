@@ -1335,7 +1335,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                                 drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId);
                             });
                         } else {
-                            console.log(incomingRedEdges);
+                            //console.log(incomingRedEdges);
 
                             function findRedPathsWithoutBlue(currentTail, visited = new Set()) {
                                 if (visited.has(currentTail)) {
@@ -1373,19 +1373,19 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                             );
 
                             const smallestTail = Math.min(...redPathsWithoutBlue);
-                            console.log("Smallest tail of red paths without blue:", smallestTail);
+                            //console.log("Smallest tail of red paths without blue:", smallestTail);
 
                             // Find the edge with the smallest tail
                             const edgeWithSmallestTail = edges.find(edge => edge.tail === smallestTail && edge.color === 'red');
 
                             if (edgeWithSmallestTail) {
-                                console.log("Start point of edge with smallest tail:", edgeWithSmallestTail.start);
+                                //console.log("Start point of edge with smallest tail:", edgeWithSmallestTail.start);
 
                                 const symbol = symbolMap[nodeId] || 'M0,-2.5 L0,2.5';
                                 drawSymbolAlongEdge(draw, edgeWithSmallestTail.start, incomingRedEdges[0].end, symbol, size, false, nodeId);
                                 //return edgeWithSmallestTail.start; // Return edge.start for the smallest tail
                             } else {
-                                console.log("No edge found with the smallest tail");
+                                //console.log("No edge found with the smallest tail");
                                 //return null; // or some default value
                             }
                         }
@@ -1582,6 +1582,9 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             if (nodeId.startsWith('fp') || nodeId.startsWith('bp')) {
                 scaleY *= 1.1 / 0.9;
                 posted = true;
+                if (['fpsc', 'bpsc'].includes(nodeId)) {
+                    scaleY *= 1.2;
+                }
             }
             let scaleX = isChain ? scaleY : 1; // For chain, maintain aspect ratio
             if (['hdc3puff', 'hdc4puff', 'hdc5puff', 'dc3bobble', 'dc4bobble', 'dc5bobble', 'tr4bobble', 'dc3pc', 'dc4pc', 'dc5pc'].includes(nodeId)) {
@@ -1610,8 +1613,14 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                     centerX = x1 + (x2 - x1) * 0.55;
                     centerY = y1 + (y2 - y1) * 0.55;
                 } else {
-                    centerX = x1 + (x2 - x1) * 0.45;
-                    centerY = y1 + (y2 - y1) * 0.45;
+                    if (['fpsc', 'bpsc'].includes(nodeId)) {
+                        centerX = x1 + (x2 - x1) * (1 - 1.1 * 1.2 / 2);
+                        centerY = y1 + (y2 - y1) * (1 - 1.1 * 1.2 / 2);
+                    } else {
+                        centerX = x1 + (x2 - x1) * 0.45;
+                        centerY = y1 + (y2 - y1) * 0.45;
+                    }
+
                 }
             } else {
                 centerX = x1 + (x2 - x1) * 0.5;

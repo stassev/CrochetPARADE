@@ -675,8 +675,17 @@ ch,sk,18bpsc,sc,turn
 3ch,sk,18bpdc,dc,turn
 3ch,sk,18fptr,tr,turn
 3ch,sk,18bptr,tr,turn
+ch,sk,[sc,hdc3puff,sc]*6,sc,turn
+ch,sk,[sc,hdc4puff,sc]*6,sc,turn
+ch,sk,[sc,hdc5puff,sc]*6,sc,turn
+2ch,sk,[dc,dc3bobble,dc]*6,dc,turn
+2ch,sk,[dc,dc4bobble,dc]*6,dc,turn
+2ch,sk,[dc,dc5bobble,dc]*6,dc,turn
+2ch,sk,[dc,dc3pc,dc]*6,dc,turn
+2ch,sk,[dc,dc4pc,dc]*6,dc,turn
+2ch,sk,[dc,dc5pc,dc]*6,dc,turn
 
-DOT: start=2`;
+DOT: start=5`;
 
 var textSnowman = `#Simple amigurumi showcase
 COLOR:white
