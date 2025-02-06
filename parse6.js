@@ -190,7 +190,7 @@ DEF: crdc=dc@[@-1],dc@[@+3]
 DEF: crdc_v2=&crdc_v2^A(dc);B(dc):C;D~A-D;B-C::!-1-A;A-1-B;C-2-B;D-2-A
 3ch,sk,9crdc_v2,dc,turn
 #Note how the above stitch instructions simplified.
-# Below is a bobble of 3 sc stitches
+# Below is a puff stitch, consisting of 3 hdc stitches
 ch,sk,sc,[hdc3puff,sc]*9,turn
 # Now repeat same line 4 times. Note new line at the end:
 [ch,sk,sc,[hdc3puff,sc]*9,turn
