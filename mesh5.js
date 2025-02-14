@@ -1083,7 +1083,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         }
     }
     const symbolMap = {
-        'ch': 'M-5,0 A5,10 0 1,1 5,0 A5,10 0 1,1 -5,0',
+        'ch': 'M-5,0 A5,5 0 1,1 5,0 A5,5 0 1,1 -5,0',
         'ss': 'M-5,0 A5,10 0 1,1 5,0 A5,10 0 1,1 -5,0 Z',
         'sc': 'M171.94102,111.30121 H179.71246 M175.82674,117.09468 V105.50773',
         'hdc': 'M186.2474,99.048099 V80.157868',
@@ -1315,8 +1315,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                     if (!edge1) edge1 = null;
                     if (!edge2) edge2 = null;
                     if (edge1 !== null || edge2 !== null) {
-                        if (nodeId === 'ch') {
-                            drawChainBetweenEdges(draw, edge1, edge2, size, symbolMap['ch']);
+                        if (nodeId === 'ch' || nodeId === 'ring') {
+                            drawChainBetweenEdges(draw, edge1, edge2, size, symbolMap['ch'], nodeId);
                         } else {
                             drawLineBetweenEdges(draw, edge1, edge2, size, 'plum', 1);
                             if (hasTopBar[nodeId]) {
@@ -1431,6 +1431,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
             let scaleY = edgeLength * 0.95 / symbolBBox.height;
             let scaleX = scaleY / 3;
+            if (nodeId === 'ring')
+                scaleX = scaleY;
 
 
             const symbol = draw.path(centeredPath)
