@@ -1130,6 +1130,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         'dc5pc': 'M22.879128,140.19294 C25.527266,142.22169 27.696323,144.48149 27.597508,148.14524 C27.501578,151.70195 24.07037,155.76045 21.017354,156.96435 M19.075978,140.19294 C16.42784,142.22169 14.258783,144.48149 14.357598,148.14524 C14.453528,151.70195 17.884736,155.76045 20.937752,156.96435 M21.728532,140.32893 C23.78843,143.13788 24.435535,144.45877 24.435535,148.12183 C24.435535,151.67984 22.960835,154.5356 20.900934,157.06366 M20.202698,140.32893 C18.1428,143.13788 17.495695,144.45877 17.495695,148.12183 C17.495695,151.67984 18.970395,154.5356 21.028299,157.06366 M20.976452,140.40535 L20.976452,156.89229 M12.170832,148.1026 H29.782071 M18.448452,139.63193 A2.5279996,0.77349651 0 0 1 20.976452,138.85843 A2.5279996,0.77349651 0 0 1 23.504452,139.63193 A2.5279996,0.77349651 0 0 1 20.976452,140.40543 A2.5279996,0.77349651 0 0 1 18.448452,139.63193'
     };
     const hasTopBar = {
+        'ring': false,
         'ch': false,
         'ss': false,
         'sc': false,
@@ -1177,6 +1178,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         'dc5pc': false
     };
     const recenterInX = {
+        'ring': true,
         'ch': true,
         'ss': true,
         'sc': true,
@@ -1429,10 +1431,12 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             const symbolBBox = tempPath.bbox();
             tempPath.remove();
 
-            let scaleY = edgeLength * 0.95 / symbolBBox.height;
+            let scaleY = edgeLength * 0.93 / symbolBBox.height;
             let scaleX = scaleY / 3;
-            if (nodeId === 'ring')
+            if (nodeId === 'ring') {
+                scaleY *= 0.5;
                 scaleX = scaleY;
+            }
 
 
             const symbol = draw.path(centeredPath)
