@@ -1314,6 +1314,9 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                     const nodeId = node.label.split('|')[0];
                     let edge1 = edges.find(edge => edge.head === node._gvid && edge.color === 'blue');
                     let edge2 = edges.find(edge => edge.tail === node._gvid && edge.color === 'blue');
+                    //console.log(nodeId);
+                    //console.log('1', edge1);
+                    //console.log('2', edge2);
                     if (!edge1) edge1 = null;
                     if (!edge2) edge2 = null;
                     if (edge1 !== null || edge2 !== null) {
@@ -1398,7 +1401,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
         function drawChainBetweenEdges(draw, edge1, edge2, size, symbolPath, nodeId) {
             let x1, y1, x2, y2;
-
+            //console.log(edge1, edge2, nodeId, size);
             // Calculate average points
             let avgPoint1, avgPoint2;
             if (edge1 === null) {
@@ -1406,8 +1409,12 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             } else {
                 avgPoint1 = edge1.start.map((coord, i) => (coord + edge1.end[i]) / 2);
             }
-            avgPoint2 = edge2.start.map((coord, i) => (coord + edge2.end[i]) / 2);
+            if (edge2 === null) {
+                avgPoint2 = edge1.end.map((coord, i) => coord + (edge1.end[i] - edge1.start[i]) / 2);
+            } else {
+                avgPoint2 = edge2.start.map((coord, i) => (coord + edge2.end[i]) / 2);
 
+            }
             if (Dimen == 2) {
                 x1 = (avgPoint1[0] + 1) * size / 2.0;
                 y1 = (-avgPoint1[1] + 1) * size / 2.0;
@@ -1432,7 +1439,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             tempPath.remove();
 
             let scaleY = edgeLength * 0.93 / symbolBBox.height;
-            let scaleX = scaleY / 3;
+            let scaleX = scaleY / 4;
             if (nodeId === 'ring') {
                 scaleY *= 0.5;
                 scaleX = scaleY;

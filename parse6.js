@@ -32,7 +32,7 @@ var textMosaic = `#To see the mosaic pattern, first click on the 3D model.
 
 #Define a dropped double-crochet that is attached to the front loop.
 #The 2 in 2B below defines the attachment depth level (see the Manual).
-DEF: drop_dc=&drop_dc^A(drop_dc):2B[front]~A-B::!-1-A;B-2.1-A
+DEF: drop_dc=&drop_dc^A(dc):2B[front]~A-B::!-1-A;B-2.1-A
 
 COLOR:white
 33ch
@@ -88,9 +88,9 @@ $k=0$,sk,8ss,[13ch.chsp[2,k++],>,ss@[tr:@+1]]*8,sc@[%,7]
 
 var textEdging = `#Edging showcase
 DEF: hdc=Copy(hdc,2) # Change height of hdc
-DEF: dc=&dc^A(dc):B~A-B:C;D:!-1-A;B-1-C;C-1-D;D-1-A #fancy dc
+DEF: dc=&dc^A(dc):B~A-B:C(line);D(line):!-1-A;B-1-C;C-1-D;D-1-A #fancy dc
 DEF: fan_bottom=2sc,3sk,7ch.C[k++]+!,3sc
-DEF: dc_headless=&headless dc^:B~:C;D:B-1-C;C-1-D;D-1-! #fancy dc
+DEF: dc_headless=&headless dc^:B~:C(line);D(line):B-1-C;C-1-D;D-1-! #fancy dc
 DEF: some_space=&leaves some space in chain space^:B~::
 DEF: fan_top=4dc_headless@C[--k],3ch,[some_space,dc4tog,some_space]@C[k],3ch,dc4tog@C[k]
 DEF: fan_top_beginning=dc4tog@C[--k],3ch,[some_space,dc4tog,some_space]@C[k],3ch,dc4tog@C[k]
