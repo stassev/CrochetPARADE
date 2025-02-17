@@ -1336,8 +1336,11 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                         );
                         if (!(['hdc3puff', 'hdc4puff', 'hdc5puff', 'dc3bobble', 'dc4bobble', 'dc5bobble', 'tr4bobble', 'dc3pc', 'dc4pc', 'dc5pc'].includes(nodeId))) {
                             incomingRedEdges.forEach(edge => {
+                                const incomingNode = nodes.find(node => edge.tail === node._gvid);
+                                const comesFromLine = (incomingNode.label.split('|')[0]) === 'line';
+
                                 const symbol = symbolMap[nodeId] || 'M0,-2.5 L0,2.5';
-                                drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId);
+                                drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine);
                             });
                         } else {
                             //console.log(incomingRedEdges);
@@ -1387,7 +1390,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                                 //console.log("Start point of edge with smallest tail:", edgeWithSmallestTail.start);
 
                                 const symbol = symbolMap[nodeId] || 'M0,-2.5 L0,2.5';
-                                drawSymbolAlongEdge(draw, edgeWithSmallestTail.start, incomingRedEdges[0].end, symbol, size, false, nodeId);
+                                drawSymbolAlongEdge(draw, edgeWithSmallestTail.start, incomingRedEdges[0].end, symbol, size, false, nodeId, false);
                                 //return edgeWithSmallestTail.start; // Return edge.start for the smallest tail
                             } else {
                                 //console.log("No edge found with the smallest tail");
@@ -1564,7 +1567,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 });
         }
 
-        function drawSymbolAlongEdge(draw, start, end, symbolPath, size, isChain, nodeId) {
+        function drawSymbolAlongEdge(draw, start, end, symbolPath, size, isChain, nodeId, comesFromLine) {
 
 
             let x1, y1, x2, y2;
@@ -1615,13 +1618,16 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                     color: 'black',
                     width: 1
                 });
-
+            if (nodeId === 'line' || comesFromLine) {
+                scaleY /= 0.9;
+                scaleX = scaleY;
+            }
             const scaledPath = scalePathData(centeredPath, scaleX, scaleY);
             symbol.plot(scaledPath);
 
             // Calculate position at 50% of the edge (between 10% and 90%)
             let centerX, centerY;
-            if (nodeId !== 'ss') {
+            if ((nodeId !== 'ss') && (nodeId !== 'line') && (!comesFromLine)) {
                 if (!posted) {
                     centerX = x1 + (x2 - x1) * 0.55;
                     centerY = y1 + (y2 - y1) * 0.55;
