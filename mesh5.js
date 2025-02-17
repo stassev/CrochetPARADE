@@ -1622,6 +1622,10 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 scaleY /= 0.9;
                 scaleX = scaleY;
             }
+            if (nodeId === 'line' && (!comesFromLine)) {
+                scaleY *= 0.95;
+                scaleX *= 0.95;
+            }
             const scaledPath = scalePathData(centeredPath, scaleX, scaleY);
             symbol.plot(scaledPath);
 
@@ -1642,8 +1646,13 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
                 }
             } else {
-                centerX = x1 + (x2 - x1) * 0.5;
-                centerY = y1 + (y2 - y1) * 0.5;
+                if (nodeId === 'line' && (!comesFromLine)) {
+                    centerX = x1 + (x2 - x1) * (1.0 - 0.95 / 2.0);
+                    centerY = y1 + (y2 - y1) * (1.0 - 0.95 / 2.0);
+                } else {
+                    centerX = x1 + (x2 - x1) * 0.5;
+                    centerY = y1 + (y2 - y1) * 0.5;
+                }
             }
 
             symbol.transform({
