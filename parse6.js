@@ -32,7 +32,7 @@ var textMosaic = `#To see the mosaic pattern, first click on the 3D model.
 
 #Define a dropped double-crochet that is attached to the front loop.
 #The 2 in 2B below defines the attachment depth level (see the Manual).
-DEF: drop_dc=&drop_dc^A(dc):2B[front]~A-B::!-1-A;B-2.1-A
+DEF: drop_dc=&drop_dc^A(dcfl):2B[front]~A-B::!-1-A;B-2.1-A
 
 COLOR:white
 33ch
