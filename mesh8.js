@@ -54,7 +54,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     //    rendererSVG.domElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
 
-    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse7.json0);
+    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse8.json0);
     //console.log(str)
     // Create a scene
     scene = new THREE.Scene();
