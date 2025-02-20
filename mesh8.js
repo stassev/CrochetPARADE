@@ -1325,7 +1325,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                         } else {
                             drawLineBetweenEdges(draw, edge1, edge2, size, 'plum', 1);
                             if (hasTopBar[nodeId]) {
-                                drawParallelLineThroughCenter(draw, edge1, edge2, size, 'black', 1);
+                                //drawParallelLineThroughCenter(draw, edge1, edge2, size, 'black', 1);
+                                drawLineBetweenEdges(draw, edge1, edge2, size, 'black', 1);
                             }
                         }
                     }
@@ -1340,16 +1341,22 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                                 const comesFromLine = (incomingNode.label.split('|')[0]) === 'line';
 
                                 const symbol = symbolMap[nodeId] || 'M0,-2.5 L0,2.5';
-                                if (nodeId === 'ss') {
-                                    try {
-                                        let end = edge2.start.map((coord, i) => (2 * coord + edge1.start[i] + edge2.end[i]) / 4);
-                                        //console.log(end, edge.end);
-                                        drawSymbolAlongEdge(draw, edge.start, end, symbol, size, false, nodeId, comesFromLine);
-                                    } catch (error) {
-                                        drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine);
-                                    }
-                                } else
+                                //if (nodeId === 'ss') {
+                                try {
+                                    let edge1e = edges.find(edge0 => edge0.head === edge.head);
+                                    let edge2e = edges.find(edge0 => edge0.tail === edge.head);
+                                    let end = edge2e.start.map((coord, i) => (2 * coord + edge1e.start[i] + edge2e.end[i]) / 4);
+                                    let edge1s = edges.find(edge0 => edge0.head === edge.tail);
+                                    let edge2s = edges.find(edge0 => edge0.tail === edge.tail);
+                                    let start = edge2s.start.map((coord, i) => (2 * coord + edge1s.start[i] + edge2s.end[i]) / 4);
+                                    //let start = edge2.start.map((coord, i) => (2 * coord + edge1.start[i] + edge2.end[i]) / 4);
+                                    //console.log(end, edge.end);
+                                    drawSymbolAlongEdge(draw, start, end, symbol, size, false, nodeId, comesFromLine);
+                                } catch (error) {
                                     drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine);
+                                }
+                                //} else
+                                //    drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine);
                             });
                         } else {
                             //console.log(incomingRedEdges);
@@ -1568,7 +1575,16 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR + 1) * size / 2.0;
                 y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU + 1) * size / 2.0;
             }
-
+            if (lineColor === 'black') {
+                let x0 = (x1 + x2) / 2.0;
+                let y0 = (y1 + y2) / 2.0;
+                let dx = x2 - x1;
+                let dy = y2 - y1;
+                x1 = x0 - dx / 2 * 0.8;
+                x2 = x0 + dx / 2 * 0.8;
+                y1 = y0 - dy / 2 * 0.8;
+                y2 = y0 + dy / 2 * 0.8;
+            }
             draw.line(x1, y1, x2, y2)
                 .stroke({
                     color: lineColor,
