@@ -1348,7 +1348,13 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                                     let end = edge2e.start.map((coord, i) => (2 * coord + edge1e.start[i] + edge2e.end[i]) / 4);
                                     let edge1s = edges.find(edge0 => edge0.head === edge.tail);
                                     let edge2s = edges.find(edge0 => edge0.tail === edge.tail);
-                                    let start = edge2s.start.map((coord, i) => (2 * coord + edge1s.start[i] + edge2s.end[i]) / 4);
+                                    let start = edge.start;
+                                    //console.log(edge1s, edge2s);
+                                    //console.log(1, start, edge1s, edge2s);
+                                    if (['red', 'blue'].includes(edge2s.color) && ['red', 'blue'].includes(edge1s.color)) {
+                                        start = edge2s.start.map((coord, i) => (2 * coord + edge1s.start[i] + edge2s.end[i]) / 4);
+                                        //console.log(2, start);
+                                    }
                                     //let start = edge2.start.map((coord, i) => (2 * coord + edge1.start[i] + edge2.end[i]) / 4);
                                     //console.log(end, edge.end);
                                     drawSymbolAlongEdge(draw, start, end, symbol, size, false, nodeId, comesFromLine);
@@ -1406,8 +1412,18 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                                 //console.log("Start point of edge with smallest tail:", edgeWithSmallestTail.start);
 
                                 const symbol = symbolMap[nodeId] || 'M0,-2.5 L0,2.5';
-                                drawSymbolAlongEdge(draw, edgeWithSmallestTail.start, incomingRedEdges[0].end, symbol, size, false, nodeId, false);
-                                //return edgeWithSmallestTail.start; // Return edge.start for the smallest tail
+                                try {
+                                    let edge1e = edges.find(edge0 => edge0.head === incomingRedEdges[0].head);
+                                    let edge2e = edges.find(edge0 => edge0.tail === incomingRedEdges[0].head);
+                                    let end = edge2e.start.map((coord, i) => (2 * coord + edge1e.start[i] + edge2e.end[i]) / 4);
+                                    let edge1s = edges.find(edge0 => edge0.head === edgeWithSmallestTail.tail);
+                                    let edge2s = edges.find(edge0 => edge0.tail === edgeWithSmallestTail.tail);
+                                    let start = edge2s.start.map((coord, i) => (2 * coord + edge1s.start[i] + edge2s.end[i]) / 4);
+                                    drawSymbolAlongEdge(draw, start, end, symbol, size, false, nodeId, false);
+                                } catch (error) {
+                                    drawSymbolAlongEdge(draw, edgeWithSmallestTail.start, incomingRedEdges[0].end, symbol, size, false, nodeId, false);
+                                    //return edgeWithSmallestTail.start; // Return edge.start for the smallest tail
+                                }
                             } else {
                                 //console.log("No edge found with the smallest tail");
                                 //return null; // or some default value
@@ -1629,7 +1645,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             }
             let scaleX = isChain ? scaleY : 1; // For chain, maintain aspect ratio
             if (['hdc3puff', 'hdc4puff', 'hdc5puff', 'dc3bobble', 'dc4bobble', 'dc5bobble', 'tr4bobble', 'dc3pc', 'dc4pc', 'dc5pc'].includes(nodeId)) {
-                scaleX = scaleY / 1.4;
+                scaleX = scaleY / 1.6;
             }
             let fill = 'none';
             if (nodeId === 'ss') {
