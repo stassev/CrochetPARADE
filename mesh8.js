@@ -1340,7 +1340,16 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                                 const comesFromLine = (incomingNode.label.split('|')[0]) === 'line';
 
                                 const symbol = symbolMap[nodeId] || 'M0,-2.5 L0,2.5';
-                                drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine);
+                                if (nodeId === 'ss') {
+                                    try {
+                                        let end = edge2.start.map((coord, i) => (2 * coord + edge1.start[i] + edge2.end[i]) / 4);
+                                        //console.log(end, edge.end);
+                                        drawSymbolAlongEdge(draw, edge.start, end, symbol, size, false, nodeId, comesFromLine);
+                                    } catch (error) {
+                                        drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine);
+                                    }
+                                } else
+                                    drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine);
                             });
                         } else {
                             //console.log(incomingRedEdges);
@@ -1609,8 +1618,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             let fill = 'none';
             if (nodeId === 'ss') {
                 fill = 'black';
-                scaleY *= 0.8;
-                scaleX = scaleY / 2.0;
+                scaleY *= 0.4;
+                scaleX = scaleY / 1.333;
             }
             const symbol = draw.path(centeredPath)
                 .fill(fill)
