@@ -3084,7 +3084,7 @@ function export_to_dot(Stitches, json) {
     //var json = null
     var JACS = [];
     if (json !== '') {
-        //json = JSON.parse8.json0)
+        //json = JSON.parse9.json0)
         for (var o of json.objects) {
             var pos = o.pos.split(',').map(Number);
             if (pos.length == 2) {
