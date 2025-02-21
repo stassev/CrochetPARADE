@@ -1337,8 +1337,15 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                         );
                         if (!(['hdc3puff', 'hdc4puff', 'hdc5puff', 'dc3bobble', 'dc4bobble', 'dc5bobble', 'tr4bobble', 'dc3pc', 'dc4pc', 'dc5pc'].includes(nodeId))) {
                             incomingRedEdges.forEach(edge => {
-                                const incomingNode = nodes.find(node => edge.tail === node._gvid);
+                                let incomingNode = nodes.find(node => edge.tail === node._gvid);
                                 const comesFromLine = (incomingNode.label.split('|')[0]) === 'line';
+                                incomingNode = incomingNode._gvid;
+                                //console.log(0, nodeId);
+                                //console.log(1, incomingNode);
+                                if (nodeId.endsWith('fl') || nodeId.endsWith('bl')) {
+                                    incomingNode = edges.find(edge => edge.head === incomingNode).tail;
+                                    //console.log(2, incomingNode);
+                                }
 
                                 const symbol = symbolMap[nodeId] || 'M0,-2.5 L0,2.5';
                                 //if (nodeId === 'ss') {
@@ -1346,8 +1353,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                                     let edge1e = edges.find(edge0 => edge0.head === edge.head);
                                     let edge2e = edges.find(edge0 => edge0.tail === edge.head);
                                     let end = edge2e.start.map((coord, i) => (2 * coord + edge1e.start[i] + edge2e.end[i]) / 4);
-                                    let edge1s = edges.find(edge0 => edge0.head === edge.tail);
-                                    let edge2s = edges.find(edge0 => edge0.tail === edge.tail);
+                                    let edge1s = edges.find(edge0 => edge0.head === incomingNode);
+                                    let edge2s = edges.find(edge0 => edge0.tail === incomingNode);
                                     let start = edge.start;
                                     //console.log(edge1s, edge2s);
                                     //console.log(1, start, edge1s, edge2s);
