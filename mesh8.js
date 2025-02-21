@@ -1349,19 +1349,25 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
                                 const symbol = symbolMap[nodeId] || 'M0,-2.5 L0,2.5';
                                 //if (nodeId === 'ss') {
+                                let end, start;
                                 try {
                                     let edge1e = edges.find(edge0 => edge0.head === edge.head);
                                     let edge2e = edges.find(edge0 => edge0.tail === edge.head);
-                                    let end = edge2e.start.map((coord, i) => (2 * coord + edge1e.start[i] + edge2e.end[i]) / 4);
-                                    let edge1s = edges.find(edge0 => edge0.head === incomingNode);
-                                    let edge2s = edges.find(edge0 => edge0.tail === incomingNode);
-                                    let start = edge.start;
-                                    //console.log(edge1s, edge2s);
-                                    //console.log(1, start, edge1s, edge2s);
-                                    if (['red', 'blue'].includes(edge2s.color) && ['red', 'blue'].includes(edge1s.color)) {
-                                        start = edge2s.start.map((coord, i) => (2 * coord + edge1s.start[i] + edge2s.end[i]) / 4);
-                                        //console.log(2, start);
+                                    end = edge2e.start.map((coord, i) => (2 * coord + edge1e.start[i] + edge2e.end[i]) / 4);
+                                    try {
+                                        let edge1s = edges.find(edge0 => edge0.head === incomingNode);
+                                        let edge2s = edges.find(edge0 => edge0.tail === incomingNode);
+                                        start = edge.start;
+                                        //console.log(edge1s, edge2s);
+                                        //console.log(1, start, edge1s, edge2s);
+                                        if (['red', 'blue'].includes(edge2s.color) && ['red', 'blue'].includes(edge1s.color)) {
+                                            start = edge2s.start.map((coord, i) => (2 * coord + edge1s.start[i] + edge2s.end[i]) / 4);
+                                            //console.log(2, start);
+                                        }
+                                    } catch (error) {
+                                        start = edge.start;
                                     }
+
                                     //let start = edge2.start.map((coord, i) => (2 * coord + edge1.start[i] + edge2.end[i]) / 4);
                                     //console.log(end, edge.end);
                                     drawSymbolAlongEdge(draw, start, end, symbol, size, false, nodeId, comesFromLine);
