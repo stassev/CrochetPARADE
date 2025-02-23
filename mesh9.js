@@ -506,6 +506,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
     camera.lookAt(0, 0, 0);
     var wasMouseDown = true;
+    var rotateAndSave = false;
+    var rotateAndSaveSizeSet = -1;
     var canvasClicked = false;
     var timeoutQ = true;
     var timeoutID = null;
@@ -524,6 +526,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         }
         if ((event.button === 0) && (canvasClicked)) { // Left mouse button
             wasMouseDown = true;
+            rotateAndSave = false;
         }
 
     }
@@ -871,9 +874,14 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         if ((canvasClicked) && (event.key === 'r')) {
             wasMouseDown = false;
         }
+        if ((canvasClicked) && (event.key === 'o')) {
+            rotateAndSave = true;
+            wasMouseDown = false;
+        }
+
         if (canvasClicked && (event.key === 'p')) {
             setTimeout(function() {
-                saveSvg();
+                saveSvg(rotateAndSave);
             }, 300);
         }
         if (canvasClicked && (event.key === 'h' && (event.ctrlKey || event.metaKey))) {
@@ -1226,7 +1234,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         'dc5pc': true
     };
 
-    function saveSvg() {
+    function saveSvg(rotateAndSave = false) {
         let size;
 
         function tightenAndCenterBBox(draw, svgPath, nodeId) {
@@ -1717,21 +1725,30 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 originY: 'center'
             });
         }
-
-        //while (true) {
-        //    try {
-        //        let s = prompt('Enter the height (in pixels) of the SVG file. This will affect size of labels. Default: 1500');
-        //        if (s === '')
-        //            size = 1500;
-        //        else
-        //            size = parseInt(s);
-        //    } catch (error) {
-        //        size = -1;
-        //    }
-        //    if ((size > 50) && (size < 15000))
-        //        break;
-        //}
-        size = 750;
+        //console.log(1, rotateAndSaveSizeSet, rotateAndSave);
+        if (rotateAndSaveSizeSet == -1 || (!rotateAndSave)) {
+            while (true) {
+                try {
+                    let s = prompt('Enter the height (in pixels) of the SVG file. This will affect size of labels. Default: 1500');
+                    if (s === '')
+                        size = 1500;
+                    else
+                        size = parseInt(s);
+                } catch (error) {
+                    size = -1;
+                }
+                if ((size > 50) && (size < 15000))
+                    break;
+            }
+            if (rotateAndSave)
+                rotateAndSaveSizeSet = size;
+            else
+                rotateAndSaveSizeSet = -1;
+        } else {
+            size = rotateAndSaveSizeSet;
+        }
+        //console.log(2, rotateAndSaveSizeSet, rotateAndSave);
+        //size = 750;
         // Set up camera and coordinate system
         const graphData = str;
         var xC = camera.position.x;
@@ -1946,9 +1963,9 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
             controls.autoRotate = true; //updateCamera();;
             controls.update();
-            setTimeout(function() {
-                saveSvg();
-            }, 300);
+            //setTimeout(function() {
+            //    saveSvg();
+            //}, 300);
         } else {
             controls.autoRotate = false; //updateCamera();;
             controls.update();
@@ -1959,11 +1976,19 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
 
         renderer.render(scene, camera);
-        if (!wasMouseDown) {
+        if ((!wasMouseDown) && rotateAndSave) {
+
+            rotateAndSave = false;
+            wasMouseDown = true;
             setTimeout(function() {
-                saveSvg();
+                saveSvg(true);
+
             }, 300);
         }
+        //if (rotateAndSave) {
+        //    rotateAndSave = false;
+        //    wasMouseDown = true;
+        //}
         //     rendererSVG.render(scene, camera);
         //     console.log(rendererSVG.domElement.outerHTML);
     }
