@@ -1718,20 +1718,20 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             });
         }
 
-        while (true) {
-            try {
-                let s = prompt('Enter the height (in pixels) of the SVG file. This will affect size of labels. Default: 1500');
-                if (s === '')
-                    size = 1500;
-                else
-                    size = parseInt(s);
-            } catch (error) {
-                size = -1;
-            }
-            if ((size > 50) && (size < 15000))
-                break;
-        }
-
+        //while (true) {
+        //    try {
+        //        let s = prompt('Enter the height (in pixels) of the SVG file. This will affect size of labels. Default: 1500');
+        //        if (s === '')
+        //            size = 1500;
+        //        else
+        //            size = parseInt(s);
+        //    } catch (error) {
+        //        size = -1;
+        //    }
+        //    if ((size > 50) && (size < 15000))
+        //        break;
+        //}
+        size = 750;
         // Set up camera and coordinate system
         const graphData = str;
         var xC = camera.position.x;
@@ -1946,6 +1946,9 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
             controls.autoRotate = true; //updateCamera();;
             controls.update();
+            setTimeout(function() {
+                saveSvg();
+            }, 300);
         } else {
             controls.autoRotate = false; //updateCamera();;
             controls.update();
@@ -1956,6 +1959,11 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
 
         renderer.render(scene, camera);
+        if (!wasMouseDown) {
+            setTimeout(function() {
+                saveSvg();
+            }, 300);
+        }
         //     rendererSVG.render(scene, camera);
         //     console.log(rendererSVG.domElement.outerHTML);
     }
