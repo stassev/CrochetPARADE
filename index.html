@@ -21,6 +21,7 @@
 
 <head>
     <meta charset="utf-8">
+
     <title>CrochetPARADE</title>
 
     <script type="importmap">
@@ -543,13 +544,15 @@
 </head>
 
 <body>
-
     <div class="container">
         <img class="logo" src="./logo.png" alt="CrochetPARADE">
         <div class="title-author">
             <p class="title">CrochetPARADE: Crochet PAttern Renderer, Analyzer and DEbugger</p>
             <p class="author">Svetlin Tassev</p>
-            <p class="date">Updated: Feb 21, 2025 (continued work on improving <a href="https://www.youtube.com/watch?v=obUhiLLJnDg" target="_blank">automatically generated crochet charts</a>)</p>
+            <p class="date">Updated: Feb 23, 2025 (Improved <a href="https://www.youtube.com/watch?v=obUhiLLJnDg" target="_blank">automatically generated crochet charts</a>. New keyboard shortcut "o". See Help.) <div style="font-size:14pt">Watch demos of 3D crochet diagrams created using latest update: <a href="https://www.youtube.com/watch?v=nn_1Fgtn9YA" target="_blank">(1) baby bootie</a> and
+                    <a href="https://www.youtube.com/watch?v=AWz4olzr4o8" target="_blank">(2) lacy hat</a>.
+                </div>
+            </p>
         </div>
     </div>
     <div id="announcement" style="background-color:rgb(253, 79, 79);color:#ffffff; font-size: 14pt; position: relative;">
@@ -589,7 +592,7 @@
 
 
 
-    <script src="./parse9.js"></script>
+    <script src="./parse10.js"></script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
 
@@ -1582,8 +1585,9 @@
                     <li><kbd>ctrl +/-</kbd>: increase/decrease radii of spheres and cylinders. Affects exported GLTF file as well.</li>
                     <li><kbd>i</kbd>: Toggle visibility of stitch information box.</li>
                     <li><kbd>shift+left click</kbd>: Toggle persistence of stitch information box.</li>
-                    <li><kbd>p</kbd>: Write view to SVG file. For 2D projects, it shows a face-on view. For 3D projects, it shows an orthographic projection from the current view.</li>
+                    <li><kbd>p</kbd>: Write crochet chart to SVG file. For 2D projects, it shows a face-on view. For 3D projects, it shows an orthographic projection from the current view.</li>
                     <li><kbd>r</kbd>: Rotate view automatically.</li>
+                    <li><kbd>o</kbd>: Rotate view a tiny amount and save crochet chart SVG corresponding to that view (only for 3D models!). Repeatedly pressing <kbd>o</kbd> leads to saving multiple charts for different views while model is rotating. Useful for creating videos of rotating 3D crochet charts. Resolution is specified only the first time key is pressed.</li>
                     <li><kbd>s</kbd>: Highlight over/under-stretched stitches. Blue for stitches that are too loose, and red for stitches that are too stretched (by more than about 15%) relative to their baseline height. The rest are shown in gray.</li>
                     <li><kbd>v</kbd>: Toggle visibility of arrowheads.</li>
                 </ul>
@@ -1707,7 +1711,7 @@
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh9.js';
+        import Generate3DModel from './mesh10.js';
          //import  "./viz-standalone.js";
          const button = document.getElementById("3dbutton");
          //const textarea = document.getElementById('inputText');

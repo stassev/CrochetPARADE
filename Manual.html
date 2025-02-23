@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Feb 1, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Feb 23, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -373,10 +373,12 @@
             exported GLTF file as well.</li>
         <li>i: Toggle visibility of stitch information box.</li>
         <li>shift+left click: Toggle persistence of stitch information box.</li>
-        <li>p: Write view to SVG file. For 2D projects, it shows a face-on view.
+        <li>p: Write crochet chart to SVG file. For 2D projects, it shows a face-on view.
             For 3D projects, it shows an orthographic projection from the current
             view.</li>
         <li>r: Rotate view automatically.</li>
+        <li><kbd>o</kbd>: Rotate view a tiny amount and save crochet chart SVG corresponding to that view (only for 3D models!). Repeatedly pressing <kbd>o</kbd> leads to saving multiple charts for different views while model is rotating. Useful for creating videos of rotating 3D crochet charts. Resolution is specified only the first time key is pressed.
+        </li>
         <li>s: Highlight over/under-stretched stitches. Blue for stitches that
             are too loose, and red for stitches that are too stretched (by more than
             about 15%) relative to their baseline height. The rest are shown in
