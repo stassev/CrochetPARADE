@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Feb 23, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Feb 24, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -486,11 +486,14 @@ sk,ch,9sc
     </p>
     <p>Stitching in the front and back loops is done by adding 'fl' or 'bl' at the end of a stitch name, such as
         <code>scbl</code> (single crochet in the back loop), <code>dcfl</code> (double crochet in the front loop), etc. By default,
-        only the basic stitches (ss, sc, hdc, dc, tr, dtr,trtr) are supported with the 'bl' and 'fl' options.
-        Also, one cannot combine 'fl/bl' with 'Ninc/Ntog'.
+        only the basic stitches (ss, sc, hdc, dc, tr, dtr,trtr) are supported with the 'bl' and 'fl' options. They are rendered in 3D by slightly shifting them behind and in front of the project for 'bl' and 'fl', respectively.
+        One cannot combine 'fl/bl' with 'Ninc/Ntog', although a workaround is to define a custom stitch. For example, <code>scbl3inc</code> can be defined as:
+        <pre><code>DEF: scbl3inc=3(scbl@1[@+1]),@[@+1]
+        </code></pre>
         If you want to add the 'fl/bl' option to other stitches, then
-        one should use a raw stitch definition (see "Raw stitch definitions and grammar").
+        one should use a raw stitch definition (see "Raw stitch definitions and grammar"). When exporting a crochet chart to SVG, 'fl' and 'bl' stitches are rendered using their standard symbols.
     </p>
+    <p>Front post and back post stitches are named with 'fp' and 'bp' preceding the stitch name. So, 'fpdc' is a front post double crochet. The difference in rendering the stitches is only in their default length -- a 'fpdc' is slightly shorter than 'dc' as the stitch starts lower as it is attached to the post, not the top V of a stitch. When exporting a crochet chart to SVG, 'fp' and 'bp' stitches are rendered using their standard symbols.</p>
     <p>Stitches can be repeated by multiplying them with an integer, say
         <code>10*sc</code> or <code>10 sc</code> or <code>10sc</code> would
         imply 10 single crochet stitches.</p>
@@ -1031,13 +1034,8 @@ DEF: p=3ch,ss@5[%,-4]
     <ul>
         <li>
             <p>Crocheting in the front and back loops is supported by adding 'bl' or 'fl' after standard crochet symbols such as 'scbl', 'dcbl', etc. or by
-                using the raw stitch grammar as explained previously.
+                using custom stitch definitions using the raw stitch grammar as explained previously.
                 However, the implementation is not perfect. Experiment with different starting seed values, e.g. <code>DOT: start=12 </code> if the stitches do not look quite right. </p>
-        </li>
-        <li>
-            <p>If you want to attach stitches in the front/back post, the above
-                also holds. Add a comment, and possibly shorten the stitch height,
-                e.g. <code>dc_front_post=Copy(dc,1.5)</code>.</p>
         </li>
         <li>
             <p>In most experiments I have run, the computation engine converges to
