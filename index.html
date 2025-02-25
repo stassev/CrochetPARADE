@@ -65,6 +65,7 @@
 
         .button,
         .button1,
+        .button2,
         .label {
             flex: 1;
             align-self: stretch;
@@ -114,6 +115,29 @@
             margin: 2px;
             box-shadow: 5px 2px 4px rgba(0, 0, 0, 0.3);
             background: linear-gradient(to right, #fbce1a, #d89000);
+            /* d86f00Remove default margin */
+        }
+
+        .button2 {
+            outline: none;
+            /* Remove the outline */
+
+            font-size: 14pt;
+
+            border: none;
+
+            color: rgb(0, 0, 0);
+            padding: 5px 10px;
+            /* Smaller padding */
+            text-align: left;
+            text-decoration: none;
+            display: inline-block;
+            /* Smaller font size */
+            border-radius: 2px;
+            cursor: pointer;
+            margin: 2px;
+            box-shadow: 5px 2px 4px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to right, #c31bc9, #e75fff);
             /* d86f00Remove default margin */
         }
 
@@ -549,11 +573,10 @@
         <div class="title-author">
             <p class="title">CrochetPARADE: Crochet PAttern Renderer, Analyzer and DEbugger</p>
             <p class="author">Svetlin Tassev</p>
-            <p class="date">Updated: Feb 23, 2025 (Improved <a href="https://www.youtube.com/watch?v=obUhiLLJnDg" target="_blank">automatically generated crochet charts</a>. New keyboard shortcut "o". See Help.) <div style="font-size:14pt">Watch demos of 3D crochet diagrams created using latest update: <a href="https://www.youtube.com/watch?v=nn_1Fgtn9YA" target="_blank">(1) baby bootie</a> and
-                    <a href="https://www.youtube.com/watch?v=AWz4olzr4o8" target="_blank">(2) lacy hat</a>.
-                </div>
-            </p>
+            <p class="date">Updated: Feb 25, 2025. Check out the <a href="https://crochetparade.org/crochetforum" target="_blank">CrochetPARADE forum</a>!
         </div>
+        </p>
+    </div>
     </div>
     <div id="announcement" style="background-color:rgb(253, 79, 79);color:#ffffff; font-size: 14pt; position: relative;">
         <span style="cursor: pointer; position: absolute; top: 5px; right: 5px;font-size:20pt;font-weight:600" onclick='closeAnnouncement("announcement")'>×</span>
@@ -832,7 +855,7 @@
                 <button class="button" onclick="document.getElementById('about').style.display='block'">About</button>
             </div>
         </div>
-
+        <button class="button2" onclick="window.open('https://crochetparade.org/crochetforum/', '_blank')">Forum</button>
         <button class="button1" onclick="window.open('https://donate.stripe.com/eVa6pK4XQ5Qg6vmbII', '_blank')">Leave a Tip</button>
 
 
