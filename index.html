@@ -573,7 +573,7 @@
         <div class="title-author">
             <p class="title">CrochetPARADE: Crochet PAttern Renderer, Analyzer and DEbugger</p>
             <p class="author">Svetlin Tassev</p>
-            <p class="date">Updated: Feb 26, 2025. Check out the <a href="https://crochetparade.org/crochetforum" target="_blank">brand new CrochetPARADE forum</a>!
+            <p class="date">Updated: Feb 27, 2025. Check out the <a href="https://crochetparade.org/crochetforum" target="_blank">brand new CrochetPARADE forum</a>!
         </div>
         </p>
     </div>
@@ -845,13 +845,15 @@
         <div class="dropdown">
             <button class="dropbtn" onclick="toggleDropdown('helpDropdown')">Help &#9660;</button>
             <div class="dropdown-content" id="helpDropdown">
-                <button class="button" onclick="showStats()">Crochet project info</button>
+                <button class="button" onclick="document.getElementById('infoSt').style.display='block'">Built-in stitches</button>
                 <button class="button" onclick="document.getElementById('info').style.display='block'">Keyboard shortcuts</button>
 
-                <button class="button" onclick="window.open('./Manual.html', '_blank')">Manual</button>
-                                <button class="button" onclick="window.open('https://crochetparade.org/crochetforum/forumdisplay.php?fid=3', '_blank')">Ask a question</button>
-                <button class="button" onclick="window.open('https://codeberg.org/crochetparade/CrochetPARADE/issues', '_blank')">File a bug report</button>
 
+
+                <button class="button" onclick="window.open('./Manual.html', '_blank')">Manual</button>
+                <button class="button" onclick="window.open('https://crochetparade.org/crochetforum/forumdisplay.php?fid=3', '_blank')">Ask a question</button>
+                <button class="button" onclick="window.open('https://codeberg.org/crochetparade/CrochetPARADE/issues', '_blank')">File a bug report</button>
+                <button class="button" onclick="showStats()">Stats for current crochet project</button>
 
                 <button class="button" onclick="document.getElementById('about').style.display='block'">About</button>
             </div>
@@ -1577,6 +1579,7 @@
         <p>AUTHOR</p>
         <p>Svetlin Tassev (2023)</p>
     </div>
+
     <div id="info" class="info-box">
         <span class="close-btn" onclick="document.getElementById('info').style.display='none'" style="float: right; cursor: pointer;">&times;</span>
         <h2 style="font-weight:400">Key bindings</h2>
@@ -1617,7 +1620,125 @@
                 </ul>
             </p>
     </div>
+    <div id="infoSt" class="info-box">
+        <span class="close-btn" onclick="document.getElementById('infoSt').style.display='none'" style="float: right; cursor: pointer;">&times;</span>
+        <h2 style="font-weight:400">Built-in stitches and special commands</h2>
 
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr>
+                <th>Stitch Name</th>
+                <th>Description</th>
+            </tr>
+            <tr>
+                <td><code>ch</code></td>
+                <td>Chain stitch, the foundation for many crochet projects</td>
+            </tr>
+            <tr>
+                <td><code>ss</code></td>
+                <td>Slip stitch, used to join rounds or move across stitches without adding height</td>
+            </tr>
+            <tr>
+                <td><code>sc</code></td>
+                <td>Single crochet, a basic stitch that creates a tight, sturdy fabric</td>
+            </tr>
+            <tr>
+                <td><code>hdc</code></td>
+                <td>Half double crochet, taller than a single crochet but shorter than a double crochet</td>
+            </tr>
+            <tr>
+                <td><code>dc</code></td>
+                <td>Double crochet, a tall stitch that creates an open, airy fabric</td>
+            </tr>
+            <tr>
+                <td><code>tr</code></td>
+                <td>Treble crochet, a very tall stitch that creates an even more open fabric</td>
+            </tr>
+            <tr>
+                <td><code>dtr</code></td>
+                <td>Double treble crochet, an extra tall stitch for very open, lacy patterns</td>
+            </tr>
+            <tr>
+                <td><code>trtr</code></td>
+                <td>Triple treble crochet, an extremely tall stitch for creating dramatic height</td>
+            </tr>
+            <tr>
+                <td><code>rsc</code></td>
+                <td>Reverse single crochet, also known as crab stitch, creates a decorative edging</td>
+            </tr>
+            <tr>
+                <td><code>bp...</code> (e.g., <code>bpsc</code>, <code>bphdc</code>, <code>bpdc</code>, <code>bptr</code>)</td>
+                <td>Back post stitches, worked behind the post of the stitch below for texture</td>
+            </tr>
+            <tr>
+                <td><code>fp...</code> (e.g., <code>fpsc</code>, <code>fphdc</code>, <code>fpdc</code>, <code>fptr</code>)</td>
+                <td>Front post stitches, worked around the post of the stitch below for texture</td>
+            </tr>
+            <tr>
+                <td><code>...fl</code> (e.g., <code>scfl</code>, <code>ssfl</code>, <code>dcfl</code>, <code>hdcfl</code>, <code>trfl</code>, <code>dtrfl</code>, <code>trtrfl</code>)</td>
+                <td>Stitches worked in front loop only, creating a horizontal ridge on the back of the work</td>
+            </tr>
+            <tr>
+                <td><code>...bl</code> (e.g., <code>scbl</code>, <code>ssbl</code>, <code>dcbl</code>, <code>hdcbl</code>, <code>trbl</code>, <code>dtrbl</code>, <code>trtrbl</code>)</td>
+                <td>Stitches worked in back loop only, creating a horizontal ridge on the front of the work</td>
+            </tr>
+            <tr>
+                <td><code>hdcNpuff</code> (<code>hdc3puff</code>, <code>hdc4puff</code>, <code>hdc5puff</code>)</td>
+                <td>Half double crochet puff stitch made with N loops, where N is typically 3, 4, or 5</td>
+            </tr>
+            <tr>
+                <td><code>dcNbobble</code> (<code>dc3bobble</code>, <code>dc4bobble</code>, <code>dc5bobble</code>)</td>
+                <td>Double crochet bobble stitch made with N stitches, where N is typically 3, 4, or 5</td>
+            </tr>
+            <tr>
+                <td><code>tr4bobble</code></td>
+                <td>Treble crochet bobble stitch made with 4 stitches</td>
+            </tr>
+            <tr>
+                <td><code>dcNpc</code> (<code>dc3pc</code>, <code>dc4pc</code>, <code>dc5pc</code>)</td>
+                <td>N-double crochet popcorn stitch, where N is typically 3, 4, or 5</td>
+            </tr>
+            <tr>
+                <td><code>picot3</code></td>
+                <td>A decorative loop made with 3 chain stitches and a slip stitch</td>
+            </tr>
+            <tr>
+                <td><code>longsc</code>, <code>longdc</code>, <code>longtr</code></td>
+                <td>Long sc/dc/tr, worked into a stitch in a previous row for added height</td>
+            </tr>
+            <tr>
+                <td><code>ring</code></td>
+                <td>A magic ring, forming a circular/point-like foundation for crochet projects</td>
+            </tr>
+            <tr>
+                <td><code>stitch_nameNinc</code>, <code>stitch_nameNtog</code></td>
+                <td>CrochetPARADE can handle automatically stitch increases and decreases with <code>stitch_nameNinc</code> and <code>stitch_nameNtog</code>, respectively. Here <code>N</code> is an integer denoting the number of stitches of the increase or decrease. For example: <code>sc2inc</code> corresponds to two single-crochet stitches worked into the same stitch; and <code>sc2tog</code> implies that one is doing a decrease by combining two single-crochet stitches.</td>
+            </tr>
+            <tr>
+                <td><code>sk</code></td>
+                <td>Skip stitch, used to create spaces or shape in the pattern</td>
+            </tr>
+            <tr>
+                <td><code>tie_up</code></td>
+                <td>Special command: ties up stitches -- used to secure yarn end at end of project.</td>
+            </tr>
+            <tr>
+                <td><code>start_at</code></td>
+                <td> Special command: creates a hidden stitch used to mark the starting point of a round or row. This marks starting with a new piece of yarn at a specified location in the project. Needs to be followed by a location, e.g. <code>start_at@[-1,0]</code></td>
+            </tr>
+            <tr>
+                <td><code>start_anew</code></td>
+                <td>Special command: creates a hidden stitch indicating the beginning of a new section or pattern of a disjoint piece.</td>
+            </tr>
+            <tr>
+                <td><code>start_a_new_chain</code></td>
+                <td>Special command: Begins a new chain of stitches, often used to start a new row or section of a disjoint piece.</td>
+            </tr>
+            <tr>
+                <td><code>turn</code></td>
+                <td>Special command: <code>turn</code> for turning the work at the end of a row or round. (See "Direction of sequential stitch attachment." for more details.)</td>
+            </tr>
+        </table>
+    </div>
 
 
 

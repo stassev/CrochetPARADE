@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Feb 24, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Feb 27, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -470,117 +470,118 @@
             <th>Description</th>
         </tr>
         <tr>
-            <td>ch</td>
+            <td><code>ch</code></td>
             <td>Chain stitch, the foundation for many crochet projects</td>
         </tr>
         <tr>
-            <td>ss</td>
+            <td><code>ss</code></td>
             <td>Slip stitch, used to join rounds or move across stitches without adding height</td>
         </tr>
         <tr>
-            <td>sc</td>
+            <td><code>sc</code></td>
             <td>Single crochet, a basic stitch that creates a tight, sturdy fabric</td>
         </tr>
         <tr>
-            <td>hdc</td>
+            <td><code>hdc</code></td>
             <td>Half double crochet, taller than a single crochet but shorter than a double crochet</td>
         </tr>
         <tr>
-            <td>dc</td>
+            <td><code>dc</code></td>
             <td>Double crochet, a tall stitch that creates an open, airy fabric</td>
         </tr>
         <tr>
-            <td>tr</td>
+            <td><code>tr</code></td>
             <td>Treble crochet, a very tall stitch that creates an even more open fabric</td>
         </tr>
         <tr>
-            <td>dtr</td>
+            <td><code>dtr</code></td>
             <td>Double treble crochet, an extra tall stitch for very open, lacy patterns</td>
         </tr>
         <tr>
-            <td>trtr</td>
+            <td><code>trtr</code></td>
             <td>Triple treble crochet, an extremely tall stitch for creating dramatic height</td>
         </tr>
         <tr>
-            <td>rsc</td>
+            <td><code>rsc</code></td>
             <td>Reverse single crochet, also known as crab stitch, creates a decorative edging</td>
         </tr>
         <tr>
-            <td>bp... (e.g., bpsc, bphdc, bpdc, bptr)</td>
+            <td><code>bp...</code> (e.g., <code>bpsc</code>, <code>bphdc</code>, <code>bpdc</code>, <code>bptr</code>)</td>
             <td>Back post stitches, worked behind the post of the stitch below for texture</td>
         </tr>
         <tr>
-            <td>fp... (e.g., fpsc, fphdc, fpdc, fptr)</td>
+            <td><code>fp...</code> (e.g., <code>fpsc</code>, <code>fphdc</code>, <code>fpdc</code>, <code>fptr</code>)</td>
             <td>Front post stitches, worked around the post of the stitch below for texture</td>
         </tr>
         <tr>
-            <td>...fl (e.g., scfl, ssfl, dcfl, hdcfl, trfl, dtrfl, trtrfl)</td>
+            <td><code>...fl</code> (e.g., <code>scfl</code>, <code>ssfl</code>, <code>dcfl</code>, <code>hdcfl</code>, <code>trfl</code>, <code>dtrfl</code>, <code>trtrfl</code>)</td>
             <td>Stitches worked in front loop only, creating a horizontal ridge on the back of the work</td>
         </tr>
         <tr>
-            <td>...bl (e.g., scbl, ssbl, dcbl, hdcbl, trbl, dtrbl, trtrbl)</td>
+            <td><code>...bl</code> (e.g., <code>scbl</code>, <code>ssbl</code>, <code>dcbl</code>, <code>hdcbl</code>, <code>trbl</code>, <code>dtrbl</code>, <code>trtrbl</code>)</td>
             <td>Stitches worked in back loop only, creating a horizontal ridge on the front of the work</td>
         </tr>
         <tr>
-            <td>hdcNpuff (hdc3puff, hdc4puff, hdc5puff)</td>
+            <td><code>hdcNpuff</code> (<code>hdc3puff</code>, <code>hdc4puff</code>, <code>hdc5puff</code>)</td>
             <td>Half double crochet puff stitch made with N loops, where N is typically 3, 4, or 5</td>
         </tr>
         <tr>
-            <td>dcNbobble (dc3bobble, dc4bobble, dc5bobble)</td>
+            <td><code>dcNbobble</code> (<code>dc3bobble</code>, <code>dc4bobble</code>, <code>dc5bobble</code>)</td>
             <td>Double crochet bobble stitch made with N stitches, where N is typically 3, 4, or 5</td>
         </tr>
         <tr>
-            <td>tr4bobble</td>
+            <td><code>tr4bobble</code></td>
             <td>Treble crochet bobble stitch made with 4 stitches</td>
         </tr>
         <tr>
-            <td>dcNpc (dc3pc, dc4pc, dc5pc)</td>
+            <td><code>dcNpc</code> (<code>dc3pc</code>, <code>dc4pc</code>, <code>dc5pc</code>)</td>
             <td>N-double crochet popcorn stitch, where N is typically 3, 4, or 5</td>
         </tr>
         <tr>
-            <td>picot3</td>
+            <td><code>picot3</code></td>
             <td>A decorative loop made with 3 chain stitches and a slip stitch</td>
         </tr>
         <tr>
-            <td>longsc, longdc, longtr</td>
+            <td><code>longsc</code>, <code>longdc</code>, <code>longtr</code></td>
             <td>Long sc/dc/tr, worked into a stitch in a previous row for added height</td>
         </tr>
         <tr>
-            <td>ring</td>
+            <td><code>ring</code></td>
             <td>A magic ring, forming a circular/point-like foundation for crochet projects</td>
         </tr>
         <tr>
-            <td>tie_up</td>
-            <td>Tie up stitches, used to secure yarn ends or join pieces</td>
+            <td><code>stitch_nameNinc</code>, <code>stitch_nameNtog</code></td>
+            <td>CrochetPARADE can handle automatically stitch increases and decreases with <code>stitch_nameNinc</code> and <code>stitch_nameNtog</code>, respectively. Here <code>N</code> is an integer denoting the number of stitches of the increase or decrease. For example: <code>sc2inc</code> corresponds to two single-crochet stitches worked into the same stitch; and <code>sc2tog</code> implies that one is doing a decrease by combining two single-crochet stitches.</td>
         </tr>
         <tr>
-            <td>start_at</td>
-            <td>A hidden stitch used to mark the starting point of a round or row. Usually this marks starting with a new piece of yarn at a new location in the project. Needs to be followed by a location, e.g. start_at@[-1,0]</td>
-        </tr>
-        <tr>
-            <td>start_anew</td>
-            <td>A hidden stitch indicating the beginning of a new section or pattern of a disjoint piece.</td>
-        </tr>
-        <tr>
-            <td>start_a_new_chain</td>
-            <td>Begins a new chain of stitches, often used to start a new row or section of a disjoint piece.</td>
-        </tr>
-        <tr>
-            <td>sk</td>
+            <td><code>sk</code></td>
             <td>Skip stitch, used to create spaces or shape in the pattern</td>
-        <tr>
-            <td>turn</td>
-            <td>"Turn" for turning the work at the end of a row or round. (See "Direction of sequential stitch attachment." for more details.)</td>
         </tr>
         <tr>
-            <td>stitch_nameNinc, stitch_nameNtog</td>
-            <td>CrochetPARADE can handle automatically stitch increases and decreases with stitch_nameNinc and stitch_nameNtog, respectively. Here N is an integer denoting the number of stitches of the increase or decrease. For example: sc2inc corresponds to two single-crochet stitches worked into the same stitch; and sc2tog implies that one is doing a decrease by combining two single-crochet stitches.</td>
+            <td><code>tie_up</code></td>
+            <td>Special command: ties up stitches -- used to secure yarn end at end of project.</td>
+        </tr>
+        <tr>
+            <td><code>start_at</code></td>
+            <td> Special command: creates a hidden stitch used to mark the starting point of a round or row. This marks starting with a new piece of yarn at a specified location in the project. Needs to be followed by a location, e.g. <code>start_at@[-1,0]</code></td>
+        </tr>
+        <tr>
+            <td><code>start_anew</code></td>
+            <td>Special command: creates a hidden stitch indicating the beginning of a new section or pattern of a disjoint piece.</td>
+        </tr>
+        <tr>
+            <td><code>start_a_new_chain</code></td>
+            <td>Special command: Begins a new chain of stitches, often used to start a new row or section of a disjoint piece.</td>
+        </tr>
+        <tr>
+            <td><code>turn</code></td>
+            <td>Special command: <code>turn</code> for turning the work at the end of a row or round. (See "Direction of sequential stitch attachment." for more details.)</td>
         </tr>
     </table>
     <p>Stitches are defined using common names <code>ch</code> for a chain,
         <code>sc</code> for single crochet,
         <code>ss</code> for slip-stitch, <code>dc</code> for double crochet,
-        etc. CrochetPARADE comes with built in set of some common stitches.
+        etc. CrochetPARADE comes with built in set of some common stitches (see table above).
         Stitches can also be defined using methods described further below in
         this chapter.</p>
     <p>Two special "stitches" are: <code>sk</code> for skip a stitch, and <code>turn</code> for turning the work. (See
