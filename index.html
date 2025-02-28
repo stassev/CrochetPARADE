@@ -1130,6 +1130,54 @@
                 update(textarea.value), 0
             });
         })
+        let defs;
+
+        function splitNameAndStr(word) {
+            const match = word.match(/^([a-zA-Z]+)(\d+)(.*)$/);
+            if (match) {
+                return {
+                    name: match[1],
+                    str: match[3]
+                };
+            } else {
+                return null; // Return null if the word doesn't match the pattern
+            }
+        }
+
+        function isPositiveIntegerOrZero(word) {
+            // Remove any leading or trailing whitespace
+            //word = word.trim();
+
+            // Check if the word is a valid positive integer or zero
+            return /^\d+$/.test(word) && parseInt(word) >= 0;
+        }
+
+        function add_word(word) {
+            word1 = word.replace(/\s|&nbsp;/g, '');
+            if (word1 === '\n' || word1.length == 0 || isPositiveIntegerOrZero(word1))
+                return `<span style="font-weight: 540;"><span style="background-color: transparent;">${word}</span>`;
+            //console.log(word1);
+            const [, digits, rest] = word.match(/^(\d*)(.*)$/);
+            const [, digits1, rest1] = word1.match(/^(\d*)(.*)$/);
+            if (Dictionary[rest1] || defs.includes(rest1) || word1 === 'turn')
+                return `<span style="font-weight: 540;"><span style="background-color: transparent;">${word}</span>`;
+            else {
+                let tmp = splitNameAndStr(rest1);
+                if (tmp)
+                    if (['inc', 'tog'].includes(tmp.str) && (Dictionary[tmp.name] || defs.includes(tmp.name)))
+                        return `<span style="font-weight: 540;"><span style="background-color: transparent;">${word}</span>`;
+                    else
+                        return `<span style="font-weight: 540;"><span style="background-color: transparent;">${digits}</span><span style="background-color: rgb(200,100,100);">${rest}</span></span>`;
+                else
+                    return `<span style="font-weight: 540;"><span style="background-color: transparent;">${digits}</span><span style="background-color: rgb(200,100,100);">${rest}</span></span>`;
+            }
+        }
+
+        function extractWords(input) {
+            const regex = /DEF:\s*(\S+)\s*=/g;
+            const matches = input.matchAll(regex);
+            return Array.from(matches, match => match[1]);
+        }
 
         function update(text) {
             const cursorPosition = textarea.selectionStart;
@@ -1180,8 +1228,11 @@
             let dollarCount = 0;
             let backslashCount = 0;
             let background = 'transparent';
-
+            let word = false;
+            let highlightedText1 = '';
+            defs = extractWords(inputString);
             for (let i = 0; i < text.length; i++) {
+
                 if (i == bracketIndex)
                     if (inputString[i] && inputString[i] !== '' && '[](){}'.includes(inputString[i]))
                         background = 'rgb(255,100,100)';
@@ -1266,28 +1317,83 @@
                 var texti = text[i].replaceAll(' ', '&nbsp;').replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;");
 
                 if (insideCommentText1) {
+                    if (word) {
+                        word = false;
+                        highlightedText += add_word(highlightedText1);
+                        highlightedText1 = '';
+                    }
                     highlightedText += '<span style="color:rgb(128,128,128);background-color:' + background + '">' + texti + '</span>';
                     //highlightedText += '<span style="color:rgb(128,128,128);">' + texti + '</span>';
                 } else if (insideCommentText) {
+                    if (word) {
+                        word = false;
+                        highlightedText += add_word(highlightedText1);
+                        highlightedText1 = '';
+                    }
                     highlightedText += '<span style="color:rgb(128,128,128);background-color:' + background + '">' + texti + '</span>';
                     //highlightedText += '<span style="color:rgb(128,128,128);">' + texti + '</span>';
                 } else if (insideDotText) {
+                    if (word) {
+                        word = false;
+                        highlightedText += add_word(highlightedText1);
+                        highlightedText1 = '';
+                    }
                     highlightedText += '<span style="color:rgb(150, 50, 50);font-weight:540;background-color:' + background + '">' + texti + '</span>';
                 } else if (insideColorText > 0) {
+                    if (word) {
+                        word = false;
+                        highlightedText += add_word(highlightedText1);
+                        highlightedText1 = '';
+                    }
                     highlightedText += '<span style="color:rgb(193, 124, 15);font-weight:540;background-color:' + background + '">' + texti + '</span>';
                 } else if (insideDefText) {
+                    if (word) {
+                        word = false;
+                        highlightedText += add_word(highlightedText1);
+                        highlightedText1 = '';
+                    }
                     highlightedText += '<span style="color:rgb(121, 42, 121);font-weight:540;background-color:' + background + '">' + texti + '</span>';
                 } else if (insideDollarText) {
+                    if (word) {
+                        word = false;
+                        highlightedText += add_word(highlightedText1);
+                        highlightedText1 = '';
+                    }
                     highlightedText += '<span style="color:rgb(40,160, 150);font-weight:540;background-color:' + background + '">' + texti + '</span>';
                 } else if (insideSpecialText) {
+                    if (word) {
+                        word = false;
+                        highlightedText += add_word(highlightedText1);
+                        highlightedText1 = '';
+                    }
                     highlightedText += '<span style="color:rgb(250,0, 0);font-weight:540;background-color:' + background + '">' + texti + '</span>';
                 } else if (insideLabelText) {
+                    if (word) {
+                        word = false;
+                        highlightedText += add_word(highlightedText1);
+                        highlightedText1 = '';
+                    }
                     if (label)
                         highlightedText += '<span style="color:rgb(80, 200, 80);font-weight:540;background-color:' + background + '">' + texti + '</span>';
                     else
                         highlightedText += '<span style="color:rgb(37, 170, 226);font-weight:540;background-color:' + background + '">' + texti + '</span>';
                 } else {
-                    highlightedText += '<span style="font-weight: 540;background-color:' + background + '">' + texti + '</span>'
+
+                    if (['&nbsp;', ' ', ',', '\n', '*', '[', ']', '{', '}', '(', ')'].includes(texti)) {
+                        //word = true;
+                        if (!['&nbsp;', ' '].includes(texti)) {
+                            highlightedText += add_word(highlightedText1);
+                            highlightedText1 = '';
+                            highlightedText += '<span style="font-weight: 540;background-color:' + background + '">' + texti + '</span>'
+                        } else {
+                            highlightedText1 += texti;
+                        }
+
+                    } else {
+                        word = true;
+                        highlightedText1 += texti
+                    }
+                    console.log(highlightedText1);
                     //.replace(new RegExp("&", "g"), "&amp;").replaceAll(" ", "&nbsp;").replace(new RegExp("<", "g"), "&lt;").replace(new RegExp(">", "g"), "&gt;") + '</b>'
                 }
 
@@ -1299,6 +1405,7 @@
                 background = 'transparent';
 
             }
+            highlightedText += add_word(highlightedText1);
             result_element.innerHTML = highlightedText.replaceAll('\n', '<br>');
             //console.log(result_element.innerHTML)
 
