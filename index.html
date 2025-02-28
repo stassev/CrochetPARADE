@@ -1153,23 +1153,31 @@
         }
 
         function add_word(word) {
+            //console.log(word)
             word1 = word.replace(/\s|&nbsp;/g, '');
             if (word1 === '\n' || word1.length == 0 || isPositiveIntegerOrZero(word1))
                 return `<span style="font-weight: 540;"><span style="background-color: transparent;">${word}</span>`;
             //console.log(word1);
-            const [, digits, rest] = word.match(/^(\d*)(.*)$/);
+            const [, digits, rest] = word.match(/^((?:\d+|\s+|&nbsp;+)*)(.*)$/);
             const [, digits1, rest1] = word1.match(/^(\d*)(.*)$/);
-            if (Dictionary[rest1] || defs.includes(rest1) || word1 === 'turn')
+            //console.log('a: ', digits, 'a: ', rest, 'a: ', digits1, 'a: ', rest1);
+            if (Dictionary[rest1] || defs.includes(rest1) || word1 === 'turn') {
+                //console.log('ok1');
                 return `<span style="font-weight: 540;"><span style="background-color: transparent;">${word}</span>`;
-            else {
+            } else {
                 let tmp = splitNameAndStr(rest1);
                 if (tmp)
-                    if (['inc', 'tog'].includes(tmp.str) && (Dictionary[tmp.name] || defs.includes(tmp.name)))
+                    if (['inc', 'tog'].includes(tmp.str) && (Dictionary[tmp.name] || defs.includes(tmp.name))) {
+                        //console.log('ok2');
                         return `<span style="font-weight: 540;"><span style="background-color: transparent;">${word}</span>`;
-                    else
-                        return `<span style="font-weight: 540;"><span style="background-color: transparent;">${digits}</span><span style="background-color: rgb(200,100,100);">${rest}</span></span>`;
-                else
+                    }
+                else {
+                    //console.log('ok3');
                     return `<span style="font-weight: 540;"><span style="background-color: transparent;">${digits}</span><span style="background-color: rgb(200,100,100);">${rest}</span></span>`;
+                } else {
+                    //console.log('ok4', digits, ' rest:', rest);
+                    return `<span style="font-weight: 540;"><span style="background-color: transparent;">${digits}</span><span style="background-color: rgb(200,100,100);">${rest}</span></span>`;
+                }
             }
         }
 
