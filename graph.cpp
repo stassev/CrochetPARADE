@@ -22,7 +22,7 @@
 #include <string>
 #include <sstream>
 #include <limits>
-const double INF = std::numeric_limits<double>::infinity();
+const double INF = 1e300;  //std::numeric_limits<double>::infinity();
 
 struct Jacobian {
     std::string jac1;
@@ -316,7 +316,7 @@ extern "C" const char* performLayout(const char* jsInput) {
     //std::getline(std::cin, dotContent);
     std::string dotContent(jsInput);
     int Ndim;
-    int seed=rand();
+    int seed=0;
     int iterations = 500;
     double inflate=2.0;
     double learningRate = 0.1;

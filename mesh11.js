@@ -23,12 +23,61 @@ import {
 import {
     GLTFExporter
 } from './GLTFExporter.js';
+import {
+    resetTranslation,
+    resetRotation,
+    resetTranslationMinMax,
+    setTranslationValues,
+    returnRotational,
+    returnTranslation,
+    setRotationAngles
+} from './transform_controls.js';
+
 //import {
 //    SVGRenderer
 //} from 'three/addons/renderers/SVGRenderer.js'
 export default function Generate3DModel(json0, renderer, scene, scene1, backgroundColor) {
+    resetTranslation();
+    resetRotation();
+    resetTranslationMinMax();
+
+    var planeMesh, gridHelper;
+    const planeSize = 10; // Adjust size as needed
+    const planeGeometry = new THREE.PlaneGeometry(planeSize, planeSize);
+    const planeMaterial = new THREE.MeshBasicMaterial({
+        color: 0xfce1f9, // Gray color
+        opacity: 0.7,
+        side: THREE.DoubleSide,
+        transparent: true
+    });
+
+    // Add event listener to your button
+
+    planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+
+    // Position the plane at the center of mass (COM)
+    planeMesh.position.set(0, 0, 0);
+
+    // Rotate the plane to be parallel to the x-y plane
+    planeMesh.rotation.z = -Math.PI / 2;
+
+    // Add grid lines
+    gridHelper = new THREE.GridHelper(planeSize, 10, 0x000000, 0x000000);
+    gridHelper.position.set(0, 0, 0.001);
+    gridHelper.rotation.x = Math.PI / 2;
 
 
+    // Add event listener to your checkbox
+    const checkbox = document.getElementById('toggleGuidesCheckbox');
+    checkbox.addEventListener('change', function() {
+        let guidesVisible = this.checked;
+        planeMesh.visible = guidesVisible;
+        gridHelper.visible = guidesVisible;
+    });
+
+    // Initialize visibility based on checkbox state
+    planeMesh.visible = checkbox.checked;
+    gridHelper.visible = checkbox.checked;
 
     if (renderer != null)
         renderer.dispose();
@@ -54,10 +103,13 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     //    rendererSVG.domElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
 
-    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse10.json0);
+    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse11.json0);
     //console.log(str)
     // Create a scene
     scene = new THREE.Scene();
+
+    scene.add(planeMesh);
+    scene.add(gridHelper);
     scene1 = new THREE.Scene();
 
     //set background color
@@ -74,7 +126,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
     // Create a renderer
 
-    const domElement = document.querySelector('canvas');
+    const domElement = document.getElementById('view3d').querySelector('canvas');
     if (domElement)
         domElement.parentNode.removeChild(domElement);
 
@@ -133,6 +185,20 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         });
     });
 
+    const controlsContainer = document.getElementById('controlPanel');
+
+    // Add event listener for the object input
+
+
+
+    //function updateScene(objectValue) {
+    //   // Your code to update the scene based on the object value
+    //   console.log('Object:', objectValue);
+    //   // Add your logic here
+    //}
+    const view3dElement = document.getElementById('view3d');
+    //view3dElement.appendChild(controlsContainer);
+
     observer.observe(view, {
         attributes: true
     });
@@ -172,7 +238,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         }
         o['pos'] = [(pos[0] - xm) / r2, (pos[1] - ym) / r2, (pos[2] - zm) / r2];
     }
-
+    var maxObjects;
 
     // Create a geometry for the nodes
     const nodeGeometry = new THREE.SphereGeometry(0.006, 8, 4);
@@ -186,11 +252,21 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         color: new THREE.Color(0, 0.8, 0)
     });
 
+    const selectedObjectMaterial = new THREE.MeshBasicMaterial({
+        color: new THREE.Color(0.0, 0.0, 0.3)
+    });
+
     var NODES = [];
     var NODEShidden = [];
     var NODES1 = [];
     // Create the nodes
+    let objectValue = -1;
     str.objects.forEach((obj) => {
+        if (str.edges.find((edge) => obj._gvid === edge.head) === undefined) {
+            // Do things if no match is found (i.e., if it's undefined)
+            objectValue++;
+        }
+        obj['objectValue'] = objectValue;
         if (obj.label.split('|')[0] !== "hidden") {
             const pos = obj.pos; //.split(',').map(Number);
             const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
@@ -201,10 +277,16 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             node['id0'] = obj.name.split('|')[0];
             node['row'] = [parseInt(obj.name.split('|')[0].split(',')[0]), parseInt(obj.name.split('|')[0].split(',')[1])];
             node['Color'] = obj.label.split('|')[2];
+            node['objectValue'] = objectValue;
+
             scene.add(node);
             NODES.push(node);
+            //console.log(obj);
         }
     });
+    maxObjects = objectValue;
+
+
 
     //Find average edge scaling factor
     var lenF = 0.0,
@@ -214,6 +296,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
         const tail = str.objects.find((obj) => obj._gvid === edge.tail);
         const head = str.objects.find((obj) => obj._gvid === edge.head);
+        edge['objectValue'] = tail['objectValue'];
 
         edge['length'] = Math.sqrt((tail.pos[0] - head.pos[0]) ** 2 + (tail.pos[1] - head.pos[1]) ** 2 + (tail.pos[2] - head.pos[2]) ** 2);
         if (['red', 'blue'].includes(edge.color)) {
@@ -333,7 +416,10 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
         const tail = str.objects.find((obj) => obj._gvid === edge.tail);
         const head = str.objects.find((obj) => obj._gvid === edge.head);
-
+        let objectValue = tail.objectValue;
+        if (!objectValue)
+            objectValue = head.objectValue;
+        //console.log('ok', objectValue, tail, head);
         edge['start'] = [tail.pos[0], tail.pos[1], tail.pos[2]];
         edge['end'] = [head.pos[0], head.pos[1], head.pos[2]];
 
@@ -457,7 +543,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
             // 4. Orient the cylinder along the vector formed by the two points
             line1.quaternion.copy(quaternion);
-
+            line1['objectValue'] = objectValue;
             // Add the line to the scene
             scene1.add(line1);
             NODES1.push(line1);
@@ -467,11 +553,14 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
 
         if (!(non)) {
+            line['objectValue'] = objectValue;
             NODES.push(line);
+            arrowhead['objectValue'] = objectValue;
             NODES.push(arrowhead);
-        } else
+        } else {
+            line['objectValue'] = objectValue;
             NODEShidden.push(line);
-
+        }
     });
     //console.log(NODES)
 
@@ -1234,6 +1323,94 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         'dc5pc': true
     };
 
+    function restoreCoordinates(graphData) {
+        if (!graphData.originalCoordinates) {
+            console.warn("No original coordinates stored. Cannot restore.");
+            return;
+        }
+
+        graphData.objects.forEach((obj, i) => {
+            if (graphData.originalCoordinates.objects[i]) {
+                obj.pos = [...graphData.originalCoordinates.objects[i]];
+            }
+        });
+
+        graphData.edges.forEach((edge, i) => {
+            if (graphData.originalCoordinates.edges[i]) {
+                edge.start = [...graphData.originalCoordinates.edges[i].start];
+                edge.end = [...graphData.originalCoordinates.edges[i].end];
+            }
+        });
+
+        delete graphData.originalCoordinates;
+    }
+
+    function applyRotation(graphData, objectData) {
+        graphData.originalCoordinates = {
+            objects: [],
+            edges: []
+        };
+        console.log(graphData, objectData, objectData[0].tx, objectData[0].com);
+
+        function rotatePoint(point, quaternion, com, translation) {
+            // Subtract center of mass
+            let x = point[0] - com.x;
+            let y = point[1] - com.y;
+            let z = point[2] - com.z;
+
+            const qx = quaternion.x,
+                qy = quaternion.y,
+                qz = quaternion.z,
+                qw = quaternion.w;
+
+            // Calculate rotation
+            const ix = qw * x + qy * z - qz * y;
+            const iy = qw * y + qz * x - qx * z;
+            const iz = qw * z + qx * y - qy * x;
+            const iw = -qx * x - qy * y - qz * z;
+
+            // Apply rotation
+            x = ix * qw + iw * -qx + iy * -qz - iz * -qy;
+            y = iy * qw + iw * -qy + iz * -qx - ix * -qz;
+            z = iz * qw + iw * -qz + ix * -qy - iy * -qx;
+
+            // Add translation and center of mass back
+            return [
+                x + translation[0] + com.x,
+                y + translation[1] + com.y,
+                z + translation[2] + com.z
+            ];
+        }
+
+        graphData.objects.forEach((obj, i) => {
+            const objectValue = obj.objectValue;
+            const data = objectData[objectValue];
+
+            if (data && data.quaternion) {
+                graphData.originalCoordinates.objects.push([...obj.pos]);
+                obj.pos = rotatePoint(obj.pos, data.quaternion, data.com, [data.tx, data.ty, data.tz]);
+            } else {
+                graphData.originalCoordinates.objects.push(null);
+            }
+        });
+
+        graphData.edges.forEach((edge, i) => {
+            const objectValue = edge.objectValue;
+            const data = objectData[objectValue];
+
+            if (data && data.quaternion) {
+                graphData.originalCoordinates.edges.push({
+                    start: [...edge.start],
+                    end: [...edge.end]
+                });
+                edge.start = rotatePoint(edge.start, data.quaternion, data.com, [data.tx, data.ty, data.tz]);
+                edge.end = rotatePoint(edge.end, data.quaternion, data.com, [data.tx, data.ty, data.tz]);
+            } else {
+                graphData.originalCoordinates.edges.push(null);
+            }
+        });
+    }
+
     function saveSvg(rotateAndSave = false) {
         let size;
 
@@ -1772,6 +1949,13 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         yU = -(-(xC * zR - zC * xR));
         zU = -(xC * yR - yC * xR);
 
+        applyRotation(graphData, objectData);
+
+        //these need to be rotated.
+        //  graphData.objects.pos
+        //  graphData.edges.start
+        //  graphData.edges.end
+
         // Create SVG for graph elements
         const drawGraph = SVG().size(size, size);
         const nodes = drawGraph.group();
@@ -1852,6 +2036,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         });
 
         // Save graph SVG
+
+        console.log(graphData);
         saveSVGToFile(drawGraph, 'graph.svg');
         addCrochetSymbolsBetweenNodes(drawGraph, graphData.objects, graphData.edges);
         saveSVGToFile(drawGraph, 'graph_with_std_crochet_symbols.svg');
@@ -1862,9 +2048,15 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
         // Save crochet symbols SVG
         saveSVGToFile(drawSymbols, 'crochet_symbols.svg');
+        restoreCoordinates(graphData);
+
     }
 
     function saveSVGToFile(draw, filename) {
+        const bbox = draw.bbox();
+
+        // Update the viewBox of the SVG to fit all elements
+        draw.viewbox(bbox.x, bbox.y, bbox.width, bbox.height);
         const svgData = draw.svg();
         const blob = new Blob([svgData], {
             type: 'image/svg+xml'
@@ -1949,6 +2141,258 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     }
     //exportGLTF(scene);
 
+    const objectInput = document.getElementById('objectInput');
+    objectInput.max = maxObjects; // Set the new max value
+    objectInput.dispatchEvent(new Event('input', {
+        bubbles: true
+    }));
+    // Object to store transformations and COM for each object value
+    const objectData = {};
+    var allNodes = [...NODES, ...NODEShidden, ...NODES1];
+
+    function initializeObjectData(objectValue) {
+        if (objectValue === -1) {
+            // Check for all existing #TRANSFORM_OBJECT: entries
+            const allTransformsRegex = /#TRANSFORM_OBJECT: (\d+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)/g;
+            let match;
+            let currentText = inputText.value;
+            updateObjectData(0, 0, 0, 0, 0, 0, 0);
+            while ((match = allTransformsRegex.exec(currentText)) !== null) {
+                let [, objValueStr, tx, ty, tz, rx, ry, rz] = match;
+                const objValue = parseInt(objValueStr, 10);
+                [tx, ty, tz, rx, ry, rz] = [tx, ty, tz, rx, ry, rz].map(parseFloat);
+                updateObjectData(objValue, tx, ty, tz, rx, ry, rz);
+            }
+        } else {
+            // Original logic for specific objectValue
+            const regex = new RegExp(`#TRANSFORM_OBJECT: ${objectValue},(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?)`, 'g');
+            const match = inputText.value.match(regex);
+            //console.log('none0:', objectData[objectValue]);
+            if (match) {
+                const [, tx, , ty, , tz, , rx, , ry, , rz] = match[0].split(',').map(parseFloat);
+                updateObjectData(objectValue, tx, ty, tz, rx, ry, rz);
+            } else if (!(objectValue in objectData)) {
+                //console.log('none:', objectData[objectValue]);
+                updateObjectData(objectValue, 0, 0, 0, 0, 0, 0);
+                //console.log('none2:', objectData[objectValue]);
+            }
+        }
+
+        //updateTextArea();
+    }
+
+    function updateObjectData(objectValue, tx, ty, tz, rx, ry, rz) {
+
+        if (!objectData[objectValue]) {
+            const relevantNodes = allNodes.filter(node => node.objectValue === objectValue);
+            const com = new THREE.Vector3();
+            relevantNodes.forEach(node => com.add(node.position));
+            com.divideScalar(relevantNodes.length);
+
+            objectData[objectValue] = {
+                tx,
+                ty,
+                tz,
+                rx,
+                ry,
+                rz,
+                quaternion: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0)),
+                com: com
+                //originalPositions: relevantNodes.map(node => node.position.clone().sub(com))
+            };
+        } else {
+            Object.assign(objectData[objectValue], {
+                tx,
+                ty,
+                tz,
+                rx,
+                ry,
+                rz
+            });
+            //  objectData[objectValue].quaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(rx, ry, rz));
+        }
+    }
+
+    function readInstructions() {
+        const allTransformsRegex = /#TRANSFORM_OBJECT: (\d+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)/g;
+        let match;
+        let currentText = inputText.value;
+        let k = 0;
+        while ((match = allTransformsRegex.exec(currentText)) !== null) {
+            k++;
+            let [, objValueStr, tx, ty, tz, rx, ry, rz] = match;
+            const objValue = parseInt(objValueStr, 10);
+            [tx, ty, tz, rx, ry, rz] = [tx, ty, tz, rx, ry, rz].map(parseFloat);
+
+            updateObjectData(objValue, tx, ty, tz, rx, ry, rz);
+            objectInput.value = objValue;
+            objectInput.dispatchEvent(new Event('input', {
+                bubbles: true
+            }));
+
+            //initializeObjectData(value);
+            updateUIFromStoredTransform(objValue);
+            updateTransform(objValue);
+
+        }
+        if (k == 0) {
+            for (let v = 0; v <= objectInput.max; v++) {
+                updateObjectData(v, 0, 0, 0, 0, 0, 0);
+                updateUIFromStoredTransform(v);
+                updateTransform(v);
+            }
+        } else
+            for (let v = 0; v <= parseInt(objectInput.max); v++) {
+                if (!objectData[v]) {
+                    updateObjectData(v, 0, 0, 0, 0, 0, 0);
+                    objectInput.value = v;
+                    objectInput.dispatchEvent(new Event('input', {
+                        bubbles: true
+                    }));
+                    updateUIFromStoredTransform(v);
+                    updateTransform(v);
+                }
+            }
+
+        updateUIFromStoredTransform(parseInt(objectInput.value));
+    }
+
+    function updateTextArea() {
+        // Get existing lines
+        let lines = inputText.value.split('\n');
+        let transformLines = {};
+        let otherLines = [];
+
+        // Separate transform lines and other lines
+        lines.forEach(line => {
+            if (line.startsWith('#TRANSFORM_OBJECT:')) {
+                const [, objValueStr] = line.split(':');
+                const objValue = parseInt(objValueStr.split(',')[0].trim(), 10);
+                transformLines[objValue] = line;
+            } else {
+                otherLines.push(line);
+            }
+        });
+
+        // Update or add transform lines
+        Object.keys(objectData).forEach(objValue => {
+            if (objValue <= objectInput.max) {
+                const data = objectData[objValue];
+                transformLines[objValue] = `#TRANSFORM_OBJECT: ${objValue},${data.tx},${data.ty},${data.tz},${data.rx},${data.ry},${data.rz}`;
+            }
+        });
+
+        // Combine other lines and transform lines
+        let updatedLines = otherLines.concat(Object.values(transformLines));
+
+        // Update textarea
+        inputText.value = updatedLines.join('\n');
+    }
+
+
+    objectInput.addEventListener('input', function() {
+        let value = parseInt(this.value);
+        if (isNaN(value)) value = 0;
+        value = Math.max(0, Math.min(objectInput.max, value));
+        this.value = value;
+
+        //initializeObjectData(value);
+        updateUIFromStoredTransform(value);
+        //console.log('aha:', objectData[value].tx);
+        //console.log('all:', returnTranslation());
+        updateTransform(value);
+        updateMaterials();
+        //console.log('aha1:', objectData[value].tx);
+
+
+    });
+
+    function updateUIFromStoredTransform(objectValue) {
+        //console.log(objectValue);
+        //console.log(objectData[objectValue]);
+        //console.log(objectData);
+        if (objectValue in objectData) {
+            //console.log('set!');
+            const data = objectData[objectValue];
+            //console.log('send:', data.tx);
+            setRotationAngles(THREE.MathUtils.radToDeg(data.ry), THREE.MathUtils.radToDeg(-data.rx), THREE.MathUtils.radToDeg(data.rz));
+            setTranslationValues(parseFloat(data.tx), parseFloat(data.ty), parseFloat(data.tz));
+            //console.log('back:', returnTranslation());
+            //console.log(planeMesh);
+
+
+            gridHelper.position.set(data.tx + data.com.x, data.ty + data.com.y, data.tz + data.com.z + 0.001);
+            planeMesh.position.set(data.tx + data.com.x, data.ty + data.com.y, data.tz + data.com.z);
+
+        } else {
+            setRotationAngles(0, 0, 0);
+            setTranslationValues(0, 0, 0);
+        }
+
+    }
+
+    function updateTransform(objectValue) {
+        if (objectValue == -1)
+            objectValue = parseInt(objectInput.value);
+        //console.log('aha2:', objectData[objectValue].tx);
+        initializeObjectData(objectValue);
+        //console.log('aha3:', objectData[objectValue].tx);
+        const data = objectData[objectValue];
+        //console.log('update:', data.tx);
+        let ss = returnTranslation();
+        //console.log('update1:', ss[0]);
+        data['tx'] = ss[0];
+        data['ty'] = ss[1];
+        data['tz'] = ss[2];
+        //console.log('tx', data.tx);
+        let rr = returnRotational();
+        data['rx'] = THREE.MathUtils.degToRad(-rr[1]);
+        data['ry'] = THREE.MathUtils.degToRad(rr[0]);
+        data['rz'] = THREE.MathUtils.degToRad(rr[2]);
+
+        const rotationQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(data.rx, data.ry, data.rz));
+        const rotationQuaternion0 = data.quaternion.invert();
+
+
+
+        const relevantNodes = allNodes.filter(node => node.objectValue === objectValue);
+        const com = new THREE.Vector3();
+        relevantNodes.forEach(node => com.add(node.position));
+        com.divideScalar(relevantNodes.length);
+        relevantNodes.forEach((node, index) => {
+            // Start from the original position relative to this object's COM
+
+            // Apply rotation
+            node.position.sub(com);
+            node.position.applyQuaternion(rotationQuaternion0);
+            node.position.applyQuaternion(rotationQuaternion);
+            node.quaternion.premultiply(rotationQuaternion0);
+            node.quaternion.premultiply(rotationQuaternion);
+            // Shift back by COM
+
+            // Apply translation and add back the COM
+            node.position.add(new THREE.Vector3(data.tx, data.ty, data.tz)).add(data.com);
+
+        });
+        data.quaternion.copy(rotationQuaternion);
+        renderer.render(scene, camera);
+        //updateTextArea();
+    }
+
+
+
+    // Add event listeners to sliders
+
+
+    // Initialize data for the first object value (assuming it's 0)
+
+
+
+
+    // Initial render
+    renderer.render(scene, camera);
+
+
 
     // Render the scene
     function animate() {
@@ -1973,8 +2417,6 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
 
 
-
-
         renderer.render(scene, camera);
         if ((!wasMouseDown) && rotateAndSave) {
 
@@ -1993,5 +2435,38 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         //     console.log(rendererSVG.domElement.outerHTML);
     }
     animate();
-    return [renderer, scene, onMouseDown, onMove, handleKeyDown, handleKeyUp, STATS, handleKeyDownHide, handleKeyDownHideAnim, exportGLTF, scene1, saveSvg];
+
+    document.addEventListener('myCustomEvent', function() {
+        updateTransform(-1);
+        //document.removeEventListener('myCustomEvent', handleMyCustomEvent);
+    });
+
+    function updateMaterials() {
+        const controlPanel = document.getElementById('controlPanel');
+
+        for (let i = 0; i < NODES.length; i++)
+            NODES[i].material = originalMaterials[i];
+        if (controlPanel.style.display === 'block') {
+            NODES.forEach(node => {
+                if (node.objectValue === parseInt(objectInput.value)) {
+                    if (node.material) {
+                        node.material.dispose(); // Dispose of the old material to free memory
+                    }
+                    node.material = selectedObjectMaterial;
+                }
+            });
+        }
+    }
+
+    // Monitor changes to controlPanel's display property
+    const observer1 = new MutationObserver(() => {
+        updateMaterials();
+    });
+
+    // Start observing changes to the style attribute of controlPanel
+    observer1.observe(document.getElementById('controlPanel'), {
+        attributes: true,
+        attributeFilter: ['style']
+    });
+    return [renderer, scene, onMouseDown, onMove, handleKeyDown, handleKeyUp, STATS, handleKeyDownHide, handleKeyDownHideAnim, exportGLTF, scene1, saveSvg, readInstructions, updateTextArea];
 }
