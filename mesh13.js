@@ -36,7 +36,10 @@ import {
 //import {
 //    SVGRenderer
 //} from 'three/addons/renderers/SVGRenderer.js'
-export default function Generate3DModel(json0, renderer, scene, scene1, backgroundColor) {
+export default function Generate3DModel(json0, renderer, scene, scene1, backgroundColor, c_was_pressed, factor_radius, requestedInfo) {
+
+
+
     resetTranslation();
     resetRotation();
     resetTranslationMinMax();
@@ -103,7 +106,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     //    rendererSVG.domElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
 
-    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse11.json0);
+    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse12.json0);
     //console.log(str)
     // Create a scene
     scene = new THREE.Scene();
@@ -654,7 +657,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         label.style.zIndex = '1000';
         return label;
     }
-    var requestedInfo = true;
+
 
     function onMove(event) {
 
@@ -800,16 +803,21 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         }
     }
 
-    var c_was_pressed = false;
-    var factor_radius = 1.0;
 
     var RESETCOLORS = true;
     var HIDE = str.objects.length - 1;
 
+    function dispatchMyEvent(data) {
+        const event = new CustomEvent('myEvent', {
+            detail: data // You can pass any data you want
+        });
+        document.dispatchEvent(event);
+    }
     //Search and highlight
     function handleKeyDown(event) {
         if (canvasClicked && (event.key === 'i')) {
             requestedInfo = !requestedInfo;
+            dispatchMyEvent([c_was_pressed, factor_radius, requestedInfo]);
             if (timeoutID != null)
                 clearTimeout(timeoutID);
             let myLabel = document.getElementById('myLabel');
@@ -821,6 +829,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         if (canvasClicked && (event.key === 'c')) {
             setTimeout(function() {
                 c_was_pressed = true;
+
                 showArrows = false;
                 for (let i of NODES) {
                     i.material = new THREE.MeshLambertMaterial({
@@ -833,6 +842,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                     i.visible = false;
                 ScaleRadii(4 / factor_radius); // show all radii as twice the default;
                 factor_radius = 4;
+                dispatchMyEvent([c_was_pressed, factor_radius, requestedInfo]);
             }, 200);
         }
         if (canvasClicked && ((event.key === '+') || (event.key === '=') || (event.key === '-')) && (event.ctrlKey || event.metaKey)) {
@@ -845,6 +855,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                     f = 1.0 / f;
                 factor_radius *= f;
                 ScaleRadii(f);
+                dispatchMyEvent([c_was_pressed, factor_radius, requestedInfo]);
             }, 300);
         }
         if (canvasClicked && (event.key === 'v')) {
@@ -939,6 +950,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
                 ScaleRadii(1 / factor_radius); // show all radii as normal;
                 factor_radius = 1;
+                dispatchMyEvent([c_was_pressed, factor_radius, requestedInfo]);
             } else {
                 HIDE = 0;
                 RESETCOLORS = false;
@@ -2468,5 +2480,20 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         attributes: true,
         attributeFilter: ['style']
     });
+
+    ScaleRadii(factor_radius);
+    if (c_was_pressed) {
+        showArrows = false;
+        for (let i of NODES) {
+            i.material = new THREE.MeshLambertMaterial({
+                color: new THREE.Color(i.Color)
+            });
+            if (('is_arrow' in i) || i.type == 0)
+                i.visible = false;
+        }
+        for (let i of NODEShidden)
+            i.visible = false;
+    }
+
     return [renderer, scene, onMouseDown, onMove, handleKeyDown, handleKeyUp, STATS, handleKeyDownHide, handleKeyDownHideAnim, exportGLTF, scene1, saveSvg, readInstructions, updateTextArea];
 }

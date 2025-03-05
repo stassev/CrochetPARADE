@@ -823,6 +823,10 @@
         <b>CrochetPARADE was updated to support crocheting in the back and front loops. See the Mosaic crochet showcase as well as the manual.</b>
     </div> -->
     <script>
+        var c_was_pressed = false;
+        var factor_radius = 1.0;
+        var requestedInfo = true;
+
         function closeAnnouncement(a) {
             var announcement = document.getElementById(a);
             announcement.style.display = "none";
@@ -905,7 +909,7 @@
 
 
 
-    <script src="./parse11.js"></script>
+    <script src="./parse13.js"></script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
 
@@ -2264,7 +2268,7 @@
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh11.js';
+        import Generate3DModel from './mesh13.js';
          //import  "./viz-standalone.js";
          const button = document.getElementById("3dbutton");
          //const textarea = document.getElementById('inputText');
@@ -2358,7 +2362,7 @@
  
                      DEBUG += '=======JSON0:=======\n' + JSON.stringify(json0) + '\n'
  
-                     var a = Generate3DModel(json0, renderer, scene, scene1, backgroundColor)
+                     var a = Generate3DModel(json0, renderer, scene, scene1, backgroundColor,c_was_pressed,factor_radius,requestedInfo)
                      renderer = a[0];
                      scene = a[1];
                      onMouseDown = a[2];
@@ -2512,6 +2516,9 @@
         // Show the loading icon before running the code
         document.body.appendChild(loadingIcon);
         loadingIcon.style.display = 'none';
+        document.addEventListener('myEvent', function(event) {
+            [c_was_pressed, factor_radius, requestedInfo] = event.detail;
+        });
     </script>
 </body>
 
