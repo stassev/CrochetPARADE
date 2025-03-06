@@ -264,7 +264,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     var NODES1 = [];
     // Create the nodes
     let objectValue = -1;
-    console.log(str);
+    //console.log(str);
     str.objects.forEach((obj) => {
         if (str.edges.find((edge) => obj._gvid === edge.head) === undefined) {
             // Do things if no match is found (i.e., if it's undefined)

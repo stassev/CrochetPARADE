@@ -135,8 +135,10 @@ function drawCanvas(canvas, values, minMax, xKey, yKey) {
     // Draw point
     const x = (values[xKey] + minMax[xKey]) / (2 * minMax[xKey]) * canvas.width;
     const y = canvas.height - (values[yKey] + minMax[yKey]) / (2 * minMax[yKey]) * canvas.height;
-
-    ctx.fillStyle = pointColor;
+    if (yKey === 'beta')
+        ctx.fillStyle = '#0075ff';
+    else
+        ctx.fillStyle = pointColor;
     ctx.beginPath();
     ctx.arc(x, y, pointR, 0, 2 * Math.PI);
     ctx.fill();
