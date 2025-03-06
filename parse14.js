@@ -778,7 +778,7 @@ DOT: iterations=4000
 var Dictionary = {
     ring: '&ring^A(ring):~::!-0.1-A',
     tie_up: '&tie up stitches^A(tie):B~A-B::!-0.1-A;B-0.7-A',
-    start_at: '&start_at^A(hidden):B~A-B::!-skip-A;A-0.001-B',
+    start_at: '&start_at^A(hidden):B~A-B::!-skip-A;B-0.001-A',
     start_anew: '&start_anew^A(hidden):~::!-skip-A',
     start_a_new_chain: '&start a new chain^A(ch):~::!-skip-A',
     sk: '&sk^:A~::',
