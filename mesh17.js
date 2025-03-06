@@ -1426,6 +1426,22 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
     function saveSvg(rotateAndSave = false) {
         let size;
+        if (c_was_pressed) {
+            c_was_pressed = false;
+            for (let i = 0; i < NODES.length; i++) {
+                NODES[i].material = originalMaterials[i];
+                NODES[i].visible = true;
+            }
+            for (let i = 0; i < NODEShidden.length; i++) {
+                NODEShidden[i].visible = true;
+            }
+            RESETCOLORS = true;
+            HIDE = str.objects.length - 1;
+
+            ScaleRadii(1 / factor_radius); // show all radii as normal;
+            factor_radius = 1;
+            dispatchMyEvent([c_was_pressed, factor_radius, requestedInfo]);
+        }
 
         function tightenAndCenterBBox(draw, svgPath, nodeId) {
             //console.log('ok1');
