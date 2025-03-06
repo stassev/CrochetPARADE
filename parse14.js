@@ -686,8 +686,84 @@ ch,sk,[sc,hdc5puff,sc]*6,sc,turn
 2ch,sk,[dc,dc5pc,dc]*6,dc,turn
 
 DOT: start=5`;
+var textSnowman2 = `#Simple amigurumi showcase
+COLOR:white
+ring.R
+5sc@R
+sc2inc*4,sc3inc
+[sc2inc,>,sc]*6
+[2sc,sc2inc,>,3sc,sc2inc]*3
+sc2inc, 3sc, sc2inc, 4sc, sc2inc, 3sc, sc2inc, 4sc, sc2inc, 3sc
+2sc, sc2inc, 4sc, sc2inc, 5sc, sc2inc, 4sc, sc2inc, 5sc, sc2inc, 2sc
+3sc, sc2inc, 7sc, sc2inc, 7sc, sc2inc, 7sc, sc2inc, 4sc
+5sc, sc2inc, 11sc, sc2inc, 11sc, sc2inc, 6sc
+10sc, sc2inc, 12sc, sc2inc, 12sc, sc2inc, 2sc
+2sc, sc2inc, 13sc, sc2inc, 13sc, sc2inc, 11sc
+19sc, sc2inc, 21sc, sc2inc, 3sc
+18sc, sc2inc, 28sc
+48sc
+48sc
+41sc, sc2tog, 5sc
+8sc, sc2tog, 22sc, sc2tog, 13sc
+1sc, sc2tog, 13sc, sc2tog, 13sc, sc2tog, 12sc
+8sc, sc2tog, 12sc, sc2tog, 12sc, sc2tog, 4sc
+3sc, sc2tog, 11sc, sc2tog, 11sc, sc2tog, 8sc
+7sc, sc2tog, 7 sc, sc2tog, 7 sc, sc2tog, 7sc, sc2tog
+2sc, sc2tog, 5 sc, sc2tog, 4 sc, sc2tog, 5sc, sc2tog, 4sc, sc2tog, 2sc
+sc2tog, 3sc, sc2tog, 4sc, sc2tog, 3sc, sc2tog, 4sc, sc2tog, 3sc
+sc2tog, 2sc, sc2tog, 2sc, sc2tog, 3sc, sc2tog, 2sc, sc2tog, 3sc
+sc2tog, sc, sc2tog, sc, sc2tog, sc, sc2tog, sc2tog, sc, sc2tog, sc
+sc2tog, sc2tog, sc3tog, sc2tog, sc2tog
+sc5tog
+start_anew
+ring.R2
+5sc@R2
+sc2inc, sc2inc, sc2inc, sc2inc, sc3inc
+sc2inc, sc, sc2inc, sc, sc2inc, sc, sc2inc, sc, sc2inc, sc, sc2inc
+2sc, sc2inc, 4sc, sc2inc, 3sc, sc2inc, 3sc, sc2inc, sc
+sc2inc, 4sc, sc2inc, 5sc, sc2inc, 4sc, sc2inc, 4sc
+2sc, sc2inc, 5sc, sc2inc, 6sc, sc2inc, 5sc, sc2inc, 3sc
+sc, sc2inc, 13sc, sc2inc, 13sc
+sc2inc, 30sc
+32sc
+15sc, sc2tog, 15sc
+8sc, sc2tog, 13sc, sc2tog, 6sc
+sc2tog, 6sc, sc2tog, 5sc, sc2tog, 5sc, sc2tog, 5sc
+3sc, sc2tog, 5sc, sc2tog, 4sc, sc2tog, 4sc, sc2tog, 1sc
+sc, sc2tog, 3sc, sc2tog, 4sc, sc2tog, 3sc, sc2tog, 2sc
+sc, sc2tog, sc, sc2tog, sc, sc2tog, sc2tog, sc, sc2tog, sc, sc2tog
+sc2tog, sc2tog, sc3tog, sc2tog, sc2tog
+sc5tog
+start_anew
+ring.R1
+5sc@R1
+sc2inc, sc2inc, sc2inc, sc2inc, sc3inc
+sc2inc, 2sc, sc2inc, 2sc, sc2inc, 2sc, sc2inc, sc
+3sc, sc2inc, 4sc, sc2inc, 4sc, sc2inc, sc
+7sc, sc2inc, 8sc, sc2inc, sc
+20sc
+3sc, sc2tog, 8sc, sc2tog, 5sc
+4sc, sc2tog, 4sc, sc2tog, 4sc, COLOR:black,sc2tog,COLOR:white
+sc, COLOR:black,sc2tog,COLOR:white, 2sc, sc2tog, 2sc, sc2tog, 2sc, sc2tog
+sc2tog, sc3tog, sc2tog, sc2tog, sc2tog
+COLOR:orange
+5sc
+sc2tog,sc,sc2tog
+3sc
+sc2tog,sc
+# Prevent repulsion between the disjoint balls, which would normally
+# separate the spheres apart. The repulsion distorts the shape of the 
+# the balls, which we want to prevent.
+DOT: separate=0
+# The values below were automatically generated after moving and rotating the 
+# body parts of the snowman after pressing the "Object Transform" button.
+#TRANSFORM_OBJECT: 0,0,-1.526,0,0,0,0
+#TRANSFORM_OBJECT: 1,0,0,0,0,0,0
+#TRANSFORM_OBJECT: 2,0,0.9748263306878693,0,2.220058808536787,0,0`;
 
-var textSnowman = `#Simple amigurumi showcase
+var textSnowman = `#Old amigurumi showcase
+#Kept it as a showcase for the old more complicated way of 
+#stitching together disjoint piecies.
 COLOR:white
 ring.R
 5sc@R
