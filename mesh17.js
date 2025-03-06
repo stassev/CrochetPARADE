@@ -1662,15 +1662,15 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
             }
             if (Dimen == 2) {
-                x1 = (avgPoint1[0] + 1) * size / 2.0;
-                y1 = (-avgPoint1[1] + 1) * size / 2.0;
-                x2 = (avgPoint2[0] + 1) * size / 2.0;
-                y2 = (-avgPoint2[1] + 1) * size / 2.0;
+                x1 = (avgPoint1[0]) * size / 2.0;
+                y1 = (-avgPoint1[1]) * size / 2.0;
+                x2 = (avgPoint2[0]) * size / 2.0;
+                y2 = (-avgPoint2[1]) * size / 2.0;
             } else {
-                x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR + 1) * size / 2.0;
-                y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU + 1) * size / 2.0;
-                x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR + 1) * size / 2.0;
-                y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU + 1) * size / 2.0;
+                x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR) * size / 2.0;
+                y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU) * size / 2.0;
+                x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR) * size / 2.0;
+                y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU) * size / 2.0;
             }
 
             const angle = Math.atan2(y2 - y1, x2 - x1);
@@ -1733,19 +1733,19 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
             // Transform points
             if (Dimen == 2) {
-                x0 = (avgPoint0[0] + 1) * size / 2.0;
-                y0 = (-avgPoint0[1] + 1) * size / 2.0;
-                x1 = (avgPoint1[0] + 1) * size / 2.0;
-                y1 = (-avgPoint1[1] + 1) * size / 2.0;
-                x2 = (avgPoint2[0] + 1) * size / 2.0;
-                y2 = (-avgPoint2[1] + 1) * size / 2.0;
+                x0 = (avgPoint0[0]) * size / 2.0;
+                y0 = (-avgPoint0[1]) * size / 2.0;
+                x1 = (avgPoint1[0]) * size / 2.0;
+                y1 = (-avgPoint1[1]) * size / 2.0;
+                x2 = (avgPoint2[0]) * size / 2.0;
+                y2 = (-avgPoint2[1]) * size / 2.0;
             } else {
-                x0 = (avgPoint0[0] * xR + avgPoint0[1] * yR + avgPoint0[2] * zR + 1) * size / 2.0;
-                y0 = (avgPoint0[0] * xU + avgPoint0[1] * yU + avgPoint0[2] * zU + 1) * size / 2.0;
-                x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR + 1) * size / 2.0;
-                y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU + 1) * size / 2.0;
-                x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR + 1) * size / 2.0;
-                y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU + 1) * size / 2.0;
+                x0 = (avgPoint0[0] * xR + avgPoint0[1] * yR + avgPoint0[2] * zR) * size / 2.0;
+                y0 = (avgPoint0[0] * xU + avgPoint0[1] * yU + avgPoint0[2] * zU) * size / 2.0;
+                x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR) * size / 2.0;
+                y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU) * size / 2.0;
+                x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR) * size / 2.0;
+                y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU) * size / 2.0;
             }
 
             // Calculate the direction vector of the original line
@@ -1792,15 +1792,15 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             }
 
             if (Dimen == 2) {
-                x1 = (avgPoint1[0] + 1) * size / 2.0;
-                y1 = (-avgPoint1[1] + 1) * size / 2.0;
-                x2 = (avgPoint2[0] + 1) * size / 2.0;
-                y2 = (-avgPoint2[1] + 1) * size / 2.0;
+                x1 = (avgPoint1[0]) * size / 2.0;
+                y1 = (-avgPoint1[1]) * size / 2.0;
+                x2 = (avgPoint2[0]) * size / 2.0;
+                y2 = (-avgPoint2[1]) * size / 2.0;
             } else {
-                x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR + 1) * size / 2.0;
-                y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU + 1) * size / 2.0;
-                x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR + 1) * size / 2.0;
-                y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU + 1) * size / 2.0;
+                x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR) * size / 2.0;
+                y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU) * size / 2.0;
+                x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR) * size / 2.0;
+                y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU) * size / 2.0;
             }
             if (lineColor === 'black') {
                 let x0 = (x1 + x2) / 2.0;
@@ -1825,15 +1825,15 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             let x1, y1, x2, y2;
 
             if (Dimen == 2) {
-                x1 = (start[0] + 1) * size / 2.0;
-                y1 = (-start[1] + 1) * size / 2.0;
-                x2 = (end[0] + 1) * size / 2.0;
-                y2 = (-end[1] + 1) * size / 2.0;
+                x1 = (start[0]) * size / 2.0;
+                y1 = (-start[1]) * size / 2.0;
+                x2 = (end[0]) * size / 2.0;
+                y2 = (-end[1]) * size / 2.0;
             } else {
-                x1 = (start[0] * xR + start[1] * yR + start[2] * zR + 1) * size / 2.0;
-                y1 = (start[0] * xU + start[1] * yU + start[2] * zU + 1) * size / 2.0;
-                x2 = (end[0] * xR + end[1] * yR + end[2] * zR + 1) * size / 2.0;
-                y2 = (end[0] * xU + end[1] * yU + end[2] * zU + 1) * size / 2.0;
+                x1 = (start[0] * xR + start[1] * yR + start[2] * zR) * size / 2.0;
+                y1 = (start[0] * xU + start[1] * yU + start[2] * zU) * size / 2.0;
+                x2 = (end[0] * xR + end[1] * yR + end[2] * zR) * size / 2.0;
+                y2 = (end[0] * xU + end[1] * yU + end[2] * zU) * size / 2.0;
             }
 
             const angle = Math.atan2(y2 - y1, x2 - x1);
@@ -1989,11 +1989,11 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             if (vis && (node.label.split('|')[0] !== "hidden")) {
                 var x, y;
                 if (Dimen == 2) {
-                    x = (node.pos[0] + 1) * size / 2.0;
-                    y = (-node.pos[1] + 1) * size / 2.0;
+                    x = (node.pos[0]) * size / 2.0;
+                    y = (-node.pos[1]) * size / 2.0;
                 } else {
-                    x = ((node.pos[0] * xR + node.pos[1] * yR + node.pos[2] * zR) + 1) * size / 2.0;
-                    y = ((node.pos[0] * xU + node.pos[1] * yU + node.pos[2] * zU) + 1) * size / 2.0;
+                    x = ((node.pos[0] * xR + node.pos[1] * yR + node.pos[2] * zR)) * size / 2.0;
+                    y = ((node.pos[0] * xU + node.pos[1] * yU + node.pos[2] * zU)) * size / 2.0;
                 }
                 const circle = nodes.circle(5).center(x, y).fill('white').stroke('gray');
                 var text = nodes.text(node.label.split('|')[0] + '(' + node.name.split('|')[0] + ')').cx(x).cy(y);
@@ -2014,15 +2014,15 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             const end = edge.end;
             var x0, y0, x1, y1;
             if (Dimen == 2) {
-                x0 = (start[0] + 1) * size / 2.0;
-                y0 = (-start[1] + 1) * size / 2.0;
-                x1 = (end[0] + 1) * size / 2.0;
-                y1 = (-end[1] + 1) * size / 2.0;
+                x0 = (start[0]) * size / 2.0;
+                y0 = (-start[1]) * size / 2.0;
+                x1 = (end[0]) * size / 2.0;
+                y1 = (-end[1]) * size / 2.0;
             } else {
-                x0 = ((start[0] * xR + start[1] * yR + start[2] * zR) + 1) * size / 2.0;
-                y0 = ((start[0] * xU + start[1] * yU + start[2] * zU) + 1) * size / 2.0;
-                x1 = ((end[0] * xR + end[1] * yR + end[2] * zR) + 1) * size / 2.0;
-                y1 = ((end[0] * xU + end[1] * yU + end[2] * zU) + 1) * size / 2.0;
+                x0 = ((start[0] * xR + start[1] * yR + start[2] * zR)) * size / 2.0;
+                y0 = ((start[0] * xU + start[1] * yU + start[2] * zU)) * size / 2.0;
+                x1 = ((end[0] * xR + end[1] * yR + end[2] * zR)) * size / 2.0;
+                y1 = ((end[0] * xU + end[1] * yU + end[2] * zU)) * size / 2.0;
             }
 
             let name = str.objects[str.objects.findIndex((obj) => obj._gvid === edge.head)].name.split('|')[0];
@@ -2051,25 +2051,48 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         // Save graph SVG
 
         console.log(graphData);
-        saveSVGToFile(drawGraph, 'graph.svg');
+        saveSVGToFile(drawGraph, 'graph.svg', size);
         addCrochetSymbolsBetweenNodes(drawGraph, graphData.objects, graphData.edges);
-        saveSVGToFile(drawGraph, 'graph_with_std_crochet_symbols.svg');
+        saveSVGToFile(drawGraph, 'graph_with_std_crochet_symbols.svg', size);
 
         // Create SVG for crochet symbols
         const drawSymbols = SVG().size(size, size);
         addCrochetSymbolsBetweenNodes(drawSymbols, graphData.objects, graphData.edges);
 
         // Save crochet symbols SVG
-        saveSVGToFile(drawSymbols, 'crochet_symbols.svg');
+        saveSVGToFile(drawSymbols, 'crochet_symbols.svg', size);
         restoreCoordinates(graphData);
 
     }
 
-    function saveSVGToFile(draw, filename) {
+    function adjustSVGToSymmetricBBox(draw) {
+        // Get the current bounding box of all elements
         const bbox = draw.bbox();
 
+        // Calculate the maximum extent in each direction to make it symmetric
+        const maxExtentX = Math.max(Math.abs(bbox.x), Math.abs(bbox.x2));
+        const maxExtentY = Math.max(Math.abs(bbox.y), Math.abs(bbox.y2));
+
+        // Define a new symmetric bounding box centered at (0, 0)
+        const newWidth = maxExtentX * 2; // Total width
+        const newHeight = maxExtentY * 2; // Total height
+        const newX = -maxExtentX; // Start x-coordinate
+        const newY = -maxExtentY; // Start y-coordinate
+
+        // Set the viewBox to the new symmetric bounding box
+        draw.viewbox(newX, newY, newWidth, newHeight);
+
+        // Resize the SVG element to match the new dimensions
+        draw.size(newWidth, newHeight);
+    }
+
+    function saveSVGToFile(draw, filename) {
+        //const bbox = draw.bbox();
+        //console.log(draw.bbox());
+        adjustSVGToSymmetricBBox(draw);
+        //console.log(draw.bbox());
         // Update the viewBox of the SVG to fit all elements
-        draw.viewbox(bbox.x, bbox.y, bbox.width, bbox.height);
+        //draw.viewbox(bbox.x, bbox.y, bbox.width, bbox.height);
         const svgData = draw.svg();
         const blob = new Blob([svgData], {
             type: 'image/svg+xml'
@@ -2457,9 +2480,10 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     function updateMaterials() {
         const controlPanel = document.getElementById('controlPanel');
 
-        for (let i = 0; i < NODES.length; i++)
-            NODES[i].material = originalMaterials[i];
         if (controlPanel.style.display === 'block') {
+            for (let i = 0; i < NODES.length; i++)
+                NODES[i].material = originalMaterials[i];
+
             NODES.forEach(node => {
                 if (node.objectValue === parseInt(objectInput.value)) {
                     if (node.material) {
@@ -2468,17 +2492,64 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                     node.material = selectedObjectMaterial;
                 }
             });
+            ScaleRadii(1 / factor_radius);
+            factor_radius = 1.0;
+            c_was_pressed = false;
+            dispatchMyEvent([c_was_pressed, factor_radius, requestedInfo]);
         }
+
     }
 
-    // Monitor changes to controlPanel's display property
-    const observer1 = new MutationObserver(() => {
-        updateMaterials();
+    const controlPanel = document.getElementById('controlPanel');
+    const observer1 = new MutationObserver(mutationsList => {
+        mutationsList.forEach(mutation => {
+            if (mutation.attributeName === 'style') {
+                const currentDisplay = window.getComputedStyle(controlPanel).display;
+                const matchResult = mutation.oldValue && mutation.oldValue.match(/display:\s*(\w+)/);
+                const previousDisplay = matchResult ? matchResult[1] : 'none';
+
+                // Trigger updateMaterials only when display changes from 'none' to 'block'
+                if (previousDisplay === 'none' && currentDisplay === 'block') {
+                    updateMaterials();
+                }
+                if (previousDisplay === 'block' && currentDisplay === 'none') {
+                    if (!c_was_pressed) {
+                        //c_was_pressed = false;
+                        for (let i = 0; i < NODES.length; i++)
+                            NODES[i].material = originalMaterials[i];
+                        ScaleRadii(1 / factor_radius);
+                        factor_radius = 1.0;
+                        dispatchMyEvent([c_was_pressed, factor_radius, requestedInfo]);
+                    } else {
+                        dispatchMyEvent([c_was_pressed, factor_radius, requestedInfo]);
+                        showArrows = false;
+                        for (let i of NODES) {
+                            i.material = new THREE.MeshLambertMaterial({
+                                color: new THREE.Color(i.Color)
+                            });
+                            if (('is_arrow' in i) || i.type == 0)
+                                i.visible = false;
+                        }
+                        for (let i of NODEShidden)
+                            i.visible = false;
+
+                    }
+                }
+
+            }
+        });
     });
 
-    // Start observing changes to the style attribute of controlPanel
-    observer1.observe(document.getElementById('controlPanel'), {
+    // Observe the controlPanel element for style attribute changes
+    observer1.observe(controlPanel, {
         attributes: true,
+        attributeOldValue: true,
+        attributeFilter: ['style']
+    });
+    // Start observing changes to the style attribute of controlPanel
+    observer1.observe(controlPanel, {
+        attributes: true,
+        attributeOldValue: true,
         attributeFilter: ['style']
     });
 
