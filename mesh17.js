@@ -43,6 +43,18 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     resetTranslation();
     resetRotation();
     resetTranslationMinMax();
+    const arrowLength = 1; // Length of the arrows
+    const arrowColors = {
+        x: 0xff0000, // Red for X-axis
+        y: 0x00ff00, // Green for Y-axis
+        z: 0x0000ff // Blue for Z-axis
+    };
+
+    const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), arrowLength, arrowColors.x);
+    const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), arrowLength, arrowColors.y);
+    const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), arrowLength, arrowColors.z);
+    const axesGroup = new THREE.Group();
+    axesGroup.add(arrowX, arrowY, arrowZ);
 
     var planeMesh, gridHelper;
     const planeSize = 10; // Adjust size as needed
@@ -76,11 +88,20 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         let guidesVisible = this.checked;
         planeMesh.visible = guidesVisible;
         gridHelper.visible = guidesVisible;
+        //arrowX.visible = guidesVisible;
+        //arrowY.visible = guidesVisible;
+        //arrowZ.visible = guidesVisible; 
+        axesGroup.visible = guidesVisible;
+
     });
 
     // Initialize visibility based on checkbox state
     planeMesh.visible = checkbox.checked;
     gridHelper.visible = checkbox.checked;
+    //arrowX.visible = checkbox.checked;
+    //arrowY.visible = checkbox.checked;
+    //arrowZ.visible = checkbox.checked;
+    axesGroup.visible = checkbox.checked;
 
     if (renderer != null)
         renderer.dispose();
@@ -110,10 +131,95 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     //console.log(str)
     // Create a scene
     scene = new THREE.Scene();
-
+    scene.add(axesGroup);
     scene.add(planeMesh);
     scene.add(gridHelper);
     scene1 = new THREE.Scene();
+    //scene.add(arrowX);
+    //scene.add(arrowY);
+    //scene.add(arrowZ);
+
+    function updateAxesVisualization(data) {
+        const position = new THREE.Vector3(
+            data.tx + data.com.x,
+            data.ty + data.com.y,
+            data.tz + data.com.z
+        );
+        axesGroup.position.copy(position);
+        //axesGroup.setRotationFromQuaternion(new THREE.Quaternion(
+        //    data.quaternion.x,
+        //    data.quaternion.y,
+        //    data.quaternion.z,
+        //    data.quaternion.w
+        //));
+        // Convert quaternion to Euler angles (assuming ZYX order)
+        const euler = new THREE.Euler().setFromQuaternion(
+            new THREE.Quaternion(
+                data.quaternion.x,
+                data.quaternion.y,
+                data.quaternion.z,
+                data.quaternion.w
+            ),
+            'XYZ'
+        );
+
+        // Calculate rotation axes
+        //const zAxis = new THREE.Vector3(0, 0, 1); // Z-axis is always global Z for first rotation
+
+        // Y-axis is rotated around Z
+        //const yAxis = new THREE.Vector3(0, 1, 0)
+        //    .applyAxisAngle(new THREE.Vector3(0, 0, 1), euler.z);
+
+        // X-axis is rotated around Z, then around rotated Y
+        //const xAxis = new THREE.Vector3(1, 0, 0)
+        //    .applyAxisAngle(new THREE.Vector3(0, 0, 1), euler.z)
+        //    .applyAxisAngle(yAxis, euler.y);
+        const zAxis = new THREE.Vector3(0, 0, 1)
+            .applyAxisAngle(new THREE.Vector3(0, 1, 0), euler.y)
+            .applyAxisAngle(new THREE.Vector3(1, 0, 0), euler.x);
+
+        // Y-axis: rotated by first angle (alpha)
+        const yAxis = new THREE.Vector3(0, 1, 0)
+            .applyAxisAngle(new THREE.Vector3(1, 0, 0), euler.x);
+        if (yAxis.z < 0) {
+            yAxis.x = -yAxis.x;
+            yAxis.y = -yAxis.y;
+            yAxis.z = -yAxis.z;
+        }
+
+        // X-axis: global X (last rotation axis)
+        const xAxis = new THREE.Vector3(1, 0, 0);
+        // Update the arrows
+        //.position.copy(position);
+        arrowX.setDirection(xAxis);
+
+        //arrowY.position.copy(position);
+        arrowY.setDirection(yAxis);
+
+        //arrowZ.position.copy(position);
+        arrowZ.setDirection(zAxis);
+        //arrowX.position.copy(position);
+        //arrowY.position.copy(position);
+        //arrowZ.position.copy(position);
+        //arrowX.setRotationFromQuaternion(new THREE.Quaternion(
+        //    data.quaternion.x,
+        //    data.quaternion.y,
+        //    data.quaternion.z,
+        //    data.quaternion.w
+        //));
+        //arrowY.setRotationFromQuaternion(new THREE.Quaternion(
+        //    data.quaternion.x,
+        //    data.quaternion.y,
+        //    data.quaternion.z,
+        //    data.quaternion.w
+        //));
+        //arrowZ.setRotationFromQuaternion(new THREE.Quaternion(
+        //    data.quaternion.x,
+        //    data.quaternion.y,
+        //    data.quaternion.z,
+        //    data.quaternion.w
+        //));
+    }
 
     //set background color
     if (backgroundColor === '')
@@ -2375,6 +2481,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
             gridHelper.position.set(data.tx + data.com.x, data.ty + data.com.y, data.tz + data.com.z + 0.001);
             planeMesh.position.set(data.tx + data.com.x, data.ty + data.com.y, data.tz + data.com.z);
+            updateAxesVisualization(data);
 
         } else {
             setRotationAngles(0, 0, 0);
@@ -2427,6 +2534,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
         });
         data.quaternion.copy(rotationQuaternion);
+        updateAxesVisualization(data);
+
         renderer.render(scene, camera);
         //updateTextArea();
     }

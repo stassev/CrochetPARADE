@@ -131,7 +131,26 @@ function drawCanvas(canvas, values, minMax, xKey, yKey) {
     ctx.moveTo(canvas.width / 2, 0);
     ctx.lineTo(canvas.width / 2, canvas.height);
     ctx.stroke();
+    //const canvas = document.getElementById('rotateCanvas');
+    //const ctx = canvas.getContext('2d');
+    if (yKey === 'beta') {
+        // Add labels to the axes
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
 
+        // Label for X-axis (green)
+        ctx.fillStyle = 'green';
+        ctx.fillText('Green', canvas.width - 20, canvas.height / 2 + 10);
+
+        // Label for Y-axis (red)
+        ctx.save();
+        ctx.translate(canvas.width / 2, 20);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillStyle = 'red';
+        ctx.fillText('Red', 0, -9);
+        ctx.restore();
+    }
     // Draw point
     const x = (values[xKey] + minMax[xKey]) / (2 * minMax[xKey]) * canvas.width;
     const y = canvas.height - (values[yKey] + minMax[yKey]) / (2 * minMax[yKey]) * canvas.height;
