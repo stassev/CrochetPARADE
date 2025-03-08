@@ -43,7 +43,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     resetTranslation();
     resetRotation();
     resetTranslationMinMax();
-    const arrowLength = 1; // Length of the arrows
+    const arrowLength = 1.3; // Length of the arrows
     const arrowColors = {
         x: 0xc80000, // Red for X-axis
         y: 0x00c800, // Green for Y-axis
@@ -56,7 +56,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     const axesGroup = new THREE.Group();
     console.log(arrowX);
     const radius = 0.01; // Adjust this value to change the thickness of the arrow shaft
-    const cylinderGeometry = new THREE.CylinderGeometry(radius, radius, 0.8, 32);
+    const cylinderGeometry = new THREE.CylinderGeometry(radius, radius, 0.8 * arrowLength, 32);
     const cylinderMaterial = new THREE.MeshBasicMaterial({
         color: arrowColors.x
     });
@@ -67,13 +67,13 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         color: arrowColors.z
     });
     const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
-    cylinder.position.set(0, 0.4, 0);
+    cylinder.position.set(0, 0.4 * arrowLength, 0);
 
     const cylinderY = new THREE.Mesh(cylinderGeometry, cylinderMaterialY);
-    cylinderY.position.set(0, 0.4, 0);
+    cylinderY.position.set(0, 0.4 * arrowLength, 0);
 
     const cylinderZ = new THREE.Mesh(cylinderGeometry, cylinderMaterialZ);
-    cylinderZ.position.set(0, 0.4, 0);
+    cylinderZ.position.set(0, 0.4 * arrowLength, 0);
     arrowX.add(cylinder);
     arrowY.add(cylinderY);
     arrowZ.add(cylinderZ);
