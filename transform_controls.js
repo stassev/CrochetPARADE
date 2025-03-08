@@ -141,7 +141,7 @@ function drawCanvas(canvas, values, minMax, xKey, yKey) {
 
         // Label for X-axis (green)
         ctx.fillStyle = 'green';
-        ctx.fillText('Green', canvas.width - 20, canvas.height / 2 + 10);
+        ctx.fillText('Green', canvas.width - 23, canvas.height / 2 + 10);
 
         // Label for Y-axis (red)
         ctx.save();

@@ -91,8 +91,18 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         //arrowX.visible = guidesVisible;
         //arrowY.visible = guidesVisible;
         //arrowZ.visible = guidesVisible; 
-        axesGroup.visible = guidesVisible;
+        //axesGroup.visible = guidesVisible;
 
+    });
+    const checkboxAxes = document.getElementById('toggleGuideAxesCheckbox');
+    checkboxAxes.addEventListener('change', function() {
+        let guidesVisible = this.checked;
+        //planeMesh.visible = guidesVisible;
+        //gridHelper.visible = guidesVisible;
+        //arrowX.visible = guidesVisible;
+        //arrowY.visible = guidesVisible;
+        //arrowZ.visible = guidesVisible; 
+        axesGroup.visible = guidesVisible;
     });
 
     // Initialize visibility based on checkbox state
@@ -101,7 +111,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     //arrowX.visible = checkbox.checked;
     //arrowY.visible = checkbox.checked;
     //arrowZ.visible = checkbox.checked;
-    axesGroup.visible = checkbox.checked;
+    axesGroup.visible = checkboxAxes.checked;
 
     if (renderer != null)
         renderer.dispose();
@@ -178,10 +188,16 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             .applyAxisAngle(new THREE.Vector3(0, 1, 0), euler.y)
             .applyAxisAngle(new THREE.Vector3(1, 0, 0), euler.x);
 
+        // Get the current direction of arrowY (yAxis0)
+        //const yAxis0tmp = arrowY.line.geometry.attributes.position.array.slice(3, 6);
+        //const yAxis0 = new THREE.Vector3().fromArray(yAxis0tmp).normalize();
+
+
         // Y-axis: rotated by first angle (alpha)
         const yAxis = new THREE.Vector3(0, 1, 0)
             .applyAxisAngle(new THREE.Vector3(1, 0, 0), euler.x);
-        if (yAxis.z < 0) {
+        //if (yAxis0.dot(yAxis)) {
+        if (Math.abs(data.ry) > Math.PI / 2.0) {
             yAxis.x = -yAxis.x;
             yAxis.y = -yAxis.y;
             yAxis.z = -yAxis.z;
