@@ -45,15 +45,38 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     resetTranslationMinMax();
     const arrowLength = 1; // Length of the arrows
     const arrowColors = {
-        x: 0xff0000, // Red for X-axis
-        y: 0x00ff00, // Green for Y-axis
-        z: 0x0000ff // Blue for Z-axis
+        x: 0xc80000, // Red for X-axis
+        y: 0x00c800, // Green for Y-axis
+        z: 0x0000c8 // Blue for Z-axis
     };
 
     const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), arrowLength, arrowColors.x);
     const arrowY = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 0), arrowLength, arrowColors.y);
     const arrowZ = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 0, 0), arrowLength, arrowColors.z);
     const axesGroup = new THREE.Group();
+    console.log(arrowX);
+    const radius = 0.01; // Adjust this value to change the thickness of the arrow shaft
+    const cylinderGeometry = new THREE.CylinderGeometry(radius, radius, 0.8, 32);
+    const cylinderMaterial = new THREE.MeshBasicMaterial({
+        color: arrowColors.x
+    });
+    const cylinderMaterialY = new THREE.MeshBasicMaterial({
+        color: arrowColors.y
+    });
+    const cylinderMaterialZ = new THREE.MeshBasicMaterial({
+        color: arrowColors.z
+    });
+    const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+    cylinder.position.set(0, 0.4, 0);
+
+    const cylinderY = new THREE.Mesh(cylinderGeometry, cylinderMaterialY);
+    cylinderY.position.set(0, 0.4, 0);
+
+    const cylinderZ = new THREE.Mesh(cylinderGeometry, cylinderMaterialZ);
+    cylinderZ.position.set(0, 0.4, 0);
+    arrowX.add(cylinder);
+    arrowY.add(cylinderY);
+    arrowZ.add(cylinderZ);
     axesGroup.add(arrowX, arrowY, arrowZ);
 
     var planeMesh, gridHelper;
