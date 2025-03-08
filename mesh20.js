@@ -105,12 +105,31 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     gridHelper.rotation.x = Math.PI / 2;
 
 
+    // Create a guiding cylinder
+    const cylinderLength = 10; // Length of the cylinder
+    const cylinderRadius = 0.01; // Radius of the cylinder
+    const GcylinderGeometry = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderLength, 32);
+    const GcylinderMaterial = new THREE.MeshBasicMaterial({
+        color: 0x0facb7, // Gray color
+        opacity: 0.9,
+        side: THREE.DoubleSide,
+        transparent: true
+    });
+
+    // Create the cylinder mesh
+    const guidingCylinder = new THREE.Mesh(GcylinderGeometry, GcylinderMaterial);
+
+    // Initially position the cylinder at (0, 0, 0)
+    guidingCylinder.position.set(0, 0, 0);
+
+
     // Add event listener to your checkbox
     const checkbox = document.getElementById('toggleGuidesCheckbox');
     checkbox.addEventListener('change', function() {
         let guidesVisible = this.checked;
         planeMesh.visible = guidesVisible;
         gridHelper.visible = guidesVisible;
+        guidingCylinder.visible = guidesVisible;
         //arrowX.visible = guidesVisible;
         //arrowY.visible = guidesVisible;
         //arrowZ.visible = guidesVisible; 
@@ -131,6 +150,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     // Initialize visibility based on checkbox state
     planeMesh.visible = checkbox.checked;
     gridHelper.visible = checkbox.checked;
+    guidingCylinder.visible = checkbox.checked;
     //arrowX.visible = checkbox.checked;
     //arrowY.visible = checkbox.checked;
     //arrowZ.visible = checkbox.checked;
@@ -167,6 +187,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     scene.add(axesGroup);
     scene.add(planeMesh);
     scene.add(gridHelper);
+    scene.add(guidingCylinder);
+
     scene1 = new THREE.Scene();
     //scene.add(arrowX);
     //scene.add(arrowY);
@@ -2520,6 +2542,23 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
             gridHelper.position.set(data.tx + data.com.x, data.ty + data.com.y, data.tz + data.com.z + 0.001);
             planeMesh.position.set(data.tx + data.com.x, data.ty + data.com.y, data.tz + data.com.z);
+
+            // Update guidingCylinder position
+            guidingCylinder.position.set(
+                data.tx + data.com.x,
+                data.ty + data.com.y,
+                data.tz + data.com.z
+            );
+
+            // Align guidingCylinder to be perpendicular to the planeMesh
+            const normal = new THREE.Vector3();
+            normal.set(0, 0, 1).applyQuaternion(planeMesh.quaternion); // Get normal vector of the plane in world space
+
+            const axis = new THREE.Vector3(0, 1, 0); // Default up direction for the cylinder
+            const quaternion = new THREE.Quaternion().setFromUnitVectors(axis, normal); // Compute rotation quaternion
+
+            guidingCylinder.setRotationFromQuaternion(quaternion);
+
             updateAxesVisualization(data);
 
         } else {
