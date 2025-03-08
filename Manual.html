@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Feb 27, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Mar 8, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -273,7 +273,7 @@
         creation process, which can help in visualizing how stitches attach to
         each other. Additional features include highlighting and hiding selected
         stitches, and changing yarn thickness and color. Users can access stitch
-        information by hovering over stitches in the 3D view.</p>
+        information by hovering over stitches in the 3D view. CrochetPARADE also allows moving and rotating disjoint objects (as in limbs of amigurumi patterns) in order to place them in their correct locations imitating sewing them together. </p>
     <p>CrochetPARADE performs all calculations locally on your device,
         ensuring that no data is collected to a central server or transmitted
         over the internet. As a side effect, the platform can be sluggish on old
@@ -1117,6 +1117,8 @@ DEF: p=3ch,ss@5[%,-4]
         <code>&amp;start_anew^A(hidden):~::!-skip-A</code>. Thus, there is no
         connection between the next stitch and the previous stitch, similar to
         starting a new part of the project.</p>
+    <p><strong>Recommendations:</strong> If using "Transform objects" to move/rotate disjoint objects, you want to make sure that object detection works properly. For that, ensure that the connections for stitches that do not lead to disconnecting one object from another (i.e. all stitches except "start_anew" or "start_a_new_chain") have all top stitches connected to previous top stitches (including "!"), and/or to bottom stitches, and/or to hidden stitches that are in turn connected to top or bottom stitches. In writing out the connections, make sure the connections run towards the top stitch (say "!-0.5-A" with "A" being a top stitch). Also, when writing out the connections, I recommend you list the "blue" (top-level) connections be listed first. This ensures that node placement is correct when exporting crochet charts to SVG. All standard stitches follow these guidelines. </p>
+
     <h2 id="limitations-pitfalls-and-workarounds">Limitations, pitfalls and
         workarounds</h2>
     <h3 id="pitfalls">Pitfalls</h3>
