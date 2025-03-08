@@ -110,10 +110,10 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     const cylinderRadius = 0.01; // Radius of the cylinder
     const GcylinderGeometry = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderLength, 32);
     const GcylinderMaterial = new THREE.MeshBasicMaterial({
-        color: 0x0facb7, // Gray color
-        opacity: 0.9,
-        side: THREE.DoubleSide,
-        transparent: true
+        color: 0x0f90b7, // Gray color
+        //opacity: 0.9,
+        //side: THREE.DoubleSide,
+        //transparent: true
     });
 
     // Create the cylinder mesh
@@ -195,6 +195,13 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     //scene.add(arrowZ);
 
     function updateAxesVisualization(data) {
+
+        // Update guidingCylinder position
+        guidingCylinder.position.set(
+            data.tx + data.com.x,
+            data.ty + data.com.y,
+            data.tz + data.com.z
+        );
         const position = new THREE.Vector3(
             data.tx + data.com.x,
             data.ty + data.com.y,
