@@ -208,13 +208,6 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             data.tz + data.com.z
         );
         axesGroup.position.copy(position);
-        //axesGroup.setRotationFromQuaternion(new THREE.Quaternion(
-        //    data.quaternion.x,
-        //    data.quaternion.y,
-        //    data.quaternion.z,
-        //    data.quaternion.w
-        //));
-        // Convert quaternion to Euler angles (assuming ZYX order)
         const euler = new THREE.Euler().setFromQuaternion(
             new THREE.Quaternion(
                 data.quaternion.x,
@@ -222,71 +215,97 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 data.quaternion.z,
                 data.quaternion.w
             ),
-            'XYZ'
+            data.order
         );
 
-        // Calculate rotation axes
-        //const zAxis = new THREE.Vector3(0, 0, 1); // Z-axis is always global Z for first rotation
 
-        // Y-axis is rotated around Z
-        //const yAxis = new THREE.Vector3(0, 1, 0)
-        //    .applyAxisAngle(new THREE.Vector3(0, 0, 1), euler.z);
+        let xAxis, yAxis, zAxis;
 
-        // X-axis is rotated around Z, then around rotated Y
-        //const xAxis = new THREE.Vector3(1, 0, 0)
-        //    .applyAxisAngle(new THREE.Vector3(0, 0, 1), euler.z)
-        //    .applyAxisAngle(yAxis, euler.y);
-        const zAxis = new THREE.Vector3(0, 0, 1)
-            .applyAxisAngle(new THREE.Vector3(0, 1, 0), euler.y)
-            .applyAxisAngle(new THREE.Vector3(1, 0, 0), euler.x);
-
-        // Get the current direction of arrowY (yAxis0)
-        //const yAxis0tmp = arrowY.line.geometry.attributes.position.array.slice(3, 6);
-        //const yAxis0 = new THREE.Vector3().fromArray(yAxis0tmp).normalize();
-
-
-        // Y-axis: rotated by first angle (alpha)
-        const yAxis = new THREE.Vector3(0, 1, 0)
-            .applyAxisAngle(new THREE.Vector3(1, 0, 0), euler.x);
-        //if (yAxis0.dot(yAxis)) {
-        if (Math.abs(data.ry) > Math.PI / 2.0) {
-            yAxis.x = -yAxis.x;
-            yAxis.y = -yAxis.y;
-            yAxis.z = -yAxis.z;
+        switch (data.order) {
+            case 'XYZ':
+                zAxis = new THREE.Vector3(0, 0, 1)
+                    .applyAxisAngle(new THREE.Vector3(0, 1, 0), euler.y)
+                    .applyAxisAngle(new THREE.Vector3(1, 0, 0), euler.x);
+                yAxis = new THREE.Vector3(0, 1, 0)
+                    .applyAxisAngle(new THREE.Vector3(1, 0, 0), euler.x);
+                xAxis = new THREE.Vector3(1, 0, 0);
+                break;
+            case 'XZY':
+                yAxis = new THREE.Vector3(0, 1, 0)
+                    .applyAxisAngle(new THREE.Vector3(0, 0, 1), euler.z)
+                    .applyAxisAngle(new THREE.Vector3(1, 0, 0), euler.x);
+                zAxis = new THREE.Vector3(0, 0, 1)
+                    .applyAxisAngle(new THREE.Vector3(1, 0, 0), euler.x);
+                xAxis = new THREE.Vector3(1, 0, 0);
+                break;
+            case 'YXZ':
+                zAxis = new THREE.Vector3(0, 0, 1)
+                    .applyAxisAngle(new THREE.Vector3(1, 0, 0), euler.x)
+                    .applyAxisAngle(new THREE.Vector3(0, 1, 0), euler.y);
+                xAxis = new THREE.Vector3(1, 0, 0)
+                    .applyAxisAngle(new THREE.Vector3(0, 1, 0), euler.y);
+                yAxis = new THREE.Vector3(0, 1, 0);
+                break;
+            case 'YZX':
+                xAxis = new THREE.Vector3(1, 0, 0)
+                    .applyAxisAngle(new THREE.Vector3(0, 0, 1), euler.z)
+                    .applyAxisAngle(new THREE.Vector3(0, 1, 0), euler.y);
+                zAxis = new THREE.Vector3(0, 0, 1)
+                    .applyAxisAngle(new THREE.Vector3(0, 1, 0), euler.y);
+                yAxis = new THREE.Vector3(0, 1, 0);
+                break;
+            case 'ZXY':
+                yAxis = new THREE.Vector3(0, 1, 0)
+                    .applyAxisAngle(new THREE.Vector3(1, 0, 0), euler.x)
+                    .applyAxisAngle(new THREE.Vector3(0, 0, 1), euler.z);
+                xAxis = new THREE.Vector3(1, 0, 0)
+                    .applyAxisAngle(new THREE.Vector3(0, 0, 1), euler.z);
+                zAxis = new THREE.Vector3(0, 0, 1);
+                break;
+            case 'ZYX':
+                xAxis = new THREE.Vector3(1, 0, 0)
+                    .applyAxisAngle(new THREE.Vector3(0, 1, 0), euler.y)
+                    .applyAxisAngle(new THREE.Vector3(0, 0, 1), euler.z);
+                yAxis = new THREE.Vector3(0, 1, 0)
+                    .applyAxisAngle(new THREE.Vector3(0, 0, 1), euler.z);
+                zAxis = new THREE.Vector3(0, 0, 1);
+                break;
+            default:
+                console.error('Invalid Euler rotation order');
+                return;
         }
+        //const middleAxis = data.order[1].toLowerCase(); // Convert to lowercase
+        const ax = {
+            'X': xAxis,
+            'Y': yAxis,
+            'Z': zAxis
+        };
 
-        // X-axis: global X (last rotation axis)
-        const xAxis = new THREE.Vector3(1, 0, 0);
-        // Update the arrows
-        //.position.copy(position);
+        const middleAxis = data.order[1];
+
+        let rr = returnRotational();
+        var a = THREE.MathUtils.degToRad(-rr[1]);
+        var b = THREE.MathUtils.degToRad(rr[0]);
+        var c = THREE.MathUtils.degToRad(rr[2]);
+        const axisValue = middleAxis === 'X' ? a : (middleAxis === 'Y' ? b : c);
+        if (Math.abs(axisValue) > Math.PI / 2.0) {
+            ax[middleAxis].multiplyScalar(-1);
+        }
+        //if (Math.abs(euler[middleAxis]) > Math.PI / 2.0) {
+        //    ax[data.order[1]].multiplyScalar(-1);
+        //}
+        //if (Math.abs(euler.y) > Math.PI / 2.0) {
+        //    yAxis.multiplyScalar(-1);
+        //}        
+        // console.log(middleAxis, euler[middleAxis], ax[data.order[1]]);
+        //if (Math.abs(euler.y) > Math.PI / 2.0) {
+        //    yAxis.x = -yAxis.x;
+        //    yAxis.y = -yAxis.y;
+        //    yAxis.z = -yAxis.z;
+        //}
         arrowX.setDirection(xAxis);
-
-        //arrowY.position.copy(position);
         arrowY.setDirection(yAxis);
-
-        //arrowZ.position.copy(position);
         arrowZ.setDirection(zAxis);
-        //arrowX.position.copy(position);
-        //arrowY.position.copy(position);
-        //arrowZ.position.copy(position);
-        //arrowX.setRotationFromQuaternion(new THREE.Quaternion(
-        //    data.quaternion.x,
-        //    data.quaternion.y,
-        //    data.quaternion.z,
-        //    data.quaternion.w
-        //));
-        //arrowY.setRotationFromQuaternion(new THREE.Quaternion(
-        //    data.quaternion.x,
-        //    data.quaternion.y,
-        //    data.quaternion.z,
-        //    data.quaternion.w
-        //));
-        //arrowZ.setRotationFromQuaternion(new THREE.Quaternion(
-        //    data.quaternion.x,
-        //    data.quaternion.y,
-        //    data.quaternion.z,
-        //    data.quaternion.w
-        //));
     }
 
     //set background color
@@ -2366,6 +2385,10 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         //link.parentNode.removeChild(link);
     }
     //exportGLTF(scene);
+    const rotationOrderSelect = document.getElementById('rotationOrderSelect');
+
+
+
 
     const objectInput = document.getElementById('objectInput');
     objectInput.max = maxObjects; // Set the new max value
@@ -2375,6 +2398,12 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     // Object to store transformations and COM for each object value
     const objectData = {};
     var allNodes = [...NODES, ...NODEShidden, ...NODES1];
+
+    rotationOrderSelect.addEventListener('change', function() {
+        const v = parseInt(objectInput.value);
+        objectData[v].order = this.value;
+        updateUIFromStoredTransform(v);
+    });
 
     function initializeObjectData(objectValue) {
         if (objectValue === -1) {
@@ -2423,7 +2452,8 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 ry,
                 rz,
                 quaternion: new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, 0)),
-                com: com
+                com: com,
+                order: 'XYZ'
                 //originalPositions: relevantNodes.map(node => node.position.clone().sub(com))
             };
         } else {
@@ -2524,6 +2554,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
         //initializeObjectData(value);
         updateUIFromStoredTransform(value);
+
         //console.log('aha:', objectData[value].tx);
         //console.log('all:', returnTranslation());
         updateTransform(value);
@@ -2540,8 +2571,28 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         if (objectValue in objectData) {
             //console.log('set!');
             const data = objectData[objectValue];
+            rotationOrderSelect.value = data.order;
             //console.log('send:', data.tx);
-            setRotationAngles(THREE.MathUtils.radToDeg(data.ry), THREE.MathUtils.radToDeg(-data.rx), THREE.MathUtils.radToDeg(data.rz));
+            var a = data.rx;
+            var b = data.ry;
+            var c = data.rz;
+            if (data.order !== 'XYZ') {
+                const euler = new THREE.Euler(data.rx, data.ry, data.rz, 'XYZ');
+
+                // Step 1: Convert Euler to Quaternion
+                const quaternion = new THREE.Quaternion();
+                quaternion.setFromEuler(euler);
+
+                // Step 2: Convert Quaternion back to Euler in 'XYZ' order
+                const newEuler = new THREE.Euler();
+                newEuler.setFromQuaternion(quaternion, data.order);
+
+                // Step 3: Save the new Euler angles in variables a, b, c
+                a = newEuler.x;
+                b = newEuler.y;
+                c = newEuler.z;
+            }
+            setRotationAngles(THREE.MathUtils.radToDeg(b), THREE.MathUtils.radToDeg(-a), THREE.MathUtils.radToDeg(c));
             setTranslationValues(parseFloat(data.tx), parseFloat(data.ty), parseFloat(data.tz));
             //console.log('back:', returnTranslation());
             //console.log(planeMesh);
@@ -2590,11 +2641,31 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         data['tz'] = ss[2];
         //console.log('tx', data.tx);
         let rr = returnRotational();
-        data['rx'] = THREE.MathUtils.degToRad(-rr[1]);
-        data['ry'] = THREE.MathUtils.degToRad(rr[0]);
-        data['rz'] = THREE.MathUtils.degToRad(rr[2]);
+        var a = THREE.MathUtils.degToRad(-rr[1]);
+        var b = THREE.MathUtils.degToRad(rr[0]);
+        var c = THREE.MathUtils.degToRad(rr[2]);
+        const rotationQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(a, b, c, data.order));
+        if (data.order !== 'XYZ') {
+            const euler = new THREE.Euler(a, b, c, data.order);
 
-        const rotationQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(data.rx, data.ry, data.rz, 'XYZ'));
+            // Step 1: Convert Euler to Quaternion
+            const quaternion = new THREE.Quaternion();
+            quaternion.setFromEuler(euler);
+
+            // Step 2: Convert Quaternion back to Euler in 'XYZ' order
+            const newEuler = new THREE.Euler();
+            newEuler.setFromQuaternion(quaternion, 'XYZ');
+
+            // Step 3: Save the new Euler angles in variables a, b, c
+            a = newEuler.x;
+            b = newEuler.y;
+            c = newEuler.z;
+        }
+        data['rx'] = a;
+        data['ry'] = b;
+        data['rz'] = c;
+
+
         const rotationQuaternion0 = data.quaternion.invert();
 
 

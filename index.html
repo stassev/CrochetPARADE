@@ -749,6 +749,15 @@
         <div class="control-group">
             <div class="control-label">Object: <input type="number" id="objectInput" min="0" max="100" value="0" step="1"></div>
             <div class="control-label">Guiding plane: <input type="checkbox" id="toggleGuidesCheckbox" unchecked> Guiding rotation axes: <input type="checkbox" id="toggleGuideAxesCheckbox" unchecked>
+                Rotation order:
+                <select id="rotationOrderSelect">
+                    <option value="XYZ" selected>XYZ</option>
+                    <option value="YZX">YZX</option>
+                    <option value="ZXY">ZXY</option>
+                    <option value="XZY">XZY</option>
+                    <option value="YXZ">YXZ</option>
+                    <option value="ZYX">ZYX</option>
+                </select>
             </div>
             <div class="control-canvas">
                 <div class="control-section">
@@ -798,7 +807,7 @@
         <div class="title-author">
             <p class="title">CrochetPARADE: Crochet PAttern Renderer, Analyzer and DEbugger</p>
             <p class="author">Svetlin Tassev</p>
-            <p class="date">Updated: Mar 5, 2025. One can now <a href="https://crochetparade.org/crochetforum/showthread.php?tid=11" target="_blank">rotate and move separately crocheted objects</a>! Should help with assembling amigurumis.
+            <p class="date">Updated: Mar 9, 2025. Made improvements to <a href="https://crochetparade.org/crochetforum/showthread.php?tid=11" target="_blank">rotation and translation of separately crocheted objects</a>! Should help with assembling amigurumis.
         </div>
         </p>
     </div>
@@ -917,7 +926,7 @@
 
 
 
-    <script src="./parse21.js"></script>
+    <script src="./parse22.js"></script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
 
@@ -2277,7 +2286,7 @@
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh21.js';
+        import Generate3DModel from './mesh22.js';
          //import  "./viz-standalone.js";
          const button = document.getElementById("3dbutton");
          //const textarea = document.getElementById('inputText');
