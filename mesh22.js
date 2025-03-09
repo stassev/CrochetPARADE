@@ -147,6 +147,12 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         axesGroup.visible = guidesVisible;
     });
 
+    function toggleGuidingRotationAxes() {
+        const checkbox = document.getElementById('toggleGuideAxesCheckbox');
+        checkbox.checked = true;
+        const event = new Event('change');
+        checkbox.dispatchEvent(event);
+    }
     // Initialize visibility based on checkbox state
     planeMesh.visible = checkbox.checked;
     gridHelper.visible = checkbox.checked;
@@ -2403,6 +2409,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         const v = parseInt(objectInput.value);
         objectData[v].order = this.value;
         updateUIFromStoredTransform(v);
+        toggleGuidingRotationAxes();
     });
 
     function initializeObjectData(objectValue) {
