@@ -2594,7 +2594,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         data['ry'] = THREE.MathUtils.degToRad(rr[0]);
         data['rz'] = THREE.MathUtils.degToRad(rr[2]);
 
-        const rotationQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(data.rx, data.ry, data.rz));
+        const rotationQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(data.rx, data.ry, data.rz, 'XYZ'));
         const rotationQuaternion0 = data.quaternion.invert();
 
 
