@@ -800,6 +800,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     var wasMouseDown = true;
     var rotateAndSave = false;
     var rotateAndSaveSizeSet = -1;
+    var rotateAndSaveOrthographic = true;
     var canvasClicked = false;
     var timeoutQ = true;
     var timeoutID = null;
@@ -1625,6 +1626,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
     function saveSvg(rotateAndSave = false) {
         let size;
+        var orthographicQ = true;
         if (c_was_pressed) {
             c_was_pressed = false;
             for (let i = 0; i < NODES.length; i++) {
@@ -1859,6 +1861,60 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 }
             });
         }
+        const projectionMatrix = camera.projectionMatrix;
+        const worldMatrix = camera.matrixWorldInverse;
+
+        function calculateProjection(data, orthographicQ) {
+            // Assuming xR, yR, zR, xU, yU, zU, xC, yC, zC are global variables
+            // Also assuming size, fov, and aspect are globally defined if needed
+            var x1, y1;
+            // Calculate projection
+            if (orthographicQ) {
+                let x_temp = (data[0] * xR + data[1] * yR + data[2] * zR);
+                let y_temp = (data[0] * xU + data[1] * yU + data[2] * zU);
+
+                // Orthographic projection
+                x1 = x_temp * size / 2.0;
+                y1 = y_temp * size / 2.0;
+            } else {
+                //// Perspective projection        
+                //let cx = camera.position.x;
+                //let cy = camera.position.y;
+                //let cz = camera.position.z;
+                //let x_temp = ((data[0] - cx) * xR + (data[1] - cy) * yR + (data[2] - cz) * zR);
+                //let y_temp = ((data[0] - cx) * xU + (data[1] - cy) * yU + (data[2] - cz) * zU);
+                //let z1 = ((data[0] - cx) * xC + (data[1] - cy) * yC + (data[2] - cz) * zC);
+                //x1 = (x_temp / (Math.max(-(z1), 0.1))) * size / 2.0;
+                //y1 = (y_temp / (Math.max(-(z1), 0.1))) * size / 2.0;
+                //if (-z1 < 0.1) {
+                //    x1 = NaN;
+                //    y1 = NaN;
+                //}
+                const point = new THREE.Vector3(data[0], data[1], data[2]);
+
+                const cameraSpacePoint = point.clone().applyMatrix4(camera.matrixWorldInverse);
+
+                // Perform clipping based on near and far planes in camera space
+                const nearPlane = camera.near;
+                const farPlane = camera.far;
+
+                if (cameraSpacePoint.z > -nearPlane || cameraSpacePoint.z < -farPlane) {
+                    // Outside of the near or far planes, set to [NaN, NaN]
+                    return [NaN, NaN];
+                }
+
+                point.applyMatrix4(worldMatrix);
+                point.applyMatrix4(projectionMatrix);
+
+                // Convert to screen coordinates
+                const x1 = (point.x + 1) * size / 2;
+                const y1 = (-point.y + 1) * size / 2;
+
+                return [x1, y1];
+            }
+
+            return [x1, y1];
+        }
 
         function drawChainBetweenEdges(draw, edge1, edge2, size, symbolPath, nodeId) {
             let x1, y1, x2, y2;
@@ -1882,10 +1938,12 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 x2 = (avgPoint2[0]) * size / 2.0;
                 y2 = (-avgPoint2[1]) * size / 2.0;
             } else {
-                x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR) * size / 2.0;
-                y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU) * size / 2.0;
-                x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR) * size / 2.0;
-                y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU) * size / 2.0;
+                [x1, y1] = calculateProjection(avgPoint1, orthographicQ);
+                [x2, y2] = calculateProjection(avgPoint2, orthographicQ);
+                //x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR) * size / 2.0;
+                //y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU) * size / 2.0;
+                //x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR) * size / 2.0;
+                //y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU) * size / 2.0;
             }
 
             const angle = Math.atan2(y2 - y1, x2 - x1);
@@ -1955,12 +2013,17 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 x2 = (avgPoint2[0]) * size / 2.0;
                 y2 = (-avgPoint2[1]) * size / 2.0;
             } else {
-                x0 = (avgPoint0[0] * xR + avgPoint0[1] * yR + avgPoint0[2] * zR) * size / 2.0;
-                y0 = (avgPoint0[0] * xU + avgPoint0[1] * yU + avgPoint0[2] * zU) * size / 2.0;
-                x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR) * size / 2.0;
-                y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU) * size / 2.0;
-                x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR) * size / 2.0;
-                y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU) * size / 2.0;
+                //x0 = (avgPoint0[0] * xR + avgPoint0[1] * yR + avgPoint0[2] * zR) * size / 2.0;
+                //y0 = (avgPoint0[0] * xU + avgPoint0[1] * yU + avgPoint0[2] * zU) * size / 2.0;
+                //x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR) * size / 2.0;
+                //y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU) * size / 2.0;
+                //x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR) * size / 2.0;
+                //y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU) * size / 2.0;
+                [x0, y0] = calculateProjection(avgPoint0, orthographicQ);
+                [x1, y1] = calculateProjection(avgPoint1, orthographicQ);
+                [x2, y2] = calculateProjection(avgPoint2, orthographicQ);
+
+
             }
 
             // Calculate the direction vector of the original line
@@ -2012,10 +2075,12 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 x2 = (avgPoint2[0]) * size / 2.0;
                 y2 = (-avgPoint2[1]) * size / 2.0;
             } else {
-                x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR) * size / 2.0;
-                y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU) * size / 2.0;
-                x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR) * size / 2.0;
-                y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU) * size / 2.0;
+                //x1 = (avgPoint1[0] * xR + avgPoint1[1] * yR + avgPoint1[2] * zR) * size / 2.0;
+                //y1 = (avgPoint1[0] * xU + avgPoint1[1] * yU + avgPoint1[2] * zU) * size / 2.0;
+                //x2 = (avgPoint2[0] * xR + avgPoint2[1] * yR + avgPoint2[2] * zR) * size / 2.0;
+                //y2 = (avgPoint2[0] * xU + avgPoint2[1] * yU + avgPoint2[2] * zU) * size / 2.0;
+                [x1, y1] = calculateProjection(avgPoint1, orthographicQ);
+                [x2, y2] = calculateProjection(avgPoint2, orthographicQ);
             }
             if (lineColor === 'black') {
                 let x0 = (x1 + x2) / 2.0;
@@ -2045,10 +2110,12 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 x2 = (end[0]) * size / 2.0;
                 y2 = (-end[1]) * size / 2.0;
             } else {
-                x1 = (start[0] * xR + start[1] * yR + start[2] * zR) * size / 2.0;
-                y1 = (start[0] * xU + start[1] * yU + start[2] * zU) * size / 2.0;
-                x2 = (end[0] * xR + end[1] * yR + end[2] * zR) * size / 2.0;
-                y2 = (end[0] * xU + end[1] * yU + end[2] * zU) * size / 2.0;
+                //x1 = (start[0] * xR + start[1] * yR + start[2] * zR) * size / 2.0;
+                //y1 = (start[0] * xU + start[1] * yU + start[2] * zU) * size / 2.0;
+                //x2 = (end[0] * xR + end[1] * yR + end[2] * zR) * size / 2.0;
+                //y2 = (end[0] * xU + end[1] * yU + end[2] * zU) * size / 2.0;
+                [x1, y1] = calculateProjection(start, orthographicQ);
+                [x2, y2] = calculateProjection(end, orthographicQ);
             }
 
             const angle = Math.atan2(y2 - y1, x2 - x1);
@@ -2134,24 +2201,32 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         if (rotateAndSaveSizeSet == -1 || (!rotateAndSave)) {
             while (true) {
                 try {
-                    let s = prompt('Enter the height (in pixels) of the SVG file. This will affect size of labels. Default: 1500');
+                    let s = prompt('Enter the height (in pixels) of the SVG file. This will affect size of labels. If size is negative, will use perspective projection. Otherwise, will use orthographic projection. Default: 1500');
                     if (s === '')
                         size = 1500;
-                    else
+                    else {
                         size = parseInt(s);
+                        if (size < 0) {
+                            orthographicQ = false;
+                        } else orthographicQ = true;
+                        size = Math.abs(size);
+                    }
                 } catch (error) {
                     size = -1;
                 }
-                if ((size > 50) && (size < 15000))
+                if ((Math.abs(size) > 50) && (Math.abs(size) < 15000))
                     break;
             }
-            if (rotateAndSave)
+            if (rotateAndSave) {
                 rotateAndSaveSizeSet = size;
-            else
+                rotateAndSaveOrthographic = orthographicQ;
+            } else
                 rotateAndSaveSizeSet = -1;
         } else {
             size = rotateAndSaveSizeSet;
+            orthographicQ = rotateAndSaveOrthographic;
         }
+
         //console.log(2, rotateAndSaveSizeSet, rotateAndSave);
         //size = 750;
         // Set up camera and coordinate system
@@ -2207,8 +2282,9 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                     x = (node.pos[0]) * size / 2.0;
                     y = (-node.pos[1]) * size / 2.0;
                 } else {
-                    x = ((node.pos[0] * xR + node.pos[1] * yR + node.pos[2] * zR)) * size / 2.0;
-                    y = ((node.pos[0] * xU + node.pos[1] * yU + node.pos[2] * zU)) * size / 2.0;
+                    //x = ((node.pos[0] * xR + node.pos[1] * yR + node.pos[2] * zR)) * size / 2.0;
+                    //y = ((node.pos[0] * xU + node.pos[1] * yU + node.pos[2] * zU)) * size / 2.0;
+                    [x, y] = calculateProjection(node.pos, orthographicQ);
                 }
                 const circle = nodes.circle(5).center(x, y).fill('white').stroke('gray');
                 var text = nodes.text(node.label.split('|')[0] + '(' + node.name.split('|')[0] + ')').cx(x).cy(y);
@@ -2234,10 +2310,12 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 x1 = (end[0]) * size / 2.0;
                 y1 = (-end[1]) * size / 2.0;
             } else {
-                x0 = ((start[0] * xR + start[1] * yR + start[2] * zR)) * size / 2.0;
-                y0 = ((start[0] * xU + start[1] * yU + start[2] * zU)) * size / 2.0;
-                x1 = ((end[0] * xR + end[1] * yR + end[2] * zR)) * size / 2.0;
-                y1 = ((end[0] * xU + end[1] * yU + end[2] * zU)) * size / 2.0;
+                //x0 = ((start[0] * xR + start[1] * yR + start[2] * zR)) * size / 2.0;
+                //y0 = ((start[0] * xU + start[1] * yU + start[2] * zU)) * size / 2.0;
+                //x1 = ((end[0] * xR + end[1] * yR + end[2] * zR)) * size / 2.0;
+                //y1 = ((end[0] * xU + end[1] * yU + end[2] * zU)) * size / 2.0;
+                [x0, y0] = calculateProjection(start, orthographicQ);
+                [x1, y1] = calculateProjection(end, orthographicQ);
             }
 
             let name = str.objects[str.objects.findIndex((obj) => obj._gvid === edge.head)].name.split('|')[0];
