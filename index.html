@@ -1429,6 +1429,50 @@
             return -1; // No match found
         }
 
+        function findAllUnmatchedBracketIndices(str) {
+            const openingBrackets = '([{';
+            const closingBrackets = ')]}';
+            const stack = []; // To keep track of unmatched opening brackets
+            const unmatchedIndices = new Set(); // To store indices of unmatched brackets
+
+            for (let i = 0; i < str.length; i++) {
+                const char = str[i];
+
+                if (openingBrackets.includes(char)) {
+                    // Push the index and the bracket to the stack
+                    stack.push({
+                        char,
+                        index: i
+                    });
+                } else if (closingBrackets.includes(char)) {
+                    // Check if there's a matching opening bracket
+                    if (stack.length > 0) {
+                        const lastOpening = stack[stack.length - 1];
+                        if (closingBrackets.indexOf(char) === openingBrackets.indexOf(lastOpening.char)) {
+                            // Found a match, remove it from the stack
+                            stack.pop();
+                        } else {
+                            // No match, mark this closing bracket as unmatched and pop the last opening
+                            unmatchedIndices.add(i);
+                            unmatchedIndices.add(lastOpening.index);
+                            stack.pop();
+                        }
+                    } else {
+                        // No opening bracket to match, mark this closing bracket as unmatched
+                        unmatchedIndices.add(i);
+                    }
+                }
+            }
+
+            // Add any remaining unmatched opening brackets in the stack to the result
+            while (stack.length > 0) {
+                const unmatchedOpening = stack.pop();
+                unmatchedIndices.add(unmatchedOpening.index);
+            }
+
+            return Array.from(unmatchedIndices).sort((a, b) => a - b); // Return sorted indices
+        }
+
         textarea.addEventListener('input', function() {
             setTimeout(function() {
 
@@ -1554,6 +1598,7 @@
             let word = false;
             let highlightedText1 = '';
             defs = extractWords(inputString);
+            var unmatchedIs = findAllUnmatchedBracketIndices(inputString)
             for (let i = 0; i < text.length; i++) {
 
                 if (i == bracketIndex)
@@ -1568,6 +1613,10 @@
                     background = 'rgb(200,200,200)'; // 'rgb(100,100,255)'
                     if (inputString[matchingBracketIndex] !== getMatchingBracket(inputString[bracketIndex]))
                         background = 'rgb(255,100,100)';
+                }
+
+                if (unmatchedIs.includes(i)) {
+                    background = 'rgb(255,100,100)';
                 }
 
                 if (text[i] === '#')

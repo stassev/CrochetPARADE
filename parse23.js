@@ -1866,7 +1866,7 @@ function parse_StitchCodeList(rList) {
                 k++;
         }
         if (k > 1)
-            throw new Error('Turning can happen only at the end of a row. Error at : ' + JSON.stringify(row));
+            throw new Error('Turning can happen only at the end of a row. Error at row: ' + JSON.stringify(row));
         if (last_element(row)['contents'] === 'turn')
             turns.push(1);
         else
