@@ -1437,7 +1437,10 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
                     rep_labels[label1]['attached'][num].push(si);
                 if (!(label1 in REV))
                     REV[label1] = {};
-                REV[label1][num] = rev;
+                if (!(num in REV[label1]))
+                    REV[label1][num]=rev;
+                else if (REV[label1][num] != rev)
+                    throw new Error('Cannot use a mix of forwards and backwards attachments, such as ()@A,()@A~. If you insist on doing that, then attach ()@A[;0],()@A[;1]~ to labeled group ().A[].')
 
                 //rep_labels[label1]['attached'][num] = rep_labels[label1]['attached'][num].flat()
             }
