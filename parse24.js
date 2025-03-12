@@ -1300,8 +1300,12 @@ function find_stitchID_by_pos(Stitches, row, pos, relative_id = -1, direction = 
     if ((type !== '') && (pos < 0) && (relative_id != -1))
         pos = 0;
     //console.log('debug: ', Stitches, row, pos, relative_id, direction, type, ids)
-    if (!Number.isInteger(ids.slice(pos)[0]))
-        throw new Error('Stitch at that position not found: [row,pos,relative_id,type]=' + row + ',' + pos + ',' + relative_id + ',' + type + '; ', Stitches);
+    if (!Number.isInteger(ids.slice(pos)[0])){
+        let pos1=pos;
+        if (direction==-1)
+            pos1=ids.length-1-pos;
+        throw new Error('Stitch at that position not found: [row,pos,relative_id,type]=' + row + ',' + pos1 + ',' + relative_id + ',' + type + '; ', Stitches);
+    }
     return ids.slice(pos)[0];
 }
 
