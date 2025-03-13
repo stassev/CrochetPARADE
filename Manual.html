@@ -779,7 +779,7 @@ BACKGROUND: white</code></pre>
     <h5 id="attaching-to-the-the-post-of-a-stitch-.a-.a1">Attaching to the
         the post of a stitch: .A^ .A^1</h5>
     <p>To attach to the post of a stitch, follow the definition of the label
-        with <code>^</code>. An integer can follow <code>^</code> specifying
+        with a caret, <code>^</code>. An integer can follow <code>^</code> specifying
         which post of the stitch to attach to if more than one. For example:</p>
     <pre><code>8*ch,turn
 7*sc,dc.B^,turn
@@ -1009,9 +1009,21 @@ sk,8sc,sc.A[]!,turn
         and the row of that stitch of the set of stitches worked into that labeled group that comes first <b>after</b> the following
         is done: 1. If multiple sets of stitches attach to the same labeled group, sort them according to the order specified after <code>;</code>
         (as in stitches attached to <code>,A[0;0]</code> come before <code>A[0;1]</code>); and 2. Reverse the order of
-        any set that has a modifier <code>~</code> after the attachment label (e.g. <code>@A~</code>).
-        <p> </p>
-        If working stitches in the post of a stitch, then then the default direction of crocheting is from the attachment point
+        any set that has a modifier <code>~</code> after the attachment label (e.g. <code>@A~</code>). </p>
+        <p>A stitch following a stitch (or a set of stitches) attached to a labeled group of stitches, attaches to the stitch following the whole group. Therefore in both examples below, the tr stitch attaches to the dc, even when the 4sc are attaching to A in reverse order (as indicated by the tilde):</p>
+<code>6ch,turn
+sk,2ch,dc,2sk,(3ch).A,2sc,turn
+sk,ch,sc,4sc@A,tr</code>
+<p>and </p>
+<code>6ch,turn
+sk,2ch,dc,2sk,(3ch).A,2sc,turn
+sk,ch,sc,4sc@A~,tr</code>
+<p>And in the example below, both tr are attaching to the same dc, as the attachment point is moved back to the last stitch of A by the @A's right before each tr:</p>
+<code>6ch,turn
+sk,2ch,dc,2sk,(3ch).A,2sc,turn
+sk,ch,sc,2sc@A,tr,2sc@A,tr,sc</code>
+        <p>
+        If working stitches in the post of a stitch using a caret (for example .A^), then the default direction of crocheting is from the attachment point
         of the stitch to the top of the stitch, unless there is an odd number of <code>turn</code> directives between
         the row of the top
         of that stitch and the <b>first</b> stitch of the set of stitches that are
