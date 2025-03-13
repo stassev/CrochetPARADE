@@ -1428,21 +1428,54 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
                 rev = true;
             label1 = label1.split('~')[0];
             label1 = label1.split('+')[0].split('^')[0];
+            //if (label1 in rep_labels) {
+            //    if (!('attached' in rep_labels[label1]))
+            //        rep_labels[label1]['attached'] = {};
+            //    if (!(String(num) in rep_labels[label1]['attached']))
+            //        rep_labels[label1]['attached'][num] = [si];
+            //    else
+            //        rep_labels[label1]['attached'][num].push(si);
+            //    if (!(label1 in REV))
+            //        REV[label1] = {};
+            //    if (!(num in REV[label1]))
+            //        REV[label1][num][0]=rev;
+            //    else if (REV[label1][num] != rev)
+            //        throw new Error('Cannot use a mix of forwards and backwards attachments, such as ()@A,()@A~. If you insist on doing that, then attach ()@A[;0],()@A[;1]~ to labeled group ().A[].')
+//
+            //    //rep_labels[label1]['attached'][num] = rep_labels[label1]['attached'][num].flat()
+            //}
             if (label1 in rep_labels) {
-                if (!('attached' in rep_labels[label1]))
-                    rep_labels[label1]['attached'] = {};
-                if (!(String(num) in rep_labels[label1]['attached']))
-                    rep_labels[label1]['attached'][num] = [si];
-                else
-                    rep_labels[label1]['attached'][num].push(si);
-                if (!(label1 in REV))
+                if (!(label1 in REV)) {
                     REV[label1] = {};
-                if (!(num in REV[label1]))
-                    REV[label1][num]=rev;
-                else if (REV[label1][num] != rev)
-                    throw new Error('Cannot use a mix of forwards and backwards attachments, such as ()@A,()@A~. If you insist on doing that, then attach ()@A[;0],()@A[;1]~ to labeled group ().A[].')
-
-                //rep_labels[label1]['attached'][num] = rep_labels[label1]['attached'][num].flat()
+                }
+                if (!(num in REV[label1])) {
+                    REV[label1][num] = { 0: rev };
+                    var currentKey = 0;
+                } else {
+                    const keys = Object.keys(REV[label1][num]).map(Number);
+                    const largestKey = Math.max(...keys);
+                    if (REV[label1][num][largestKey] !== rev) {
+                        currentKey = largestKey + 1;
+                        REV[label1][num][currentKey] = rev;
+                    } else {
+                        currentKey = largestKey;
+                    }
+                }
+            
+                if (!('attached' in rep_labels[label1])) {
+                    rep_labels[label1]['attached'] = {};
+                }
+                if (!(String(num) in rep_labels[label1]['attached'])) {
+                    rep_labels[label1]['attached'][num] = {};
+                }
+                if (!(currentKey in rep_labels[label1]['attached'][num])) {
+                    rep_labels[label1]['attached'][num][currentKey] = [si];
+                } else {
+                    rep_labels[label1]['attached'][num][currentKey].push(si);
+                }
+            
+                // Uncomment the following line if needed:
+                // rep_labels[label1]['attached'][num] = Object.values(rep_labels[label1]['attached'][num]).flat();
             }
         }
     }
@@ -1451,12 +1484,30 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
     //console.log(REV)
     for (let k of Object.keys(rep_labels)) {
         let inds = [];
+        //if ('attached' in rep_labels[k]) {
+        //    for (let i of Object.keys(rep_labels[k]['attached']).map(a => parseInt(a, 10)).sort((a, b) => a - b).map(a => String(a))) { //sort numerically
+        //        if (REV[k][i])
+        //            inds.push(rep_labels[k]['attached'][i].reverse());
+        //        else
+        //            inds.push(rep_labels[k]['attached'][i]);
+        //    }
+        //}
         if ('attached' in rep_labels[k]) {
-            for (let i of Object.keys(rep_labels[k]['attached']).map(a => parseInt(a, 10)).sort((a, b) => a - b).map(a => String(a))) { //sort numerically
-                if (REV[k][i])
-                    inds.push(rep_labels[k]['attached'][i].reverse());
-                else
-                    inds.push(rep_labels[k]['attached'][i]);
+            for (let i of Object.keys(rep_labels[k]['attached'])
+                .map(a => parseInt(a, 10))
+                .sort((a, b) => a - b)
+                .map(a => String(a))
+            ) {
+                const sortedKeys = Object.keys(REV[k][i])
+                    .map(a => parseInt(a, 10))
+                    .sort((a, b) => a - b);
+                for (let j of sortedKeys) {
+                    if (REV[k][i][j]) {
+                        inds.push(rep_labels[k]['attached'][i][j].reverse());
+                    } else {
+                        inds.push(rep_labels[k]['attached'][i][j]);
+                    }
+                }
             }
         }
         inds = inds.flat(Infinity);

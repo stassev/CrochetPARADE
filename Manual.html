@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Mar 12, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Mar 13, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -857,7 +857,7 @@ sk,8sc,sc.A!,turn
 4ch.A!,sk,9tr,turn
 1ch,sk,8sc,7sc@A</code></pre>
     <p>If you want the 7 <code>sc</code> stitches attaching to the 4-chain
-        group be attached in reverse order, then append a <code>~</code> to the
+        group be attached in reverse order, then append a tilde, <code>~</code>, to the
         end of the attachment label, as in:</p>
     <pre><code>10ch,turn
 sk,8sc,sc.A!,turn
@@ -865,19 +865,43 @@ sk,8sc,sc.A!,turn
 1ch,sk,8sc,7sc@A~</code></pre>
     <p>Compare with the result from running the previous set of
         instructions.</p>
-<p>Note that although the code is happy to run</p>
-<pre><code>9ch,turn
-sk,(ch,5sc).A[],3sc,turn
-sk,2sc,3sc@A[;0],3sc@A[;1]~
-</code></pre>
-<p>it will fail for:</p>
+<p>Note that the syntax of CrochetPARADE distributes labels over sets of stitches. So, <code>(3sc).A~</code> is the same as <code>sc.A~,sc.A~,sc.A~</code>. Thus, in the example below, the two sets of <code>(3sc).A~</code> are treated as one set of <code>(6sc).A~</code>. So, the code reverses all 6 stitches and then attaches them to the group A.</p>
 <pre><code>9ch,turn
 sk,(ch,5sc).A,3sc,turn
-sk,2sc,3sc@A,3sc@A~
+sk,2sc,3sc@A~,3sc@A~
 </code></pre>
-<p>    The reason is that the syntax does not allow the use of a mix of forwards and backwards attachments to one and the same label (such as ()@A,()@A~) without specifying the order in which those stitch sets are supposed to be attached. So, the solution then is to attach ()@A[;0],()@A[;1]~ to labeled group ().A[] (see "Multiple
-    stitch sets attaching to a labeled group").
-  </p>  <p>See the section "Direction of sequential stitch attachment" for the way the code chooses the default direction of attaching stitches.</p>
+is the same as:
+<pre><code>9ch,turn
+sk,(ch,5sc).A,3sc,turn
+sk,2sc,6sc@A~
+</code></pre>
+<p>If one wants to attach the first <code>3sc</code> in reverse and only then reverse the next <code>3sc</code> and attach those in turn, one must use stitch sets (see "Multiple
+    stitch sets attaching to a labeled group") as:</p>
+<pre><code>9ch,turn
+sk,(ch,5sc).A[],3sc,turn
+sk,2sc,3sc@A[;0]~,3sc@A[;1]~
+</code></pre>
+<p>If however, one mixes normal (forwards) and reverse (backwards) attachment as in:</p>
+<pre><code>9ch,turn
+sk,(ch,5sc).A,3sc,turn
+sk,2sc,3sc@A~,3sc@A
+</code></pre>
+<p>Then the first <code>3sc</code> and the second <code>3sc</code> are now treated as separate sets. The code attaches the first 3 in reverse order, and then the next 3 in normal order. In other words, the above example is equivalent to:</p>
+<pre><code>9ch,turn
+sk,(ch,5sc).A[],3sc,turn
+sk,2sc,3sc@A[;0]~,3sc@A[;1]
+</code></pre>
+<p>and similarly for any combination of forwards and backwards attachments. Therefore, the following two examples are equivalent:</p>
+<pre><code>9ch,turn
+sk,(ch,5sc).A,3sc,turn
+sk,2sc,2sc@A~,2sc@A,2sc@A~
+</code></pre>
+<p>is the same as</p>
+<pre><code>9ch,turn
+sk,(ch,5sc).A[],3sc,turn
+sk,2sc,2sc@A[;0]~,2sc@A[;1],2sc@A[;2]~
+</code></pre>
+<p>See the section "Direction of sequential stitch attachment" for the way the code chooses the default direction of attaching stitches.</p>
     <h5 id="multiple-stitch-sets-attaching-to-a-labeled-group-a21">Multiple
         stitch sets attaching to a labeled group: <span class="citation" data-cites="A">@A</span>[2;1]</h5>
     <p>If one needs to attach multiple sets of stitches into a labeled
