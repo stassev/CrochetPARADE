@@ -1411,7 +1411,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                         }
                     }
                     // Reset the select menu to the default option so users can make another selection
-                    this.value = '';
+                    //this.value = '';
                 };
             }, 300);
         }
