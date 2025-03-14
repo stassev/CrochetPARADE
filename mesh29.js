@@ -1262,132 +1262,160 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 }
             }, 200);
         }
+        
         if (canvasClicked && (event.key === 'd' && (event.ctrlKey || event.metaKey))) {
             event.preventDefault();
             setTimeout(function() {
                 // Reset materials if a previous selection was made
-               
-                    for (let i = 0; i < NODES.length; i++) {
-                        NODES[i].material = originalMaterials[i];
-                    }
-               
-        // Create a container for the dropdown and text
-const container = document.createElement('div');
-container.style.position = 'absolute';
-container.style.zIndex = '1000';
-container.style.left = '50%';
-container.style.top = '50%';
-container.style.transform = 'translate(-50%, -50%)';
-container.style.backgroundColor = 'white';
-container.style.padding = '20px';
-container.style.borderRadius = '5px';
-container.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
 
-// Add the text above the dropdown
-const text = document.createElement('p');
-text.textContent = 'Select a stitch label (or a collection of labels if any) for highlighting:';
-text.style.marginBottom = '10px';
-text.style.fontWeight = 'bold';
-container.appendChild(text);
-
-// Create and show the drop-down menu
-const selectMenu = document.createElement('select');
-selectMenu.id = 'labelSelectors';
-selectMenu.style.width = '100%';
-selectMenu.style.padding = '5px';
-if (LabeledGroups.sortedKeys.length > 0) {
-    // First separator
-    const separator1 = document.createElement('option');
-    separator1.disabled = true;
-    separator1.text = '──────────────────────────────────────────';
-    selectMenu.appendChild(separator1);
-
-    // Label for groups of labels
-    const groupsLabel = document.createElement('option');
-    groupsLabel.disabled = true;
-    groupsLabel.text = 'Collections of labels:';
-    selectMenu.appendChild(groupsLabel);
-
-    // Add options for sortedKeys (groups)
-    LabeledGroups.sortedKeys.forEach((key) => {
-        const option = document.createElement('option');
-        option.value = key;
-        option.text = key;
-       // option.style.fontWeight = 'bold'; // Make keys bold to distinguish them
-        selectMenu.appendChild(option);
-    });
-
-    // Second separator
-    const separator2 = document.createElement('option');
-    separator2.disabled = true;
-    separator2.text = '──────────────────────────────────────────';
-    selectMenu.appendChild(separator2);
-
-    // Label for individual labels
-    const labelsLabel = document.createElement('option');
-    labelsLabel.disabled = true;
-    labelsLabel.text = 'Labels:'; // Newlines don't work in <option>, so just use plain text
-    selectMenu.appendChild(labelsLabel);
-}
-// Then add the sorted labels
-LabeledGroups.sortedLabels.forEach((label) => {
-    const option = document.createElement('option');
-    option.value = label;
-    option.text = label;
-    selectMenu.appendChild(option);
-});
-// Add a default option
-const defaultOption = document.createElement('option');
-defaultOption.value = '';
-defaultOption.text = 'Select a label (or a collection of labels if any)';
-defaultOption.selected = true;
-selectMenu.insertBefore(defaultOption, selectMenu.firstChild);
-
-// Add the select menu to the container
-container.appendChild(selectMenu);
-
-// Add the container to the body
-document.body.appendChild(container);
-
-// Focus on the select menu
-selectMenu.focus();
-
-// Handle selection
-selectMenu.onchange = function() {
-    const selectedLabel = this.value;
-    if (selectedLabel) {
-        for (let i = 0; i < NODES.length; i++) {
-            if ('attachmentLabel' in NODES[i]) {
-                // Check if the node's label includes the selected label
-                if (NODES[i].attachmentLabel.includes(selectedLabel)) {
-                    NODES[i].material = selectedRowMaterial;
-                } 
-                // Check if the selected label is a key in the grouped labels
-                else if (selectedLabel in LabeledGroups.groupedLabels) {
-                    // Check if the node's label is in the group
-                    if (LabeledGroups.groupedLabels[selectedLabel].some(groupLabel => 
-                        NODES[i].attachmentLabel.includes(groupLabel))) {
-                        NODES[i].material = selectedRowMaterial;
-                    }
+        
+                // Create a container for the dropdown and text
+                const container = document.createElement('div');
+                container.style.position = 'absolute';
+                container.style.zIndex = '1000';
+                container.style.left = '50%';
+                container.style.top = '50%';
+                container.style.transform = 'translate(-50%, -50%)';
+                container.style.backgroundColor = 'white';
+                container.style.padding = '20px';
+                container.style.borderRadius = '5px';
+                container.style.boxShadow = '0 2px 10px rgba(0,0,0,0.2)';
+        
+                // Add close button (X)
+                const closeButton = document.createElement('button');
+                closeButton.textContent = 'X';
+                closeButton.style.position = 'absolute';
+                closeButton.style.right = '10px';
+                closeButton.style.top = '10px';
+                closeButton.style.background = 'none';
+                closeButton.style.border = 'none';
+                closeButton.style.fontSize = '20px';
+                closeButton.style.cursor = 'pointer';
+                closeButton.onclick = function() {
+                    document.body.removeChild(container);
+                };
+                container.appendChild(closeButton);
+        
+                // Add the text above the dropdown
+                const text = document.createElement('p');
+                text.textContent =
+                    'Select a stitch label (or a collection of labels if any) for highlighting:';
+                text.style.marginBottom = '10px';
+                text.style.fontWeight = 'bold';
+                container.appendChild(text);
+        
+                // Create and show the drop-down menu
+                const selectMenu = document.createElement('select');
+                selectMenu.id = 'labelSelectors';
+                selectMenu.style.width = '100%';
+                selectMenu.style.padding = '5px';
+        
+                // Add a default option
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.text =
+                    'Select a label (or a collection of labels if any)';
+                defaultOption.selected = true;
+                selectMenu.appendChild(defaultOption);
+        
+                // Check if there are any groups or labels to populate
+                if (LabeledGroups.sortedKeys && LabeledGroups.sortedKeys.length > 0) {
+                    // First separator
+                    const separator1 = document.createElement('option');
+                    separator1.disabled = true;
+                    separator1.text =
+                        '──────────────────────────────────────────';
+                    selectMenu.appendChild(separator1);
+        
+                    // Label for groups of labels
+                    const groupsLabel = document.createElement('option');
+                    groupsLabel.disabled = true;
+                    groupsLabel.text = 'Collections of labels:';
+                    selectMenu.appendChild(groupsLabel);
+        
+                    // Add options for sortedKeys (groups)
+                    LabeledGroups.sortedKeys.forEach((key) => {
+                        const option = document.createElement('option');
+                        option.value = key;
+                        option.textContent = key;
+                        selectMenu.appendChild(option);
+                    });
+        
+                    // Second separator
+                    const separator2 = document.createElement('option');
+                    separator2.disabled = true;
+                    separator2.text =
+                        '──────────────────────────────────────────';
+                    selectMenu.appendChild(separator2);
+        
+                    // Label for individual labels
+                    const labelsLabel = document.createElement('option');
+                    labelsLabel.disabled = true;
+                    labelsLabel.text =
+                        'Labels:'; // Newlines don't work in <option>, so just use plain text
+                    selectMenu.appendChild(labelsLabel);
                 }
-            }
-        }
-    }
-    // Remove the container after selection
-    document.body.removeChild(container);
-};
-
-// Handle closing the menu without selection
-selectMenu.onblur = function() {
-    // Small delay to allow for option selection before closing
-    setTimeout(() => {
-        if (container.parentNode) {
-            document.body.removeChild(container);
-        }
-    }, 200);
-};
+        
+                if (
+                    LabeledGroups.sortedLabels &&
+                    LabeledGroups.sortedLabels.length > 0
+                ) {
+                    // Then add the sorted labels
+                    LabeledGroups.sortedLabels.forEach((label) => {
+                        const option = document.createElement('option');
+                        option.value = label;
+                        option.textContent = label;
+                        selectMenu.appendChild(option);
+                    });
+                }
+        
+                // Add the select menu to the container
+                container.appendChild(selectMenu);
+        
+                // Add the container to the body
+                document.body.appendChild(container);
+        
+                // Focus on the select menu
+                selectMenu.focus();
+        
+                // Handle selection
+                selectMenu.onchange = function () {
+                    const selectedLabel = this.value;
+                    if (selectedLabel) {
+                        for (let i = 0; i < NODES.length; i++) {
+                            NODES[i].material = originalMaterials[i];
+                        }
+                        for (let i = 0; i < NODES.length; i++) {
+                            if ('attachmentLabel' in NODES[i]) {
+                                // Check if the node's label includes the selected label
+                                if (NODES[i].attachmentLabel.includes(selectedLabel)) {
+                                    NODES[i].material = selectedRowMaterial;
+                                }
+                                // Check if the selected label is a key in the grouped labels
+                                else if (
+                                    selectedLabel in LabeledGroups.groupedLabels
+                                ) {
+                                    // Check if the node's label is in the group
+                                    if (
+                                        LabeledGroups.groupedLabels[selectedLabel].some(
+                                            (groupLabel) =>
+                                                NODES[i].attachmentLabel.includes(
+                                                    groupLabel,
+                                                ),
+                                        )
+                                    ) {
+                                        NODES[i].material = selectedRowMaterial;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // Reset the select menu to the default option so users can make another selection
+                    this.value = '';
+                };
             }, 300);
         }
+        
         if (canvasClicked && (event.key === 'f' && (event.ctrlKey || event.metaKey))) {
             event.preventDefault();
             setTimeout(function() {
