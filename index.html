@@ -807,7 +807,7 @@
         <div class="title-author">
             <p class="title">CrochetPARADE: Crochet PAttern Renderer, Analyzer and DEbugger</p>
             <p class="author">Svetlin Tassev</p>
-            <p class="date">Updated: Mar 10, 2025. Now can export crochet charts in perspective projection. Also, can <a href="https://crochetparade.org/crochetforum/showthread.php?tid=11" target="_blank">rotate and translate separately crocheted objects</a>! Should help with assembling amigurumis.
+            <p class="date">Updated: Mar 14, 2025. Allow selection of stitches by label (press ctrl+d, once the 3d canvas is clicked). Previous update allowed <a href="https://crochetparade.org/crochetforum/showthread.php?tid=11" target="_blank">rotating and translating separately crocheted objects</a>! Should help with assembling amigurumis.
         </div>
         </p>
     </div>
@@ -926,7 +926,7 @@
 
 
 
-    <script src="./parse28.js"></script>
+    <script src="./parse29.js"></script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
 
@@ -2087,6 +2087,7 @@
                     <li><kbd>esc</kbd>: Reset visibility and colors of stitches.</li>
                     <li><kbd>ctrl+esc</kbd>: Hide all but the first stitch.</li>
                     <li><kbd>ctrl+f</kbd>: Highlight row (by entering: row number) or stitch (by entering: row number, stitch number).</li>
+                    <li><kbd>ctrl+d</kbd>: Highlight stitch or group of stitches with a specific label. One can also select a collection of labels if any. As an example, a collection of labels may be called 'c[ , ]' and if selected, it will highlight all stitches having labels such as 'c[0,1]', 'c[1,2]', etc. with a whitespace being a placeholder.</li>
                     <li><kbd>ctrl+h</kbd>: Hide after row or stitch.</li>
                     <li><kbd>ctrl +/-</kbd>: increase/decrease radii of spheres and cylinders. Affects exported GLTF file as well.</li>
                     <li><kbd>i</kbd>: Toggle visibility of stitch information box.</li>
@@ -2288,9 +2289,14 @@
 
             const objects = data.elements.filter(element => element.type === 'node').map((node, index) => {
                 const posInfo = posData.elements.find(item => item.name === node.name);
+                let atLabel=[];
+                if ('attachmentLabel' in node)
+                    atLabel=node.attachmentLabel;
+                //console.log(atLabel);
                 return {
                     _gvid: index,
                     name: node.name,
+                    attachmentLabel: atLabel,
                     label: node.label,
                     pos: posInfo ? posInfo.pos : "",
                 };
@@ -2335,7 +2341,7 @@
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh28.js';
+        import Generate3DModel from './mesh29.js';
          //import  "./viz-standalone.js";
          const button = document.getElementById("3dbutton");
          //const textarea = document.getElementById('inputText');

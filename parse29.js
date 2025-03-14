@@ -3251,8 +3251,9 @@ function export_to_dot(Stitches, json) {
             throw new Error('No stitches in row = ' + i);
         startID_row.push(n);
     }
-
+    
     //add the nodes
+    console.log(Stitches);
     for (var s of Stitches) {
         for (var ni of s.topNodesNames) {
             let n = s.topNodes[ni];
@@ -3263,18 +3264,18 @@ function export_to_dot(Stitches, json) {
                 //console.log(POS)
                 if (POS.length > 0) {
                     //if (!simple)
-                    text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '","pos":"' + POS + '!"}\n';
+                    text += ',{"type":"node","name":' + name + ',"attachmentLabel":'+JSON.stringify(s.label)+',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '","pos":"' + POS + '!"}\n';
                     //else
                     textS += name + ' {' + POS + '}\n';
                 } else {
                     //if (!simple)
-                    text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
+                    text += ',{"type":"node","name":' + name  + ',"attachmentLabel":'+JSON.stringify(s.label)+',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
                     //else
                     textS += name + '\n';
                 }
             } else {
                 //if (!simple)
-                text += ',{"type":"node","name":' + name + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
+                text += ',{"type":"node","name":' + name  + ',"attachmentLabel":'+JSON.stringify(s.label)+',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
                 //else
                 textS += name + '\n';
             }
