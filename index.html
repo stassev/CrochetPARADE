@@ -1710,6 +1710,7 @@
                         highlightedText += add_word(highlightedText1);
                         highlightedText1 = '';
                     }
+                    
                     highlightedText += '<span style="color:rgb(150, 50, 50);font-weight:540;background-color:' + background + '">' + texti + '</span>';
                 } else if (insideColorText > 0) {
                     if (word) {
@@ -1745,6 +1746,12 @@
                         highlightedText += add_word(highlightedText1);
                         highlightedText1 = '';
                     }
+
+                    if ('!^+'.includes(texti) && (label) &&(balance==0))
+                        background = 'rgb(255,100,100)';
+                    if (texti.includes('~')&& (!label))
+                        background = 'rgb(255,100,100)';
+                    
                     if (label)
                         highlightedText += '<span style="color:rgb(80, 200, 80);font-weight:540;background-color:' + background + '">' + texti + '</span>';
                     else

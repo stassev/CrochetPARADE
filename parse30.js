@@ -1353,10 +1353,10 @@ function find_label(Stitches, label) {
     var label0 = label;
     if (label.split(';').length > 1)
         label = (label.split(';')[0]).trim() + ']';
-    label = label.split('!')[0];
+    //label = label.split('!')[0];
     label = label.split('~')[0];
-    label = label.split('+')[0];
-    label = label.split('^')[0];
+    //label = label.split('+')[0];
+    //label = label.split('^')[0];
     var s = Stitches.filter(structure => {
         let g = [...structure.label].map(l => l.split('!')[0].split('+')[0].split('^')[0]);
         //console.log(label, g, structure.label)
@@ -1374,9 +1374,9 @@ function find_label(Stitches, label) {
 function find_label_ALL(Stitches, label) {
     if (label.split(';').length > 1)
         label = ((label.split(';')[0]).trim() + ']');
-    label = label.split('!')[0];
+    //label = label.split('!')[0];
     label = label.split('~')[0];
-    label = label.split('+')[0].split('^')[0];
+    //label = label.split('+')[0].split('^')[0];
 
     var s = Stitches.filter(structure => {
         let g = [...structure.label].map(l => l.split('!')[0].split('+')[0].split('^')[0]);
@@ -1422,12 +1422,12 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
                 label1 = (label1.split(';')[0]).trim() + ']';
                 num = parseInt(label.split(';')[1], 10);
             }
-            label1 = label1.split('!')[0];
+            //label1 = label1.split('!')[0];
             let rev = false;
             if (label.includes('~'))
                 rev = true;
             label1 = label1.split('~')[0];
-            label1 = label1.split('+')[0].split('^')[0];
+            //label1 = label1.split('+')[0].split('^')[0];
             //if (label1 in rep_labels) {
             //    if (!('attached' in rep_labels[label1]))
             //        rep_labels[label1]['attached'] = {};
