@@ -1351,6 +1351,8 @@ function count_stitches_in_row(Stitches, row) {
 
 function find_label(Stitches, label) {
     var label0 = label;
+    if (label0.includes('+')||label0.includes('^') || label0.includes('!'))
+        throw new Errow('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:'+label);
     if (label.split(';').length > 1)
         label = (label.split(';')[0]).trim() + ']';
     //label = label.split('!')[0];
@@ -1374,6 +1376,9 @@ function find_label(Stitches, label) {
 function find_label_ALL(Stitches, label) {
     if (label.split(';').length > 1)
         label = ((label.split(';')[0]).trim() + ']');
+    if (label.includes('+')||label.includes('^') || label.includes('!'))
+        throw new Errow('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:'+label);
+
     //label = label.split('!')[0];
     label = label.split('~')[0];
     //label = label.split('+')[0].split('^')[0];
@@ -1414,8 +1419,19 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
     var REV = {};
     for (var si = 0; si < Stitches.length; si++) {
         var s = Stitches[si];
+        {let la=s.label;
+            //console.log(la)
+            for (let l of la)
+            {
+                
+        if (l.includes('~')) throw new Error('Stitch label definition cannot contain ~. Use that in attaching to that label (for example, @A~). Error at label: '+l);
+            }
+        }
         if (typeof(s.attach_ref) === 'string' && s.attach_ref.length > 0 && s.id_attach.length > 0) {
             let label = s.attach_ref;
+            if (label.includes('+')||label.includes('^') || label.includes('!'))
+                throw new Errow('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:'+label);
+        
             let label1 = label;
             let num = 0;
             if (label1.split(';').length > 1) {
