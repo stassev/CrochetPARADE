@@ -442,7 +442,7 @@ DEF: dc=Copy(dc,3)
 COLOR: Ivory
 [7ch]*10,5ch,turn
 $K=0,m=0$,3ch,dc2inc,3sk,sc,[3ch.C[m,K++],3dc,3sk,sc]*10,turn
-{$m++,k=0$,3ch,dc2inc,[sc,3ch.C[m,k++],3dc]@C[m-1,K-(k)]*10,sc@[-1,2],turn
+{$m++,k=0$,3ch,dc2inc,[sc,3ch.C[m,k++],3dc]@C[m-1,K-k]*10,sc@[-1,2],turn
 }*15
 `;
 
@@ -2430,6 +2430,8 @@ function replaceExpression(text, i) {
 for (const match of matches) {
     for (let i of match[1].split(',')) {
         i = i.split(';')[0];
+        if (i.includes(':'))
+            i = i.split(':')[1];
         if (!i.includes(':')) {
             try {
                 if (Number.isInteger(evaluateExpression(i))) {
