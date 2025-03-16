@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Mar 14, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Mar 16, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -1187,11 +1187,6 @@ DEF: p=3ch,ss@5[%,-4]
             <p>An attachment point using @ as a coordinate, e.g. @[@+1], cannot work
                 unless there was already at least one attached stitch on that row/round.
                 That assigns the value of "@" to which we add the 1 in this example. This is by design. </p>
-        </li>
-        <li>
-            <p>When subscripting in labels using expressions, such as <span class="citation" data-cites="A">@A [N-(k)]</span>, put the parenthesis
-                in, so that the js parser does not treat those as strings but
-                as integers. (Would be nice to fix this.)</p>
         </li>
         <li>
             <p>The <code>turn</code> directive, should always be the last in a row/round/line of the code. No stitches can follow
