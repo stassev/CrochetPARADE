@@ -2418,38 +2418,39 @@ function evaluate_indices(text) {
 
     var pattern = /\[([^\[\]]+)\]/g;
     var matches = text.matchAll(pattern);
-    var m;
-    //const parser = math.parser()
-    function replaceExpression(text, i) {
-        // Escape special regex characters in 'i'
-        const escaped = i.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-        
-        // Create a regex to match 'i' with boundaries (start of string, end of string, or non-word characters)
-        const regex = new RegExp(`(^|\\W)${escaped}($|\\W)`, 'g');
-        
-        // Replace matches carefully while preserving surrounding characters
-        return text.replace(regex, (match, before, after) => `${before}${evaluateExpression(i)}${after}`);
-      }
-    while (m = matches.next(), !m.done) {
-        for (let i of m.value[1].split(',')) {
-            i = i.split(';')[0];
-            if (!(i.includes(':'))) {
-                try {
-                    if (Number.isInteger(evaluateExpression((i)))) {
-                        if (i !== String(evaluateExpression((i)))) {
-                            
-                            text = replaceExpression(text, i);
-                            //text.replaceAll(i, String(evaluateExpression((i)))); //replace any index expressions such as (k+3)%2 that evaluate to integers with the corresponding integers.
-                            //console.log(i, String(evaluateExpression((i))),text);
-                        }
-                    }
-                } catch (error) {
-                    continue;
-                }
-            }
+    var expressionsToReplace = [];
 
+function replaceExpression(text, i) {
+    const escaped = i.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(`(^|\\W)${escaped}($|\\W)`, 'g');
+    return text.replace(regex, (match, before, after) => `${before}${evaluateExpression(i)}${after}`);
+}
+
+// Extract all expressions
+for (const match of matches) {
+    for (let i of match[1].split(',')) {
+        i = i.split(';')[0];
+        if (!i.includes(':')) {
+            try {
+                if (Number.isInteger(evaluateExpression(i))) {
+                    if (i !== String(evaluateExpression(i))) {
+                        expressionsToReplace.push(i);
+                    }
+                }
+            } catch (error) {
+                continue;
+            }
         }
     }
+}
+
+// Sort expressions by length, longest to shortest
+expressionsToReplace.sort((a, b) => b.length - a.length);
+
+// Replace expressions in order
+for (const expr of expressionsToReplace) {
+    text = replaceExpression(text, expr);
+}
     text = text.replace(/ /g, '');
     //console.log(text)
     return text.trim();
