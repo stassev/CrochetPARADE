@@ -104,6 +104,8 @@
         }
         .brokenbracket {
             background-color: rgb(200, 100, 100);
+        }.words {
+            background-color: rgb(200, 200, 100);
         }
     </style>
 </head>
@@ -120,11 +122,16 @@
     <script>
         const textarea = document.getElementById('input');
         const highlighting = document.querySelector('#highlighting code');
-
+        const Dictionary = {'hi':0};
+const defs = [ ];
+const uniqueResult = [...new Set([...Object.keys(Dictionary), ...defs, 'turn'])];function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
         // Custom language definition for Prism.js
-        Prism.languages.custom = {'brokenbracket':[/(\((?=(([^()]|\([^()]*\))*[^)]*$)))|(^([^()]*|\([^()]*\))*)(\))/ 
-,            {pattern:/^(\((\((\((\((\((\((\((\((\((\([^()]*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)/,greedy:true
-        }],
+        Prism.languages.custom = {
+            //'brokenbracket':[/(\((?=(([^()]|\([^()]*\))*[^)]*$)))|(^([^()]*|\([^()]*\))*)(\))/ 
+            //{pattern:/^(\((\((\((\((\((\((\((\((\((\([^()]*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)/,greedy:true
+        //}],
             
             'comment': /\\[^\\]*?(?:\\|$)|#.*/,
             'def': {
@@ -136,7 +143,7 @@
                 greedy: true
             },
             'color': {
-                pattern: /(BACKGROUND:|COLOR:).*?(?=\n|$|,)/,
+                pattern: /(BACKGROUND:|COLOR:)(((([^,(]*\([^)]*\)|[^,(])*)))/,
                 greedy: true
             },
             'special': {
@@ -160,6 +167,15 @@
             },
             'number': /\b\d+\b|\b\d+(?=[a-zA-Z])/,
             'punctuation': /[,*]/,
+            'words': {
+        pattern: new RegExp(
+            `\\b(?:${uniqueResult.map(escapeRegExp).join('|')}|` +
+            `(?:${uniqueResult.map(escapeRegExp).join('|')})\\d+(?:inc|tog))\\b`,
+            ''
+        ),
+        greedy: true
+    }
+            ,
             'string': /"(?:\\.|[^\\"])*"|'(?:\\.|[^\\'])*'/
         };
 
