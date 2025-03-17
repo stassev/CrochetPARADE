@@ -99,7 +99,9 @@
         .language-custom .string {
             color: brown;
         }
-
+        .brokenbracket1 {
+            background-color: rgb(200, 100, 100);
+        }
         .brokenbracket {
             background-color: rgb(200, 100, 100);
         }
@@ -120,8 +122,10 @@
         const highlighting = document.querySelector('#highlighting code');
 
         // Custom language definition for Prism.js
-        Prism.languages.custom = {
-            'brokenbracket':/(\((?=(([^()]|\([^()]*\))*[^)]*$)))|(^([^()]*|\([^()]*\))*\))/,
+        Prism.languages.custom = {'brokenbracket':[/(\((?=(([^()]|\([^()]*\))*[^)]*$)))|(^([^()]*|\([^()]*\))*)(\))/ 
+,            {pattern:/^(\((\((\((\((\((\((\((\((\((\([^()]*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)/,greedy:true
+        }],
+            
             'comment': /\\[^\\]*?(?:\\|$)|#.*/,
             'def': {
                 pattern: /DEF:.*/,
