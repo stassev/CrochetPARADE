@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Language Highlighter</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" rel="stylesheet" />
+    <style>
+        #editor-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        #input,
+        #highlighting {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: auto;
+        }
+
+        #input {
+            z-index: 1;
+            color: transparent;
+            background: transparent;
+            caret-color: black;
+            resize: none;
+        }
+
+        #highlighting {
+            z-index: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            pointer-events: none;
+        }
+
+        #highlighting code {
+            background-color: transparent;
+            font-weight: 540;
+            /* Keep the font-weight */
+        }
+
+        /* Custom Prism.js token styles */
+        .language-custom .comment {
+            color: rgb(128, 128, 128);
+        }
+
+        .language-custom .def {
+            color: rgb(121, 42, 121);
+        }
+
+        .language-custom .dot {
+            color: rgb(150, 50, 50);
+        }
+
+        .language-custom .color {
+            color: rgb(193, 124, 15);
+        }
+
+        .language-custom .labelat {
+            color: rgb(80, 200, 80);
+            /* Color for labels starting with @ */
+        }
+
+        .language-custom .labeldot {
+            color: rgb(37, 170, 226);
+            /* Color for labels starting with . */
+        }
+
+        .language-custom .special {
+            color: rgb(250,0,0);
+        }
+
+        .language-custom .dollar {
+            color: rgb(40, 160, 150);
+        }
+
+        .language-custom .bracket {
+            color: blue;
+        }
+
+        .language-custom .number {
+            color: darkorange;
+        }
+
+        .language-custom .punctuation {
+            color: #999;
+        }
+
+        .language-custom .string {
+            color: brown;
+        }
+
+        .brokenbracket {
+            background-color: rgb(200, 100, 100);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="editor-container">
+        <textarea id="input" spellcheck="false"></textarea>
+        <pre id="highlighting">
+            <code class="language-custom"></code>
+        </pre>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    <script>
+        const textarea = document.getElementById('input');
+        const highlighting = document.querySelector('#highlighting code');
+
+        // Custom language definition for Prism.js
+        Prism.languages.custom = {
+            'brokenbracket':/(\((?=(([^()]|\([^()]*\))*[^)]*$)))|(^([^()]*|\([^()]*\))*\))/,
+            'comment': /\\[^\\]*?(?:\\|$)|#.*/,
+            'def': {
+                pattern: /DEF:.*/,
+                lookbehind: true
+            },
+            'dot': {
+                pattern: /DOT:.*/,
+                greedy: true
+            },
+            'color': {
+                pattern: /(BACKGROUND:|COLOR:).*?(?=\n|$|,)/,
+                greedy: true
+            },
+            'special': {
+                pattern: /\.{3}|[<>]/,
+                greedy: true
+            },
+            'labelat': {
+                pattern: /@(?:[^\($\n,\.\[{\]}\)]*|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\))*\))*\)|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\])*\])*\])*\]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*\})*\})*\})*/, //Match label with @ or .
+                greedy: true
+            },'labeldot': {
+                pattern: /\.(?:[^\($\n,@\[{\]}\)]*|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\))*\))*\)|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\])*\])*\])*\]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*\})*\})*\})*/,
+                greedy: true
+            },
+            'dollar': {
+                pattern: /\$.*?\$/,
+                greedy: true
+            },
+            'bracket': {
+                pattern: /[[\](){}]/,
+                greedy: true
+            },
+            'number': /\b\d+\b|\b\d+(?=[a-zA-Z])/,
+            'punctuation': /[,*]/,
+            'string': /"(?:\\.|[^\\"])*"|'(?:\\.|[^\\'])*'/
+        };
+
+        // Add specific classnames to the label tokens
+        
+        function update(text) {
+    // Handle final newlines
+    if (text[text.length - 1] == "\n") {
+        text += " ";
+    }
+
+    // Escape HTML entities
+    text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    // Update code
+    highlighting.innerHTML = text;
+
+    // Apply Prism highlighting
+    Prism.highlightElement(highlighting);
+
+
+    // Handle scroll synchronization
+    highlighting.parentElement.scrollTop = textarea.scrollTop;
+    textarea.scrollTop = highlighting.parentElement.scrollTop;
+}
+
+// Helper function to escape special characters in regex
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+        function update1(text) {
+            // Handle final newlines
+            if (text[text.length - 1] == "\n") {
+                text += " ";
+            }
+
+            // Escape HTML entities
+            text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            // Update code
+            highlighting.innerHTML = text;
+
+            // Apply Prism highlighting
+            Prism.highlightElement(highlighting);
+
+            // Handle scroll synchronization
+            highlighting.parentElement.scrollTop = textarea.scrollTop;
+            textarea.scrollTop = highlighting.parentElement.scrollTop;
+        }
+
+        textarea.addEventListener('input', function () {
+            setTimeout(function () {
+                update(textarea.value);
+            }, 0);
+        })
+
+        textarea.addEventListener('mousedown', function () {
+            setTimeout(function () {
+                update(textarea.value);
+            }, 0);
+        })
+
+        // Initial update
+        update(textarea.value);
+    </script>
+</body>
+
+</html>
