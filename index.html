@@ -1603,7 +1603,7 @@ function escapeRegExp(string) {
         function update(text) {
     // Handle final newlines
    let defs = extractWords(text);
-   const uniqueResult = [...new Set([...Object.keys(Dictionary), ...defs, 'turn'])];
+   const uniqueResult = [...new Set([...Object.keys(OriginalDictionary), ...defs, 'turn'])];
 
         // Custom language definition for Prism.js
         Prism.languages.html = {
