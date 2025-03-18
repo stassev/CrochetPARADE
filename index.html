@@ -1613,11 +1613,11 @@ function escapeRegExp(string) {
             
             'comment': /\\[^\\]*?(?:\\|$)|#.*/,
             'def': {
-                pattern: /DEF:.*/,
+                pattern: /([\s*])(DEF:.*)/,
                 lookbehind: true
             },
             'dot': {
-                pattern: /DOT:.*/,
+                pattern: /([\s*])DOT:.*/,
                 greedy: false
             },
             'color': {
@@ -1655,7 +1655,7 @@ function escapeRegExp(string) {
         ),
         greedy: false
         },'unknown':{pattern:/\b([a-zA-Z_]+[\d]*)*\b|~|!|\+|\^/}
-            //,
+            //,.replaceAll('\n', '<br>')
             //'string': /"(?:\\.|[^\\"])*"|'(?:\\.|[^\\'])*'/
         };
 
@@ -1674,7 +1674,7 @@ function escapeRegExp(string) {
     // Apply Prism highlighting
     Prism.highlightElement(result_element );
     
-    let inputString = result_element.innerHTML.replaceAll('\n', '<br>');
+    let inputString = result_element.innerHTML.replaceAll('\n', '<br>');//.replaceAll(' ', '&nbsp;');
     result_element.innerHTML= highlightUnmatchedBrackets(inputString);
     
 }
