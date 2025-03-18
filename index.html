@@ -1613,12 +1613,12 @@ function escapeRegExp(string) {
             
             'comment': /\\[^\\]*?(?:\\|$)|#.*/,
             'def': {
-                pattern: /([\s*])(DEF:.*)/,
+                pattern: /^(\s*)(DEF:.*)/m,
                 lookbehind: true
             },
             'dot': {
-                pattern: /([\s*])DOT:.*/,
-                greedy: false
+                pattern: /^\s*(DOT:.*)/m,
+                greedy: true
             },
             'color': {
                 pattern: /(BACKGROUND:|COLOR:)(((([^,(\n]*\([^)\n]*\)|[^,(\n])*)))/,
