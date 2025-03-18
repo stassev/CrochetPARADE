@@ -3567,7 +3567,7 @@ function export_to_dot(Stitches, json) {
             let value = jac[1];
             let jtext = jac[2];
             let nodes = findConnectedNodeNames(j, i3);
-            if (nodes.blue.length !== 1)
+            if (nodes.blue.length > 1)
                 throw new Error('More than one blue edge connected to ' + i3);
             if (nodes.red.length < 1)
                 console.log('Requested back/front loop attachment, but no red edges connected to ' + i3);
