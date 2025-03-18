@@ -1752,7 +1752,8 @@ function escapeRegExp(string) {
         }
 
         function extractWords(input) {
-            const regex = /DEF:\s*(\S+)\s*=/g;
+         
+            const regex = /[\s*]DEF:\s*(\S+)\s*=/g;
             const matches = input.matchAll(regex);
             return Array.from(matches, match => match[1]);
         }

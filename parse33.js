@@ -2198,6 +2198,10 @@ function parse_definitions(text) {
     EXTRA_DOTS = '';
     let k = 0;
 
+    for (let l of text.split('\n'))
+        text0+= l.trim().split('#')[0]+'\n';
+    text=text0;
+    text0='';
     for (var l of text.split('\\')) {
         if (k % 2 == 0)
             text0 += l;
