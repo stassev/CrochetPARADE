@@ -31,8 +31,88 @@
            }
          }
        </script>
+       <script src="./prism.min.js"></script>
 
     <style>
+           /* Custom Prism.js token styles */
+           .language-html .comment {
+            font-weight:540;
+            color: rgb(128, 128, 128);
+        }
+
+        .language-html .def {
+            font-weight:540;
+            color: rgb(121, 42, 121);
+        }
+
+        .language-html .dot {
+            font-weight:540;
+            color: rgb(150, 50, 50);
+        }
+
+        .language-html .color {
+            font-weight:540;
+            color: rgb(193, 124, 15);
+        }
+
+        .language-html .labelat {
+            font-weight:540;
+            color: rgb(80, 200, 80);
+            /* Color for labels starting with @ */
+        }
+
+        .language-html .labeldot {
+            font-weight:540;
+            color: rgb(37, 170, 226);
+            /* Color for labels starting with . */
+        }
+
+        .language-html .special {
+            font-weight:540;
+            color: rgb(250,0,0);
+        }
+
+        .language-html .dollar {
+            font-weight:540;
+            color: rgb(40, 160, 150);
+        }
+
+        .language-html .bracket {
+            font-weight:540;
+            color: blue;
+        }
+
+        .language-html .number {
+            font-weight:540;
+            color: rgb(153, 0, 79);
+        }
+
+        .language-html .punctuation {
+            font-weight:540;
+            color: rgb(85, 85, 85);
+        }
+        
+        .language-html .unknown {
+            font-weight:540;
+            background-color: #ff2121;
+        }
+
+        .language-html .string {
+            font-weight:540;
+            color: brown;
+        }
+        .language-html .brokenbracket1 {
+            font-weight:540;
+            background-color: rgb(200, 100, 100);
+        }
+        .language-html .brokenbracket {
+            font-weight:540;
+            background-color: rgb(200, 100, 100);
+        } 
+        .language-html .words {
+            font-weight:540;
+            background-color: rgba(0, 0, 0, 0);
+        }
         #translateZSlider {
             accent-color: red;
         }
@@ -459,7 +539,7 @@
         }
 
         .numbers {
-            width: 20px;
+            width: 25px;
             text-align: right;
             height: 100%;
             padding: 0px;
@@ -807,7 +887,7 @@
         <div class="title-author">
             <p class="title">CrochetPARADE: Crochet PAttern Renderer, Analyzer and DEbugger</p>
             <p class="author">Svetlin Tassev</p>
-            <p class="date">Updated: Mar 15, 2025. Allow <a href="https://crochetparade.org/crochetforum/showthread.php?tid=17" target="_blank">highlighing of stitches by label</a> (press ctrl+d once the 3d canvas is clicked). Should help with navigating projects with instructions such as "crochet in the next chain space".
+            <p class="date">Updated: Mar 18, 2025. Speed-up highlighting in the editor using PrismJS. Allow <a href="https://crochetparade.org/crochetforum/showthread.php?tid=17" target="_blank">highlighing of stitches by label</a> (press ctrl+d once the 3d canvas is clicked). Should help with navigating projects with instructions such as "crochet in the next chain space".
         </div>
         </p>
     </div>
@@ -1351,7 +1431,7 @@
         After the model is displayed in this canvas, click on it, and then you can press <span style='font-family:monospace;font-weight:400'>'c'</span> to see the yarn colors, or <span style='font-family:monospace;font-weight:400'>'esc'</span> to reset the view. <br> Pressing <span style='font-family:monospace;font-weight:400'>'ctrl+a'</span> or <span style='font-family:monospace;font-weight:400'>'a'</span> will hide/display stitches incrementally.<br> Pressing <span style='font-family:monospace;font-weight:400'>'r'</span> will automatically rotate the view. <br>
         <br>See the help for more keyboard shortcuts.
 
-    </div>
+    </div>    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
     <script>
         const textarea = document.getElementById('inputText');
 
@@ -1428,7 +1508,51 @@
 
             return -1; // No match found
         }
+        function highlightUnmatchedBrackets(str) {
+    const openingBrackets = '([{';
+    const closingBrackets = ')]}';
+    const stack = [];
+    const unmatchedIndices = new Set();
 
+    // First pass: identify unmatched brackets
+    for (let i = 0; i < str.length; i++) {
+        const char = str[i];
+        if (openingBrackets.includes(char)) {
+            stack.push({ char, index: i });
+        } else if (closingBrackets.includes(char)) {
+            if (stack.length > 0) {
+                const lastOpening = stack[stack.length - 1];
+                if (closingBrackets.indexOf(char) === openingBrackets.indexOf(lastOpening.char)) {
+                    stack.pop();
+                } else {
+                    unmatchedIndices.add(i);
+                    unmatchedIndices.add(lastOpening.index);
+                    stack.pop();
+                }
+            } else {
+                unmatchedIndices.add(i);
+            }
+        }
+    }
+
+    // Add any remaining unmatched opening brackets
+    while (stack.length > 0) {
+        const unmatchedOpening = stack.pop();
+        unmatchedIndices.add(unmatchedOpening.index);
+    }
+
+    // Second pass: construct the result string
+    let result = '';
+    for (let i = 0; i < str.length; i++) {
+        if (unmatchedIndices.has(i)) {
+            result += '<span style="background-color:rgb(255, 33, 33)">' + str[i] + '</span>';
+        } else {
+            result += str[i];
+        }
+    }
+
+    return result;
+}
         function findAllUnmatchedBracketIndices(str) {
             const openingBrackets = '([{';
             const closingBrackets = ')]}';
@@ -1472,6 +1596,93 @@
 
             return Array.from(unmatchedIndices).sort((a, b) => a - b); // Return sorted indices
         }
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+        function update(text) {
+    // Handle final newlines
+   let defs = extractWords(text);
+   const uniqueResult = [...new Set([...Object.keys(Dictionary), ...defs, 'turn'])];
+
+        // Custom language definition for Prism.js
+        Prism.languages.html = {
+            //'brokenbracket':[/(\((?=(([^()]|\([^()]*\))*[^)]*$)))|(^([^()]*|\([^()]*\))*)(\))/ ,
+            //{pattern:/^(\((\((\((\((\((\((\((\((\((\([^()]*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)/,greedy:true
+        //}],
+            
+            'comment': /\\[^\\]*?(?:\\|$)|#.*/,
+            'def': {
+                pattern: /DEF:.*/,
+                lookbehind: true
+            },
+            'dot': {
+                pattern: /DOT:.*/,
+                greedy: false
+            },
+            'color': {
+                pattern: /(BACKGROUND:|COLOR:)(((([^,(\n]*\([^)\n]*\)|[^,(\n])*)))/,
+                greedy: false
+            },
+            'special': {
+                pattern: /\.{3}|[<>]/,
+                greedy: false
+            },
+            'labelat': {
+                pattern: /@(?:[^\($\n,\+!\^\*\.\[{\]}\)]*|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\))*\))*\)|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\])*\])*\])*\]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*\})*\})*\})*/, //Match label with @ or .
+                greedy: false
+            },'labeldot': {
+                pattern: /\.(?:[^\($\n,\*~@\[{\]}\)]*|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\))*\))*\)|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\])*\])*\])*\]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*\})*\})*\})*/,
+                greedy: false
+            },
+            'dollar': {
+                pattern: /\$.*?\$|\$[^\$\n$]*($|\n)/,
+                greedy: true
+            },
+            'bracket': {
+                pattern: /[[\](){}]/,
+                greedy: true
+            },
+            'number': /\b\d+\b|\b\d+(?=[a-zA-Z_])/,
+            'punctuation': /[,*]/,
+            'words': {
+        pattern: new RegExp(
+            `\\b[0-9]*(?:${uniqueResult.map(escapeRegExp).join('|')}\\b|\\b[0-9]*` +
+            `(?:${uniqueResult.map(escapeRegExp).join('|')})\\d+(?:inc|tog))\\b`,
+            'g'
+
+            
+        ),
+        greedy: false
+        },'unknown':{pattern:/\b([a-zA-Z_]+[\d]*)*\b|~|!|\+|\^/}
+            //,
+            //'string': /"(?:\\.|[^\\"])*"|'(?:\\.|[^\\'])*'/
+        };
+
+
+
+
+    if (text[text.length - 1] == "\n") {
+        text += " ";
+    }
+
+    // Escape HTML entities
+    text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let result_element = document.querySelector("#highlighting");
+    // Update code
+    result_element.innerHTML = text;//.replaceAll('\n', '<br>\n');
+    // Apply Prism highlighting
+    Prism.highlightElement(result_element );
+    
+    let inputString = result_element.innerHTML.replaceAll('\n', '<br>');
+    result_element.innerHTML= highlightUnmatchedBrackets(inputString);
+    
+}
+
+// Helper function to escape special characters in regex
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
         textarea.addEventListener('input', function() {
             setTimeout(function() {
@@ -1546,249 +1757,7 @@
             return Array.from(matches, match => match[1]);
         }
 
-        function update(text) {
-            const cursorPosition = textarea.selectionStart;
-
-            const inputString = textarea.value;
-            let bracket = inputString[cursorPosition];
-            let bracketIndex = cursorPosition;
-            var matchingBracketIndex = findMatchingClosingBracketIndex(inputString, cursorPosition);
-            if (matchingBracketIndex == -1) {
-                matchingBracketIndex = findMatchingOpeningBracketIndex(inputString, cursorPosition);
-            }
-            if (matchingBracketIndex == -1) {
-                matchingBracketIndex = findMatchingClosingBracketIndex(inputString, cursorPosition - 1);
-                bracket = inputString[cursorPosition - 1];
-                bracketIndex = cursorPosition - 1;
-            }
-            if (matchingBracketIndex == -1) {
-                matchingBracketIndex = findMatchingOpeningBracketIndex(inputString, cursorPosition - 1);
-                bracket = inputString[cursorPosition - 1];
-                bracketIndex = cursorPosition - 1;
-            }
-
-            //console.log(cursorPosition, matchingBracketIndex, bracketIndex, bracket, inputString[matchingBracketIndex])
-
-
-            let result_element = document.querySelector("#highlighting");
-            // Handle final newlines (see article)
-            if (text[text.length - 1] == "\n") {
-                text += " ";
-            }
-            // Update code
-
-            // Syntax Highlight
-            //Prism.highlightElement(result_element);
-
-            //const text = textarea.value;
-            let highlightedText = '';
-            let balance = 0;
-            let insideLabelText = false;
-            let insideCommentText = false;
-            let insideCommentText1 = false;
-            let insideDefText = false;
-            let insideDotText = false;
-            let insideColorText = 0;
-            let insideDollarText = false;
-            let insideSpecialText = false;
-            let label = true;
-            let dollarCount = 0;
-            let backslashCount = 0;
-            let background = 'transparent';
-            let word = false;
-            let highlightedText1 = '';
-            defs = extractWords(inputString);
-            var unmatchedIs = findAllUnmatchedBracketIndices(inputString)
-            for (let i = 0; i < text.length; i++) {
-
-                if (i == bracketIndex)
-                    if (inputString[i] && inputString[i] !== '' && '[](){}'.includes(inputString[i]))
-                        background = 'rgb(255,100,100)';
-                if (i == matchingBracketIndex) {
-                    background = 'rgb(200,200,200)'; // 'rgb(100,100,255)'
-                    if (inputString[i] !== getMatchingBracket(bracket))
-                        background = 'rgb(255,100,100)';
-                }
-                if ((matchingBracketIndex != -1) && (i == bracketIndex)) {
-                    background = 'rgb(200,200,200)'; // 'rgb(100,100,255)'
-                    if (inputString[matchingBracketIndex] !== getMatchingBracket(inputString[bracketIndex]))
-                        background = 'rgb(255,100,100)';
-                }
-
-                if (unmatchedIs.includes(i)) {
-                    background = 'rgb(255,100,100)';
-                }
-
-                if (text[i] === '#')
-                    insideCommentText = true;
-                if (text[i] === '\n')
-                    insideCommentText = false;
-
-                if (text.slice(i, i + 11) === 'BACKGROUND:')
-                    insideColorText = 1;
-                if (text.slice(i, i + 6) === 'COLOR:')
-                    insideColorText = 1;
-                if (text[i] === '\n')
-                    insideColorText = 0;
-                if ((insideColorText == 1) && (text[i]) === '(')
-                    insideColorText = 2;
-                if ((text[i]) === ')')
-                    insideColorText -= 1;
-                if (([',', ']', '}', ].includes(text[i])) && insideColorText == 1)
-                    insideColorText = 0;
-
-                if (text.slice(i, i + 4) === 'DOT:')
-                    insideDotText = true;
-                if (text[i] === '\n')
-                    insideDotText = false;
-
-                if (text.slice(i, i + 4) === 'DEF:')
-                    insideDefText = true;
-                if (text[i] === '\n')
-                    insideDefText = false;
-
-                if ([text.slice(i - 2, i + 1), text.slice(i - 1, i + 2), text.slice(i, i + 3)].includes('...') || ['<', '>'].includes(text[i]))
-                    insideSpecialText = true;
-
-                if ((text[i] === '#') || (text.slice(i - 3, i + 1) === 'DEF:') || (text.slice(i - 3, i + 1) === 'DOT:')) {
-                    balance = 1000000;
-                }
-                if (text[i] === '$')
-                    dollarCount++;
-                if (dollarCount % 2 == 1)
-                    insideDollarText = true;
-
-                if (text[i] === '\\')
-                    backslashCount++;
-                if (backslashCount % 2 == 1)
-                    insideCommentText1 = true;
-
-
-                if (text[i] === '@' || (text[i] === '.' && text[i - 1] !== '.' && text[i + 1] !== '.')) {
-                    if (balance < 10000) {
-                        if (!insideLabelText)
-                            balance = 0;
-                        insideLabelText = true;
-                    }
-                    if (text[i] === '@')
-                        label = true;
-                    else
-                        label = false;
-                }
-
-                if (text[i] === '(' || text[i] === '[' || text[i] === '{') {
-                    balance++;
-                } else if (text[i] === ')' || text[i] === ']' || text[i] === '}') {
-                    balance--;
-                }
-
-                if ((text[i] === '\n') || (balance < 0) || ((balance == 0) && ((text[i] === ',' && (dollarCount % 2 == 0)) || (text[i] === '*' && (dollarCount % 2 == 0))))) {
-                    insideLabelText = false;
-                    balance = 0;
-                }
-                var texti = text[i].replaceAll(' ', '&nbsp;').replace(/\t/g, "&nbsp;&nbsp;&nbsp;&nbsp;");
-
-                if (insideCommentText1) {
-                    if (word) {
-                        word = false;
-                        highlightedText += add_word(highlightedText1);
-                        highlightedText1 = '';
-                    }
-                    highlightedText += '<span style="color:rgb(128,128,128);font-weight:540;background-color:' + background + '">' + texti + '</span>';
-                    //highlightedText += '<span style="color:rgb(128,128,128);">' + texti + '</span>';
-                } else if (insideCommentText) {
-                    if (word) {
-                        word = false;
-                        highlightedText += add_word(highlightedText1);
-                        highlightedText1 = '';
-                    }
-                    highlightedText += '<span style="color:rgb(128,128,128);font-weight:540;background-color:' + background + '">' + texti + '</span>';
-                    //highlightedText += '<span style="color:rgb(128,128,128);">' + texti + '</span>';
-                } else if (insideDotText) {
-                    if (word) {
-                        word = false;
-                        highlightedText += add_word(highlightedText1);
-                        highlightedText1 = '';
-                    }
-                    
-                    highlightedText += '<span style="color:rgb(150, 50, 50);font-weight:540;background-color:' + background + '">' + texti + '</span>';
-                } else if (insideColorText > 0) {
-                    if (word) {
-                        word = false;
-                        highlightedText += add_word(highlightedText1);
-                        highlightedText1 = '';
-                    }
-                    highlightedText += '<span style="color:rgb(193, 124, 15);font-weight:540;background-color:' + background + '">' + texti + '</span>';
-                } else if (insideDefText) {
-                    if (word) {
-                        word = false;
-                        highlightedText += add_word(highlightedText1);
-                        highlightedText1 = '';
-                    }
-                    highlightedText += '<span style="color:rgb(121, 42, 121);font-weight:540;background-color:' + background + '">' + texti + '</span>';
-                } else if (insideDollarText) {
-                    if (word) {
-                        word = false;
-                        highlightedText += add_word(highlightedText1);
-                        highlightedText1 = '';
-                    }
-                    highlightedText += '<span style="color:rgb(40,160, 150);font-weight:540;background-color:' + background + '">' + texti + '</span>';
-                } else if (insideSpecialText) {
-                    if (word) {
-                        word = false;
-                        highlightedText += add_word(highlightedText1);
-                        highlightedText1 = '';
-                    }
-                    highlightedText += '<span style="color:rgb(250,0, 0);font-weight:540;background-color:' + background + '">' + texti + '</span>';
-                } else if (insideLabelText) {
-                    if (word) {
-                        word = false;
-                        highlightedText += add_word(highlightedText1);
-                        highlightedText1 = '';
-                    }
-
-                    if ('!^+'.includes(texti) && (label) &&(balance==0))
-                        background = 'rgb(255,100,100)';
-                    if (texti.includes('~')&& (!label))
-                        background = 'rgb(255,100,100)';
-                    
-                    if (label)
-                        highlightedText += '<span style="color:rgb(80, 200, 80);font-weight:540;background-color:' + background + '">' + texti + '</span>';
-                    else
-                        highlightedText += '<span style="color:rgb(37, 170, 226);font-weight:540;background-color:' + background + '">' + texti + '</span>';
-                } else {
-
-                    if (['&nbsp;', ' ', ',', '\n', '*', '[', ']', '{', '}', '(', ')'].includes(texti)) {
-                        //word = true;
-                        if (!['&nbsp;', ' '].includes(texti)) {
-                            highlightedText += add_word(highlightedText1);
-                            highlightedText1 = '';
-                            highlightedText += '<span style="font-weight: 540;background-color:' + background + '">' + texti + '</span>'
-                        } else {
-                            highlightedText1 += texti;
-                        }
-
-                    } else {
-                        word = true;
-                        highlightedText1 += texti
-                    }
-                    //console.log(highlightedText1);
-                    //.replace(new RegExp("&", "g"), "&amp;").replaceAll(" ", "&nbsp;").replace(new RegExp("<", "g"), "&lt;").replace(new RegExp(">", "g"), "&gt;") + '</b>'
-                }
-
-                if (dollarCount % 2 == 0)
-                    insideDollarText = false;
-                if (backslashCount % 2 == 0)
-                    insideCommentText1 = false;
-                insideSpecialText = false;
-                background = 'transparent';
-
-            }
-            highlightedText += add_word(highlightedText1);
-            result_element.innerHTML = highlightedText.replaceAll('\n', '<br>');
-            //console.log(result_element.innerHTML)
-
-        }
+      
 
         function sync_scroll(element) {
             /* Scroll result to scroll coords of event - sync with textarea */
@@ -2059,8 +2028,8 @@
             </ul>
         </p>
         <p>ACKNOWLEDGEMENTS</p>
-        <p>CrochetPARADE uses the following libraries: <a href="https://svgjs.dev/">SVG.js</a> and
-            <a href="https://threejs.org/">three.js</a>.
+        <p>CrochetPARADE uses the following libraries: <a href="https://svgjs.dev/">SVG.js</a>,
+            <a href="https://threejs.org/">three.js</a> and <a href="https://prismjs.com">PrismJS</a>.
         </p>
         <p>AUTHOR</p>
         <p>Svetlin Tassev (2023)</p>
