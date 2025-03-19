@@ -623,12 +623,12 @@ ss@A[m-1][0],sc,hdc,dc2tog,tr,tr2inc,turn
 ss@D[n++][5],ss,>,ss
 }*6
 $petal=0$,start_at@Petal[petal++]
-$ring=0$,{10ch,[dc,5ch,dc]@Petal[petal++],10ch,sc@Petal[petal++],3ch,>,sc@Petal[petal++]}*6,ss@[%,0],ss
+$iring=0$,{10ch,[dc,5ch,dc]@Petal[petal++],10ch,sc@Petal[petal++],3ch,>,sc@Petal[petal++]}*6,ss@[%,0],ss
 $c=0$,5ch,dc@[-1,4],[2ch,2sk@[ch:@+1],dc]*3,{5ch.C5[c++],dc@[@],[2ch,2sk@[ch:@+1],dc]*4,2ch,dc@[@+4],ch,>,ch,dc@[@+4],[2ch,2sk@[ch:@+1],dc]*4}*6,sc@[%,2]
 $c=0,r=0$,ch.Z0,sc.Z1@[-1,2],[2sc,sc@[dc:@]]*4,{3sc@C5[c],ch,7ch.R[r]+!0,turn
 ss@1[-1,-8],ch,turn
-[sc,hdc.Ring[ring++],14dc,hdc,sc]@R[r++],3sc@C5[c++],sc@[dc:@],>,[2sc,sc@[dc:@]]*10}*6,[2sc,sc@[dc:@]]*5,sc,ss@Z0,ch,sc@Z1
-$c=0,ring=0$,{4ch.C4[c++]+!,longtr@Ring[ring++],[4ch.C4[c++]+!,trtr]*13,4ch.C4[c++]+!,longtr,4ch.C4[c++]+!,16sk@[sc:@+1],2sc@[sc:@+1],[sk,sc]*2,>,sc@[sc:@+1]}*6,ss@[-1,-1],ss@[%,0],6ss
+[sc,hdc.Ring[iring++],14dc,hdc,sc]@R[r++],3sc@C5[c++],sc@[dc:@],>,[2sc,sc@[dc:@]]*10}*6,[2sc,sc@[dc:@]]*5,sc,ss@Z0,ch,sc@Z1
+$c=0,iring=0$,{4ch.C4[c++]+!,longtr@Ring[iring++],[4ch.C4[c++]+!,trtr]*13,4ch.C4[c++]+!,longtr,4ch.C4[c++]+!,16sk@[sc:@+1],2sc@[sc:@+1],[sk,sc]*2,>,sc@[sc:@+1]}*6,ss@[-1,-1],ss@[%,0],6ss
 $c=2,c1=0$,3ch,dc@[-1,7],{[4ch.C41[c1++]+!,[some_space,2dc,some_space]@C4[c++]]*13,$c++$,$c++$,>,[some_space,2dc,some_space]@C4[c++]}*6,ss@[%,2],8ss
 $c1=1,c=0$,3ch,[some_space,2dc]@C41[c1++],{[4ch.C42[c++]+!,3dc@C41[c1++]]*10,$c1++$,$c1++$,>,3dc@C41[c1++]}*6,ss@[%,2],4ss
 $c=1,c3=0$,3ch,dc@[-1,7],{[4ch.C43[c3++]+!,4dc@C42[c++]]*8,4ch.C43[c3++]+!,2dc@C42[c++],>,2dc@C42[c++]}*6,ss@[%,2],3ss
@@ -1352,7 +1352,7 @@ function count_stitches_in_row(Stitches, row) {
 function find_label(Stitches, label) {
     var label0 = label;
     if (label0.includes('+')||label0.includes('^') || label0.includes('!'))
-        throw new Errow('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:'+label);
+        throw new Error('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:'+label);
     if (label.split(';').length > 1)
         label = (label.split(';')[0]).trim() + ']';
     //label = label.split('!')[0];
@@ -1377,7 +1377,7 @@ function find_label_ALL(Stitches, label) {
     if (label.split(';').length > 1)
         label = ((label.split(';')[0]).trim() + ']');
     if (label.includes('+')||label.includes('^') || label.includes('!'))
-        throw new Errow('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:'+label);
+        throw new Error('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:'+label);
 
     //label = label.split('!')[0];
     label = label.split('~')[0];
@@ -1430,7 +1430,7 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
         if (typeof(s.attach_ref) === 'string' && s.attach_ref.length > 0 && s.id_attach.length > 0) {
             let label = s.attach_ref;
             if (label.includes('+')||label.includes('^') || label.includes('!'))
-                throw new Errow('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:'+label);
+                throw new Error('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:'+label);
         
             let label1 = label;
             let num = 0;
@@ -2209,7 +2209,7 @@ function parse_definitions(text) {
     }
     text = text0;
     text0 = '';
-
+    
 
     for (let l of text.split('\n')) {
         if ((l.trim().slice(0, 4) !== 'DEF:') && (l.trim()[0] !== '#') && (l.trim().slice(0, 4) !== 'DOT:')) { //remove lines starting with Def. or #
@@ -2225,14 +2225,17 @@ function parse_definitions(text) {
         }
     }
     var name, V, H;
+    const [_,vars]=find_vars(text0);
     for (let l of text.split('\n'))
         if (l.trim().slice(0, 4) == 'DEF:') {
             l = l.trim().split('#')[0]; //remove any comments;;
             var [a, b] = l.slice(4).split('=');
             a = a.trim();
             b = b.trim();
-            if (b[0] === '&') // Include dictionary entry.
+            if (b[0] === '&') {// Include dictionary entry.
                 Dictionary[a] = b;
+                find_vars(text0);
+            }
             else if (b.slice(0, 5) == 'Copy(') {
                 try {
                     var spl = b.slice(5, -1).split(',');
@@ -2277,10 +2280,13 @@ function parse_definitions(text) {
                 ////
 
                 Dictionary[a] = handle_changeHeightWidth(dict, a, H, W);
-            } else
+                find_vars(text0);
+            } else{
+                if (vars.includes(a.trim()))
+                    throw new Error('Error: variable name matches stitch name. For example, $ch=0$ cannot be used since "ch" is a stitch name. Variable: '+a.trim());
                 text0 = text0.replace(new RegExp('\\b(\\d*)' + a.trim() + '\\b', 'g'), function(match, p1) {
                     return p1 ? p1 + '(' + b.trim() + ')' : '(' + b.trim() + ')';
-                });
+                });}
         }
 
     backgroundColor = '';
@@ -2342,6 +2348,9 @@ function find_vars(text) {
         });
     } catch (error) {}
     variable_names = Array.from(new Set(variable_names));
+    for (var v of variable_names) 
+        if (Object.keys(Dictionary).includes(v))
+            throw new Error('Error: variable name matches stitch name. For example, $ch=0$ cannot be used since "ch" is a stitch name. Variable: '+v);
     return [text, variable_names];
 }
 
