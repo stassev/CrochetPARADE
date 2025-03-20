@@ -1431,7 +1431,7 @@
         After the model is displayed in this canvas, click on it, and then you can press <span style='font-family:monospace;font-weight:400'>'c'</span> to see the yarn colors, or <span style='font-family:monospace;font-weight:400'>'esc'</span> to reset the view. <br> Pressing <span style='font-family:monospace;font-weight:400'>'ctrl+a'</span> or <span style='font-family:monospace;font-weight:400'>'a'</span> will hide/display stitches incrementally.<br> Pressing <span style='font-family:monospace;font-weight:400'>'r'</span> will automatically rotate the view. <br>
         <br>See the help for more keyboard shortcuts.
 
-    </div>    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
+    </div>   
     <script>
         const textarea = document.getElementById('inputText');
 
@@ -1753,7 +1753,7 @@ function escapeRegExp(string) {
 
         function extractWords(input) {
          
-            const regex = /[\s*]DEF:\s*(\S+)\s*=/g;
+            const regex = /\s*DEF:\s*(\S+)\s*=/g;
             const matches = input.matchAll(regex);
             return Array.from(matches, match => match[1]);
         }
