@@ -34,10 +34,10 @@ var textEarth=`# To see the colors of planet Earth, click on the
 # as done in the video: 
 # https://www.youtube.com/watch?v=PtqZN53Y4Eo
 #
-DEF: sca=&sc^A(sc):B~A-B::!-1-A;B-1-A
-DEF: scb=&sc^A(sc):B~A-B::!-1-A;B-1-A
+DEF: sca=sc
+DEF: scb=sc
 #DEF: sca=&sc^A(sc):B~A-B::!-skip-A;B-1-A
-#DEF: scb=Copy(ch)
+#DEF: scb=ch
 COLOR: blue,ring.R
 (sca,5sc)@R
 sca,sc@[@],5sc2inc
@@ -119,10 +119,10 @@ var textEarthSmall=`# To see the colors of planet Earth, click on the
 # as done in the video: 
 # https://www.youtube.com/watch?v=PtqZN53Y4Eo
 #
-DEF: sca=&sc^A(sc):B~A-B::!-1-A;B-1-A
-DEF: scb=&sc^A(sc):B~A-B::!-1-A;B-1-A
+DEF: sca=sc
+DEF: scb=sc
 #DEF: sca=&sc^A(sc):B~A-B::!-skip-A;B-1-A
-#DEF: scb=Copy(ch)
+#DEF: scb=ch
 COLOR: blue,ring.R
 (sca,5sc)@R
 sca,sc@[@],COLOR: green,2sc2inc,COLOR: blue,sc,sc2inc,COLOR: green,sc,COLOR: blue,sc@[@]
