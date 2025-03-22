@@ -181,6 +181,15 @@ function cyclicPermuteBySC(list) {
   // Main function logic
   if (Nlat==-1) 
     Nlat = ceiling((Ncirc / 2) + 1);
+  if (Ncirc<20)
+    Nlat-=1;
+  if(Ncirc<10){
+    Nlat-=1;
+    if (Nlat<3)
+      Nlat=2;
+  }
+  if(Ncirc<7)
+    throw new Error("Ncirc should be >=7")
   const lat = range(0, Nlat).map(i => (i / Nlat) * Math.PI);
   const icirc = lat.map(l => floor(Math.sin(l) * Ncirc));
   icirc[0] = 1;

@@ -1405,8 +1405,8 @@
 
             popup.innerHTML = `
                 <h3>Generate Sphere</h3>
-                <label for="circumference">Circumference (in stitches):</label>
-                <input type="number" id="circumference" min="1" value="2000"><br><br>
+                <label for="circumference">Circumference (in stitches; must be >=7):</label>
+                <input type="number" id="circumference" min="7" value="2000"><br><br>
                 <label for="scatter">Scatter increases and decreases (reduces symmetric bulges near poles):</label>
                 <input type="checkbox" id="scatter" checked><br><br>
                 <button id="okButton">OK</button>
@@ -1416,6 +1416,10 @@
 
             document.getElementById('okButton').onclick = function() {
                 var Ncirc = parseInt(document.getElementById('circumference').value);
+                if (Ncirc < 7) {
+    document.getElementById('circumference').value = 7;
+    Ncirc = 7;
+}
                 var scatter = document.getElementById('scatter').checked;
 
                 inputText.value = generate_sphere(Ncirc, scatter);
