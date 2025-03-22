@@ -1310,109 +1310,143 @@
     </script>
 
 
+<script src="sphere-generator.js"></script>
 
     <script>
         var json0 = '';
         var jsonOld = '';
         var reset_json = 1;
         setTimeout(function() {
+    const radioButtons = document.querySelectorAll('input[type="radio"]');
 
-            const radioButtons = document.querySelectorAll('input[type="radio"]');
+    radioButtons.forEach((radioButton) => {
+        radioButton.addEventListener('change', () => {
+            if (radioButton.value === '2D') {
+                DIM = 2;
+            } else if (radioButton.value === '3D') {
+                DIM = 3;
+            }
+        });
+    });
 
-            radioButtons.forEach((radioButton) => {
-                radioButton.addEventListener('change', () => {
-                    if (radioButton.value === '2D') {
-                        DIM = 2;
-                    } else if (radioButton.value === '3D') {
+    var textOptions = [
+        ['Write your own instructions', "", 3],
+        ['Generate a sphere', null, 3], // New option added
+        ['Baby bootie (~2sec)', textBootie, 3],
+        ['Irish crochet: flower 1 (~1sec)', textFlower2, 2],
+        ['Irish crochet: flowers 2 (~5sec)', textFlower, 3],
+        ['Granny square (~2sec)', textSquare, 2],
+        ['Edging (~1sec)', textEdging, 2],
+        ['Planet Earth; large (~1.5min)', textEarth, 3],
+        ['Planet Earth; small (~3sec)', textEarthSmall, 3],
+        ['Amigurumi: simplistic snowman (~4sec)', textSnowman2, 3],
+        ['OLD amigurumi example (~15sec)', textSnowman, 3],
+        ['Baby blanket (~7sec)', textBlanket, 3],
+        ['Swatch 1 (~8sec)', textSwatch2, 2],
+        ['Swatch 2 (~8sec)', textSwatch, 3],
+        ['Stocking (~12sec)', textStocking, 3],
+        ['Hat (~3min)', textHat, 3],
+        ['Mixed styles: lacy hat (~12sec)', textLacyHat, 3],
+        ['Filet crochet: logo (~45sec)', textFilet, 3],
+        ['Irish crochet: doily (~5min!)', textDoily, 2],
+        ['Simple flower with post stitches (~1sec)', textFlower3, 3],
+        ['Mosaic crochet (~3sec)', textMosaic, 3]
+    ];
+
+    var select = document.getElementById('examples');
+
+    var wrapperDiv = document.createElement('div');
+    wrapperDiv.style.position = 'relative';
+    wrapperDiv.style.display = 'inline-block';
+
+    select.parentNode.replaceChild(wrapperDiv, select);
+    wrapperDiv.appendChild(select);
+
+    select.innerHTML = "";
+
+    var defaultOption = document.createElement("option");
+    defaultOption.classList.add("button-examples");
+    defaultOption.text = textOptions[0][0];
+    defaultOption.value = textOptions[0][0];
+    select.appendChild(defaultOption);
+
+    for (var i = 1; i < textOptions.length; i++) {
+        var option = document.createElement("option");
+        option.classList.add("button-examples");
+        option.text = textOptions[i][0];
+        option.value = textOptions[i][0];
+        select.appendChild(option);
+    }
+
+    var arrowDiv = document.createElement('div');
+    arrowDiv.innerHTML = '&#9660;';
+    arrowDiv.style.position = 'absolute';
+    arrowDiv.style.right = '4pt';
+    arrowDiv.style.top = '6pt';
+    wrapperDiv.appendChild(arrowDiv);
+
+    select.onchange = function() {
+        var inputText = document.getElementById("inputText");
+        var selectedValue = select.value;
+
+        var index = textOptions.findIndex(option => option[0] === selectedValue);
+        var selectedNdim = textOptions[index][2];
+
+        if (selectedValue === 'Generate a sphere') {
+            var popup = document.createElement('div');
+            popup.style.position = 'fixed';
+            popup.style.left = '50%';
+            popup.style.top = '50%';
+            popup.style.transform = 'translate(-50%, -50%)';
+            popup.style.backgroundColor = 'white';
+            popup.style.padding = '20px';
+            popup.style.border = '1px solid black';
+            popup.style.zIndex = '1000';
+
+            popup.innerHTML = `
+                <h3>Generate Sphere</h3>
+                <label for="circumference">Circumference (in stitches):</label>
+                <input type="number" id="circumference" min="1" value="2000"><br><br>
+                <label for="scatter">Scatter increases and decreases (reduces symmetric bulges near poles):</label>
+                <input type="checkbox" id="scatter" checked><br><br>
+                <button id="okButton">OK</button>
+            `;
+
+            document.body.appendChild(popup);
+
+            document.getElementById('okButton').onclick = function() {
+                var Ncirc = parseInt(document.getElementById('circumference').value);
+                var scatter = document.getElementById('scatter').checked;
+
+                inputText.value = generate_sphere(Ncirc, scatter);
+
+                radioButtons.forEach((radioButton) => {
+                    if (radioButton.value === '3D') {
+                        radioButton.checked = true;
                         DIM = 3;
                     }
                 });
-            });
 
-            var textOptions = [
-                ['Write your own instructions', "", 3],
-                ['Baby bootie (~2sec)', textBootie, 3],
-                ['Irish crochet: flower 1 (~1sec)', textFlower2, 2],
-                ['Irish crochet: flowers 2 (~5sec)', textFlower, 3],
-                ['Granny square (~2sec)', textSquare, 2],
-                ['Edging (~1sec)', textEdging, 2],
-                ['Planet Earth; large (~1.5min)', textEarth, 3],
-                ['Planet Earth; small (~3sec)', textEarthSmall, 3],
-                ['Amigurumi: simplistic snowman (~4sec)', textSnowman2, 3],
-                ['OLD amigurumi example (~15sec)', textSnowman, 3],
-                ['Baby blanket (~7sec)', textBlanket, 3],
-                ['Swatch 1 (~8sec)', textSwatch2, 2],
-                ['Swatch 2 (~8sec)', textSwatch, 3],
-                ['Stocking (~12sec)', textStocking, 3],
-                ['Hat (~3min)', textHat, 3],
-                ['Mixed styles: lacy hat (~12sec)', textLacyHat, 3],
-                ['Filet crochet: logo (~45sec)', textFilet, 3],
-                ['Irish crochet: doily (~5min!)', textDoily, 2],
-                ['Simple flower with post stitches (~1sec)', textFlower3, 3],
-                ['Mosaic crochet (~3sec)', textMosaic, 3]
+                document.body.removeChild(popup);
 
-            ];
-
-            var select = document.getElementById('examples');
-
-            // Create a wrapper div
-            var wrapperDiv = document.createElement('div');
-            wrapperDiv.style.position = 'relative';
-            wrapperDiv.style.display = 'inline-block';
-
-            // Replace the select element with the wrapper div
-            select.parentNode.replaceChild(wrapperDiv, select);
-
-            // Append the select element to the wrapper div
-            wrapperDiv.appendChild(select);
-
-            // Clear any existing options
-            select.innerHTML = "";
-
-            // Add the default option
-            var defaultOption = document.createElement("option");
-            defaultOption.classList.add("button-examples");
-            defaultOption.text = textOptions[0][0];
-            defaultOption.value = textOptions[0][0];
-            select.appendChild(defaultOption);
-
-            for (var i = 1; i < textOptions.length; i++) {
-                var option = document.createElement("option");
-                option.classList.add("button-examples");
-                option.text = textOptions[i][0];
-                option.value = textOptions[i][0];
-                select.appendChild(option);
-            }
-
-            var arrowDiv = document.createElement('div');
-            arrowDiv.innerHTML = '&#9660;';
-            arrowDiv.style.position = 'absolute';
-            arrowDiv.style.right = '4pt'; // Adjust this value to position the arrow
-            arrowDiv.style.top = '6pt'; // Adjust this value to position the arrow
-            wrapperDiv.appendChild(arrowDiv); // Append the arrow div to the wrapper div instead of the select element
-
-
-            select.onchange = function() {
-                var inputText = document.getElementById("inputText");
-                var selectedValue = select.value;
-
-                var index = textOptions.findIndex(option => option[0] === selectedValue);
-                var selectedNdim = textOptions[index][2];
-
-                //console.log(index, textValues, selectedValue)
-                inputText.value = textOptions[index][1];
-                radioButtons.forEach((radioButton) => {
-                    if (radioButton.value === String(selectedNdim) + 'D') {
-                        radioButton.checked = true;
-                        DIM = selectedNdim;
-                    }
-                })
-
-                inputText.value = inputText.value.replace(/\t/g, '    ').replace(/\r/g, '')
                 onMyInput();
                 update(inputText.value);
-            }
-        }, 0);
+            };
+        } else {
+            inputText.value = textOptions[index][1];
+            radioButtons.forEach((radioButton) => {
+                if (radioButton.value === String(selectedNdim) + 'D') {
+                    radioButton.checked = true;
+                    DIM = selectedNdim;
+                }
+            });
+
+            inputText.value = inputText.value.replace(/\t/g, '    ').replace(/\r/g, '')
+            onMyInput();
+            update(inputText.value);
+        }
+    }
+}, 0);
     </script>
 
     <div class="editor_container" id="edc">
