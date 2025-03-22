@@ -1,4 +1,4 @@
-function func(Ncirc) {
+function func(Ncirc,scatter=true,Nlat=-1) {
   // Helper functions
   function ceiling(n) {
     return Math.ceil(n);
@@ -179,7 +179,8 @@ function cyclicPermuteBySC(list) {
   }
 
   // Main function logic
-  const Nlat = ceiling((Ncirc / 2) + 1);
+  if (Nlat==-1) 
+    Nlat = ceiling((Ncirc / 2) + 1);
   const lat = range(0, Nlat).map(i => (i / Nlat) * Math.PI);
   const icirc = lat.map(l => floor(Math.sin(l) * Ncirc));
   icirc[0] = 1;
@@ -198,11 +199,12 @@ function cyclicPermuteBySC(list) {
     row.map(i => i > 1 ? `sc${i}inc` : (i < 1 ? 0:"sc"))
   );
   in_[0][0] += "@R";
-console.log(in_)
+  //console.log(in_)
   const out0 = in_.map(replaceSequence);
   const out = out0.map(distributeEvenly);
-
-  const outA = out.map(cyclicPermuteBySC);
+  let outA=out;
+  if (scatter)
+     outA = out.map(cyclicPermuteBySC);
 
   const out2 = "ring.R\n" + listToString(outA);
   const out3 = rewritePattern(out2);
