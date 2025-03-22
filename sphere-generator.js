@@ -1,4 +1,4 @@
-function func(Ncirc,scatter=true,Nlat=-1) {
+function generate_sphere(Ncirc,scatter=true,Nlat=-1) {
   // Helper functions
   function ceiling(n) {
     return Math.ceil(n);
