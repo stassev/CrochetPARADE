@@ -216,8 +216,9 @@ function cyclicPermuteBySC(list) {
      outA = out.map(cyclicPermuteBySC);
 
   const out2 = "ring.R\n" + listToString(outA);
+  console.log(out2)
   const out3 = rewritePattern(out2);
   const out4 = combineRepeatedSeries(out3);
 
-  return out4;
+  return out4.replace(/\*s/g, "s");
 }
