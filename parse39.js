@@ -2418,10 +2418,27 @@ function parse_definitions(text) {
                 find_vars(text0);
             } else{
                 if (vars.includes(a.trim()))
-                    throw new Error('Error: variable name matches stitch name. For example, $ch=0$ cannot be used since "ch" is a stitch name. Variable: '+a.trim());
+                    throw new Error('Error: variable name conflicts with stitch name. For example, $ch=0$ cannot be used since "ch" is a stitch name. Variable: '+a.trim());
                 text0 = text0.replace(new RegExp('\\b(\\d*)' + a.trim() + '\\b', 'g'), function(match, p1) {
                     return p1 ? p1 + '(' + b.trim() + ')' : '(' + b.trim() + ')';
-                });}
+                });
+                {
+                    let z = a.trim();
+let y = b.trim();
+
+if (/^[a-zA-Z0-9_]+$/.test(y)) {
+    text0 = text0.replace(new RegExp('\\b(\\d*)(' + z + '\\d+tog)\\b', 'g'), function(match, p1, p2) {
+        return p1 + p2.replace(z, y);
+    });
+    
+    text0 = text0.replace(new RegExp('\\b(\\d*)(' + z + '\\d+inc)\\b', 'g'), function(match, p1, p2) {
+        return p1 + p2.replace(z, y);
+    });
+}
+                }
+            
+            }
+                
         }
 
     backgroundColor = '';
