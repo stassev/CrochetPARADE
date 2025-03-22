@@ -72,9 +72,15 @@ function func(Ncirc) {
       result.push(...Array(groupSizes[i]).fill("sc"));
     }
 
-    if (list[0] === "sc" && result[0] !== "sc") result.unshift("sc");
-    if (list[list.length - 1] === "sc" && result[result.length - 1] !== "sc") result.push("sc");
+    //if (list[0] === "sc" && result[0] !== "sc") result.unshift("sc");
+    //if (list[list.length - 1] === "sc" && result[result.length - 1] !== "sc") result.push("sc");
 
+    const resultScCount = result.filter(item => item === "sc").length;
+    const resultNonScCount = result.filter(item => item !== "sc").length;
+
+    if (resultScCount !== scCount || resultNonScCount !== nonScCount) {
+      throw new Error("Mismatch in item counts between original list and result");
+    }
     return result;
   }
 
@@ -82,10 +88,10 @@ let Si = 0;
 
 function cyclicPermuteBySC(list) {
   // Split the list into groups, keeping only the 'sc' groups
-  const a = list.join(',').split(',sc,').map(group => group.split(','))
-                .filter(group => group[0] === 'sc' || group[group.length - 1] === 'sc');
+  //const a = list.join(',').split(',sc,').map(group => group.split(','))
+  //              .filter(group => group[0] === 'sc' || group[group.length - 1] === 'sc');
   
-  if (a.length === 0) return list;
+  //if (a.length === 0) return list;
   
   Si++;
   const count = Math.ceil(list.length / 18) * (Si % 3);
@@ -152,7 +158,7 @@ function cyclicPermuteBySC(list) {
     while (i < tokens.length - 1) {
       const pattern = [tokens[i], tokens[i + 1]];
       let count = 0;
-      while (i + count * 2 < tokens.length && 
+      while (i + count * 2+1 < tokens.length && 
              tokens.slice(i + count * 2, i + count * 2 + 2).join(',') === pattern.join(',')) {
         count++;
       }
