@@ -39,71 +39,66 @@ DEF: scb=&sc^A(sc):B~A-B::!-1-A;B-1-A
 #DEF: sca=&sc^A(sc):B~A-B::!-skip-A;B-1-A
 #DEF: scb=Copy(ch)
 COLOR: blue,ring.R
-[sca,5sc]@R
-sca,5sc2inc
-sca,COLOR: green,sc@[@],COLOR: blue,4*[sc,sc2inc],2sc,COLOR: green,sc@[@]
-sca,2sc,COLOR: blue,sc@[@],3sc,sc2inc,COLOR: green,sc,COLOR: blue,sc,sc2inc,3sc,sc2inc,2sc,COLOR: green,sc2inc
-sca,sc@[@],2sc,COLOR: blue,sc2inc,COLOR: green,sc,COLOR: blue,2sc,sc2inc,2sc,COLOR: green,sc,COLOR: blue,sc2inc,2sc,sc2inc,3sc,sc2inc,3sc
-COLOR: green,sca,sc2inc,2sc,COLOR: blue,2sc,sc2inc,6sc,COLOR: green,sc@[@],sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,sc,sc2inc,4sc,sc2inc,COLOR: green,sc,COLOR: blue,3sc
-sca,sc,COLOR: green,3sc,COLOR: blue,sc@[@],4sc,sc2inc,sc,COLOR: green,sc,COLOR: blue,2sc,COLOR: green,sc,sc2inc,3sc,COLOR: blue,sc,sc2inc,5sc,sc2inc,sc,COLOR: green,2sc,COLOR: blue,2sc,COLOR: green,sc@[@],sc
-COLOR: blue,sca,sc,COLOR: green,4sc,COLOR: blue,sc2inc,2sc,COLOR: green,2sc,COLOR: blue,2sc,sc2inc,COLOR: green,7sc,sc2inc,3sc,COLOR: blue,4sc,COLOR: green,sc2inc,COLOR: blue,4sc,COLOR: green,2sc,COLOR: blue,sc,sc2inc,COLOR: green,sc
-COLOR: blue,sca,sc,COLOR: green,sc,sc2inc,COLOR: blue,6sc,COLOR: green,sc2inc,2sc,COLOR: blue,sc,COLOR: green,3sc,sc2inc,7sc,sc2inc,5sc,COLOR: blue,sc,COLOR: green,sc2inc,6sc,sc2inc,2sc,COLOR: blue,2sc
-COLOR: green,sca,COLOR: blue,sc,COLOR: green,sc2inc,sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,4sc,COLOR: green,2sc,COLOR: blue,sc@[@],COLOR: green,sc,COLOR: blue,sc,COLOR: green,7sc,sc2inc,9sc,sc2inc,sc,COLOR: blue,2sc,COLOR: green,6sc,sc2inc,5sc,COLOR: blue,sc,COLOR: green,sc
-sca,COLOR: blue,2sc,COLOR: green,2sc,COLOR: blue,sc2inc,6sc,COLOR: green,4sc,2*[sc2inc,10sc],COLOR: blue,sc2inc,sc,COLOR: green,9sc,sc2inc,sc,COLOR: blue,3sc,COLOR: green,sc
-COLOR: blue,sca,3sc,COLOR: green,sc,COLOR: blue,4sc,sc2inc,2sc,COLOR: green,4sc,COLOR: blue,sc,COLOR: green,4sc,sc2inc,11sc,sc2inc,3sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,5sc,COLOR: green,sc,sc2inc,COLOR: blue,2sc,COLOR: green,8sc,COLOR: blue,sc,sc2inc,COLOR: green,2sc
-COLOR: blue,sca,8sc,sc2inc,3sc,COLOR: green,2sc,COLOR: blue,2sc,COLOR: green,8sc,sc2inc,12sc,COLOR: blue,3sc,COLOR: green,sc,COLOR: blue,sc@[@],11sc,COLOR: green,5sc,sc2inc,2sc,COLOR: blue,3sc,COLOR: green,sc
-sca,COLOR: blue,6sc,sc2inc,4sc,COLOR: green,sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,4sc,sc2inc,13sc,sc2inc,3sc,COLOR: blue,4sc,COLOR: green,sc,COLOR: blue,4sc,sc2inc,8sc,COLOR: green,5sc,sc2inc,3sc,COLOR: blue,sc,COLOR: green,2sc
-sca,2sc,COLOR: blue,sc@[@],9sc,COLOR: green,2sc,COLOR: blue,sc,COLOR: green,5sc,sc2inc,18sc,sc2inc,3sc,COLOR: blue,14sc,sc2inc,3sc,COLOR: green,13sc
-sca,2sc,COLOR: blue,sc2inc,11sc,COLOR: green,4sc,sc2inc,14sc,sc2inc,11sc,COLOR: blue,4sc,sc2inc,15sc,COLOR: green,sc@[@],12sc
-sca,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,10sc,sc2inc,COLOR: green,20sc,sc2inc,12sc,COLOR: blue,8sc,sc2inc,14sc,COLOR: green,5sc,sc2inc,6sc
-sca,sc,COLOR: blue,15sc,COLOR: green,3sc,COLOR: blue,sc,COLOR: green,sc2inc,2sc,COLOR: blue,2sc,COLOR: green,2sc,COLOR: blue,sc,COLOR: green,14sc,sc2inc,5sc,COLOR: blue,16sc,sc2inc,8sc,COLOR: green,12sc,sc2inc
-COLOR: blue,sca,14sc,COLOR: green,sc2inc,2sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,2sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,16sc,sc2inc,3sc,COLOR: blue,27sc,COLOR: green,sc@[@],13sc,COLOR: blue,sc
-sca,2sc,sc2inc,11sc,COLOR: green,3sc,COLOR: blue,5sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,sc,sc2inc,4sc,COLOR: blue,sc,COLOR: green,17sc,COLOR: blue,2sc,COLOR: green,sc@[@],COLOR: blue,3sc,COLOR: green,sc,COLOR: blue,18sc,sc2inc,5sc,COLOR: green,13sc,COLOR: blue,2sc
-sca,10sc,sc2inc,5sc,COLOR: green,sc,COLOR: blue,2sc,COLOR: green,2sc,COLOR: blue,7sc,COLOR: green,14sc,sc2inc,7sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,19sc,sc2inc,7sc,COLOR: green,12sc,COLOR: blue,2sc
-sca,17sc,COLOR: green,5sc,COLOR: blue,3sc,sc2inc,3sc,COLOR: green,24sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,2sc,sc2inc,28sc,COLOR: green,5sc,sc2inc,4sc,COLOR: blue,3sc
-sca,7sc,sc2inc,8sc,COLOR: green,8sc,COLOR: blue,sc,COLOR: green,17sc,sc2inc,11sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,19sc,sc2inc,12sc,COLOR: green,7sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,3sc
-sca,17sc,COLOR: green,17sc,COLOR: blue,sc,COLOR: green,15sc,sc2inc,4sc,COLOR: blue,38sc,COLOR: green,5sc,COLOR: blue,5sc,sc2inc,2sc
-sca,16sc,COLOR: green,5sc,sc2inc,8sc,COLOR: blue,sc,COLOR: green,4sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,3sc,COLOR: green,17sc,COLOR: blue,19sc,sc2inc,19sc,COLOR: green,3sc,COLOR: blue,4sc,COLOR: green,sc,COLOR: blue,4sc
-sca,15sc,COLOR: green,17sc,COLOR: blue,sc,COLOR: green,6sc,COLOR: blue,3sc,COLOR: green,5sc,COLOR: blue,2sc,COLOR: green,sc2inc,3sc,COLOR: blue,46sc,COLOR: green,2sc,COLOR: blue,2sc,COLOR: green,2sc,COLOR: blue,sc2inc,sc,COLOR: green,sc,COLOR: blue,2sc
-sca,15sc,COLOR: green,6sc,sc2inc,10sc,COLOR: blue,sc,COLOR: green,5sc,COLOR: blue,5sc,COLOR: green,3sc,COLOR: blue,4sc,COLOR: green,4sc,COLOR: blue,23sc,sc2inc,23sc,COLOR: green,4sc,COLOR: blue,7sc
-sca,15sc,COLOR: green,19sc,COLOR: blue,sc,COLOR: green,3sc,COLOR: blue,6sc,COLOR: green,2sc,COLOR: blue,3sc,sc2inc,2sc,COLOR: green,3sc,COLOR: blue,51sc,COLOR: green,sc2inc,2sc,COLOR: blue,5sc
-sca,15sc,COLOR: green,21sc,COLOR: blue,9sc,COLOR: green,2sc,COLOR: blue,sc2inc,2sc,COLOR: green,sc,COLOR: blue,3sc,COLOR: green,2sc,COLOR: blue,54sc,COLOR: green,sc,COLOR: blue,3sc,COLOR: green,2sc
-COLOR: blue,sca,16sc,COLOR: green,21sc,COLOR: blue,16sc,COLOR: green,sc,COLOR: blue,8sc,COLOR: green,sc,COLOR: blue,43sc,sc2inc,5sc,COLOR: green,5sc
-sca,2sc,COLOR: blue,15sc,COLOR: green,20sc,COLOR: blue,17sc,COLOR: green,sc,COLOR: blue,4sc,COLOR: green,sc,COLOR: blue,55sc,COLOR: green,3sc
-sca,4sc,COLOR: blue,20sc,COLOR: green,12sc,COLOR: blue,11sc,sc2inc,4sc,COLOR: green,3sc,COLOR: blue,3sc,COLOR: green,2sc,COLOR: blue,54sc,COLOR: green,4sc
-sca,5sc,COLOR: blue,19sc,COLOR: green,11sc,COLOR: blue,20sc,COLOR: green,sc,COLOR: blue,2sc,COLOR: green,4sc,COLOR: blue,3sc,COLOR: green,sc,COLOR: blue,48sc,COLOR: green,5sc
-sca,6sc,COLOR: blue,18sc,COLOR: green,10sc,COLOR: blue,22sc,COLOR: green,sc,COLOR: blue,4sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,2sc,COLOR: green,3sc,COLOR: blue,45sc,COLOR: green,5sc
-sca,9sc,COLOR: blue,16sc,COLOR: green,9sc,COLOR: blue,23sc,COLOR: green,3sc,COLOR: blue,7sc,COLOR: green,3sc,COLOR: blue,36sc,sc2tog,7sc,COLOR: green,4sc
-sca,9sc,COLOR: blue,17sc,COLOR: green,8sc,COLOR: blue,27sc,COLOR: green,sc,COLOR: blue,8sc,COLOR: green,sc,COLOR: blue,44sc,COLOR: green,3sc
-sca,9sc,COLOR: blue,17sc,COLOR: green,8sc,COLOR: blue,13sc,sc2tog,16sc,COLOR: green,2sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,46sc,COLOR: green,3sc
-sca,8sc,COLOR: blue,17sc,COLOR: green,9sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,25sc,COLOR: green,4sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,38sc,sc2tog,8sc,COLOR: green,sc
-sca,8sc,COLOR: blue,11sc,sc2tog,4sc,COLOR: green,8sc,COLOR: blue,3sc,COLOR: green,sc,COLOR: blue,24sc,COLOR: green,8sc,COLOR: blue,9sc,COLOR: green,sc2tog,COLOR: blue,35sc,COLOR: green,sc
-sca,8sc,COLOR: blue,17sc,COLOR: green,7sc,COLOR: blue,2sc,COLOR: green,2sc,COLOR: blue,12sc,sc2tog,8sc,COLOR: green,11sc,COLOR: blue,16sc,COLOR: green,sc,COLOR: blue,20sc,sc2tog,5sc,COLOR: green,sc
-sca,6sc,COLOR: blue,14sc,sc2tog,4sc,COLOR: green,6sc,COLOR: blue,3sc,COLOR: green,sc,COLOR: blue,21sc,COLOR: green,11sc,COLOR: blue,8sc,sc2tog,33sc,COLOR: green,sc
-sca,5sc,COLOR: blue,20sc,COLOR: green,5sc,COLOR: blue,19sc,sc2tog,5sc,COLOR: green,12sc,COLOR: blue,36sc,sc2tog,3sc,COLOR: green,sc
-sca,5sc,COLOR: blue,17sc,sc2tog,2sc,COLOR: green,4sc,COLOR: blue,25sc,COLOR: green,11sc,COLOR: blue,11sc,sc2tog,28sc,COLOR: green,sc
-sca,4sc,COLOR: blue,2sc,sc2tog,17sc,COLOR: green,3sc,COLOR: blue,13sc,sc2tog,11sc,COLOR: green,2sc,COLOR: blue,4sc,COLOR: green,5sc,COLOR: blue,12sc,sc2tog,26sc,COLOR: green,sc
-sca,2sc,COLOR: blue,21sc,sc2tog,32sc,sc2tog,sc,COLOR: green,3sc,COLOR: blue,6sc,COLOR: green,sc,COLOR: blue,22sc,sc2tog,8sc,COLOR: green,sc
-sca,2sc,COLOR: blue,6sc,sc2tog,32sc,sc2tog,23sc,COLOR: green,sc,COLOR: blue,7sc,sc2tog,22sc,COLOR: green,sc
-sca,sc,COLOR: blue,14sc,sc2tog,22sc,sc2tog,16sc,COLOR: green,sc,COLOR: blue,6sc,COLOR: green,sc2tog,COLOR: blue,22sc,sc2tog,6sc,COLOR: green,sc
-sca,COLOR: blue,9sc,sc2tog,30sc,sc2tog,18sc,COLOR: green,sc,COLOR: blue,10sc,sc2tog,17sc,COLOR: green,2sc
-COLOR: blue,sca2tog,20sc,2*[sc2tog,21sc],sc2tog,19sc,COLOR: green,2sc
-COLOR: blue,sca,10sc,sc2tog,19sc,COLOR: green,sc2tog,COLOR: blue,2*[20sc,sc2tog],7sc,COLOR: green,2sc
-COLOR: blue,sca,7sc,sc2tog,15sc,sc2tog,14sc,2*[sc2tog,15sc],sc2tog,6sc
-sca,10sc,sc2tog,18sc,sc2tog,17sc,sc2tog,18sc,sc2tog,6sc
-sca2tog,3*[13sc,sc2tog],12sc,sc2tog,13sc
-sca,14sc,3*[sc2tog,15sc],sc2tog,sc
-sca,8sc,4*[sc2tog,11sc],sc2tog,2sc
-sca,COLOR: green,sc,COLOR: blue,2sc,4*[sc2tog,10sc],sc2tog,6sc
-COLOR: green,sca2tog,COLOR: blue,9sc,sc2tog,4sc,COLOR: green,4sc,COLOR: blue,sc,sc2tog,COLOR: green,9sc,COLOR: blue,sc2tog,9sc,sc2tog,9sc
-sca,sc2tog,7sc,sc2tog,sc,COLOR: green,5sc,COLOR: blue,sc2tog,COLOR: green,6sc,sc2tog,4sc,COLOR: blue,3sc,sc2tog,6sc,sc2tog,4sc,COLOR: green,sc
-COLOR: blue,sca,3sc,sc2tog,sc,COLOR: green,6sc,sc2tog,7sc,sc2tog,4sc,COLOR: blue,2sc,sc2tog,7sc,sc2tog,COLOR: green,3sc
-COLOR: blue,sca,2sc,sc2tog,COLOR: green,4sc,sc2tog,5sc,sc2tog,4sc,sc2tog,sc,COLOR: blue,4sc,sc2tog,COLOR: green,4sc,sc2tog,2sc
-COLOR: blue,sca2tog,2sc,COLOR: green,2sc,2*[sc2tog,5sc],sc2tog,COLOR: blue,3sc,COLOR: green,sc,sc2tog,3sc,COLOR: blue,sc,COLOR: green,sc
-COLOR: blue,sca,sc,COLOR: green,sc,sc2tog,2sc,2*[sc2tog,3sc],COLOR: blue,sc2tog,2sc,COLOR: green,sc2tog,3sc,sc2tog
-COLOR: blue,sca,COLOR: green,sc,3*[sc2tog,2sc],COLOR: blue,sc,sc2tog,COLOR: green,2sc,sc2tog,sc
-sca2tog,3*[sc,sc2tog],sc,COLOR: blue,sc2tog,COLOR: green,sc2tog,sc
-sca,5sc2tog
+(sca,5sc)@R
+sca,sc@[@],5sc2inc
+sca,sc@[@],3*[sc,sc2inc],COLOR: green,2sc,COLOR: blue,sc@[@],COLOR: green,sc,COLOR: blue,sc2inc,sc
+sca,2sc,COLOR: green,sc@[@],COLOR: blue,2*[2sc,sc2inc],sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,sc@[@],2sc,sc2inc,COLOR: blue,2sc,sc2inc
+sca,sc@[@],3sc,COLOR: green,sc,COLOR: blue,sc@[@],2*[3sc,sc2inc],COLOR: green,sc,COLOR: blue,3sc,COLOR: green,sc@[@],3sc,COLOR: blue,sc2inc,3sc
+sca,sc@[@],2sc,COLOR: green,2sc,sc2inc,sc,COLOR: blue,3sc,sc2inc,4sc,sc2inc,COLOR: green,2sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,sc2inc,sc,COLOR: green,2sc,COLOR: blue,sc,sc2inc,4sc
+sca,2sc,COLOR: green,sc,sc2inc,5sc,sc2inc,sc,COLOR: blue,4sc,COLOR: green,sc,COLOR: blue,sc@[@],4sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,sc@[@],2sc,COLOR: blue,2sc,COLOR: green,sc,sc2inc,sc,COLOR: blue,5sc,COLOR: green,sc@[@],sc
+COLOR: blue,sca,sc,COLOR: green,sc@[@],2*[6sc,sc2inc],COLOR: blue,2sc,COLOR: green,4sc,sc2inc,sc,COLOR: blue,sc,COLOR: green,3sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,sc@[@],sc,COLOR: green,2sc,COLOR: blue,3sc,sc2inc,2sc,COLOR: green,3sc
+COLOR: blue,sca,COLOR: green,sc@[@],8sc,sc2inc,9sc,COLOR: blue,sc@[@],sc,COLOR: green,8sc,sc2inc,3sc,COLOR: blue,sc,COLOR: green,2sc,COLOR: blue,sc,COLOR: green,2sc,COLOR: blue,sc2inc,COLOR: green,2sc,COLOR: blue,3sc,COLOR: green,4sc
+sca,4sc,sc2inc,8sc,sc2inc,6sc,COLOR: blue,3sc,COLOR: green,sc@[@],8sc,sc2inc,sc,COLOR: blue,2sc,COLOR: green,2sc,COLOR: blue,3sc,COLOR: green,sc,COLOR: blue,sc@[@],7sc,COLOR: green,2sc,COLOR: blue,sc@[@],COLOR: green,2sc
+sca,2sc,sc2inc,11sc,sc2inc,3sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,6sc,COLOR: green,sc,COLOR: blue,sc@[@],2sc,COLOR: green,8sc,COLOR: blue,sc,sc2inc,COLOR: green,sc,COLOR: blue,10sc,sc2inc,3sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,2sc
+sca,sc@[@],11sc,sc2inc,5sc,COLOR: blue,3sc,COLOR: green,2sc,COLOR: blue,2sc,sc2inc,8sc,COLOR: green,4sc,sc2inc,3sc,COLOR: blue,2sc,COLOR: green,3sc,COLOR: blue,4sc,sc2inc,7sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,3sc
+sca,8sc,sc2inc,11sc,COLOR: blue,3sc,COLOR: green,sc@[@],COLOR: blue,13sc,sc2inc,COLOR: green,9sc,COLOR: blue,sc,COLOR: green,4sc,COLOR: blue,sc@[@],9sc,COLOR: green,2sc,COLOR: blue,sc,COLOR: green,sc,sc2inc,3sc
+sca,3sc,sc2inc,14sc,sc2inc,2sc,COLOR: blue,12sc,sc2inc,6sc,COLOR: green,8sc,sc2inc,5sc,COLOR: blue,9sc,sc2inc,2sc,COLOR: green,7sc
+sca,sc@[@],18sc,sc2inc,3sc,COLOR: blue,16sc,sc2inc,4sc,COLOR: green,14sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,sc@[@],11sc,COLOR: green,8sc
+sca,COLOR: blue,sc,COLOR: green,2sc,COLOR: blue,sc,COLOR: green,6sc,sc2inc,13sc,COLOR: blue,2sc,sc2inc,16sc,sc2inc,2sc,COLOR: green,14sc,COLOR: blue,sc,COLOR: green,sc@[@],COLOR: blue,14sc,COLOR: green,2sc,COLOR: blue,sc2inc,COLOR: green,3sc,COLOR: blue,sc
+sca,sc,COLOR: green,2sc,COLOR: blue,sc,COLOR: green,7sc,sc2inc,11sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,7sc,sc2inc,15sc,COLOR: green,6sc,sc2inc,6sc,COLOR: blue,15sc,COLOR: green,sc2inc,sc,COLOR: blue,4sc,COLOR: green,2sc,COLOR: blue,sc,COLOR: green,sc
+sca,sc@[@],3sc,COLOR: blue,sc,COLOR: green,17sc,COLOR: blue,8sc,sc2inc,21sc,COLOR: green,9sc,sc2inc,3sc,COLOR: blue,17sc,COLOR: green,2sc,COLOR: blue,2sc,COLOR: green,2sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,sc
+sca,4sc,COLOR: blue,sc,COLOR: green,11sc,sc2inc,6sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,12sc,sc2inc,13sc,COLOR: green,10sc,sc2inc,sc,COLOR: blue,18sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,3sc,COLOR: blue,sc@[@],5sc
+sca,COLOR: green,20sc,sc2inc,2sc,COLOR: blue,3sc,COLOR: green,sc,COLOR: blue,26sc,sc2inc,3sc,COLOR: green,11sc,COLOR: blue,19sc,COLOR: green,sc@[@],7sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,2sc
+COLOR: green,sca,sc@[@],25sc,COLOR: blue,8sc,sc2inc,25sc,COLOR: green,8sc,sc2inc,sc,COLOR: blue,20sc,COLOR: green,12sc
+sca,4sc,COLOR: blue,sc,COLOR: green,21sc,COLOR: blue,2sc,sc2inc,33sc,COLOR: green,sc,sc2inc,2sc,COLOR: blue,5sc,COLOR: green,sc,COLOR: blue,19sc,COLOR: green,7sc,sc2inc,5sc
+sca,COLOR: blue,sc,COLOR: green,4sc,COLOR: blue,sc,COLOR: green,3sc,COLOR: blue,sc,COLOR: green,13sc,sc2inc,2sc,COLOR: blue,33sc,sc2inc,5sc,COLOR: green,3sc,COLOR: blue,6sc,COLOR: green,sc,COLOR: blue,18sc,COLOR: green,2sc,sc2inc,11sc
+sca,sc@[@],COLOR: blue,sc,COLOR: green,6sc,COLOR: blue,3sc,COLOR: green,12sc,COLOR: blue,32sc,sc2inc,13sc,COLOR: green,2sc,COLOR: blue,2sc,COLOR: green,2sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,18sc,COLOR: green,15sc
+sca,sc,COLOR: blue,2sc,COLOR: green,5sc,COLOR: blue,4sc,COLOR: green,4sc,COLOR: blue,3sc,COLOR: green,4sc,COLOR: blue,4sc,COLOR: green,sc,COLOR: blue,20sc,sc2inc,22sc,COLOR: green,4sc,COLOR: blue,3sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,16sc,COLOR: green,8sc,sc2inc,6sc
+sca,2sc,COLOR: blue,sc,COLOR: green,3sc,COLOR: blue,7sc,COLOR: green,2sc,COLOR: blue,5sc,COLOR: green,4sc,COLOR: blue,3sc,COLOR: green,sc,COLOR: blue,47sc,COLOR: green,3sc,COLOR: blue,20sc,COLOR: green,2sc,sc2inc,13sc
+sca,sc@[@],4sc,COLOR: blue,9sc,COLOR: green,sc,COLOR: blue,6sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,2sc,COLOR: blue,33sc,sc2inc,41sc,COLOR: green,16sc
+sca,6sc,COLOR: blue,8sc,COLOR: green,2sc,COLOR: blue,5sc,COLOR: green,sc,COLOR: blue,58sc,COLOR: green,7sc,COLOR: blue,15sc,COLOR: green,8sc,sc2inc,6sc
+sca,6sc,COLOR: blue,16sc,COLOR: green,sc,COLOR: blue,4sc,COLOR: green,sc,COLOR: blue,53sc,COLOR: green,8sc,COLOR: blue,21sc,COLOR: green,8sc
+sca,5sc,COLOR: blue,16sc,COLOR: green,2sc,COLOR: blue,2sc,COLOR: green,3sc,COLOR: blue,53sc,COLOR: green,9sc,COLOR: blue,20sc,COLOR: green,8sc
+sca,4scb,COLOR: blue,18scb,COLOR: green,scb,COLOR: blue,2scb,COLOR: green,2scb,COLOR: blue,5scb,COLOR: green,scb,COLOR: blue,47scb,COLOR: green,12scb,COLOR: blue,19scb,COLOR: green,7scb
+sca,3sc,COLOR: blue,20sc,COLOR: green,sc,COLOR: blue,9sc,COLOR: green,4sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,41sc,COLOR: green,15sc,COLOR: blue,17sc,COLOR: green,6sc
+sca,3sc,COLOR: blue,22sc,COLOR: green,sc,COLOR: blue,8sc,COLOR: green,3sc,COLOR: blue,44sc,COLOR: green,14sc,COLOR: blue,17sc,COLOR: green,6sc
+sca,3sc,COLOR: blue,28sc,COLOR: green,sc,COLOR: blue,50sc,COLOR: green,12sc,COLOR: blue,16sc,sc2tog,COLOR: green,6sc
+sca,3sc,COLOR: blue,27sc,COLOR: green,3sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,7sc,sc2tog,37sc,COLOR: green,11sc,COLOR: blue,9sc,sc2tog,7sc,COLOR: green,6sc
+sca2tog,2sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,23sc,COLOR: green,7sc,COLOR: blue,10sc,COLOR: green,sc,COLOR: blue,36sc,COLOR: green,9sc,COLOR: blue,17sc,COLOR: green,6sc
+sca,sc,COLOR: blue,3sc,COLOR: green,sc,COLOR: blue,21sc,COLOR: green,10sc,COLOR: blue,12sc,sc2tog,32sc,COLOR: green,9sc,COLOR: blue,15sc,sc2tog,sc,COLOR: green,5sc
+sca,sc,COLOR: blue,3sc,COLOR: green,sc,COLOR: blue,20sc,COLOR: green,12sc,COLOR: blue,3sc,sc2tog,39sc,COLOR: green,7sc,COLOR: blue,9sc,sc2tog,8sc,COLOR: green,5sc
+sca2tog,COLOR: blue,24sc,COLOR: green,11sc,sc2tog,COLOR: blue,35sc,sc2tog,5sc,COLOR: green,6sc,COLOR: blue,20sc,COLOR: green,4sc
+sca,COLOR: blue,24sc,COLOR: green,4sc,sc2tog,6sc,COLOR: blue,28sc,sc2tog,11sc,COLOR: green,5sc,COLOR: blue,18sc,sc2tog,2sc,COLOR: green,3sc
+COLOR: blue,sca,21sc,sc2tog,2sc,COLOR: green,2sc,COLOR: blue,3sc,COLOR: green,5sc,COLOR: blue,21sc,sc2tog,17sc,COLOR: green,5sc,COLOR: blue,11sc,sc2tog,8sc,COLOR: green,sc,COLOR: blue,2sc
+sca2tog,29sc,COLOR: green,3sc,COLOR: blue,sc2tog,32sc,sc2tog,4sc,COLOR: green,4sc,COLOR: blue,24sc
+sca,16sc,sc2tog,20sc,COLOR: green,sc,COLOR: blue,2sc,sc2tog,23sc,sc2tog,2sc,COLOR: green,3sc,COLOR: blue,18sc,sc2tog,5sc
+sca,17sc,sc2tog,10sc,COLOR: green,sc,COLOR: blue,6sc,COLOR: green,sc,COLOR: blue,12sc,sc2tog,15sc,COLOR: green,3sc,COLOR: blue,12sc,sc2tog,11sc
+sca2tog,21sc,sc2tog,10sc,COLOR: green,sc,COLOR: blue,10sc,sc2tog,17sc,COLOR: green,2sc,COLOR: blue,2sc,sc2tog,21sc
+sca,10sc,sc2tog,15sc,sc2tog,16sc,sc2tog,14sc,COLOR: green,2sc,COLOR: blue,sc2tog,16sc,sc2tog,4sc
+sca,8sc,2*[sc2tog,19sc],sc2tog,6sc,COLOR: green,sc,COLOR: blue,12sc,sc2tog,9sc
+sca2tog,13sc,2*[sc2tog,14sc],sc2tog,7sc,COLOR: green,sc,COLOR: blue,6sc,sc2tog,14sc
+sca,8sc,4*[sc2tog,13sc],sc2tog,3sc
+sca,3sc,4*[sc2tog,12sc],sc2tog,7sc
+sca2tog,10sc,3*[sc2tog,11sc],sc2tog,11sc
+sca,4sc,5*[sc2tog,8sc],sc2tog,2sc
+sca,sc,COLOR: green,sc,COLOR: blue,sc2tog,2sc,COLOR: green,6sc,sc2tog,2sc,COLOR: blue,7sc,2*[sc2tog,9sc],sc2tog,5sc
+COLOR: green,sca2tog,6sc,sc2tog,6sc,COLOR: blue,2*[sc2tog,6sc],sc2tog,COLOR: green,2sc,COLOR: blue,4sc,sc2tog,sc,COLOR: green,5sc
+sca,3sc,sc2tog,5sc,sc2tog,2sc,COLOR: blue,3sc,sc2tog,5sc,sc2tog,COLOR: green,sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,sc,sc2tog,2sc,COLOR: green,3sc,sc2tog,sc
+sca,sc2tog,4sc,sc2tog,3sc,COLOR: blue,sc,sc2tog,3sc,COLOR: green,sc,sc2tog,4sc,sc2tog,COLOR: blue,3sc,COLOR: green,sc,sc2tog,3sc
+sca2tog,3sc,sc2tog,3sc,COLOR: blue,sc2tog,2sc,COLOR: green,sc,sc2tog,3sc,COLOR: blue,sc2tog,2sc,COLOR: green,sc,sc2tog,3sc
+sca,sc,sc2tog,2sc,sc2tog,COLOR: blue,2sc,COLOR: green,sc2tog,2sc,sc2tog,sc,COLOR: blue,sc,COLOR: green,sc2tog,2sc,sc2tog
+sca2tog,2*[sc,sc2tog],COLOR: blue,sc,COLOR: green,2*[sc2tog,sc],sc2tog,sc
+sca2tog,5sc2tog
 sca6tog
 #TRANSFORM_OBJECT: 0,0,0,0,3.011976163312371,-0.5786124092933081,2.4202003115236645`;
 
@@ -129,32 +124,32 @@ DEF: scb=&sc^A(sc):B~A-B::!-1-A;B-1-A
 #DEF: sca=&sc^A(sc):B~A-B::!-skip-A;B-1-A
 #DEF: scb=Copy(ch)
 COLOR: blue,ring.R
-[5sc]@R
-sca,sc@[@],sc2inc,sc,COLOR: green,sc@[@],sc,COLOR: blue,sc@[@],sc3inc
-sca,sc@[@],COLOR: green,2sc,COLOR: blue,sc@[@],sc,sc2inc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,sc@[@],sc,COLOR: blue,sc2inc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,sc@[@]
-sca,sc,sc2inc,4sc,COLOR: blue,sc@[@],2sc,COLOR: green,sc,COLOR: blue,sc@[@],sc,COLOR: green,2sc,sc2inc,sc,COLOR: blue,sc,COLOR: green,sc2inc
-sca,sc@[@],3sc,sc2inc,2sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,sc@[@],3sc,COLOR: green,sc,COLOR: blue,sc@[@],COLOR: green,3sc,COLOR: blue,sc,sc2inc,2sc,COLOR: green,sc
-COLOR: blue,sca,COLOR: green,sc,2*[sc2inc,4sc],COLOR: blue,sc,sc2inc,sc,COLOR: green,3sc,sc2inc,2sc,COLOR: blue,3sc,sc2inc,2sc
-sca,COLOR: green,2sc,sc2inc,7sc,sc2inc,sc,COLOR: blue,7sc,COLOR: green,sc@[@],4sc,COLOR: blue,3sc,sc2inc,4sc
-sca,sc,COLOR: green,3sc,sc2inc,6sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,2sc,sc2inc,4sc,COLOR: green,5sc,COLOR: blue,2sc,sc2inc,6sc
-sca,2sc,COLOR: green,7sc,sc2inc,6sc,COLOR: blue,6sc,sc2inc,sc,COLOR: green,3sc,COLOR: blue,8sc,sc2inc,2sc
-sca,sc,sc2inc,COLOR: green,7sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,2sc,sc2inc,2sc,COLOR: blue,10sc,COLOR: green,sc,COLOR: blue,sc2inc,11sc
-sca,5sc,COLOR: green,sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,2sc,COLOR: green,7sc,sc2inc,sc,COLOR: blue,20sc,sc2inc,3sc
-sca,4sc,COLOR: green,sc,COLOR: blue,3sc,COLOR: green,sc,COLOR: blue,3sc,COLOR: green,5sc,sc2inc,2sc,COLOR: blue,6sc,COLOR: green,2sc,COLOR: blue,18sc
-sca,3sc,COLOR: green,sc,COLOR: blue,9sc,COLOR: green,5sc,COLOR: blue,7sc,COLOR: green,5sc,COLOR: blue,17sc
-sca,COLOR: green,scb,COLOR: blue,13scb,COLOR: green,3scb,COLOR: blue,7scb,COLOR: green,5scb,COLOR: blue,18scb
-sca,12sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,3sc,COLOR: blue,7sc,COLOR: green,5sc,COLOR: blue,11sc,sc2tog,sc,COLOR: green,sc,COLOR: blue,3sc
-COLOR: green,sca,3sc,COLOR: blue,4sc,sc2tog,5sc,COLOR: green,3sc,COLOR: blue,8sc,COLOR: green,3sc,COLOR: blue,3sc,sc2tog,12sc,COLOR: green,sc
-sca,sc2tog,2sc,COLOR: blue,10sc,COLOR: green,sc,COLOR: blue,sc2tog,8sc,COLOR: green,2sc,COLOR: blue,3sc,sc2tog,12sc
-COLOR: green,sca,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,4sc,sc2tog,12sc,sc2tog,sc,COLOR: green,sc,COLOR: blue,10sc,sc2tog,4sc
-sca,2sc,2*[sc2tog,11sc],sc2tog,8sc
-sca,6sc,COLOR: green,sc2tog,COLOR: blue,2*[7sc,sc2tog],7sc,sc2tog
-sca,sc,sc2tog,5sc,sc2tog,4sc,sc2tog,5sc,sc2tog,4sc,sc2tog,2sc
-sca2tog,3sc,sc2tog,4sc,sc2tog,3sc,sc2tog,4sc,sc2tog,3sc
-COLOR: green,sca2tog,2sc,COLOR: blue,sc2tog,COLOR: green,2sc,sc2tog,COLOR: blue,3sc,2*[sc2tog,2sc],COLOR: green,sc
-sca2tog,2*[sc,sc2tog],sc,COLOR: blue,sc2tog,COLOR: green,sc2tog,sc,COLOR: blue,sc2tog,COLOR: green,sc
-sca2tog,sc2tog,sc3tog,2sc2tog
-sca5tog
+(sca,5sc)@R
+sca,sc@[@],COLOR: green,2sc2inc,COLOR: blue,sc,sc2inc,COLOR: green,sc,COLOR: blue,sc@[@]
+sca,sc@[@],sc2inc,sc,COLOR: green,sc,COLOR: blue,sc@[@],sc,COLOR: green,sc,COLOR: blue,sc@[@],COLOR: green,sc,COLOR: blue,sc2inc,COLOR: green,sc,sc2inc,sc
+sca,sc2inc,sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,sc@[@],COLOR: green,sc,COLOR: blue,2sc,COLOR: green,sc@[@],2sc,sc2inc,COLOR: blue,sc,COLOR: green,sc,sc2inc,2sc,sc2inc
+sca,sc@[@],3sc,COLOR: blue,sc2inc,4sc,COLOR: green,sc,COLOR: blue,sc@[@],COLOR: green,3sc,COLOR: blue,sc,sc2inc,4sc,COLOR: green,sc2inc,3sc
+sca,sc@[@],4sc,sc2inc,COLOR: blue,5sc,COLOR: green,sc@[@],5sc,COLOR: blue,sc2inc,6sc,COLOR: green,sc@[@],5sc
+sca,5sc,sc2inc,COLOR: blue,7sc,COLOR: green,sc2inc,4sc,COLOR: blue,3sc,sc2inc,5sc,COLOR: green,3sc,sc2inc,sc
+sca,2sc,sc2inc,2sc,COLOR: blue,2sc,COLOR: green,sc,COLOR: blue,3sc,sc2inc,3sc,COLOR: green,5sc,COLOR: blue,sc2inc,10sc,COLOR: green,sc@[@],5sc
+sca,sc@[@],4sc,COLOR: blue,sc,COLOR: green,4sc,COLOR: blue,3sc,sc2inc,4sc,COLOR: green,4sc,COLOR: blue,5sc,sc2inc,8sc,COLOR: green,5sc
+sca,2sc,COLOR: blue,sc,COLOR: green,8sc,COLOR: blue,7sc,sc2inc,2sc,COLOR: green,2sc,COLOR: blue,17sc,COLOR: green,sc2inc,COLOR: blue,sc,COLOR: green,sc
+sca,COLOR: blue,2sc,COLOR: green,9sc,COLOR: blue,5sc,sc2inc,3sc,COLOR: green,sc,COLOR: blue,18sc,sc2inc,sc,COLOR: green,2sc,COLOR: blue,2sc
+COLOR: green,sca,COLOR: blue,sc@[@],4sc,COLOR: green,7sc,COLOR: blue,6sc,COLOR: green,4sc,COLOR: blue,26sc
+sca,4scb,COLOR: green,5scb,COLOR: blue,8scb,COLOR: green,4scb,COLOR: blue,19scb,COLOR: green,scb,COLOR: blue,2scb,COLOR: green,scb,COLOR: blue,scb,COLOR: green,scb,COLOR: blue,scb@[@],2scb
+sca,5sc,COLOR: green,4sc,COLOR: blue,6sc,COLOR: green,6sc,COLOR: blue,17sc,COLOR: green,2sc,COLOR: blue,sc,COLOR: green,sc,COLOR: blue,sc2tog,5sc
+sca2tog,4sc,COLOR: green,4sc,COLOR: blue,6sc,COLOR: green,6sc,COLOR: blue,19sc,COLOR: green,2sc,COLOR: blue,6sc
+sca,3sc,COLOR: green,sc,COLOR: blue,sc,COLOR: green,3sc,COLOR: blue,7sc,COLOR: green,4sc,COLOR: blue,sc2tog,16sc,COLOR: green,5sc,COLOR: blue,sc,sc2tog,2sc
+sca,5sc,COLOR: green,2sc,COLOR: blue,8sc,COLOR: green,sc2tog,2sc,COLOR: blue,17sc,COLOR: green,2sc,sc2tog,sc,COLOR: blue,4sc
+sca2tog,12sc,sc2tog,2sc,COLOR: green,2sc,COLOR: blue,9sc,sc2tog,13sc
+sca,5sc,sc2tog,8sc,COLOR: green,sc2tog,COLOR: blue,8sc,sc2tog,9sc,sc2tog,2sc
+sca,3sc,2*[sc2tog,7sc],sc2tog,8sc,sc2tog,3sc
+sca2tog,2*[4sc,sc2tog],2*[5sc,sc2tog],5sc
+sca,sc,sc2tog,3sc,3*[sc2tog,4sc],sc2tog,sc
+COLOR: green,sca2tog,sc,COLOR: blue,sc,COLOR: green,sc2tog,COLOR: blue,2sc,COLOR: green,sc2tog,COLOR: blue,2*[2sc,sc2tog],COLOR: green,2sc,sc2tog,sc
+sca2tog,sc2tog,sc,COLOR: blue,sc2tog,COLOR: green,sc,sc2tog,COLOR: blue,sc,sc2tog,COLOR: green,sc,sc2tog,sc
+sca2tog,2sc2tog,COLOR: blue,sc2tog,COLOR: green,sc,sc2tog
+sca6tog
 `;
 
 var textBLFLtest = `10ch,turn
