@@ -2371,7 +2371,7 @@ function parse_definitions(text) {
             if (!isValid)
                 throw new Error("Invalid stitch name: "+String(a));
             if (newvars.includes(a))
-                throw new Error("Stitche defined twice: "+String(a));
+                throw new Error("Stitch defined twice: "+String(a));
             newvars.push(a);
             b = b.trim();
             if (b[0] === '&') {// Include dictionary entry.
