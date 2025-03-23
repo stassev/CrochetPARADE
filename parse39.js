@@ -2361,11 +2361,18 @@ function parse_definitions(text) {
     }
     var name, V, H;
     const [_,vars]=find_vars(text0);
+    let newvars=[];
     for (let l of text.split('\n'))
         if (l.trim().slice(0, 4) == 'DEF:') {
             l = l.trim().split('#')[0]; //remove any comments;;
             var [a, b] = l.slice(4).split('=');
             a = a.trim();
+            const isValid = /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(a);
+            if (!isValid)
+                throw new Error("Invalid stitch name: "+String(a));
+            if (newvars.includes(a))
+                throw new Error("Stitche defined twice: "+String(a));
+            newvars.push(a);
             b = b.trim();
             if (b[0] === '&') {// Include dictionary entry.
                 Dictionary[a] = b;
