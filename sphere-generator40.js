@@ -94,8 +94,9 @@ function cyclicPermuteBySC(list) {
   //if (a.length === 0) return list;
   
   Si++;
-  var count = Math.ceil(list.length / 18) * (Si % 3) + (list.length > 36 ? Si : 0);
-  count=count % list.length;
+  const count = Math.ceil(list.length / 18) * (Si % 3);//
+  //  + (list.length > 36 ? Si : 0);
+  //count=count % list.length;
   // RotateLeft in JavaScript
   return [...list.slice(count), ...list.slice(0, count)];
 }
