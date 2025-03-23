@@ -100,7 +100,7 @@ sca,sc,sc2tog,2sc,sc2tog,COLOR: blue,2sc,COLOR: green,sc2tog,2sc,sc2tog,sc,COLOR
 sca2tog,2*[sc,sc2tog],COLOR: blue,sc,COLOR: green,2*[sc2tog,sc],sc2tog,sc
 sca2tog,5sc2tog
 sca6tog
-#TRANSFORM_OBJECT: 0,0,0,0,3.011976163312371,-0.5786124092933081,2.4202003115236645`;
+`;
 
 var textEarthSmall=`# To see the colors of planet Earth, click on the
 # 3D model (once it's generated), and then press 'c' 
