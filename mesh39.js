@@ -1426,12 +1426,11 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                     }
                 }
                 var rn = null;
-                rn = (prompt('Enter a row number or stitch coordinate (row,stitch number; e.g. 2,4) to be highlighted'));
+                rn = (prompt('Enter a row number or stitch coordinate (in the format "row,stitch number"; e.g. "2,4") to be highlighted. Leaving the row number blank (as in ",N") will highlight the N-th stitch of every row. For example, if you enter ",0" that will highlight the beginning of each row.'));
                 var rr = [];
                 if (rn) {
-                    for (var r of rn.split(new RegExp('[^0-9]+')))
-                        if (r !== '')
-                            rr.push(parseInt(r));
+                    for (var r of rn.split(','))
+                        rr.push(parseInt(r));
                     if (rr.length == 1) {
                         rowNumber = rr[0];
                         //console.log(NODES)
@@ -1441,13 +1440,20 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                             }
                         }
                     } else if (rr.length == 2) {
+                        if (rn.split(',')[0].trim()==='')
+                        {for (let i = 0; i < NODES.length; i++) {
+                            if ( (NODES[i].row[1] == rr[1])) {
+                                NODES[i].material = selectedRowMaterial;
+                            }
+                        }}
+                        else{    
                         //console.log(NODES)
                         rowNumber = rr[0];
                         for (let i = 0; i < NODES.length; i++) {
                             if ((NODES[i].row[0] == rowNumber) && (NODES[i].row[1] == rr[1])) {
                                 NODES[i].material = selectedRowMaterial;
                             }
-                        }
+                        }}
                     }
                 }
             }, 300);
