@@ -100,6 +100,23 @@ function generate_sphere(Ncirc,scatter=true,Nlat=-1) {
     return result;
   }
 
+  function longestConsecutiveSC(arr) {
+    //const arr = str.split(',');
+    let maxCount = 0;
+    let currentCount = 0;
+  
+    for (let item of arr) {
+      if (item.trim() === 'sc') {
+        currentCount++;
+        maxCount = Math.max(maxCount, currentCount);
+      } else {
+        currentCount = 0;
+      }
+    }
+  
+    return maxCount;
+  }
+  
 let Si = 0;
 
 function cyclicPermuteBySC(list) {
@@ -110,9 +127,8 @@ function cyclicPermuteBySC(list) {
   //if (a.length === 0) return list;
   
   Si++;
-  const count = Math.ceil(list.length / 18) * (Si % 3);//
-  //  + (list.length > 36 ? Si : 0);
-  //count=count % list.length;
+  let count = Math.max(Math.ceil(list.length / 18),(list.length > 18*4 ?Math.ceil(longestConsecutiveSC(list)/4):0)) * (Si % 3)  + (list.length > 18*4 ? Si : 0);
+  count=count % list.length;
   // RotateLeft in JavaScript
   return [...list.slice(count), ...list.slice(0, count)];
 }
@@ -198,6 +214,8 @@ function cyclicPermuteBySC(list) {
   // Main function logic
   if (Nlat==-1) 
     Nlat = ceiling((Ncirc / 2) + 1);
+  if ((Nlat%2)==1)
+    Nlat+=1;
   if (Ncirc<20)
     Nlat-=1;
   if(Ncirc<10){
@@ -208,7 +226,7 @@ function cyclicPermuteBySC(list) {
   if(Ncirc<7)
     throw new Error("Ncirc should be >=7")
   const lat = range(0, Nlat).map(i => (i / Nlat) * Math.PI);
-  const icirc = lat.map(l => floor(Math.sin(l) * Ncirc));
+  const icirc = lat.map(l => floor(Math.sin(l) * Ncirc+1.e-7));
   icirc[0] = 1;
   icirc[icirc.length - 1] = 1;
 
