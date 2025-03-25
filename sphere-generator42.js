@@ -127,7 +127,7 @@ function cyclicPermuteBySC(list) {
   //if (a.length === 0) return list;
   
   Si++;
-  let count = Math.max(Math.ceil(list.length / 18),(list.length > 18*4 ?Math.ceil(longestConsecutiveSC(list)/4):0)) * (Si % 3)  + (list.length > 18*4 ? Si : 0);
+  let count = Math.max(Math.ceil(list.length / 18),(list.length > 18*4 ?Math.ceil(longestConsecutiveSC(list)/6):0)) * (Si % 4)  + (list.length > 18*4 ? Si : 0);
   count=count % list.length;
   // RotateLeft in JavaScript
   return [...list.slice(count), ...list.slice(0, count)];

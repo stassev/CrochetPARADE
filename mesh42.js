@@ -31,7 +31,7 @@ import {
     returnRotational,
     returnTranslation,
     setRotationAngles
-} from './transform_controls41.js';
+} from './transform_controls42.js';
 
 //import {
 //    SVGRenderer
@@ -186,7 +186,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     //    rendererSVG.domElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
 
-    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse41.json0);
+    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse42.json0);
     console.log(str);
 
     const uniqueLabels = new Set(); // Use a Set to store unique labels
@@ -2237,7 +2237,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 const x1 = (point.x + 1) * size / 2;
                 const y1 = (-point.y + 1) * size / 2;
 
-                return [x1, y1];
+                return [x1, y1/camera.aspect ];
             }
 
             return [x1, y1];
