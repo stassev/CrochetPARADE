@@ -242,7 +242,7 @@ function cyclicPermuteBySC(list) {
   const in_ = tab.map(row => 
     row.map(i => i > 1 ? `sc${i}inc` : (i < 1 ? 0:"sc"))
   );
-  in_[0][0] += "@R";
+  //in_[0][0] += "@R";
   //console.log(in_)
   const out0 = in_.map(replaceSequence);
   const out = out0.map(distributeEvenly);
@@ -250,7 +250,7 @@ function cyclicPermuteBySC(list) {
   if (scatter)
      outA = out.map(cyclicPermuteBySC);
 
-  const out2 = "ring.R\n" + listToString(outA);
+  const out2 = "ring\n" + listToString(outA);
   console.log(out2)
   const out3 = rewritePattern(out2);
   const out4 = combineRepeatedSeries(out3);

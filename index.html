@@ -39,7 +39,37 @@
             font-weight:540;
             color: rgb(128, 128, 128);
         }
-
+        canvas {
+            border: 1px solid black;
+        }
+        #contextMenu {
+            position: absolute;
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            padding: 5px;
+            z-index:2000;
+            display: none;
+        }
+        #contextMenu button {
+            display: block;
+            width: 100%;
+            padding: 5px;
+            margin: 2px 0;
+        }
+        #generatorDialog {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            border: 1px solid black;
+            padding: 20px;
+            z-index: 1500;
+            overflow: auto;
+            box-sizing: border-box;
+        }
         .language-html .def {
             font-weight:540;
             color: rgb(121, 42, 121);
@@ -829,6 +859,65 @@
 <body>
 
 
+ 
+
+
+    <div id="generatorDialog">
+        
+        <div>
+            <button id="okayButton" style="font-size: 1.2em; padding: 10px 20px; background-color: #fbce1a;">Generate</button>
+            <button id="resetShapeButton" onclick="resetPoints()" style="font-size: 1.2em; padding: 10px 20px;">Reset</button>
+
+        <button id="exportButton" style="font-size: 1.2em; padding: 10px 20px; background-color: #4CAF50;">Export</button>
+<button id="importButton" style="font-size: 1.2em; padding: 10px 20px; background-color: #2196F3;">Import</button>
+<button id="clButton"" style=" top: 10px; right: 10px; font-size: 1.2em; background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer;">×</button>
+
+        </div>
+        <br>
+        <div style="width: 700px;padding: 25px; background-color: #f0f0f0; border-radius: 8px; ">
+            <div style="margin-bottom: 15px;font-weight:700">Hint: Try holding either Ctrl or Shift when dragging the point handles.</div>
+            <div style="margin-bottom: 15px;">
+              <label for="scatterShape" style=" margin-bottom: 5px;">Scatter increases and decreases (may reduce distortions):</label>
+              <input type="checkbox" id="scatterShape" checked style="margin-right: 5px;">
+            </div>
+          
+            <div style="margin-bottom: 15px;">
+              <label for="numStitches" style=" margin-bottom: 5px;">Number of stitches between green grid lines:</label>
+              <input type="number" id="numStitches" value="20" min="1" style="width: 10ch; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+          
+            <div style="margin-bottom: 15px;">
+              <label for="xAxisRangeDialog" style=" margin-bottom: 5px;">X-axis range:</label>
+              <input type="number" id="xAxisRangeDialog" value="1.4" min="0.1" step="0.1" style="width: 10ch; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+          
+            <div style="margin-bottom: 15px;">
+              <label for="yAxisLengthDialog" style=" margin-bottom: 5px;">Y-axis range:</label>
+              <input type="number" id="yAxisLengthDialog" value="1.4" min="0.1" step="0.1" style="width: 10ch; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+          
+            <div style="margin-bottom: 15px;">
+              <label for="thicknessB" style="margin-bottom: 5px;">Show curve to adjust number of stitches in the round:</label>
+              <input type="checkbox" id="thicknessB" style="margin-right: 5px;">
+            </div>
+          </div>
+        <div id="thicknessContainer" style="display: none; ">
+            <button id="resetThicknessBtn" style="background-color: #e28ed9;right: 0; z-index: 3;">Reset number of stitches in the round</button>
+            <div style="position: relative;">
+              <canvas id="thicknessCanvas"></canvas>
+
+            </div>
+          </div>
+          
+
+        <canvas id="generatorCanvas"></canvas>
+        
+    </div>
+
+    <div id="contextMenu">
+        <button id="addPoint">Add Point</button>
+        <button id="deletePoint">Delete Point</button>
+    </div>
     <div id="controlPanel">
         <div id="dragHandle"></div>
 
@@ -926,7 +1015,12 @@
         <span style="cursor: pointer; position: absolute; top: -1px; right: 5px;font-size:20pt;font-weight:600" onclick='closeAnnouncement("announcement2")'>×</span>
         <b>CrochetPARADE was updated to support crocheting in the back and front loops. See the Mosaic crochet showcase as well as the manual.</b>
     </div> -->
+    <script>var shape;</script>
+    <script src="bezier43.js"></script>
     <script>
+        window.onload = function() {
+    document.getElementById('thicknessB').checked = false;
+};
         var c_was_pressed = false;
         var factor_radius = 1.0;
         var requestedInfo = true;
@@ -1013,7 +1107,7 @@
 
 
 
-    <script src="./parse42.js"></script>
+    <script src="./parse43.js"></script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
 
@@ -1310,7 +1404,7 @@
     </script>
 
 
-<script src="sphere-generator42.js"></script>
+<script src="sphere-generator43.js"></script>
 
     <script>
         var json0 = '';
@@ -1332,6 +1426,7 @@
     var textOptions = [
         ['Write your own instructions', "", 3],
         ['Generate a sphere', null, 3], // New option added
+        ['Generate an axially symmetric shape', null, 3], // New option added
         ['Baby bootie (~2sec)', textBootie, 3],
         ['Irish crochet: flower 1 (~1sec)', textFlower2, 2],
         ['Irish crochet: flowers 2 (~5sec)', textFlower, 3],
@@ -1391,7 +1486,7 @@
 
         var index = textOptions.findIndex(option => option[0] === selectedValue);
         var selectedNdim = textOptions[index][2];
-
+ 
         if (selectedValue === 'Generate a sphere') {
             var popup = document.createElement('div');
             popup.style.position = 'fixed';
@@ -1404,16 +1499,26 @@
             popup.style.zIndex = '1000';
 
             popup.innerHTML = `
-                <h3>Generate a single-crochet sphere</h3>
-                <label for="circumference">Circumference (in stitches; must be between 7 and 1200):</label>
-                <input type="number" id="circumference" min="7" value="50"><br><br>
-                <label for="scatter">Scatter increases and decreases (reduces symmetric bulges near poles):</label>
-                <input type="checkbox" id="scatter" checked><br>
-                <br>Note: Pattern uses continuous rounds.<br><br>
-                <button id="okButton">OK</button>
-            `;
+    <div style="position: relative;">
+        <button id="closeButtonSphere" style="position: absolute; top: -10px; right: -10px; background: #f44336; color: white; border: none; border-radius: 0%; width: 24px; height: 24px; cursor: pointer;">×</button>
+        <h3>Generate a single-crochet sphere</h3>
+        <label for="circumference">Circumference (in stitches; must be between 7 and 1200):</label>
+        <input type="number" id="circumference" min="7" value="50"><br><br>
+        <label for="scatter">Scatter increases and decreases (reduces symmetric bulges near poles):</label>
+        <input type="checkbox" id="scatter" checked><br>
+        <br>Note: Pattern uses continuous rounds.<br><br>
+        <button id="okButton">Generate</button>
+    </div>
+`;
+function removePopup() {
+    document.body.removeChild(popup);
+    select.value=textOptions[0][0];
+}
+
 
             document.body.appendChild(popup);
+// Close button action
+document.getElementById('closeButtonSphere').onclick = removePopup;
 
             document.getElementById('okButton').onclick = function() {
                 var Ncirc = parseInt(document.getElementById('circumference').value);
@@ -1438,8 +1543,132 @@ if (Ncirc >1200) {
 
                 onMyInput();
                 update(inputText.value);
+                select.value=textOptions[0][0];
             };
-        } else {
+        } else if (selectedValue === 'Generate an axially symmetric shape') {
+            function exportPoints() {
+    const data = {
+        points: points,
+        thicknessPoints: thicknessPoints,
+        numStitches: document.getElementById('numStitches').value,
+        scatterShape: document.getElementById('scatterShape').checked,
+        xAxisRange: document.getElementById('xAxisRangeDialog').value,
+        yAxisLength: document.getElementById('yAxisLengthDialog').value,
+        thicknessB: document.getElementById('thicknessB').checked
+    };
+    
+    const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'CrochetPARADE_axial_shape.json';
+    a.click();
+}
+
+function importPoints() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = JSON.parse(e.target.result);
+            points = data.points;
+            thicknessPoints = data.thicknessPoints;
+            document.getElementById('numStitches').value = data.numStitches;
+            document.getElementById('scatterShape').checked = data.scatterShape;
+            document.getElementById('xAxisRangeDialog').value = data.xAxisRange;
+            document.getElementById('yAxisLengthDialog').value = data.yAxisLength;
+            document.getElementById('thicknessB').checked = data.thicknessB;
+            drawCurve();
+            drawThicknessCurve();
+            document.getElementById('thicknessB').checked = true;
+            thicknessContainer.style.display = 'block';
+
+            updateYAxisLength(yAxisLength);
+            updateXAxisRange(xAxisRange);
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+// Add event listeners
+document.getElementById('exportButton').addEventListener('click', exportPoints);
+document.getElementById('importButton').addEventListener('click', importPoints);
+        //const generateButton = document.getElementById('okayButton');
+        const generatorDialog = document.getElementById('generatorDialog');
+        const numStitchesInput = document.getElementById('numStitches');
+        const yAxisLengthDialogInput = document.getElementById('yAxisLengthDialog');
+        const xAxisRangeDialogInput = document.getElementById('xAxisRangeDialog');
+        const generatorCanvas = document.getElementById('generatorCanvas');
+        const generatorCtx = generatorCanvas.getContext('2d');
+        const okayButton = document.getElementById('okayButton');
+
+        const contextMenu = document.getElementById('contextMenu');
+
+            generatorDialog.style.display = 'block';
+            yAxisLengthDialogInput.value = yAxisLength;
+            xAxisRangeDialogInput.value = xAxisRange;
+            updateYAxisLength(yAxisLength);
+            updateXAxisRange(xAxisRange);
+            updateCanvasSize();
+
+            if (points.length === 0) {
+                resetPoints();
+            } else {
+                drawThicknessCurve();
+                drawCurve();
+            }
+            document.getElementById('clButton').onclick = closeShapeDialog;
+function closeShapeDialog(){ generatorDialog.style.display = 'none';select.value=textOptions[0][0];}
+            okayButton.addEventListener('click', () => {
+            const numStitches = parseInt(numStitchesInput.value);
+            if (isNaN(numStitches) || numStitches <= 0) {
+                alert("Please enter a valid number of stitches.");
+                return;
+            }
+
+            const newYAxisLength = parseFloat(yAxisLengthDialogInput.value);
+            updateYAxisLength(newYAxisLength);
+
+            const newXAxisRange = parseFloat(xAxisRangeDialogInput.value);
+            updateXAxisRange(newXAxisRange);
+
+            const curvePoints = calculateCurvePoints();
+            const interpolateY = createInterpolationFunction(curvePoints);
+            const lengths = calculateCurveLengths(curvePoints);
+            const totalLength = lengths[lengths.length-1];
+
+            const numberOfSamples = Math.round(numStitches*totalLength);
+            const deltaL = totalLength / numberOfSamples;
+            shape_radius=[];
+            for (let i = 0; i <= numberOfSamples; i++) {
+                const l_i = i * deltaL;
+                const interpolatedY = interpolateY(l_i);
+                console.log(l_i,interpolatedY * numStitches);
+                shape_radius.push(interpolatedY * numStitches);
+            }
+            console.log(numStitches);
+
+            generatorDialog.style.display = 'none';
+            let scatter = document.getElementById('scatterShape').checked;
+            inputText.value = generate_shape(scatter);
+
+                radioButtons.forEach((radioButton) => {
+                    if (radioButton.value === '3D') {
+                        radioButton.checked = true;
+                        DIM = 3;
+                    }
+                });
+
+                onMyInput();
+                update(inputText.value);
+                select.value=textOptions[0][0];
+        });
+           
+        }else{
             inputText.value = textOptions[index][1];
             radioButtons.forEach((radioButton) => {
                 if (radioButton.value === String(selectedNdim) + 'D') {
@@ -1668,11 +1897,11 @@ function escapeRegExp(string) {
             },
             
             'dot1':{
-                pattern: /^\s*(DOT:.*)\s*(\"(.*)|separate(\s*)=(\s*)[\.\d]+|inflate(\s*)=(\s*)[\.\d]+|learning_rate(\s*)=(\s*)[\.\d]+|start(\s*)=(\s*)\d+|iterations(\s*)=(\s*)\d+)/m,
+                pattern: /^\s*(DOT:)\s*(\"(.*)|separate(\s*)=(\s*)[\.\d]+|inflate(\s*)=(\s*)[\.\d]+|learning_rate(\s*)=(\s*)[\.\d]+|start(\s*)=(\s*)\d+|iterations(\s*)=(\s*)\d+)/m,
                 greedy: true
             },
             'dot2':{
-                pattern: /^\s*(DOT:.*)\s*(\"(.*)|separate|inflate|learning_rate|iterations|start)(\s*)=?/m,
+                pattern: /^\s*(DOT:)\s*(\"(.*)|separate|inflate|learning_rate|iterations|start)(\s*)=?/m,
                 greedy: true
             },
             'dot': {
@@ -2377,7 +2606,7 @@ function escapeRegExp(string) {
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh42.js';
+        import Generate3DModel from './mesh43.js';
          //import  "./viz-standalone.js";
          const button = document.getElementById("3dbutton");
          //const textarea = document.getElementById('inputText');
