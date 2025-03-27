@@ -411,7 +411,7 @@ function drawThicknessGrid() {
     
     const fineLineColor = 'gray';
     const thickLineColor = 'gray';
-    const thickestLineColor = 'darkgreen';
+    const thickestLineColor = '#4CAF50';
 
     var startX = 0.5 - xAxisRange / 2;
     var startY =  - yAxisLength / 2;
@@ -512,7 +512,7 @@ function drawThicknessCurve() {
         const canvasHandleRight = graphToCanvasT(point.handleRight.x, point.handleRight.y);
         drawHandle(canvasPoint.x, canvasPoint.y, canvasHandleLeft.x, canvasHandleLeft.y,thicknessCtx);
         drawHandle(canvasPoint.x, canvasPoint.y, canvasHandleRight.x, canvasHandleRight.y,thicknessCtx);
-        drawPoint(canvasPoint.x, canvasPoint.y, index === 0 || index === thicknessPoints.length - 1 ? 'red' : 'black',thicknessCtx);
+        drawPoint(canvasPoint.x, canvasPoint.y, index === 0 || index === thicknessPoints.length - 1 ? '#f44336' : 'black',thicknessCtx);
     });
     drawCurve();
 }
@@ -607,7 +607,7 @@ function drawThicknessCurve() {
             ctx.beginPath();
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
-            ctx.strokeStyle = 'yellow';
+            ctx.strokeStyle = '#fbce1a';
        ctx.stroke();
             ctx.fillStyle = 'magenta';
             ctx.beginPath();
