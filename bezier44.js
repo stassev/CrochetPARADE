@@ -1135,7 +1135,7 @@ drawThicknessCurve();
             const out3 = rewritePattern(out2);
             const out4 = combineRepeatedSeries(out3);
           
-            return out4.replace(/\*s/g, "s");
+            return out4.replace(/\*s/g, "s").replace(/\*c/g, "c");
           }
           
 
