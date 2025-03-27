@@ -323,9 +323,9 @@ thicknessCanvas.height=200;
             const totalLength = lengths[lengths.length - 1];
 
             return function(l) {
-                if (l < 0) return curvePoints[0].y;
-                if (l > totalLength) return curvePoints[curvePoints.length - 1].y;
-
+                if (l < 0) return curvePoints[0].y*curveThickness[0]/5.0;
+                if (l > totalLength) return curvePoints[curvePoints.length - 1].y*curveThickness[curveThickness.length-1];
+                let maxl=lengths[lengths.length-1];
                 let low = 0;
                 let high = lengths.length - 1;
                 let index = 0;
@@ -346,8 +346,8 @@ thicknessCanvas.height=200;
                 if (index === 0) return curvePoints[0].y;
                 const l1 = lengths[index - 1];
                 const l2 = lengths[index];
-                const y1 = curvePoints[index - 1].y*curveThickness[index-1]/5.0;
-                const y2 = curvePoints[index].y*curveThickness[index]/5.0;
+                const y1 = curvePoints[index - 1].y*curveThickness[Math.floor(lengths[index - 1]/maxl*(curveThickness.length-1+0.01))]/5.0;
+                const y2 = curvePoints[index].y*curveThickness[Math.floor(lengths[index]/maxl*(curveThickness.length-1+0.01))]/5.0;
 
                 const y = y1 + (y2 - y1) * (l - l1) / (l2 - l1);
                 return y;
