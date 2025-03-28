@@ -34,11 +34,7 @@
        <script src="./prism.min.js"></script>
 
     <style>
-           /* Custom Prism.js token styles */
-           .language-html .comment {
-            font-weight:540;
-            color: rgb(128, 128, 128);
-        }
+         
         canvas {
             border: 1px solid black;
         }
@@ -69,6 +65,11 @@
             z-index: 1500;
             overflow: auto;
             box-sizing: border-box;
+        }
+        /* Custom Prism.js token styles */
+        .language-html .comment {
+            font-weight:540;
+            color: rgb(128, 128, 128);
         }
         .language-html .def {
             font-weight:540;
@@ -1314,9 +1315,10 @@
         <div class="dropdown">
             <button class="dropbtn" onclick="toggleDropdown('saveOptionsDropdown')">Save/Export &#9660;</button>
             <div class="dropdown-content" id="saveOptionsDropdown">
+                <button class="button" onclick="showStats()">Show stats for current project</button>
                 <button class="button" onclick="saveTextAsFile()">Save crochet instructions text (best for sharing!)</button>
-                <button class="button" onclick="do_saveSvg()">Save Standard Crochet Chart as SVG</button>
                 <button class="button" onclick="printDiv()">Print crochet instructions with highlights</button>
+                <button class="button" onclick="do_saveSvg()">Save Standard Crochet Chart as SVG</button>
                 <button class="button" onclick="processToDotFile()">Save file containing nodes and edges</button>
                 <button class="button" onclick="do_exportGLTF()">Save 3D model as GLTF file (compatible with Blender)</button>
                 <button class="button" onclick="saveDebugInfo()">Save debug info</button>
@@ -1348,7 +1350,7 @@
                 <button class="button" onclick="window.open('./Manual.html', '_blank')">Manual</button>
                 <button class="button" onclick="window.open('https://crochetparade.org/crochetforum/forumdisplay.php?fid=3', '_blank')">Ask a question</button>
                 <button class="button" onclick="window.open('https://codeberg.org/crochetparade/CrochetPARADE/issues', '_blank')">File a bug report</button>
-                <button class="button" onclick="showStats()">Stats for current crochet project</button>
+                
 
                 <button class="button" onclick="document.getElementById('about').style.display='block'">About</button>
             </div>
@@ -2204,7 +2206,7 @@ function escapeRegExp(string) {
 
     <script>
         function printDiv() {
-            var divContents = document.getElementById("highlighting").innerHTML;
+            var divContents =  document.querySelector("#highlighting").innerHTML;
             divContents = '<span style="color:red">&para;</span><span style="color:rgb(128,128,128)>">#Instructions originally written in CrochetPARADE 1.0 language.</span><br><span style="color:red">&para;</span>' + divContents.replaceAll('<br>', '<br><span style="color:red">&para;</span>')
             var printWindow = window.open('', '', 'height=400,width=800');
             printWindow.document.write('<html><head><title>Crochet Instructions</title>');
@@ -2214,6 +2216,91 @@ function escapeRegExp(string) {
              tab-size: 2;
              overflow-wrap: break-word; /* For modern browsers */
              word-wrap: break-word; /* For older browsers */}
+             /* Custom Prism.js token styles */
+        .token.comment {
+            font-weight:540;
+            color: rgb(128, 128, 128);
+        }
+        .token.def {
+            font-weight:540;
+            color: rgb(121, 42, 121);
+        }
+        .token.dot1 {
+            font-weight:540;
+            color: rgb(150, 50, 50);
+        }
+        .token.dot2 {
+            font-weight:540;
+            color: rgb(150, 50, 50);
+        }
+        .token.dot {
+            font-weight:540;
+            color: rgb(150, 50, 50);
+        }
+
+        .token.color {
+            font-weight:540;
+            color: rgb(193, 124, 15);
+        }
+
+        .token.labelat {
+            font-weight:540;
+            color: rgb(80, 200, 80);
+            /* Color for labels starting with @ */
+        }
+
+        .token.labeldot {
+            font-weight:540;
+            color: rgb(37, 170, 226);
+            /* Color for labels starting with . */
+        }
+
+        .token.special {
+            font-weight:540;
+            color: rgb(250,0,0);
+        }
+
+        .token.dollar {
+            font-weight:540;
+            color: rgb(40, 160, 150);
+        }
+
+        .token.bracket {
+            font-weight:540;
+            color: blue;
+        }
+
+        .token.number {
+            font-weight:540;
+            color: rgb(153, 0, 79);
+        }
+
+        .token.punctuation {
+            font-weight:540;
+            color: rgb(85, 85, 85);
+        }
+        
+        .token.unknown {
+            font-weight:540;
+            background-color: #ff2121;
+        }
+
+        .token.string {
+            font-weight:540;
+            color: brown;
+        }
+        .token.brokenbracket1 {
+            font-weight:540;
+            background-color: rgb(200, 100, 100);
+        }
+        .token.brokenbracket {
+            font-weight:540;
+            background-color: rgb(200, 100, 100);
+        } 
+        .token.words {
+            font-weight:540;
+            background-color: rgba(0, 0, 0, 0);
+        }
             </style>
              </head>`)
             printWindow.document.write('<body><div id="highlighting">');
