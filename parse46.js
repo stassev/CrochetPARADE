@@ -3272,6 +3272,61 @@ const countOccurrences = (str, char) => {
     return str.split(char).length - 1;
 };
 
+function evaluate_indices_and_stop(text){
+    text = text.replace(/\t/g, '    ').replace(/\r/g, '');
+    function extractDefAndDotLines(text) {
+        // Split the text into lines
+        const lines = text.split('\n');
+        
+        // Use regex to match lines starting with DEF: or DOT: (with optional leading whitespace)
+        const regex = /^\s*(DEF:|DOT:)/;
+        
+        // Filter the lines that match the regex and join them back into a string
+        const extractedLines = lines
+          .filter(line => regex.test(line))
+          .join('\n');
+        
+        return extractedLines;
+      }
+      
+      // Example usage:
+      const result = extractDefAndDotLines(text);
+    Dictionary = JSON.parse(JSON.stringify(OriginalDictionary));
+       text = text.trim();
+       if (!(areBracketsBalanced(text)))
+           throw new Error('Unbalanced brackets in original text.');
+       text = text.replace(/\,*\s*\.\.\.\s*\,*/g, ',');
+       if (!(areBracketsBalanced(text)))
+           throw new Error('Unbalanced brackets after parsing ellipses.');
+       text = parse_definitions(text).replace(/\bnext\s/g, '++').replace('/\bprev\s/g', '--').replace(/ |\t/g, '');
+       if (!(areBracketsBalanced(text)))
+           throw new Error('Unbalanced brackets in original text after parsing definitions.');
+       
+        //parse_single_text_instruction_to_structure(((duplicateRepeated(' [ 3[ a \n s ] \n \n ] * 4 ' )))).flat(Infinity)
+        //var A = []
+        TextToBeIndexed = text;
+        TextIndex = [];
+        text = duplicateRepeated_before_evaluating_indices(text, 0, TextIndex);
+        DEBUG += '=======Text index:=======\n' + TextIndex + '\n';
+        let tmp = [];
+        let K = 0;
+        //console.log(TextIndex)
+        for (let t of TextIndex) {
+            if (t[1].includes("$"))
+                K += countOccurrences(t[1], '$');
+            else if (K % 2 == 0)
+                tmp.push(t);
+        }
+        TextIndex.splice(0, TextIndex.length, ...tmp);
+    
+        //console.log('A', A)
+        DEBUG += '=======After duplicating repeated stitches:=======\n' + text + '\n';
+        if (result.trim()==='')
+            text=evaluate_indices(text);
+        else 
+            text = result+'\n'+evaluate_indices(text);
+    return text}
+
 function parse_original_text_to_list_of_structures(text) {
 
     //parse_single_text_instruction_to_structure(((duplicateRepeated(' [ 3[ a \n s ] \n \n ] * 4 ' )))).flat(Infinity)

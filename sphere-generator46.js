@@ -28,26 +28,13 @@ function generate_sphere(Ncirc,scatter=true,Nlat=-1) {
     return Array.from({ length: (end - start) / step + 1 }, (_, i) => start + i * step);
   }
 
- function balancedAlternatingPartition(n, m) {
-  const base = Math.floor(n / m);
-  const remainder = n % m;
-  const larger = Array(remainder).fill(base + 1);
-  const smaller = Array(m - remainder).fill(base);
-  const result = Array(m).fill(0);
-
-  let largerIndex = 0;
-  let smallerIndex = 0;
-
-  for (let i = 0; i < m; i++) {
-    if (i % 2 === 0) {
-      result[i] = largerIndex < larger.length ? larger[largerIndex++] : smaller[smallerIndex++];
-    } else {
-      result[i] = smallerIndex < smaller.length ? smaller[smallerIndex++] : larger[largerIndex++];
+  function balancedAlternatingPartition(n, m) {
+    const result = new Array(m).fill(0);
+    for (let i = 0; i < n; i++) {
+      result[Math.floor(i * m / n)]++;
     }
+    return result;
   }
-
-  return result;
-}
 
 
   function replaceSequence(list) {

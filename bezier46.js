@@ -398,7 +398,7 @@ function drawThicknessGrid() {
         thicknessCtx.textAlign = 'center';
         thicknessCtx.fillStyle = 'rgb(50,50,50)';
         thicknessCtx.font = '14px Arial';
-        thicknessCtx.fillText('Adjust between half to twice as many stitches in the round', 0, 0);
+        thicknessCtx.fillText('Multiplier for number of stitches in the round. Ranges between a factor of 1/2 to 2. Default: 1.', 0, 0);
         
         thicknessCtx.restore();
 }
@@ -918,27 +918,13 @@ drawThicknessCurve();
             function range(start, end, step = 1) {
               return Array.from({ length: (end - start) / step + 1 }, (_, i) => start + i * step);
             }
-          
-           function balancedAlternatingPartition(n, m) {
-            const base = Math.floor(n / m);
-            const remainder = n % m;
-            const larger = Array(remainder).fill(base + 1);
-            const smaller = Array(m - remainder).fill(base);
-            const result = Array(m).fill(0);
-          
-            let largerIndex = 0;
-            let smallerIndex = 0;
-          
-            for (let i = 0; i < m; i++) {
-              if (i % 2 === 0) {
-                result[i] = largerIndex < larger.length ? larger[largerIndex++] : smaller[smallerIndex++];
-              } else {
-                result[i] = smallerIndex < smaller.length ? smaller[smallerIndex++] : larger[largerIndex++];
+            function balancedAlternatingPartition(n, m) {
+                const result = new Array(m).fill(0);
+                for (let i = 0; i < n; i++) {
+                  result[Math.floor(i * m / n)]++;
+                }
+                return result;
               }
-            }
-          
-            return result;
-          }
           
           
             function replaceSequence(list) {
@@ -1110,18 +1096,20 @@ drawThicknessCurve();
             const tab = [];
             for (let i = 0; i < icirc.length - 1; i++) {
               const z = balancedAlternatingPartition(icirc[i + 1], icirc[i]);
-              if (z.reduce((a, b) => a + b, 0) - icirc[i + 1] !== 0) {
+              if (z.length !== icirc[i] || z.reduce((a, b) => a + b, 0) - icirc[i + 1] !== 0) {
                 console.log("Error");
+                throw new Error("balancedAlternatingPartition failed. Please, file a bug report.")
               }
               tab.push(z);
             }
-          
+            //console.log('tab',tab)
             const in_ = tab.map(row => 
               row.map(i => i > 1 ? `sc${i}inc` : (i < 1 ? 0:"sc"))
             );
             //in_[0][0] += "@R";
-            //console.log(in_)
+            //console.log('in',in_)
             const out0 = in_.map(replaceSequence);
+            //console.log('out0',out0)
             const out = out0.map(distributeEvenly);
             let outA=out;
             if (scatter)

@@ -1018,7 +1018,7 @@
         <b>CrochetPARADE was updated to support crocheting in the back and front loops. See the Mosaic crochet showcase as well as the manual.</b>
     </div> -->
     <script>var shape;</script>
-    <script src="bezier44.js"></script>
+    <script src="bezier46.js"></script>
     <script>
         window.onload = function() {
     document.getElementById('thicknessB').checked = false;
@@ -1109,7 +1109,7 @@
 
 
 
-    <script src="./parse44.js"></script>
+    <script src="./parse46.js"></script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
 
@@ -1288,6 +1288,85 @@
 
             display("~right");
         });
+
+        function expandExpression() {
+    // Create a dialog box
+    var dialog = document.createElement('div');
+    dialog.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:1px solid black;z-index:1000;';
+    
+    // Warning message
+    var warning = document.createElement('p');
+    warning.style.cssText='font-weight:700;'
+    warning.textContent = "Warning!!!";
+    
+    dialog.appendChild(warning);
+
+    var warning1 = document.createElement('p');
+    warning1.style.cssText=''
+    warning1.textContent = "This will overwrite your instructions with their expanded form. Variables will be evaluated ($k=0$,sc.L[k++],sc.L[k] will be written out as sc.L[0],sc.L[1]); expressions such as 3*[sc,dc] will be written out in expanded form (as in [sc,dc],[sc,dc],[sc,dc]); and newly defined stitches will be substituted when possible. If you want expressions such as 4sc to be expanded, then run this dialog twice in a row. After the first time, they will be written as 4*sc, and after the second time, they will be expanded as sc,sc,sc,sc.";
+    
+    dialog.appendChild(warning1);
+
+    var warning2 = document.createElement('p');
+    warning2.style.cssText='font-weight:700;'
+    warning2.textContent = "Save your work before continuing!";
+    
+    dialog.appendChild(warning2);
+
+    // Questions and answers
+    var questionsAndAnswers = [
+        ["1 + 1 = ?", 2], ["2 + 2 = ?", 4], ["3 + 3 = ?", 6], ["4 + 4 = ?", 8],
+        ["5 + 5 = ?", 10], ["1 + 9 = ?", 10], ["8 + 1 = ?", 9], ["3 + 6 = ?", 9],
+        ["2 + 8 = ?", 10], ["6 + 2 = ?", 8], ["7 + 3 = ?", 10], ["4 + 5 = ?", 9],
+        ["1 + 7 = ?", 8], ["6 + 4 = ?", 10], ["9 + 1 = ?", 10], ["5 + 3 = ?", 8],
+        ["2 + 6 = ?", 8], ["8 + 3 = ?", 11], ["4 + 6 = ?", 10], ["7 + 2 = ?", 9]
+    ];
+    var index = Math.floor(Math.random() * questionsAndAnswers.length);
+    var [question, correctAnswer] = questionsAndAnswers[index];
+
+    var questionElem = document.createElement('p');
+    questionElem.textContent = "If you want to continue, please answer this question by entering a number:" + question;
+    dialog.appendChild(questionElem);
+
+    var input = document.createElement('input');
+    input.type = 'number';
+    dialog.appendChild(input);
+
+    var buttonContainer = document.createElement('div');
+    buttonContainer.style.marginTop = '10px';
+
+    var okButton = document.createElement('button');
+    okButton.textContent = 'OK';
+    okButton.disabled = true; // Initially disabled
+    okButton.onclick = function() {
+        document.body.removeChild(dialog);
+        proceedWithExpansion();
+    };
+    buttonContainer.appendChild(okButton);
+
+    var cancelButton = document.createElement('button');
+    cancelButton.textContent = 'Cancel';
+    cancelButton.onclick = function() {
+        document.body.removeChild(dialog);
+    };
+    buttonContainer.appendChild(cancelButton);
+
+    dialog.appendChild(buttonContainer);
+
+    // Enable OK button only when the correct answer is provided
+    input.oninput = function() {
+        okButton.disabled = (parseInt(input.value) !== correctAnswer);
+    };
+
+    document.body.appendChild(dialog);
+
+    function proceedWithExpansion() {
+        var inputText = document.getElementById("inputText");
+        inputText.value = evaluate_indices_and_stop(inputText.value);
+        onMyInput();
+        update(inputText.value);
+    }
+}
     </script>
     <div>
         <select id="examples">
@@ -1338,7 +1417,13 @@
                 <label class="button"><input type="radio" name="layout" value="3dViewOnly" onclick="toggleLayout('3dViewOnly')"> 3D View Only</label>
             </div>
         </div>
-
+        <div class="dropdown">
+            <button class="dropbtn" onclick="toggleDropdown('toolsDropdown')">Tools &#9660;</button>
+            <div class="dropdown-content" id="toolsDropdown">
+                <button class="button" id="transformButton">Object Transform</button>
+                <button class="button" id="expandButton" onclick="expandExpression()">Expand instruction</button>
+            </div>
+        </div>
         <div class="dropdown">
             <button class="dropbtn" onclick="toggleDropdown('helpDropdown')">Help &#9660;</button>
             <div class="dropdown-content" id="helpDropdown">
@@ -1358,7 +1443,7 @@
 
         <button class="button2" onclick="window.open('https://crochetparade.org/crochetforum/', '_blank')">Forum</button>
         <button class="button1" onclick="window.open('https://donate.stripe.com/eVa6pK4XQ5Qg6vmbII', '_blank')">Leave a Tip</button>
-        <button class="button" id="transformButton">Object Transform</button>
+    
 
     </div>
 
@@ -1407,7 +1492,7 @@
     </script>
 
 
-<script src="sphere-generator44.js"></script>
+<script src="sphere-generator46.js"></script>
 
     <script>
         var json0 = '';
@@ -2694,7 +2779,7 @@ function escapeRegExp(string) {
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh44.js';
+        import Generate3DModel from './mesh46.js';
          //import  "./viz-standalone.js";
          const button = document.getElementById("3dbutton");
          //const textarea = document.getElementById('inputText');
