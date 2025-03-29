@@ -620,6 +620,7 @@
         .dropdown {
             position: relative;
             display: inline-block;
+            z-index:2000;
         }
 
         .dropdown-content {
@@ -628,7 +629,7 @@
             background-color: #f9f9f9;
             min-width: 160px;
             box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-            z-index: 10;
+            z-index: 2000;
         }
 
         .dropdown-content a {
@@ -1325,9 +1326,11 @@
     var [question, correctAnswer] = questionsAndAnswers[index];
 
     var questionElem = document.createElement('p');
-    questionElem.textContent = "If you want to continue, please answer this question by entering a number:" + question;
+    questionElem.textContent = "If you want to continue, please answer this question by entering a number:";
     dialog.appendChild(questionElem);
-
+    var questionElem1 = document.createElement('p');
+    questionElem1.textContent = question;
+    dialog.appendChild(questionElem1);
     var input = document.createElement('input');
     input.type = 'number';
     dialog.appendChild(input);
@@ -1421,7 +1424,7 @@
             <button class="dropbtn" onclick="toggleDropdown('toolsDropdown')">Tools &#9660;</button>
             <div class="dropdown-content" id="toolsDropdown">
                 <button class="button" id="transformButton">Object Transform</button>
-                <button class="button" id="expandButton" onclick="expandExpression()">Expand instruction</button>
+                <button class="button" id="expandButton" onclick="expandExpression()">Expand instructions</button>
             </div>
         </div>
         <div class="dropdown">
