@@ -2149,7 +2149,7 @@
                 assignedIds.add(newId); // Track the new ID to ensure uniqueness
                 idCounter++; // Increment global ID counter
                 if (span.textContent.trim() !== "sk"&&diff!=0)
-                    kCounter++; // Increment kCounter for spans since the last <br>
+                    kCounter+=diff; // Increment kCounter for spans since the last <br>
             //}
         }
     });
