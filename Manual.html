@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Mar 26, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Mar 31, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -279,9 +279,9 @@
         over the internet. As a side effect, the platform can be sluggish on old
         hardware. Models of patterns involving (tens of) thousands of stitches
         can take minutes or more to calculate.</p>
-        <p>CrochetPARADE comes with a set of examples including crochet swatches, crocheting in the round, Irish crochet, amigurumis, filet crochet, edgings, mosaic crochet, and others. CrochetPARADE also includes a generator for crochet patterns for arbitrary axially/cylindrically symmetric single-crocheted shapes. It 
-            can be used for creating patterns for amigurumi bodies, as well as for hats, buffs, etc. It includes a generator for crochet spheres as well.
-        </p>
+    <p>CrochetPARADE comes with a set of examples including crochet swatches, crocheting in the round, Irish crochet, amigurumis, filet crochet, edgings, mosaic crochet, and others. CrochetPARADE also includes a generator for crochet patterns for arbitrary axially/cylindrically symmetric single-crocheted shapes. It
+        can be used for creating patterns for amigurumi bodies, as well as for hats, buffs, etc. It includes a generator for crochet spheres as well.
+    </p>
     <h3 id="goals-and-possible-applications">GOALS AND POSSIBLE
         APPLICATIONS</h3>
     <ul>
@@ -747,9 +747,9 @@ BACKGROUND: white</code></pre>
         <code>sc</code> stitch, then <code>@[sc:@]</code> refers to attaching to
         that same stitch, whereas <code>@[sc:@+1]</code> implies attaching to
         the next <code>sc</code> in the row.</p>
-        <p>Note that when multiple stitches are labeled this way as a group, e.g. <code>(sc,dc)@[@+1]</code> the label is first 
-        distributed before being evaluated. Thus, that example translates to <code>sc@[@+1],dc@[@+1]</code> which implies that the sc and dc are 
-    attached to two consecutive stitches, and not to one and the same stitch. </p>
+    <p>Note that when multiple stitches are labeled this way as a group, e.g. <code>(sc,dc)@[@+1]</code> the label is first
+        distributed before being evaluated. Thus, that example translates to <code>sc@[@+1],dc@[@+1]</code> which implies that the sc and dc are
+        attached to two consecutive stitches, and not to one and the same stitch. </p>
     <h3 id="attachment-to-a-label">Attachment to a label</h3>
     <h4 id="simple-labels">Simple labels</h4>
     <p>In crocheting, one often uses stitch markers to keep track of
@@ -868,43 +868,43 @@ sk,8sc,sc.A!,turn
 1ch,sk,8sc,7sc@A~</code></pre>
     <p>Compare with the result from running the previous set of
         instructions.</p>
-<p>Note that the syntax of CrochetPARADE distributes labels over sets of stitches. So, <code>(3sc).A~</code> is the same as <code>sc.A~,sc.A~,sc.A~</code>. Thus, in the example below, the two sets of <code>(3sc).A~</code> are treated as one set of <code>(6sc).A~</code>. So, the code reverses all 6 stitches and then attaches them to the group A.</p>
-<pre><code>9ch,turn
+    <p>Note that the syntax of CrochetPARADE distributes labels over sets of stitches. So, <code>(3sc).A~</code> is the same as <code>sc.A~,sc.A~,sc.A~</code>. Thus, in the example below, the two sets of <code>(3sc).A~</code> are treated as one set of <code>(6sc).A~</code>. So, the code reverses all 6 stitches and then attaches them to the group A.</p>
+    <pre><code>9ch,turn
 sk,(ch,5sc).A,3sc,turn
 sk,2sc,3sc@A~,3sc@A~
 </code></pre>
-is the same as:
-<pre><code>9ch,turn
+    is the same as:
+    <pre><code>9ch,turn
 sk,(ch,5sc).A,3sc,turn
 sk,2sc,6sc@A~
 </code></pre>
-<p>If one wants to attach the first <code>3sc</code> in reverse and only then reverse the next <code>3sc</code> and attach those in turn, one must use stitch sets (see "Multiple
-    stitch sets attaching to a labeled group") as:</p>
-<pre><code>9ch,turn
+    <p>If one wants to attach the first <code>3sc</code> in reverse and only then reverse the next <code>3sc</code> and attach those in turn, one must use stitch sets (see "Multiple
+        stitch sets attaching to a labeled group") as:</p>
+    <pre><code>9ch,turn
 sk,(ch,5sc).A[],3sc,turn
 sk,2sc,3sc@A[;0]~,3sc@A[;1]~
 </code></pre>
-<p>If however, one mixes normal (forwards) and reverse (backwards) attachment as in:</p>
-<pre><code>9ch,turn
+    <p>If however, one mixes normal (forwards) and reverse (backwards) attachment as in:</p>
+    <pre><code>9ch,turn
 sk,(ch,5sc).A,3sc,turn
 sk,2sc,3sc@A~,3sc@A
 </code></pre>
-<p>Then the first <code>3sc</code> and the second <code>3sc</code> are now treated as separate sets. The code attaches the first 3 in reverse order, and then the next 3 in normal order. In other words, the above example is equivalent to:</p>
-<pre><code>9ch,turn
+    <p>Then the first <code>3sc</code> and the second <code>3sc</code> are now treated as separate sets. The code attaches the first 3 in reverse order, and then the next 3 in normal order. In other words, the above example is equivalent to:</p>
+    <pre><code>9ch,turn
 sk,(ch,5sc).A[],3sc,turn
 sk,2sc,3sc@A[;0]~,3sc@A[;1]
 </code></pre>
-<p>and similarly for any combination of forwards and backwards attachments. Therefore, the following two examples are equivalent:</p>
-<pre><code>9ch,turn
+    <p>and similarly for any combination of forwards and backwards attachments. Therefore, the following two examples are equivalent:</p>
+    <pre><code>9ch,turn
 sk,(ch,5sc).A,3sc,turn
 sk,2sc,2sc@A~,2sc@A,2sc@A~
 </code></pre>
-<p>is the same as</p>
-<pre><code>9ch,turn
+    <p>is the same as</p>
+    <pre><code>9ch,turn
 sk,(ch,5sc).A[],3sc,turn
 sk,2sc,2sc@A[;0]~,2sc@A[;1],2sc@A[;2]~
 </code></pre>
-<p>See the section "Direction of sequential stitch attachment" for the way the code chooses the default direction of attaching stitches.</p>
+    <p>See the section "Direction of sequential stitch attachment" for the way the code chooses the default direction of attaching stitches.</p>
     <h5 id="multiple-stitch-sets-attaching-to-a-labeled-group-a21">Multiple
         stitch sets attaching to a labeled group: <span class="citation" data-cites="A">@A</span>[2;1]</h5>
     <p>If one needs to attach multiple sets of stitches into a labeled
@@ -953,7 +953,7 @@ sk,8sc,sc.A[]!,turn
         <code>sc.A[0],sc.A[0],sc.A[1],sc.A[2],sc.A[2],sc.A[1],sc.A[1]</code>.</p>
     <p>Note that when distributing labels with counters, the counter is
         evaluated first before distribution when the stitches are enclosed in
-        parentheses/brackets, or when an integer precedes a stitch without the
+        parentheses/brackets, or when an integer precedes a SINGLE stitch (not enclosed in brackets) without the
         <code>*</code> symbol. So, <code>$k=0$,2sc.A[k++],(dc,dc).A[k]</code>
         evaluates to <code>sc.A[0],sc.A[0],dc.A[1],dc.A[1]</code>. If a stitch
         is multiplied by an integer using the <code>*</code> operator, then the
@@ -962,13 +962,16 @@ sk,8sc,sc.A[]!,turn
         <code>$k=1$,dc.A[k++],dc.A[k++],dc.A[k++]</code> and then to
         <code>dc.A[1],dc.A[2],dc.A[3]</code>, whereas
         <code>$k=1$, 3dc.A[k++]</code> would evaluate the counter before
-        distributing the label to give <code>dc.A[1],dc.A[1],dc.A[1]</code>.</p>
+        distributing the label to give <code>dc.A[1],dc.A[1],dc.A[1]</code>. Note that if there are brackets/parenthesis, then omitting the <code>*</code> operator changes nothing. So, <code>$c=0$,2[sc].A[c++]</code> is the same as <code>$c=0$,2*[sc].A[c++]</code> and evaluates to <code>[sc].A[0],[sc].A[1]</code>, and same for multiple stitches inside the brackets.
+    </p>
     <p>Note that counter algebra is permitted in the indexing. So, for
         example <code>$k=3$,sc@A[(k++)%5]*5</code> would use the <a href="https://en.wikipedia.org/wiki/Modulo">mod operator</a>
         <code>%</code>, and would be parsed to
         <code>sc@A[3],sc@A[4],sc@A[0],sc@A[1],sc@A[2]</code>. This is especially
         useful when going in rounds, and the first label that you attach to is
         not of index <code>0</code>.</p>
+    <p>One can evaluate counters in indices by selecting "Expand instructions" and checking "Substitute index counters after expansion?"</p>
+    <p>CrochetPARADE also offers a "Simplify Instructions" and selecting "Attempt to simplify numerical indexing of labels and create index counters?" The code then tries to replace expressions such as replace expressions such as <code>ch.A[0],ch.A[1],ch.A[2],ch.A[3]</code> with <code>ch.A[$vara=0$vara],3*ch.A[++vara]</code></p>
     <h3 id="multiple-attachment-heads-0-1-2">Multiple attachment heads:
         <span class="citation" data-cites="0">@0</span> <span class="citation" data-cites="1">@1</span> <span class="citation" data-cites="2">@2</span></h3>
     <p>Note that in crocheting we may be going back and forth between
@@ -1013,19 +1016,19 @@ sk,8sc,sc.A[]!,turn
         is done: 1. If multiple sets of stitches attach to the same labeled group, sort them according to the order specified after <code>;</code>
         (as in stitches attached to <code>,A[0;0]</code> come before <code>A[0;1]</code>); and 2. Reverse the order of
         any set that has a modifier <code>~</code> after the attachment label (e.g. <code>@A~</code>). </p>
-        <p>A stitch following a stitch (or a set of stitches) attached to a labeled group of stitches, attaches to the stitch following the whole group. Therefore in both examples below, the tr stitch attaches to the dc, even when the 4sc are attaching to A in reverse order (as indicated by the tilde):</p>
-<code>6ch,turn
-sk,2ch,dc,2sk,(3ch).A,2sc,turn
-sk,ch,sc,4sc@A,tr</code>
-<p>and </p>
-<code>6ch,turn
-sk,2ch,dc,2sk,(3ch).A,2sc,turn
-sk,ch,sc,4sc@A~,tr</code>
-<p>And in the example below, both tr are attaching to the same dc, as the attachment point is moved back to the last stitch of A by the @A's right before each tr:</p>
-<code>6ch,turn
-sk,2ch,dc,2sk,(3ch).A,2sc,turn
-sk,ch,sc,2sc@A,tr,2sc@A,tr,sc</code>
-        <p>
+    <p>A stitch following a stitch (or a set of stitches) attached to a labeled group of stitches, attaches to the stitch following the whole group. Therefore in both examples below, the tr stitch attaches to the dc, even when the 4sc are attaching to A in reverse order (as indicated by the tilde):</p>
+    <code>6ch,turn
+        sk,2ch,dc,2sk,(3ch).A,2sc,turn
+        sk,ch,sc,4sc@A,tr</code>
+    <p>and </p>
+    <code>6ch,turn
+        sk,2ch,dc,2sk,(3ch).A,2sc,turn
+        sk,ch,sc,4sc@A~,tr</code>
+    <p>And in the example below, both tr are attaching to the same dc, as the attachment point is moved back to the last stitch of A by the @A's right before each tr:</p>
+    <code>6ch,turn
+        sk,2ch,dc,2sk,(3ch).A,2sc,turn
+        sk,ch,sc,2sc@A,tr,2sc@A,tr,sc</code>
+    <p>
         If working stitches in the post of a stitch using a caret (for example .A^), then the default direction of crocheting is from the attachment point
         of the stitch to the top of the stitch, unless there is an odd number of <code>turn</code> directives between
         the row of the top

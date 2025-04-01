@@ -13,11 +13,24 @@
 // You should have received a copy of the GNU General Public License along 
 // with CrochetPARADE. If not, see <https://www.gnu.org/licenses/>.
 
+function enclosePattern(input) {
+    if (typeof input !== "string") {
+        throw new Error("Input must be a string");
+    }
+
+    // Regular expression to match \d+[a-zA-Z_]+ not preceded by @
+    const regex = /(?<!@)(\b\d+[a-zA-Z_]+[a-zA-Z_0-9]*\b)/g;
+
+    // Replace matches with the same text enclosed in parentheses
+    const result = input.replace(regex, "($1)");
+
+    return result;
+}
 
 var EXTRA_DOTS = '';
 var backgroundColor = '';
 
-var textEarth=`# To see the colors of planet Earth, click on the
+var textEarth = `# To see the colors of planet Earth, click on the
 # 3D model (once it's generated), and then press 'c' 
 # on the keyboard. To make the stitches thicker,
 # press "ctrl" and "+" (or "=") at the same time multiple times.
@@ -105,7 +118,7 @@ sca2tog,5sc2tog
 sca6tog
 `;
 
-var textEarthSmall=`# To see the colors of planet Earth, click on the
+var textEarthSmall = `# To see the colors of planet Earth, click on the
 # 3D model (once it's generated), and then press 'c' 
 # on the keyboard. To make the stitches thicker,
 # press "ctrl" and "+" (or "=") at the same time multiple times.
@@ -1440,10 +1453,10 @@ function find_stitchID_by_pos(Stitches, row, pos, relative_id = -1, direction = 
     if ((type !== '') && (pos < 0) && (relative_id != -1))
         pos = 0;
     //console.log('debug: ', Stitches, row, pos, relative_id, direction, type, ids)
-    if (!Number.isInteger(ids.slice(pos)[0])){
-        let pos1=pos;
-        if (direction==-1)
-            pos1=ids.length-1-pos;
+    if (!Number.isInteger(ids.slice(pos)[0])) {
+        let pos1 = pos;
+        if (direction == -1)
+            pos1 = ids.length - 1 - pos;
         throw new Error('Stitch at that position not found: [row,pos,relative_id,type]=' + row + ',' + pos1 + ',' + relative_id + ',' + type + '; ', Stitches);
     }
     return ids.slice(pos)[0];
@@ -1491,8 +1504,8 @@ function count_stitches_in_row(Stitches, row) {
 
 function find_label(Stitches, label) {
     var label0 = label;
-    if (label0.includes('+')||label0.includes('^') || label0.includes('!'))
-        throw new Error('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:'+label);
+    if (label0.includes('+') || label0.includes('^') || label0.includes('!'))
+        throw new Error('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:' + label);
     if (label.split(';').length > 1)
         label = (label.split(';')[0]).trim() + ']';
     //label = label.split('!')[0];
@@ -1516,8 +1529,8 @@ function find_label(Stitches, label) {
 function find_label_ALL(Stitches, label) {
     if (label.split(';').length > 1)
         label = ((label.split(';')[0]).trim() + ']');
-    if (label.includes('+')||label.includes('^') || label.includes('!'))
-        throw new Error('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:'+label);
+    if (label.includes('+') || label.includes('^') || label.includes('!'))
+        throw new Error('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:' + label);
 
     //label = label.split('!')[0];
     label = label.split('~')[0];
@@ -1558,20 +1571,19 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
     //find all stitches that attach to repeated labels.
     var REV = {};
     for (var si = 0; si < Stitches.length; si++) {
-        var s = Stitches[si];
-        {let la=s.label;
+        var s = Stitches[si]; {
+            let la = s.label;
             //console.log(la)
-            for (let l of la)
-            {
-                
-        if (l.includes('~')) throw new Error('Stitch label definition cannot contain ~. Use that in attaching to that label (for example, @A~). Error at label: '+l);
+            for (let l of la) {
+
+                if (l.includes('~')) throw new Error('Stitch label definition cannot contain ~. Use that in attaching to that label (for example, @A~). Error at label: ' + l);
             }
         }
         if (typeof(s.attach_ref) === 'string' && s.attach_ref.length > 0 && s.id_attach.length > 0) {
             let label = s.attach_ref;
-            if (label.includes('+')||label.includes('^') || label.includes('!'))
-                throw new Error('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:'+label);
-        
+            if (label.includes('+') || label.includes('^') || label.includes('!'))
+                throw new Error('Stitch label references cannot contain +^!. Those symbols are reserved for label definitions (for example, .A^). Error at label ref:' + label);
+
             let label1 = label;
             let num = 0;
             if (label1.split(';').length > 1) {
@@ -1597,7 +1609,7 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
             //        REV[label1][num][0]=rev;
             //    else if (REV[label1][num] != rev)
             //        throw new Error('Cannot use a mix of forwards and backwards attachments, such as ()@A,()@A~. If you insist on doing that, then attach ()@A[;0],()@A[;1]~ to labeled group ().A[].')
-//
+            //
             //    //rep_labels[label1]['attached'][num] = rep_labels[label1]['attached'][num].flat()
             //}
             if (label1 in rep_labels) {
@@ -1605,7 +1617,9 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
                     REV[label1] = {};
                 }
                 if (!(num in REV[label1])) {
-                    REV[label1][num] = { 0: rev };
+                    REV[label1][num] = {
+                        0: rev
+                    };
                     var currentKey = 0;
                 } else {
                     const keys = Object.keys(REV[label1][num]).map(Number);
@@ -1617,7 +1631,7 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
                         currentKey = largestKey;
                     }
                 }
-            
+
                 if (!('attached' in rep_labels[label1])) {
                     rep_labels[label1]['attached'] = {};
                 }
@@ -1629,7 +1643,7 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
                 } else {
                     rep_labels[label1]['attached'][num][currentKey].push(si);
                 }
-            
+
                 // Uncomment the following line if needed:
                 // rep_labels[label1]['attached'][num] = Object.values(rep_labels[label1]['attached'][num]).flat();
             }
@@ -1650,10 +1664,9 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
         //}
         if ('attached' in rep_labels[k]) {
             for (let i of Object.keys(rep_labels[k]['attached'])
-                .map(a => parseInt(a, 10))
-                .sort((a, b) => a - b)
-                .map(a => String(a))
-            ) {
+                    .map(a => parseInt(a, 10))
+                    .sort((a, b) => a - b)
+                    .map(a => String(a))) {
                 const sortedKeys = Object.keys(REV[k][i])
                     .map(a => parseInt(a, 10))
                     .sort((a, b) => a - b);
@@ -2339,9 +2352,9 @@ function parse_definitions(text) {
     let k = 0;
 
     for (let l of text.split('\n'))
-        text0+= l.trim().split('#')[0]+'\n';
-    text=text0;
-    text0='';
+        text0 += l.trim().split('#')[0] + '\n';
+    text = text0;
+    text0 = '';
     for (var l of text.split('\\')) {
         if (k % 2 == 0)
             text0 += l;
@@ -2349,7 +2362,7 @@ function parse_definitions(text) {
     }
     text = text0;
     text0 = '';
-    
+
 
     for (let l of text.split('\n')) {
         if ((l.trim().slice(0, 4) !== 'DEF:') && (l.trim()[0] !== '#') && (l.trim().slice(0, 4) !== 'DOT:')) { //remove lines starting with Def. or #
@@ -2364,9 +2377,10 @@ function parse_definitions(text) {
             EXTRA_DOTS += l.trim().slice(4).split('#')[0].trim() + '\n';
         }
     }
+    text0 = enclosePattern(text0);
     var name, V, H;
-    const [_,vars]=find_vars(text0);
-    let newvars=[];
+    const [_, vars] = find_vars(text0);
+    let newvars = [];
     for (let l of text.split('\n'))
         if (l.trim().slice(0, 4) == 'DEF:') {
             l = l.trim().split('#')[0]; //remove any comments;;
@@ -2374,16 +2388,15 @@ function parse_definitions(text) {
             a = a.trim();
             const isValid = /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(a);
             if (!isValid)
-                throw new Error("Invalid stitch name: "+String(a));
+                throw new Error("Invalid stitch name: " + String(a));
             if (newvars.includes(a))
-                throw new Error("Stitch defined twice: "+String(a));
+                throw new Error("Stitch defined twice: " + String(a));
             newvars.push(a);
             b = b.trim();
-            if (b[0] === '&') {// Include dictionary entry.
+            if (b[0] === '&') { // Include dictionary entry.
                 Dictionary[a] = b;
                 find_vars(text0);
-            }
-            else if (b.slice(0, 5) == 'Copy(') {
+            } else if (b.slice(0, 5) == 'Copy(') {
                 try {
                     var spl = b.slice(5, -1).split(',');
                     name = spl[0].trim();
@@ -2428,29 +2441,28 @@ function parse_definitions(text) {
 
                 Dictionary[a] = handle_changeHeightWidth(dict, a, H, W);
                 find_vars(text0);
-            } else{
+            } else {
                 if (vars.includes(a.trim()))
-                    throw new Error('Error: variable name conflicts with stitch name. For example, $ch=0$ cannot be used since "ch" is a stitch name. Variable: '+a.trim());
+                    throw new Error('Error: variable name conflicts with stitch name. For example, $ch=0$ cannot be used since "ch" is a stitch name. Variable: ' + a.trim());
                 text0 = text0.replace(new RegExp('\\b(\\d*)' + a.trim() + '\\b', 'g'), function(match, p1) {
                     return p1 ? p1 + '(' + b.trim() + ')' : '(' + b.trim() + ')';
-                });
-                {
+                }); {
                     let z = a.trim();
-let y = b.trim();
+                    let y = b.trim();
 
-if (/^[a-zA-Z0-9_]+$/.test(y)) {
-    text0 = text0.replace(new RegExp('\\b(\\d*)(' + z + '\\d+tog)\\b', 'g'), function(match, p1, p2) {
-        return p1 + p2.replace(z, y);
-    });
-    
-    text0 = text0.replace(new RegExp('\\b(\\d*)(' + z + '\\d+inc)\\b', 'g'), function(match, p1, p2) {
-        return p1 + p2.replace(z, y);
-    });
-}
+                    if (/^[a-zA-Z0-9_]+$/.test(y)) {
+                        text0 = text0.replace(new RegExp('\\b(\\d*)(' + z + '\\d+tog)\\b', 'g'), function(match, p1, p2) {
+                            return p1 + p2.replace(z, y);
+                        });
+
+                        text0 = text0.replace(new RegExp('\\b(\\d*)(' + z + '\\d+inc)\\b', 'g'), function(match, p1, p2) {
+                            return p1 + p2.replace(z, y);
+                        });
+                    }
                 }
-            
+
             }
-                
+
         }
 
     backgroundColor = '';
@@ -2512,9 +2524,9 @@ function find_vars(text) {
         });
     } catch (error) {}
     variable_names = Array.from(new Set(variable_names));
-    for (var v of variable_names) 
+    for (var v of variable_names)
         if (Object.keys(Dictionary).includes(v))
-            throw new Error('Error: variable name matches stitch name. For example, $ch=0$ cannot be used since "ch" is a stitch name. Variable: '+v);
+            throw new Error('Error: variable name matches stitch name. For example, $ch=0$ cannot be used since "ch" is a stitch name. Variable: ' + v);
     return [text, variable_names];
 }
 
@@ -2588,7 +2600,7 @@ function evaluate_indices(text) {
     var t = text.split(/\$,|,\$|\$/);
     text = t[0];
     for (var tt of t.slice(2).filter((_, i) => i % 2 === 0)) { //Drop the expressions enclosed in $$. Those were evaluated above.
-        if ((!['\n', ','].includes(text.slice(-1)[0])) && (!['\n', ','].includes(tt[0])))
+        if ((!['\n', ',', '['].includes(text.slice(-1)[0])) && (!['\n', ','].includes(tt[0])))
             text += ',';
         text += tt;
     }
@@ -2597,39 +2609,39 @@ function evaluate_indices(text) {
     var matches = text.matchAll(pattern);
     var expressionsToReplace = [];
 
-function replaceExpression(text, i) {
-    const escaped = i.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const regex = new RegExp(`(^|\\W)${escaped}($|\\W)`, 'g');
-    return text.replace(regex, (match, before, after) => `${before}${evaluateExpression(i)}${after}`);
-}
+    function replaceExpression(text, i) {
+        const escaped = i.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+        const regex = new RegExp(`(^|\\W)${escaped}($|\\W)`, 'g');
+        return text.replace(regex, (match, before, after) => `${before}${evaluateExpression(i)}${after}`);
+    }
 
-// Extract all expressions
-for (const match of matches) {
-    for (let i of match[1].split(',')) {
-        i = i.split(';')[0];
-        if (i.includes(':'))
-            i = i.split(':')[1];
-        if (!i.includes(':')) {
-            try {
-                if (Number.isInteger(evaluateExpression(i))) {
-                    if (i !== String(evaluateExpression(i))) {
-                        expressionsToReplace.push(i);
+    // Extract all expressions
+    for (const match of matches) {
+        for (let i of match[1].split(',')) {
+            i = i.split(';')[0];
+            if (i.includes(':'))
+                i = i.split(':')[1];
+            if (!i.includes(':')) {
+                try {
+                    if (Number.isInteger(evaluateExpression(i))) {
+                        if (i !== String(evaluateExpression(i))) {
+                            expressionsToReplace.push(i);
+                        }
                     }
+                } catch (error) {
+                    continue;
                 }
-            } catch (error) {
-                continue;
             }
         }
     }
-}
 
-// Sort expressions by length, longest to shortest
-expressionsToReplace.sort((a, b) => b.length - a.length);
+    // Sort expressions by length, longest to shortest
+    expressionsToReplace.sort((a, b) => b.length - a.length);
 
-// Replace expressions in order
-for (const expr of expressionsToReplace) {
-    text = replaceExpression(text, expr);
-}
+    // Replace expressions in order
+    for (const expr of expressionsToReplace) {
+        text = replaceExpression(text, expr);
+    }
     text = text.replace(/ /g, '');
     //console.log(text)
     return text.trim();
@@ -3272,60 +3284,65 @@ const countOccurrences = (str, char) => {
     return str.split(char).length - 1;
 };
 
-function evaluate_indices_and_stop(text){
+function evaluate_indices_and_stop(text, substitute) {
     text = text.replace(/\t/g, '    ').replace(/\r/g, '');
+
     function extractDefAndDotLines(text) {
         // Split the text into lines
         const lines = text.split('\n');
-        
+
         // Use regex to match lines starting with DEF: or DOT: (with optional leading whitespace)
-        const regex = /^\s*(DEF:|DOT:)/;
-        
+        const regex = /^\s*(DEF:|DOT:|BACKGROUND:)/;
+
         // Filter the lines that match the regex and join them back into a string
         const extractedLines = lines
-          .filter(line => regex.test(line))
-          .join('\n');
-        
+            .filter(line => regex.test(line))
+            .join('\n');
+
         return extractedLines;
-      }
-      
-      // Example usage:
-      const result = extractDefAndDotLines(text);
+    }
+
+    // Example usage:
+    const result = extractDefAndDotLines(text);
     Dictionary = JSON.parse(JSON.stringify(OriginalDictionary));
-       text = text.trim();
-       if (!(areBracketsBalanced(text)))
-           throw new Error('Unbalanced brackets in original text.');
-       text = text.replace(/\,*\s*\.\.\.\s*\,*/g, ',');
-       if (!(areBracketsBalanced(text)))
-           throw new Error('Unbalanced brackets after parsing ellipses.');
-       text = parse_definitions(text).replace(/\bnext\s/g, '++').replace('/\bprev\s/g', '--').replace(/ |\t/g, '');
-       if (!(areBracketsBalanced(text)))
-           throw new Error('Unbalanced brackets in original text after parsing definitions.');
-       
-        //parse_single_text_instruction_to_structure(((duplicateRepeated(' [ 3[ a \n s ] \n \n ] * 4 ' )))).flat(Infinity)
-        //var A = []
-        TextToBeIndexed = text;
-        TextIndex = [];
-        text = duplicateRepeated_before_evaluating_indices(text, 0, TextIndex);
-        DEBUG += '=======Text index:=======\n' + TextIndex + '\n';
-        let tmp = [];
-        let K = 0;
-        //console.log(TextIndex)
-        for (let t of TextIndex) {
-            if (t[1].includes("$"))
-                K += countOccurrences(t[1], '$');
-            else if (K % 2 == 0)
-                tmp.push(t);
-        }
-        TextIndex.splice(0, TextIndex.length, ...tmp);
-    
-        //console.log('A', A)
-        DEBUG += '=======After duplicating repeated stitches:=======\n' + text + '\n';
-        if (result.trim()==='')
-            text=evaluate_indices(text);
-        else 
-            text = result+'\n'+evaluate_indices(text);
-    return text}
+    text = text.trim();
+    if (!(areBracketsBalanced(text)))
+        throw new Error('Unbalanced brackets in original text.');
+    text = text.replace(/\,*\s*\.\.\.\s*\,*/g, ',');
+    if (!(areBracketsBalanced(text)))
+        throw new Error('Unbalanced brackets after parsing ellipses.');
+    //text = enclosePattern(text);
+    text = parse_definitions(text).replace(/\bnext\s/g, '++').replace('/\bprev\s/g', '--').replace(/ |\t/g, '');
+    if (!(areBracketsBalanced(text)))
+        throw new Error('Unbalanced brackets in original text after parsing definitions.');
+
+    //parse_single_text_instruction_to_structure(((duplicateRepeated(' [ 3[ a \n s ] \n \n ] * 4 ' )))).flat(Infinity)
+    //var A = []
+    TextToBeIndexed = text;
+    TextIndex = [];
+    text = duplicateRepeated_before_evaluating_indices(text, 0, TextIndex);
+    DEBUG += '=======Text index:=======\n' + TextIndex + '\n';
+    let tmp = [];
+    let K = 0;
+    //console.log(TextIndex)
+    for (let t of TextIndex) {
+        if (t[1].includes("$"))
+            K += countOccurrences(t[1], '$');
+        else if (K % 2 == 0)
+            tmp.push(t);
+    }
+    TextIndex.splice(0, TextIndex.length, ...tmp);
+
+    //console.log('A', A)
+    DEBUG += '=======After duplicating repeated stitches:=======\n' + text + '\n';
+    if (substitute)
+        text = evaluate_indices(text);
+    if (result.trim() === '')
+        text = text;
+    else
+        text = result + '\n' + text;
+    return text;
+}
 
 function parse_original_text_to_list_of_structures(text) {
 
@@ -3427,6 +3444,8 @@ function final(text) {
     text = text.replace(/\,*\s*\.\.\.\s*\,*/g, ',');
     if (!(areBracketsBalanced(text)))
         throw new Error('Unbalanced brackets after parsing ellipses.');
+
+    
     text = parse_definitions(text).replace(/\bnext\s/g, '++').replace('/\bprev\s/g', '--').replace(/ |\t/g, '');
     if (!(areBracketsBalanced(text)))
         throw new Error('Unbalanced brackets in original text after parsing definitions.');
@@ -3515,7 +3534,7 @@ function export_to_dot(Stitches, json) {
             throw new Error('No stitches in row = ' + i);
         startID_row.push(n);
     }
-    
+
     //add the nodes
     console.log(Stitches);
     for (var s of Stitches) {
@@ -3528,18 +3547,18 @@ function export_to_dot(Stitches, json) {
                 //console.log(POS)
                 if (POS.length > 0) {
                     //if (!simple)
-                    text += ',{"type":"node","name":' + name + ',"attachmentLabel":'+JSON.stringify(s.label)+',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '","pos":"' + POS + '!"}\n';
+                    text += ',{"type":"node","name":' + name + ',"attachmentLabel":' + JSON.stringify(s.label) + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '","pos":"' + POS + '!"}\n';
                     //else
                     textS += name + ' {' + POS + '}\n';
                 } else {
                     //if (!simple)
-                    text += ',{"type":"node","name":' + name  + ',"attachmentLabel":'+JSON.stringify(s.label)+',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
+                    text += ',{"type":"node","name":' + name + ',"attachmentLabel":' + JSON.stringify(s.label) + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
                     //else
                     textS += name + '\n';
                 }
             } else {
                 //if (!simple)
-                text += ',{"type":"node","name":' + name  + ',"attachmentLabel":'+JSON.stringify(s.label)+',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
+                text += ',{"type":"node","name":' + name + ',"attachmentLabel":' + JSON.stringify(s.label) + ',"label":"' + n.type + '|' + s['context'] + '|' + s['Color'] + '"}\n';
                 //else
                 textS += name + '\n';
             }

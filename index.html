@@ -31,27 +31,29 @@
            }
          }
        </script>
-       <script src="./prism.min.js"></script>
+    <script src="./prism.min.js"></script>
 
     <style>
-         
         canvas {
             border: 1px solid black;
         }
+
         #contextMenu {
             position: absolute;
             background-color: #f9f9f9;
             border: 1px solid #ccc;
             padding: 5px;
-            z-index:2000;
+            z-index: 2000;
             display: none;
         }
+
         #contextMenu button {
             display: block;
             width: 100%;
             padding: 5px;
             margin: 2px 0;
         }
+
         #generatorDialog {
             display: none;
             position: fixed;
@@ -66,91 +68,100 @@
             overflow: auto;
             box-sizing: border-box;
         }
+
         /* Custom Prism.js token styles */
         .language-html .comment {
-            font-weight:540;
+            font-weight: 540;
             color: rgb(128, 128, 128);
         }
+
         .language-html .def {
-            font-weight:540;
+            font-weight: 540;
             color: rgb(121, 42, 121);
         }
+
         .language-html .dot1 {
-            font-weight:540;
+            font-weight: 540;
             color: rgb(150, 50, 50);
         }
+
         .language-html .dot2 {
-            font-weight:540;
+            font-weight: 540;
             color: rgb(150, 50, 50);
         }
+
         .language-html .dot {
-            font-weight:540;
+            font-weight: 540;
             color: rgb(150, 50, 50);
         }
 
         .language-html .color {
-            font-weight:540;
+            font-weight: 540;
             color: rgb(193, 124, 15);
         }
 
         .language-html .labelat {
-            font-weight:540;
+            font-weight: 540;
             color: rgb(80, 200, 80);
             /* Color for labels starting with @ */
         }
 
         .language-html .labeldot {
-            font-weight:540;
+            font-weight: 540;
             color: rgb(37, 170, 226);
             /* Color for labels starting with . */
         }
 
         .language-html .special {
-            font-weight:540;
-            color: rgb(250,0,0);
+            font-weight: 540;
+            color: rgb(250, 0, 0);
         }
 
         .language-html .dollar {
-            font-weight:540;
+            font-weight: 540;
             color: rgb(40, 160, 150);
         }
 
         .language-html .bracket {
-            font-weight:540;
+            font-weight: 540;
             color: blue;
         }
 
         .language-html .number {
-            font-weight:540;
+            font-weight: 540;
             color: rgb(153, 0, 79);
         }
 
         .language-html .punctuation {
-            font-weight:540;
+            font-weight: 540;
             color: rgb(85, 85, 85);
         }
-        
+
         .language-html .unknown {
-            font-weight:540;
+            font-weight: 540;
             background-color: #ff2121;
         }
 
         .language-html .string {
-            font-weight:540;
+            font-weight: 540;
             color: brown;
         }
+
         .language-html .brokenbracket1 {
-            font-weight:540;
+            font-weight: 540;
             background-color: rgb(200, 100, 100);
         }
+
         .language-html .brokenbracket {
-            font-weight:540;
+            font-weight: 540;
             background-color: rgb(200, 100, 100);
-        } 
+        }
+
         .language-html .words {
-            font-weight:540;
+            font-weight: 540;
             background-color: rgba(0, 0, 0, 0);
         }
+
         #translateZSlider {
             accent-color: red;
         }
@@ -480,14 +491,14 @@
             padding: 20px;
             background-color: #f2f2f2;
             border: 1px solid #ccc;
-            z-index: 1;
+            z-index: 1000;
         }
 
         #dialog-box {
             display: none;
             position: fixed;
             font-size: 14pt;
-            z-index: 1;
+            z-index: 1000;
             left: 0;
             top: 0;
             width: 100%;
@@ -620,7 +631,7 @@
         .dropdown {
             position: relative;
             display: inline-block;
-            z-index:1000;
+            z-index: 1000;
         }
 
         .dropdown-content {
@@ -861,60 +872,60 @@
 <body>
 
 
- 
+
 
 
     <div id="generatorDialog">
-        
+
         <div style="display: flex; align-items: center; gap: 10px;">
             <img class="logo" src="./logo.png" alt="CrochetPARADE" style=""">
             <button id="okayButton" style="font-size: 1.2em; padding: 10px 20px; background-color: #fbce1a;">Generate</button>
             <button id="resetShapeButton" onclick="resetPoints()" style="font-size: 1.2em; padding: 10px 20px;">Reset</button>
 
-        <button id="exportButton" style="font-size: 1.2em; padding: 10px 20px; background-color: #4CAF50;">Export</button>
-<button id="importButton" style="font-size: 1.2em; padding: 10px 20px; background-color: #2196F3;">Import</button>
-<button id="clButton"" style=" top: 10px; right: 10px; font-size: 1.2em; background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer;">×</button>
+            <button id="exportButton" style="font-size: 1.2em; padding: 10px 20px; background-color: #4CAF50;">Export</button>
+            <button id="importButton" style="font-size: 1.2em; padding: 10px 20px; background-color: #2196F3;">Import</button>
+            <button id="clButton"" style=" top: 10px; right: 10px; font-size: 1.2em; background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer;">×</button>
 
         </div>
         <br>
         <div style="width: 700px;padding: 25px; background-color: #f0f0f0; border-radius: 8px; ">
             <div style="margin-bottom: 15px;font-weight:700">Hint: Try holding either Ctrl or Shift when dragging the point handles.</div>
             <div style="margin-bottom: 15px;">
-              <label for="scatterShape" style=" margin-bottom: 5px;">Scatter increases and decreases (may reduce distortions):</label>
-              <input type="checkbox" id="scatterShape" checked style="margin-right: 5px;">
+                <label for="scatterShape" style=" margin-bottom: 5px;">Scatter increases and decreases (may reduce distortions):</label>
+                <input type="checkbox" id="scatterShape" checked style="margin-right: 5px;">
             </div>
-          
+
             <div style="margin-bottom: 15px;">
-              <label for="numStitches" style=" margin-bottom: 5px;">Number of stitches between green grid lines:</label>
-              <input type="number" id="numStitches" value="20" min="1" style="width: 10ch; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <label for="numStitches" style=" margin-bottom: 5px;">Number of stitches between green grid lines:</label>
+                <input type="number" id="numStitches" value="20" min="1" style="width: 10ch; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
-          
+
             <div style="margin-bottom: 15px;">
-              <label for="xAxisRangeDialog" style=" margin-bottom: 5px;">X-axis range:</label>
-              <input type="number" id="xAxisRangeDialog" value="1.4" min="0.1" step="0.1" style="width: 10ch; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <label for="xAxisRangeDialog" style=" margin-bottom: 5px;">X-axis range:</label>
+                <input type="number" id="xAxisRangeDialog" value="1.4" min="0.1" step="0.1" style="width: 10ch; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
-          
+
             <div style="margin-bottom: 15px;">
-              <label for="yAxisLengthDialog" style=" margin-bottom: 5px;">Y-axis range:</label>
-              <input type="number" id="yAxisLengthDialog" value="1.4" min="0.1" step="0.1" style="width: 10ch; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <label for="yAxisLengthDialog" style=" margin-bottom: 5px;">Y-axis range:</label>
+                <input type="number" id="yAxisLengthDialog" value="1.4" min="0.1" step="0.1" style="width: 10ch; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
-          
+
             <div style="margin-bottom: 15px;">
-              <label for="thicknessB" style="margin-bottom: 5px;">Show curve to adjust number of stitches in the round:</label>
-              <input type="checkbox" id="thicknessB" style="margin-right: 5px;">
+                <label for="thicknessB" style="margin-bottom: 5px;">Show curve to adjust number of stitches in the round:</label>
+                <input type="checkbox" id="thicknessB" style="margin-right: 5px;">
             </div>
-          </div>
+        </div>
         <div id="thicknessContainer" style="display: none; ">
             <button id="resetThicknessBtn" style="background-color:rgb(255, 140, 255);right: 0; z-index: 3;">Reset number of stitches in the round</button>
             <div style="position: relative;">
-              <canvas id="thicknessCanvas"></canvas>
+                <canvas id="thicknessCanvas"></canvas>
 
             </div>
-          </div>
-          
+        </div>
+
 
         <canvas id="generatorCanvas"></canvas>
-        
+
     </div>
 
     <div id="contextMenu">
@@ -986,7 +997,7 @@
         <div class="title-author">
             <p class="title">CrochetPARADE: Crochet PAttern Renderer, Analyzer and DEbugger</p>
             <p class="author">Svetlin Tassev</p>
-            <p class="date">Updated: Mar 27, 2025. Created a new tool <a href="https://crochetparade.org/crochetforum/showthread.php?tid=25"  target="_blank">for generating axially symmetric patterns</a>, which is a new option in the examples drop-down menu. 
+            <p class="date">Updated: Mar 31, 2025. Allow simplification and expansion of patterns under the Tools menu. Previous update: Created a new tool <a href="https://crochetparade.org/crochetforum/showthread.php?tid=25" target="_blank">for generating axially symmetric patterns</a> as a new option in the examples drop-down menu.
         </div>
         </p>
     </div>
@@ -1018,12 +1029,14 @@
         <span style="cursor: pointer; position: absolute; top: -1px; right: 5px;font-size:20pt;font-weight:600" onclick='closeAnnouncement("announcement2")'>×</span>
         <b>CrochetPARADE was updated to support crocheting in the back and front loops. See the Mosaic crochet showcase as well as the manual.</b>
     </div> -->
-    <script>var shape;</script>
+    <script>
+        var shape;
+    </script>
     <script src="bezier46.js"></script>
     <script>
         window.onload = function() {
-    document.getElementById('thicknessB').checked = false;
-};
+            document.getElementById('thicknessB').checked = false;
+        };
         var c_was_pressed = false;
         var factor_radius = 1.0;
         var requestedInfo = true;
@@ -1115,6 +1128,7 @@
     <!--<script src="./math.js"></script>-->
 
 
+    <script src="simplify.js"></script>
     <div id="mouse">
         <span id="left" class="buttonM"></span>
         <span id="middle" class="buttonM">
@@ -1290,86 +1304,125 @@
             display("~right");
         });
 
-        function expandExpression() {
-    // Create a dialog box
-    var dialog = document.createElement('div');
-    dialog.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:1px solid black;z-index:1000;';
-    
-    // Warning message
-    var warning = document.createElement('p');
-    warning.style.cssText='font-weight:700;'
-    warning.textContent = "Warning!!!";
-    
-    dialog.appendChild(warning);
+        function expandExpression(substitute = true) {
+            // Create a dialog box
+            var dialog = document.createElement('div');
+            dialog.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:white;padding:20px;border:1px solid black;z-index:1000;';
 
-    var warning1 = document.createElement('p');
-    warning1.style.cssText=''
-    warning1.textContent = "This will overwrite your instructions with their expanded form. Variables will be evaluated ($k=0$,sc.L[k++],sc.L[k] will be written out as sc.L[0],sc.L[1]); expressions such as 3*[sc,dc] will be written out in expanded form (as in [sc,dc],[sc,dc],[sc,dc]); and newly defined stitches will be substituted when possible. If you want expressions such as 4sc to be expanded, then run this dialog twice in a row. After the first time, they will be written as 4*sc, and after the second time, they will be expanded as sc,sc,sc,sc.";
-    
-    dialog.appendChild(warning1);
+            // Warning message
+            var warning = document.createElement('p');
+            warning.style.cssText = 'font-weight:700;'
+            warning.textContent = "Warning!!!";
 
-    var warning2 = document.createElement('p');
-    warning2.style.cssText='font-weight:700;'
-    warning2.textContent = "Save your work before continuing!";
-    
-    dialog.appendChild(warning2);
+            dialog.appendChild(warning);
 
-    // Questions and answers
-    var questionsAndAnswers = [
-        ["1 + 1 = ?", 2], ["2 + 2 = ?", 4], ["3 + 3 = ?", 6], ["4 + 4 = ?", 8],
-        ["5 + 5 = ?", 10], ["1 + 9 = ?", 10], ["8 + 1 = ?", 9], ["3 + 6 = ?", 9],
-        ["2 + 8 = ?", 10], ["6 + 2 = ?", 8], ["7 + 3 = ?", 10], ["4 + 5 = ?", 9],
-        ["1 + 7 = ?", 8], ["6 + 4 = ?", 10], ["9 + 1 = ?", 10], ["5 + 3 = ?", 8],
-        ["2 + 6 = ?", 8], ["8 + 3 = ?", 11], ["4 + 6 = ?", 10], ["7 + 2 = ?", 9]
-    ];
-    var index = Math.floor(Math.random() * questionsAndAnswers.length);
-    var [question, correctAnswer] = questionsAndAnswers[index];
+            var warning1 = document.createElement('p');
+            warning1.style.cssText = ''
+            warning1.textContent = "This will overwrite your instructions with their expanded form. Expressions such as 3*[sc,dc] will be written out in expanded form (as in [sc,dc],[sc,dc],[sc,dc]); and newly defined stitches will be substituted when possible. If you want expressions such as 4sc to be expanded, then run this dialog twice in a row. After the first time, they will be written as 4*sc, and after the second time, they will be expanded as sc,sc,sc,sc.";
 
-    var questionElem = document.createElement('p');
-    questionElem.textContent = "If you want to continue, please answer this question by entering a number:";
-    dialog.appendChild(questionElem);
-    var questionElem1 = document.createElement('p');
-    questionElem1.textContent = question;
-    dialog.appendChild(questionElem1);
-    var input = document.createElement('input');
-    input.type = 'number';
-    dialog.appendChild(input);
+            dialog.appendChild(warning1);
 
-    var buttonContainer = document.createElement('div');
-    buttonContainer.style.marginTop = '10px';
+            var warning2 = document.createElement('p');
+            warning2.style.cssText = 'font-weight:700;'
+            warning2.textContent = "Save your work before continuing!";
 
-    var okButton = document.createElement('button');
-    okButton.textContent = 'OK';
-    okButton.disabled = true; // Initially disabled
-    okButton.onclick = function() {
-        document.body.removeChild(dialog);
-        proceedWithExpansion();
-    };
-    buttonContainer.appendChild(okButton);
+            dialog.appendChild(warning2);
 
-    var cancelButton = document.createElement('button');
-    cancelButton.textContent = 'Cancel';
-    cancelButton.onclick = function() {
-        document.body.removeChild(dialog);
-    };
-    buttonContainer.appendChild(cancelButton);
+            // Checkbox for "Expand before simplification?"
+            var expandExprCheckboxContainer = document.createElement('div');
+            expandExprCheckboxContainer.style.marginTop = '10px';
 
-    dialog.appendChild(buttonContainer);
+            var expandExprCheckboxLabel = document.createElement('label');
+            expandExprCheckboxLabel.textContent = "Substitute index counters after expansion? If checked, index variables will be evaluated, so for example $k=0$,sc.L[k++],sc.L[k] will be written out as sc.L[0],sc.L[1].";
+            expandExprCheckboxLabel.style.marginRight = '10px';
 
-    // Enable OK button only when the correct answer is provided
-    input.oninput = function() {
-        okButton.disabled = (parseInt(input.value) !== correctAnswer);
-    };
+            var expandExprCheckbox = document.createElement('input');
+            expandExprCheckbox.type = 'checkbox';
+            expandExprCheckbox.style.marginTop = '4px';
+            expandExprCheckbox.checked = false; // Default unchecked
 
-    document.body.appendChild(dialog);
+            // Variable to store the checkbox state
+            var expandExpr = false;
 
-    function proceedWithExpansion() {
-        var inputText = document.getElementById("inputText");
-        inputText.value = evaluate_indices_and_stop(inputText.value);
-        onMyInput();
-        update(inputText.value);
-    }
-}
+            // Update expandExpr based on checkbox state
+            expandExprCheckbox.onchange = function() {
+                expandExpr = expandExprCheckbox.checked;
+            };
+
+            expandExprCheckboxContainer.appendChild(expandExprCheckboxLabel);
+            expandExprCheckboxContainer.appendChild(expandExprCheckbox);
+            dialog.appendChild(expandExprCheckboxContainer);
+
+
+            // Questions and answers
+            var questionsAndAnswers = [
+                ["1 + 1 = ?", 2],
+                ["2 + 2 = ?", 4],
+                ["3 + 3 = ?", 6],
+                ["4 + 4 = ?", 8],
+                ["8 + 1 = ?", 9],
+                ["3 + 6 = ?", 9],
+                ["6 + 2 = ?", 8],
+                ["1 + 1 = ?", 2],
+                ["2 + 1 = ?", 3],
+                ["3 + 2 = ?", 5],
+                ["4 - 2 = ?", 2],
+                ["5 - 3 = ?", 2],
+                ["2 + 3 = ?", 5],
+                ["6 - 4 = ?", 2],
+                ["3 + 4 = ?", 7],
+                ["7 - 5 = ?", 2],
+                ["4 + 3 = ?", 7],
+            ];
+            var index = Math.floor(Math.random() * questionsAndAnswers.length);
+            var [question, correctAnswer] = questionsAndAnswers[index];
+
+            var questionElem = document.createElement('p');
+            questionElem.textContent = "If you want to continue, please answer this question by entering a number:";
+            dialog.appendChild(questionElem);
+
+            var questionElem1 = document.createElement('p');
+            questionElem1.textContent = question;
+            dialog.appendChild(questionElem1);
+            var input = document.createElement('input');
+            input.type = 'number';
+            dialog.appendChild(input);
+
+            var buttonContainer = document.createElement('div');
+            buttonContainer.style.marginTop = '10px';
+
+            var okButton = document.createElement('button');
+            okButton.textContent = 'OK';
+            okButton.disabled = true; // Initially disabled
+            okButton.onclick = function() {
+                document.body.removeChild(dialog);
+                proceedWithExpansion();
+            };
+            buttonContainer.appendChild(okButton);
+
+            var cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancel';
+            cancelButton.onclick = function() {
+                document.body.removeChild(dialog);
+            };
+            buttonContainer.appendChild(cancelButton);
+
+            dialog.appendChild(buttonContainer);
+
+            // Enable OK button only when the correct answer is provided
+            input.oninput = function() {
+                okButton.disabled = (parseInt(input.value) !== correctAnswer);
+            };
+
+            document.body.appendChild(dialog);
+
+            function proceedWithExpansion() {
+                var inputText = document.getElementById("inputText");
+                inputText.value = cleanString(evaluate_indices_and_stop(inputText.value, expandExpr));
+                onMyInput();
+                update(inputText.value);
+            }
+        }
     </script>
     <div>
         <select id="examples">
@@ -1410,7 +1463,6 @@
 
 
 
-
         <div class="dropdown">
             <button class="dropbtn" onclick="toggleDropdown('layoutDropdown')">Editor layout &#9660;</button>
             <div class="dropdown-content" id="layoutDropdown">
@@ -1425,6 +1477,7 @@
             <div class="dropdown-content" id="toolsDropdown">
                 <button class="button" id="transformButton">Object Transform</button>
                 <button class="button" id="expandButton" onclick="expandExpression()">Expand instructions</button>
+                <button class="button" id="collectButton" onclick="collectExpression()">Simplify instructions</button>
             </div>
         </div>
         <div class="dropdown">
@@ -1438,7 +1491,7 @@
                 <button class="button" onclick="window.open('./Manual.html', '_blank')">Manual</button>
                 <button class="button" onclick="window.open('https://crochetparade.org/crochetforum/forumdisplay.php?fid=3', '_blank')">Ask a question</button>
                 <button class="button" onclick="window.open('https://codeberg.org/crochetparade/CrochetPARADE/issues', '_blank')">File a bug report</button>
-                
+
 
                 <button class="button" onclick="document.getElementById('about').style.display='block'">About</button>
             </div>
@@ -1446,7 +1499,7 @@
 
         <button class="button2" onclick="window.open('https://crochetparade.org/crochetforum/', '_blank')">Forum</button>
         <button class="button1" onclick="window.open('https://donate.stripe.com/eVa6pK4XQ5Qg6vmbII', '_blank')">Leave a Tip</button>
-    
+
 
     </div>
 
@@ -1495,101 +1548,101 @@
     </script>
 
 
-<script src="sphere-generator46.js"></script>
+    <script src="sphere-generator46.js"></script>
 
     <script>
         var json0 = '';
         var jsonOld = '';
         var reset_json = 1;
         setTimeout(function() {
-    const radioButtons = document.querySelectorAll('input[type="radio"]');
+            const radioButtons = document.querySelectorAll('input[type="radio"]');
 
-    radioButtons.forEach((radioButton) => {
-        radioButton.addEventListener('change', () => {
-            if (radioButton.value === '2D') {
-                DIM = 2;
-            } else if (radioButton.value === '3D') {
-                DIM = 3;
+            radioButtons.forEach((radioButton) => {
+                radioButton.addEventListener('change', () => {
+                    if (radioButton.value === '2D') {
+                        DIM = 2;
+                    } else if (radioButton.value === '3D') {
+                        DIM = 3;
+                    }
+                });
+            });
+
+            var textOptions = [
+                ['Write your own instructions', "", 3],
+                ['Generate a sphere', null, 3], // New option added
+                ['Generate an axially symmetric shape', null, 3], // New option added
+                ['Baby bootie (~2sec)', textBootie, 3],
+                ['Irish crochet: flower 1 (~1sec)', textFlower2, 2],
+                ['Irish crochet: flowers 2 (~5sec)', textFlower, 3],
+                ['Granny square (~2sec)', textSquare, 2],
+                ['Edging (~1sec)', textEdging, 2],
+                ['Planet Earth; large (~1.5min)', textEarth, 3],
+                ['Planet Earth; small (~3sec)', textEarthSmall, 3],
+                ['Amigurumi: simplistic snowman (~4sec)', textSnowman2, 3],
+                ['OLD amigurumi example (~15sec)', textSnowman, 3],
+                ['Baby blanket (~7sec)', textBlanket, 3],
+                ['Swatch 1 (~8sec)', textSwatch2, 2],
+                ['Swatch 2 (~8sec)', textSwatch, 3],
+                ['Stocking (~12sec)', textStocking, 3],
+                ['Hat (~3min)', textHat, 3],
+                ['Mixed styles: lacy hat (~12sec)', textLacyHat, 3],
+                ['Filet crochet: logo (~45sec)', textFilet, 3],
+                ['Irish crochet: doily (~5min!)', textDoily, 2],
+                ['Simple flower with post stitches (~1sec)', textFlower3, 3],
+                ['Mosaic crochet (~3sec)', textMosaic, 3]
+            ];
+
+            var select = document.getElementById('examples');
+
+            var wrapperDiv = document.createElement('div');
+            wrapperDiv.style.position = 'relative';
+            wrapperDiv.style.display = 'inline-block';
+
+            select.parentNode.replaceChild(wrapperDiv, select);
+            wrapperDiv.appendChild(select);
+
+            select.innerHTML = "";
+
+            var defaultOption = document.createElement("option");
+            defaultOption.classList.add("button-examples");
+            defaultOption.text = textOptions[0][0];
+            defaultOption.value = textOptions[0][0];
+            select.appendChild(defaultOption);
+
+            for (var i = 1; i < textOptions.length; i++) {
+                var option = document.createElement("option");
+                option.classList.add("button-examples");
+                option.text = textOptions[i][0];
+                option.value = textOptions[i][0];
+                select.appendChild(option);
             }
-        });
-    });
 
-    var textOptions = [
-        ['Write your own instructions', "", 3],
-        ['Generate a sphere', null, 3], // New option added
-        ['Generate an axially symmetric shape', null, 3], // New option added
-        ['Baby bootie (~2sec)', textBootie, 3],
-        ['Irish crochet: flower 1 (~1sec)', textFlower2, 2],
-        ['Irish crochet: flowers 2 (~5sec)', textFlower, 3],
-        ['Granny square (~2sec)', textSquare, 2],
-        ['Edging (~1sec)', textEdging, 2],
-        ['Planet Earth; large (~1.5min)', textEarth, 3],
-        ['Planet Earth; small (~3sec)', textEarthSmall, 3],
-        ['Amigurumi: simplistic snowman (~4sec)', textSnowman2, 3],
-        ['OLD amigurumi example (~15sec)', textSnowman, 3],
-        ['Baby blanket (~7sec)', textBlanket, 3],
-        ['Swatch 1 (~8sec)', textSwatch2, 2],
-        ['Swatch 2 (~8sec)', textSwatch, 3],
-        ['Stocking (~12sec)', textStocking, 3],
-        ['Hat (~3min)', textHat, 3],
-        ['Mixed styles: lacy hat (~12sec)', textLacyHat, 3],
-        ['Filet crochet: logo (~45sec)', textFilet, 3],
-        ['Irish crochet: doily (~5min!)', textDoily, 2],
-        ['Simple flower with post stitches (~1sec)', textFlower3, 3],
-        ['Mosaic crochet (~3sec)', textMosaic, 3]
-    ];
+            var arrowDiv = document.createElement('div');
+            arrowDiv.innerHTML = '&#9660;';
+            arrowDiv.style.position = 'absolute';
+            arrowDiv.style.right = '4pt';
+            arrowDiv.style.top = '6pt';
+            wrapperDiv.appendChild(arrowDiv);
 
-    var select = document.getElementById('examples');
+            select.onchange = function() {
+                var inputText = document.getElementById("inputText");
+                var selectedValue = select.value;
 
-    var wrapperDiv = document.createElement('div');
-    wrapperDiv.style.position = 'relative';
-    wrapperDiv.style.display = 'inline-block';
+                var index = textOptions.findIndex(option => option[0] === selectedValue);
+                var selectedNdim = textOptions[index][2];
 
-    select.parentNode.replaceChild(wrapperDiv, select);
-    wrapperDiv.appendChild(select);
+                if (selectedValue === 'Generate a sphere') {
+                    var popup = document.createElement('div');
+                    popup.style.position = 'fixed';
+                    popup.style.left = '50%';
+                    popup.style.top = '50%';
+                    popup.style.transform = 'translate(-50%, -50%)';
+                    popup.style.backgroundColor = 'white';
+                    popup.style.padding = '20px';
+                    popup.style.border = '1px solid black';
+                    popup.style.zIndex = '1000';
 
-    select.innerHTML = "";
-
-    var defaultOption = document.createElement("option");
-    defaultOption.classList.add("button-examples");
-    defaultOption.text = textOptions[0][0];
-    defaultOption.value = textOptions[0][0];
-    select.appendChild(defaultOption);
-
-    for (var i = 1; i < textOptions.length; i++) {
-        var option = document.createElement("option");
-        option.classList.add("button-examples");
-        option.text = textOptions[i][0];
-        option.value = textOptions[i][0];
-        select.appendChild(option);
-    }
-
-    var arrowDiv = document.createElement('div');
-    arrowDiv.innerHTML = '&#9660;';
-    arrowDiv.style.position = 'absolute';
-    arrowDiv.style.right = '4pt';
-    arrowDiv.style.top = '6pt';
-    wrapperDiv.appendChild(arrowDiv);
-
-    select.onchange = function() {
-        var inputText = document.getElementById("inputText");
-        var selectedValue = select.value;
-
-        var index = textOptions.findIndex(option => option[0] === selectedValue);
-        var selectedNdim = textOptions[index][2];
- 
-        if (selectedValue === 'Generate a sphere') {
-            var popup = document.createElement('div');
-            popup.style.position = 'fixed';
-            popup.style.left = '50%';
-            popup.style.top = '50%';
-            popup.style.transform = 'translate(-50%, -50%)';
-            popup.style.backgroundColor = 'white';
-            popup.style.padding = '20px';
-            popup.style.border = '1px solid black';
-            popup.style.zIndex = '1000';
-
-            popup.innerHTML = `
+                    popup.innerHTML = `
     <div style="position: relative;">
         <button id="closeButtonSphere" style="position: absolute; top: -10px; right: -10px; background: #f44336; color: white; border: none; border-radius: 0%; width: 24px; height: 24px; cursor: pointer;">×</button>
         <h3>Generate a single-crochet sphere</h3>
@@ -1601,179 +1654,186 @@
         <button id="okButton">Generate</button>
     </div>
 `;
-function removePopup() {
-    document.body.removeChild(popup);
-    select.value=textOptions[0][0];
-}
 
-
-            document.body.appendChild(popup);
-// Close button action
-document.getElementById('closeButtonSphere').onclick = removePopup;
-
-            document.getElementById('okButton').onclick = function() {
-                var Ncirc = parseInt(document.getElementById('circumference').value);
-                if (Ncirc < 7) {
-    Ncirc = 7;
-}
-if (Ncirc >1200) {
-    Ncirc = 1200;
-}
-                var scatter = document.getElementById('scatter').checked;
-
-                inputText.value = generate_sphere(Ncirc, scatter);
-
-                radioButtons.forEach((radioButton) => {
-                    if (radioButton.value === '3D') {
-                        radioButton.checked = true;
-                        DIM = 3;
+                    function removePopup() {
+                        document.body.removeChild(popup);
+                        select.value = textOptions[0][0];
                     }
-                });
 
-                document.body.removeChild(popup);
 
-                onMyInput();
-                update(inputText.value);
-                select.value=textOptions[0][0];
-            };
-        } else if (selectedValue === 'Generate an axially symmetric shape') {
-            function exportPoints() {
-    const data = {
-        points: points,
-        thicknessPoints: thicknessPoints,
-        numStitches: document.getElementById('numStitches').value,
-        scatterShape: document.getElementById('scatterShape').checked,
-        xAxisRange: document.getElementById('xAxisRangeDialog').value,
-        yAxisLength: document.getElementById('yAxisLengthDialog').value,
-        thicknessB: document.getElementById('thicknessB').checked
-    };
-    
-    const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'CrochetPARADE_axial_shape.json';
-    a.click();
-}
+                    document.body.appendChild(popup);
+                    // Close button action
+                    document.getElementById('closeButtonSphere').onclick = removePopup;
 
-function importPoints() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = function(e) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const data = JSON.parse(e.target.result);
-            points = data.points;
-            thicknessPoints = data.thicknessPoints;
-            document.getElementById('numStitches').value = data.numStitches;
-            document.getElementById('scatterShape').checked = data.scatterShape;
-            document.getElementById('xAxisRangeDialog').value = data.xAxisRange;
-            document.getElementById('yAxisLengthDialog').value = data.yAxisLength;
-            document.getElementById('thicknessB').checked = data.thicknessB;
-            drawCurve();
-            drawThicknessCurve();
-            document.getElementById('thicknessB').checked = true;
-            thicknessContainer.style.display = 'block';
+                    document.getElementById('okButton').onclick = function() {
+                        var Ncirc = parseInt(document.getElementById('circumference').value);
+                        if (Ncirc < 7) {
+                            Ncirc = 7;
+                        }
+                        if (Ncirc > 1200) {
+                            Ncirc = 1200;
+                        }
+                        var scatter = document.getElementById('scatter').checked;
 
-            updateYAxisLength(yAxisLength);
-            updateXAxisRange(xAxisRange);
-        };
-        reader.readAsText(file);
-    };
-    input.click();
-}
+                        inputText.value = generate_sphere(Ncirc, scatter);
 
-// Add event listeners
-document.getElementById('exportButton').addEventListener('click', exportPoints);
-document.getElementById('importButton').addEventListener('click', importPoints);
-        //const generateButton = document.getElementById('okayButton');
-        const generatorDialog = document.getElementById('generatorDialog');
-        const numStitchesInput = document.getElementById('numStitches');
-        const yAxisLengthDialogInput = document.getElementById('yAxisLengthDialog');
-        const xAxisRangeDialogInput = document.getElementById('xAxisRangeDialog');
-        const generatorCanvas = document.getElementById('generatorCanvas');
-        const generatorCtx = generatorCanvas.getContext('2d');
-        const okayButton = document.getElementById('okayButton');
+                        radioButtons.forEach((radioButton) => {
+                            if (radioButton.value === '3D') {
+                                radioButton.checked = true;
+                                DIM = 3;
+                            }
+                        });
 
-        const contextMenu = document.getElementById('contextMenu');
+                        document.body.removeChild(popup);
 
-            generatorDialog.style.display = 'block';
-            yAxisLengthDialogInput.value = yAxisLength;
-            xAxisRangeDialogInput.value = xAxisRange;
-            updateYAxisLength(yAxisLength);
-            updateXAxisRange(xAxisRange);
-            updateCanvasSize();
+                        onMyInput();
+                        update(inputText.value);
+                        select.value = textOptions[0][0];
+                    };
+                } else if (selectedValue === 'Generate an axially symmetric shape') {
+                    function exportPoints() {
+                        const data = {
+                            points: points,
+                            thicknessPoints: thicknessPoints,
+                            numStitches: document.getElementById('numStitches').value,
+                            scatterShape: document.getElementById('scatterShape').checked,
+                            xAxisRange: document.getElementById('xAxisRangeDialog').value,
+                            yAxisLength: document.getElementById('yAxisLengthDialog').value,
+                            thicknessB: document.getElementById('thicknessB').checked
+                        };
 
-            if (points.length === 0) {
-                resetPoints();
-            } else {
-                drawThicknessCurve();
-                drawCurve();
-            }
-            document.getElementById('clButton').onclick = closeShapeDialog;
-function closeShapeDialog(){ generatorDialog.style.display = 'none';select.value=textOptions[0][0];}
-            okayButton.addEventListener('click', () => {
-            const numStitches = parseInt(numStitchesInput.value);
-            if (isNaN(numStitches) || numStitches <= 0) {
-                alert("Please enter a valid number of stitches.");
-                return;
-            }
-
-            const newYAxisLength = parseFloat(yAxisLengthDialogInput.value);
-            updateYAxisLength(newYAxisLength);
-
-            const newXAxisRange = parseFloat(xAxisRangeDialogInput.value);
-            updateXAxisRange(newXAxisRange);
-
-            const curvePoints = calculateCurvePoints();
-            const interpolateY = createInterpolationFunction(curvePoints);
-            const lengths = calculateCurveLengths(curvePoints);
-            const totalLength = lengths[lengths.length-1];
-
-            const numberOfSamples = Math.round(numStitches*totalLength);
-            const deltaL = totalLength / numberOfSamples;
-            shape_radius=[];
-            for (let i = 0; i <= numberOfSamples; i++) {
-                const l_i = i * deltaL;
-                const interpolatedY = interpolateY(l_i);
-                console.log(l_i,interpolatedY * numStitches);
-                shape_radius.push(interpolatedY * numStitches);
-            }
-            console.log(numStitches);
-
-            generatorDialog.style.display = 'none';
-            let scatter = document.getElementById('scatterShape').checked;
-            inputText.value = generate_shape(scatter);
-
-                radioButtons.forEach((radioButton) => {
-                    if (radioButton.value === '3D') {
-                        radioButton.checked = true;
-                        DIM = 3;
+                        const blob = new Blob([JSON.stringify(data)], {
+                            type: 'application/json'
+                        });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'CrochetPARADE_axial_shape.json';
+                        a.click();
                     }
-                });
 
-                onMyInput();
-                update(inputText.value);
-                select.value=textOptions[0][0];
-        });
-           
-        }else{
-            inputText.value = textOptions[index][1];
-            radioButtons.forEach((radioButton) => {
-                if (radioButton.value === String(selectedNdim) + 'D') {
-                    radioButton.checked = true;
-                    DIM = selectedNdim;
+                    function importPoints() {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = '.json';
+                        input.onchange = function(e) {
+                            const file = e.target.files[0];
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                const data = JSON.parse(e.target.result);
+                                points = data.points;
+                                thicknessPoints = data.thicknessPoints;
+                                document.getElementById('numStitches').value = data.numStitches;
+                                document.getElementById('scatterShape').checked = data.scatterShape;
+                                document.getElementById('xAxisRangeDialog').value = data.xAxisRange;
+                                document.getElementById('yAxisLengthDialog').value = data.yAxisLength;
+                                document.getElementById('thicknessB').checked = data.thicknessB;
+                                drawCurve();
+                                drawThicknessCurve();
+                                document.getElementById('thicknessB').checked = true;
+                                thicknessContainer.style.display = 'block';
+
+                                updateYAxisLength(yAxisLength);
+                                updateXAxisRange(xAxisRange);
+                            };
+                            reader.readAsText(file);
+                        };
+                        input.click();
+                    }
+
+                    // Add event listeners
+                    document.getElementById('exportButton').addEventListener('click', exportPoints);
+                    document.getElementById('importButton').addEventListener('click', importPoints);
+                    //const generateButton = document.getElementById('okayButton');
+                    const generatorDialog = document.getElementById('generatorDialog');
+                    const numStitchesInput = document.getElementById('numStitches');
+                    const yAxisLengthDialogInput = document.getElementById('yAxisLengthDialog');
+                    const xAxisRangeDialogInput = document.getElementById('xAxisRangeDialog');
+                    const generatorCanvas = document.getElementById('generatorCanvas');
+                    const generatorCtx = generatorCanvas.getContext('2d');
+                    const okayButton = document.getElementById('okayButton');
+
+                    const contextMenu = document.getElementById('contextMenu');
+
+                    generatorDialog.style.display = 'block';
+                    yAxisLengthDialogInput.value = yAxisLength;
+                    xAxisRangeDialogInput.value = xAxisRange;
+                    updateYAxisLength(yAxisLength);
+                    updateXAxisRange(xAxisRange);
+                    updateCanvasSize();
+
+                    if (points.length === 0) {
+                        resetPoints();
+                    } else {
+                        drawThicknessCurve();
+                        drawCurve();
+                    }
+                    document.getElementById('clButton').onclick = closeShapeDialog;
+
+                    function closeShapeDialog() {
+                        generatorDialog.style.display = 'none';
+                        select.value = textOptions[0][0];
+                    }
+                    okayButton.addEventListener('click', () => {
+                        const numStitches = parseInt(numStitchesInput.value);
+                        if (isNaN(numStitches) || numStitches <= 0) {
+                            alert("Please enter a valid number of stitches.");
+                            return;
+                        }
+
+                        const newYAxisLength = parseFloat(yAxisLengthDialogInput.value);
+                        updateYAxisLength(newYAxisLength);
+
+                        const newXAxisRange = parseFloat(xAxisRangeDialogInput.value);
+                        updateXAxisRange(newXAxisRange);
+
+                        const curvePoints = calculateCurvePoints();
+                        const interpolateY = createInterpolationFunction(curvePoints);
+                        const lengths = calculateCurveLengths(curvePoints);
+                        const totalLength = lengths[lengths.length - 1];
+
+                        const numberOfSamples = Math.round(numStitches * totalLength);
+                        const deltaL = totalLength / numberOfSamples;
+                        shape_radius = [];
+                        for (let i = 0; i <= numberOfSamples; i++) {
+                            const l_i = i * deltaL;
+                            const interpolatedY = interpolateY(l_i);
+                            console.log(l_i, interpolatedY * numStitches);
+                            shape_radius.push(interpolatedY * numStitches);
+                        }
+                        console.log(numStitches);
+
+                        generatorDialog.style.display = 'none';
+                        let scatter = document.getElementById('scatterShape').checked;
+                        inputText.value = generate_shape(scatter);
+
+                        radioButtons.forEach((radioButton) => {
+                            if (radioButton.value === '3D') {
+                                radioButton.checked = true;
+                                DIM = 3;
+                            }
+                        });
+
+                        onMyInput();
+                        update(inputText.value);
+                        select.value = textOptions[0][0];
+                    });
+
+                } else {
+                    inputText.value = textOptions[index][1];
+                    radioButtons.forEach((radioButton) => {
+                        if (radioButton.value === String(selectedNdim) + 'D') {
+                            radioButton.checked = true;
+                            DIM = selectedNdim;
+                        }
+                    });
+
+                    inputText.value = inputText.value.replace(/\t/g, '    ').replace(/\r/g, '')
+                    onMyInput();
+                    update(inputText.value);
                 }
-            });
-
-            inputText.value = inputText.value.replace(/\t/g, '    ').replace(/\r/g, '')
-            onMyInput();
-            update(inputText.value);
-        }
-    }
-}, 0);
+            }
+        }, 0);
     </script>
 
     <div class="editor_container" id="edc">
@@ -1801,7 +1861,7 @@ function closeShapeDialog(){ generatorDialog.style.display = 'none';select.value
         After the model is displayed in this canvas, click on it, and then you can press <span style='font-family:monospace;font-weight:400'>'c'</span> to see the yarn colors, or <span style='font-family:monospace;font-weight:400'>'esc'</span> to reset the view. <br> Pressing <span style='font-family:monospace;font-weight:400'>'ctrl+a'</span> or <span style='font-family:monospace;font-weight:400'>'a'</span> will hide/display stitches incrementally.<br> Pressing <span style='font-family:monospace;font-weight:400'>'r'</span> will automatically rotate the view. <br>
         <br>See the help for more keyboard shortcuts.
 
-    </div>   
+    </div>
     <script>
         const textarea = document.getElementById('inputText');
 
@@ -1878,51 +1938,56 @@ function closeShapeDialog(){ generatorDialog.style.display = 'none';select.value
 
             return -1; // No match found
         }
+
         function highlightUnmatchedBrackets(str) {
-    const openingBrackets = '([{';
-    const closingBrackets = ')]}';
-    const stack = [];
-    const unmatchedIndices = new Set();
+            const openingBrackets = '([{';
+            const closingBrackets = ')]}';
+            const stack = [];
+            const unmatchedIndices = new Set();
 
-    // First pass: identify unmatched brackets
-    for (let i = 0; i < str.length; i++) {
-        const char = str[i];
-        if (openingBrackets.includes(char)) {
-            stack.push({ char, index: i });
-        } else if (closingBrackets.includes(char)) {
-            if (stack.length > 0) {
-                const lastOpening = stack[stack.length - 1];
-                if (closingBrackets.indexOf(char) === openingBrackets.indexOf(lastOpening.char)) {
-                    stack.pop();
-                } else {
-                    unmatchedIndices.add(i);
-                    unmatchedIndices.add(lastOpening.index);
-                    stack.pop();
+            // First pass: identify unmatched brackets
+            for (let i = 0; i < str.length; i++) {
+                const char = str[i];
+                if (openingBrackets.includes(char)) {
+                    stack.push({
+                        char,
+                        index: i
+                    });
+                } else if (closingBrackets.includes(char)) {
+                    if (stack.length > 0) {
+                        const lastOpening = stack[stack.length - 1];
+                        if (closingBrackets.indexOf(char) === openingBrackets.indexOf(lastOpening.char)) {
+                            stack.pop();
+                        } else {
+                            unmatchedIndices.add(i);
+                            unmatchedIndices.add(lastOpening.index);
+                            stack.pop();
+                        }
+                    } else {
+                        unmatchedIndices.add(i);
+                    }
                 }
-            } else {
-                unmatchedIndices.add(i);
             }
+
+            // Add any remaining unmatched opening brackets
+            while (stack.length > 0) {
+                const unmatchedOpening = stack.pop();
+                unmatchedIndices.add(unmatchedOpening.index);
+            }
+
+            // Second pass: construct the result string
+            let result = '';
+            for (let i = 0; i < str.length; i++) {
+                if (unmatchedIndices.has(i)) {
+                    result += '<span style="background-color:rgb(255, 33, 33)">' + str[i] + '</span>';
+                } else {
+                    result += str[i];
+                }
+            }
+
+            return result;
         }
-    }
 
-    // Add any remaining unmatched opening brackets
-    while (stack.length > 0) {
-        const unmatchedOpening = stack.pop();
-        unmatchedIndices.add(unmatchedOpening.index);
-    }
-
-    // Second pass: construct the result string
-    let result = '';
-    for (let i = 0; i < str.length; i++) {
-        if (unmatchedIndices.has(i)) {
-            result += '<span style="background-color:rgb(255, 33, 33)">' + str[i] + '</span>';
-        } else {
-            result += str[i];
-        }
-    }
-
-    return result;
-}
         function findAllUnmatchedBracketIndices(str) {
             const openingBrackets = '([{';
             const closingBrackets = ')]}';
@@ -1967,101 +2032,106 @@ function closeShapeDialog(){ generatorDialog.style.display = 'none';select.value
             return Array.from(unmatchedIndices).sort((a, b) => a - b); // Return sorted indices
         }
 
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
         function update(text) {
-    // Handle final newlines
-   let defs = extractWords(text);
-   const uniqueResult = [...new Set([...Object.keys(OriginalDictionary), ...defs, 'turn'])];
+            // Handle final newlines
+            let defs = extractWords(text);
+            const uniqueResult = [...new Set([...Object.keys(OriginalDictionary), ...defs, 'turn'])];
 
-        // Custom language definition for Prism.js
-        Prism.languages.html = {
-            //'brokenbracket':[/(\((?=(([^()]|\([^()]*\))*[^)]*$)))|(^([^()]*|\([^()]*\))*)(\))/ ,
-            //{pattern:/^(\((\((\((\((\((\((\((\((\((\([^()]*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)/,greedy:true
-        //}],
-            
-            'comment': /\\[^\\]*?(?:\\|$)|#.*/,
-            'def': {
-                pattern: /^(\s*)(DEF:.*)/m,
-                lookbehind: true
-            },
-            
-            'dot1':{
-                pattern: /^\s*(DOT:)\s*(\"(.*)|separate(\s*)=(\s*)[\.\d]+|inflate(\s*)=(\s*)[\.\d]+|learning_rate(\s*)=(\s*)[\.\d]+|start(\s*)=(\s*)\d+|iterations(\s*)=(\s*)\d+)/m,
-                greedy: true
-            },
-            'dot2':{
-                pattern: /^\s*(DOT:)\s*(\"(.*)|separate|inflate|learning_rate|iterations|start)(\s*)=?/m,
-                greedy: true
-            },
-            'dot': {
-                pattern: /^\s*(DOT:)/m,
-            greedy:true
-            },
-            'color': {
-                pattern: /(BACKGROUND:|COLOR:)(((([^,(\n]*\([^)\n]*\)|[^,(\n])*)))/,
-                greedy: false
-            },
-            'special': {
-                pattern: /\.{3}|[<>]/,
-                greedy: false
-            },
-            'labelat': {
-                pattern: /@(?:[^\($\n,\+!\^\*\.\[{\]}\)]*|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\))*\))*\)|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\])*\])*\])*\]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*\})*\})*\})*/, //Match label with @ or .
-                greedy: false
-            },'labeldot': {
-                pattern: /\.(?:[^\($\n,\*~@\[{\]}\)]*|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\))*\))*\)|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\])*\])*\])*\]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*\})*\})*\})*/,
-                greedy: false
-            },
-            'dollar': {
-                pattern: /\$.*?\$|\$[^\$\n$]*($|\n)/,
-                greedy: true
-            },
-            'bracket': {
-                pattern: /[[\](){}]/,
-                greedy: true
-            },
-            'number': /\b\d+\b|\b\d+(?=[a-zA-Z_])/,
-            'punctuation': /[,*]/,
-            'words': {
-        pattern: new RegExp(
-            `\\b[0-9]*(?:${uniqueResult.map(escapeRegExp).join('|')}\\b|\\b[0-9]*` +
-            `(?:${uniqueResult.map(escapeRegExp).join('|')})\\d+(?:inc|tog))\\b`,
-            'g'
+            // Custom language definition for Prism.js
+            Prism.languages.html = {
+                //'brokenbracket':[/(\((?=(([^()]|\([^()]*\))*[^)]*$)))|(^([^()]*|\([^()]*\))*)(\))/ ,
+                //{pattern:/^(\((\((\((\((\((\((\((\((\((\([^()]*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)/,greedy:true
+                //}],
 
-            
-        ),
-        greedy: false
-        },'unknown':{pattern:/\b([a-zA-Z_]+[\d]*)*\b|~|!|\+|\^/}
-            //,.replaceAll('\n', '<br>')
-            //'string': /"(?:\\.|[^\\"])*"|'(?:\\.|[^\\'])*'/
-        };
+                'comment': /\\[^\\]*?(?:\\|$)|#.*/,
+                'def': {
+                    pattern: /^(\s*)(DEF:.*)/m,
+                    lookbehind: true
+                },
+
+                'dot1': {
+                    pattern: /^\s*(DOT:)\s*(\"(.*)|separate(\s*)=(\s*)[\.\d]+|inflate(\s*)=(\s*)[\.\d]+|learning_rate(\s*)=(\s*)[\.\d]+|start(\s*)=(\s*)\d+|iterations(\s*)=(\s*)\d+)/m,
+                    greedy: true
+                },
+                'dot2': {
+                    pattern: /^\s*(DOT:)\s*(\"(.*)|separate|inflate|learning_rate|iterations|start)(\s*)=?/m,
+                    greedy: true
+                },
+                'dot': {
+                    pattern: /^\s*(DOT:)/m,
+                    greedy: true
+                },
+                'color': {
+                    pattern: /(BACKGROUND:|COLOR:)(((([^,(\n]*\([^)\n]*\)|[^,(\n])*)))/,
+                    greedy: false
+                },
+                'special': {
+                    pattern: /\.{3}|[<>]/,
+                    greedy: false
+                },
+                'labelat': {
+                    pattern: /@(?:[^\($\n,\+!\^\*\.\[{\]}\)]*|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\))*\))*\)|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\])*\])*\])*\]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*\})*\})*\})*/, //Match label with @ or .
+                    greedy: false
+                },
+                'labeldot': {
+                    pattern: /\.(?:[^\($\n,\*~@\[{\]}\)]*|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\((?:[^()]|\([^()]*\))*\))*\))*\))*\))*\)|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[(?:[^\[\]]|\[[^\[\]]*\])*\])*\])*\])*\])*\]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*\})*\})*\})*/,
+                    greedy: false
+                },
+                'dollar': {
+                    pattern: /\$.*?\$|\$[^\$\n$]*($|\n)/,
+                    greedy: true
+                },
+                'bracket': {
+                    pattern: /[[\](){}]/,
+                    greedy: true
+                },
+                'number': /\b\d+\b|\b\d+(?=[a-zA-Z_])/,
+                'punctuation': /[,*]/,
+                'words': {
+                    pattern: new RegExp(
+                        `\\b[0-9]*(?:${uniqueResult.map(escapeRegExp).join('|')}\\b|\\b[0-9]*` +
+                        `(?:${uniqueResult.map(escapeRegExp).join('|')})\\d+(?:inc|tog))\\b`,
+                        'g'
 
 
+                    ),
+                    greedy: false
+                },
+                'unknown': {
+                    pattern: /\b([a-zA-Z_]+[\d]*)*\b|~|!|\+|\^/
+                }
+                //,.replaceAll('\n', '<br>')
+                //'string': /"(?:\\.|[^\\"])*"|'(?:\\.|[^\\'])*'/
+            };
 
 
-    if (text[text.length - 1] == "\n") {
-        text += " ";
-    }
 
-    // Escape HTML entities
-    text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    let result_element = document.querySelector("#highlighting");
-    // Update code
-    result_element.innerHTML = text;//.replaceAll('\n', '<br>\n');
-    // Apply Prism highlighting
-    Prism.highlightElement(result_element );
-    
-    let inputString = result_element.innerHTML.replaceAll('\n', '<br>');//.replaceAll(' ', '&nbsp;');
-    result_element.innerHTML= highlightUnmatchedBrackets(inputString);
-    
-}
 
-// Helper function to escape special characters in regex
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+            if (text[text.length - 1] == "\n") {
+                text += " ";
+            }
+
+            // Escape HTML entities
+            text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let result_element = document.querySelector("#highlighting");
+            // Update code
+            result_element.innerHTML = text; //.replaceAll('\n', '<br>\n');
+            // Apply Prism highlighting
+            Prism.highlightElement(result_element);
+
+            let inputString = result_element.innerHTML.replaceAll('\n', '<br>'); //.replaceAll(' ', '&nbsp;');
+            result_element.innerHTML = highlightUnmatchedBrackets(inputString);
+
+        }
+
+        // Helper function to escape special characters in regex
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
 
         textarea.addEventListener('input', function() {
             setTimeout(function() {
@@ -2131,13 +2201,13 @@ function escapeRegExp(string) {
         }
 
         function extractWords(input) {
-         
+
             const regex = /\s*DEF:\s*(\S+)\s*=/g;
             const matches = input.matchAll(regex);
             return Array.from(matches, match => match[1]);
         }
 
-      
+
 
         function sync_scroll(element) {
             /* Scroll result to scroll coords of event - sync with textarea */
@@ -2294,7 +2364,7 @@ function escapeRegExp(string) {
 
     <script>
         function printDiv() {
-            var divContents =  document.querySelector("#highlighting").innerHTML;
+            var divContents = document.querySelector("#highlighting").innerHTML;
             divContents = '<span style="color:red">&para;</span><span style="color:rgb(128,128,128)>">#Instructions originally written in CrochetPARADE 1.0 language.</span><br><span style="color:red">&para;</span>' + divContents.replaceAll('<br>', '<br><span style="color:red">&para;</span>')
             var printWindow = window.open('', '', 'height=400,width=800');
             printWindow.document.write('<html><head><title>Crochet Instructions</title>');
@@ -2730,9 +2800,9 @@ function escapeRegExp(string) {
 
             const objects = data.elements.filter(element => element.type === 'node').map((node, index) => {
                 const posInfo = posData.elements.find(item => item.name === node.name);
-                let atLabel=[];
+                let atLabel = [];
                 if ('attachmentLabel' in node)
-                    atLabel=node.attachmentLabel;
+                    atLabel = node.attachmentLabel;
                 //console.log(atLabel);
                 return {
                     _gvid: index,
