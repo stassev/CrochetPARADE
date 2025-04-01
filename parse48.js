@@ -2442,11 +2442,13 @@ function parse_definitions(text) {
                 Dictionary[a] = handle_changeHeightWidth(dict, a, H, W);
                 find_vars(text0);
             } else {
+                b=enclosePattern(b);
                 if (vars.includes(a.trim()))
                     throw new Error('Error: variable name conflicts with stitch name. For example, $ch=0$ cannot be used since "ch" is a stitch name. Variable: ' + a.trim());
                 text0 = text0.replace(new RegExp('\\b(\\d*)' + a.trim() + '\\b', 'g'), function(match, p1) {
-                    return p1 ? p1 + '(' + b.trim() + ')' : '(' + b.trim() + ')';
-                }); {
+                    return p1 ?'(' + p1 + '(' + b.trim() + '))' : '(' + b.trim() + ')';
+                }); 
+                {
                     let z = a.trim();
                     let y = b.trim();
 

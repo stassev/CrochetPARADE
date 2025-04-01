@@ -766,6 +766,8 @@ BACKGROUND: white</code></pre>
         internal labels that are integers, such as
         <code>sc,sc.A[0],sc,sc,sc.A[1]</code>. Here <code>A[0]</code> and
         <code>A[1]</code> are treated as different labels.</p>
+        <p>Note that a stitch can attach to one label only, inheriting the syntaxically closest attachment. For example, in <code>(sc@A)@B</code> the sc stitch attaches to <code>A</code>.
+             Attachment points also distribute. Thus, <code>(sc,dc,sc@A,sc)@B</code> is equivalent to <code>sc@B,dc@B,sc@A,sc@B</code>.  </p>
     <h4 id="labeled-groups-of-stitches">Labeled groups of stitches</h4>
     <h5 id="basics-1">Basics</h5>
     <p>When multiple stitches carry the same label, we will call that a
@@ -777,7 +779,7 @@ BACKGROUND: white</code></pre>
         space and will be distributed uniformly over that space. If the
         uniformly distributed positions do not match preexisting nodes of
         stitches in the labeled group, then hidden nodes will be created in
-        between and the stitches will attach to those. That assumes all stitches
+        between and the stitches will attach to those. The distribution of hidden nodes is uniform along the length of the labeled group with the assumption that all stitches
         in a labeled group have the same width (stitch height can vary).</p>
     <h5 id="attaching-to-the-the-post-of-a-stitch-.a-.a1">Attaching to the
         the post of a stitch: .A^ .A^1</h5>
@@ -962,7 +964,25 @@ sk,8sc,sc.A[]!,turn
         <code>$k=1$,dc.A[k++],dc.A[k++],dc.A[k++]</code> and then to
         <code>dc.A[1],dc.A[2],dc.A[3]</code>, whereas
         <code>$k=1$, 3dc.A[k++]</code> would evaluate the counter before
-        distributing the label to give <code>dc.A[1],dc.A[1],dc.A[1]</code>. Note that if there are brackets/parenthesis, then omitting the <code>*</code> operator changes nothing. So, <code>$c=0$,2[sc].A[c++]</code> is the same as <code>$c=0$,2*[sc].A[c++]</code> and evaluates to <code>[sc].A[0],[sc].A[1]</code>, and same for multiple stitches inside the brackets.
+        distributing the label to give <code>dc.A[1],dc.A[1],dc.A[1]</code>. </p>
+        <p>Note that if there are brackets/parenthesis, then omitting the <code>*</code> operator changes nothing. So, <code>$c=0$,2[sc].A[c++]</code> is the same as <code>$c=0$,2*[sc].A[c++]</code> and evaluates to <code>[sc].A[0],[sc].A[1]</code>, and same for multiple stitches inside the brackets.
+    </p>
+    <p>Also note that definition substitution is done last after labels are evaluated. Therefore, the picot stitches below, <code>3p.A[k++]</code>, are treated similar to <code>3sc.A[k++]</code>, giving <code>p.A[0],p.A[0],p.A[0]</code>. Those 3p's are not equivalent to <code>3*p.A[k++]</code>, which in turn evaluates to <code>p.A[0],p.A[1],p.A[2]</code>. Here is the complete code:
+<code>
+DEF: p=3ch,ss@1[%,%-4]
+$k=0$,3p.A[k++]
+</code>
+The above treats <code>p</code> as a single stitch, despite its definition as a series of 4 stitches. So, it is first parsed to
+<code>
+DEF:p=3ch,ss@1[%,%-4]
+$k=0$,[p,p,p].A[k++]
+</code>
+which is then evaluated to 
+<code>
+DEF:p=3ch,ss@1[%,%-4]
+[p,p,p].A[0]
+</code>
+as explained above.
     </p>
     <p>Note that counter algebra is permitted in the indexing. So, for
         example <code>$k=3$,sc@A[(k++)%5]*5</code> would use the <a href="https://en.wikipedia.org/wiki/Modulo">mod operator</a>

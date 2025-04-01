@@ -447,16 +447,31 @@
         /* Move the textarea in front of the result */
 
         #inputText {
-            z-index: 1;
+  z-index: 1; /* Above highlighting */
+  pointer-events: auto; /* Allow typing */
+
         }
 
         #highlighting {
-            z-index: 0;
+            z-index: 0; /* Bring highlighting above textarea */
+            pointer-events: none; /* Allow interaction with spans for tooltips */
         }
 
 
         /* Make textarea almost completely transparent */
-
+        #highlighting .token.words {
+  pointer-events: auto;
+}
+#custom-tooltip {
+  position: fixed;
+  background: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: monospace;
+  pointer-events: none; /* Avoid blocking hover */
+  display:none;
+}
         #inputText {
             color: transparent;
             background: transparent;
@@ -986,7 +1001,7 @@
             </div>
             <div class="control-group">
                 <button onclick="readInstructions()">Read from instructions</button>
-                <button onclick="updateTextArea();onMyInput();update(textarea.value);">Write to instructions</button>
+                <button onclick="updateTextArea();update(textarea.value);onMyInput();">Write to instructions</button>
 
 
             </div>
@@ -1032,7 +1047,7 @@
     <script>
         var shape;
     </script>
-    <script src="bezier47.js"></script>
+    <script src="bezier48.js"></script>
     <script>
         window.onload = function() {
             document.getElementById('thicknessB').checked = false;
@@ -1123,12 +1138,12 @@
 
 
 
-    <script src="./parse47.js"></script>
+    <script src="./parse48.js"></script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
 
 
-    <script src="simplify47.js"></script>
+    <script src="simplify48.js"></script>
     <div id="mouse">
         <span id="left" class="buttonM"></span>
         <span id="middle" class="buttonM">
@@ -1318,7 +1333,7 @@
 
             var warning1 = document.createElement('p');
             warning1.style.cssText = ''
-            warning1.textContent = "This will overwrite your instructions with their expanded form. Expressions such as 3*[sc,dc] will be written out in expanded form (as in [sc,dc],[sc,dc],[sc,dc]); and newly defined stitches will be substituted when possible. If you want expressions such as 4sc to be expanded, then run this dialog twice in a row. After the first time, they will be written as 4*sc, and after the second time, they will be expanded as sc,sc,sc,sc.";
+            warning1.textContent = "This will overwrite your instructions with their expanded form. Expressions such as 3*[sc,dc] will be written out in expanded form (as in [sc,dc],[sc,dc],[sc,dc]); and newly defined stitches will be substituted when possible. If you want expressions such as 4sc to be expanded, then run this dialog twice in a row (or check the box below). After the first time, they will be written as 4*sc, and after the second time, they will be expanded as sc,sc,sc,sc.";
 
             dialog.appendChild(warning1);
 
@@ -1352,6 +1367,33 @@
             expandExprCheckboxContainer.appendChild(expandExprCheckboxLabel);
             expandExprCheckboxContainer.appendChild(expandExprCheckbox);
             dialog.appendChild(expandExprCheckboxContainer);
+
+
+
+            // Checkbox for "Expand before simplification?"
+            var expandExprCheckboxContainer1 = document.createElement('div');
+            expandExprCheckboxContainer1.style.marginTop = '10px';
+
+            var expandExprCheckboxLabel1 = document.createElement('label');
+            expandExprCheckboxLabel1.textContent = "Run this dialog twice in a row? If set, stitch numbers will appear on hover in editor.";
+            expandExprCheckboxLabel1.style.marginRight = '10px';
+
+            var expandExprCheckbox1 = document.createElement('input');
+            expandExprCheckbox1.type = 'checkbox';
+            expandExprCheckbox1.style.marginTop = '4px';
+            expandExprCheckbox1.checked = false; // Default unchecked
+
+            // Variable to store the checkbox state
+            var twice = false;
+
+            // Update expandExpr based on checkbox state
+            expandExprCheckbox1.onchange = function() {
+                twice = expandExprCheckbox1.checked;
+            };
+
+            expandExprCheckboxContainer1.appendChild(expandExprCheckboxLabel1);
+            expandExprCheckboxContainer1.appendChild(expandExprCheckbox1);
+            dialog.appendChild(expandExprCheckboxContainer1);
 
 
             // Questions and answers
@@ -1419,8 +1461,12 @@
             function proceedWithExpansion() {
                 var inputText = document.getElementById("inputText");
                 inputText.value = cleanString(evaluate_indices_and_stop(inputText.value, expandExpr));
-                onMyInput();
-                update(inputText.value);
+                if (twice){
+                    inputText.value = cleanString(evaluate_indices_and_stop(inputText.value, expandExpr));
+                    inputText['expanded']=true;
+                } else {inputText['expanded']=false;}
+               
+                update(inputText.value); onMyInput();
             }
         }
     </script>
@@ -1548,7 +1594,7 @@
     </script>
 
 
-    <script src="sphere-generator47.js"></script>
+    <script src="sphere-generator48.js"></script>
 
     <script>
         var json0 = '';
@@ -1625,7 +1671,9 @@
             wrapperDiv.appendChild(arrowDiv);
 
             select.onchange = function() {
+                
                 var inputText = document.getElementById("inputText");
+                inputText['expanded']=false;
                 var selectedValue = select.value;
 
                 var index = textOptions.findIndex(option => option[0] === selectedValue);
@@ -1686,8 +1734,8 @@
 
                         document.body.removeChild(popup);
 
-                        onMyInput();
-                        update(inputText.value);
+                       
+                        update(inputText.value); onMyInput();
                         select.value = textOptions[0][0];
                     };
                 } else if (selectedValue === 'Generate an axially symmetric shape') {
@@ -1814,8 +1862,8 @@
                             }
                         });
 
-                        onMyInput();
-                        update(inputText.value);
+                       
+                        update(inputText.value); onMyInput();
                         select.value = textOptions[0][0];
                     });
 
@@ -1829,8 +1877,8 @@
                     });
 
                     inputText.value = inputText.value.replace(/\t/g, '    ').replace(/\r/g, '')
-                    onMyInput();
-                    update(inputText.value);
+                   
+                    update(inputText.value); onMyInput();
                 }
             }
         }, 0);
@@ -1863,6 +1911,7 @@
 
     </div>
     <script>
+
         const textarea = document.getElementById('inputText');
 
         function findMatchingClosingBracketIndex(str, cursorPos) {
@@ -2035,6 +2084,138 @@
         function escapeRegExp(string) {
             return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
+        let assignedIds = new Set(); 
+        const tooltip = document.createElement('div');
+        tooltip.id = 'custom-tooltip';
+        document.body.appendChild(tooltip);
+
+        function assignIdsAndHover() {
+    const highlight = document.getElementById("highlighting");
+    const wordTokens = highlight.querySelectorAll(".token.words"); // Select all .token.words spans
+    const brElements = highlight.querySelectorAll("br"); // Select all <br> elements within the highlighting div
+
+    let row = 0; // Line number counter
+    let idCounter = 0; // Global ID counter
+    let kCounter = 0; // Counter for spans since the last <br>
+    const assignedIds = new Set(); // Track assigned IDs to avoid duplicates
+
+    let currentBrIndex = 0; // Index of the current <br> element being processed
+    let hasTokenWordsSinceLastBr = false; // Tracks if there are token words since the last <br>
+
+    wordTokens.forEach((span) => {
+        // Check if this span is before or after a <br> element
+        while (
+            currentBrIndex < brElements.length &&
+            span.compareDocumentPosition(brElements[currentBrIndex]) & Node.DOCUMENT_POSITION_PRECEDING
+        ) {
+            // If crossing a <br>, check if there were token words before it
+            if (hasTokenWordsSinceLastBr) {
+                row++; // Increment row number only if there were token words
+            }
+            currentBrIndex++; // Move to the next <br>
+            hasTokenWordsSinceLastBr = false; // Reset token words flag for the next line
+            kCounter = 0; // Reset kCounter for spans after a new line
+        }
+
+        // If this span is a valid token word, mark it as such
+        if (span.textContent.trim() !== "turn") {
+            hasTokenWordsSinceLastBr = true; // Mark that we have token words on this line
+
+            const spanText = span.textContent.trim(); // Get the text inside the span
+        let diff = 0; // Default diff value
+        //console.log(spanText);
+        //console.log(Dictionary)
+        if (Dictionary.hasOwnProperty(spanText)) {
+            // If the string is a key in Dictionary, calculate diff based on top nodes
+            const [type, Top] = Dictionary[spanText].slice(1).split(/[\^\:~]/g); // Extract Top
+            const topNodes = [...Top.matchAll(/([A-Z0-9a-z_]+)\(/g)].map(match => match[1]); // Extract top node names
+            diff = topNodes.length; // Number of top nodes
+            //console.log('ft',diff);
+        } else if (/\d*inc$/.test(spanText)) {
+            // If the string ends with "inc", extract the number and use it as diff
+            const match = spanText.match(/(\d*)inc$/);
+            diff = match ? parseInt(match[1], 10) : 0;
+        } else if (/\d*tog$/.test(spanText)) {
+            // If the string ends with "tog", set diff to 1
+            diff = 1;
+        }
+
+            //if (!span.id) {
+                // Assign a new ID only if the span does not already have one
+                let newId = `word(${row}|${kCounter})${idCounter}`;
+                if (span.textContent.trim() === "sk" || diff==0)
+                    newId = `word${idCounter}`;
+                span.id = newId;
+                assignedIds.add(newId); // Track the new ID to ensure uniqueness
+                idCounter++; // Increment global ID counter
+                if (span.textContent.trim() !== "sk"&&diff!=0)
+                    kCounter++; // Increment kCounter for spans since the last <br>
+            //}
+        }
+    });
+
+    // After processing all spans, check for any remaining token words after the last <br>
+    if (hasTokenWordsSinceLastBr) {
+        row++; // Increment row number for any remaining token words after the last <br>
+    }
+}
+
+document.getElementById("inputText").addEventListener("mousemove", (e) => {
+  const textarea = e.target;
+  const highlighting = document.getElementById("highlighting");
+  
+  // Get mouse coordinates relative to viewport
+  const mouseX = e.clientX;
+  const mouseY = e.clientY;
+  
+  // Get highlighting layer's position
+  const highlightRect = highlighting.getBoundingClientRect();
+  
+  // Translate coordinates to highlighting layer's system
+  const relativeX = mouseX - highlightRect.left;
+  const relativeY = mouseY - highlightRect.top;
+  
+  // Find spans in highlighting layer
+  const spans = highlighting.querySelectorAll('.token.words');
+  let hoveredSpan = null;
+  
+  // Check which span contains the mouse
+  spans.forEach((span) => {
+    const spanRect = span.getBoundingClientRect();
+    const adjustedSpanRect = {
+      left: spanRect.left - highlightRect.left,
+      top: spanRect.top - highlightRect.top,
+      right: spanRect.right - highlightRect.left,
+      bottom: spanRect.bottom - highlightRect.top
+    };
+    
+    if (
+      relativeX >= adjustedSpanRect.left &&
+      relativeX <= adjustedSpanRect.right &&
+      relativeY >= adjustedSpanRect.top &&
+      relativeY <= adjustedSpanRect.bottom
+    ) {
+      hoveredSpan = span;
+    }
+  });
+  
+  // Update tooltip
+  var inputText = document.getElementById("inputText");
+  if (hoveredSpan && inputText['expanded']) {
+    const id = hoveredSpan.id.replace('word', '');
+    tooltip.textContent = id;
+    tooltip.style.left = `${mouseX + 10}px`;
+    tooltip.style.top = `${mouseY + 10}px`;
+    tooltip.style.display = 'block';
+  } else {
+    tooltip.style.display = 'none';
+  }
+});
+
+// 2. Hide tooltip when mouse leaves textarea
+document.getElementById("inputText").addEventListener("mouseleave", () => {
+  tooltip.style.display = 'none';
+});
 
         function update(text) {
             // Handle final newlines
@@ -2122,10 +2303,11 @@
             result_element.innerHTML = text; //.replaceAll('\n', '<br>\n');
             // Apply Prism highlighting
             Prism.highlightElement(result_element);
+           
 
             let inputString = result_element.innerHTML.replaceAll('\n', '<br>'); //.replaceAll(' ', '&nbsp;');
             result_element.innerHTML = highlightUnmatchedBrackets(inputString);
-
+            assignIdsAndHover();
         }
 
         // Helper function to escape special characters in regex
@@ -2311,15 +2493,74 @@
             secondDiv = document.getElementById('ed');
             secondDiv.style.height = firstDivHeight + 'pt';
 
-            const lines = textarea.value.split('\n');
-            var numtext = ''
-            var num = 0;
-            for (var l of lines) {
-                if ((l.trim().slice(0, 4) != 'DEF:') && (l.trim().slice(0, 3) != '...') && (l.trim().slice(0, 4) != 'DOT:') && (l.trim().slice(0, 11) != 'BACKGROUND:') && (l.split('#')[0].trim() !== '') && (l.trim() !== ""))
-                    numtext += '<span>' + (num++) + '<br></span>';
-                else
-                    numtext += '<span><br></span>';
-            }
+            const brElements = highlight.querySelectorAll('br'); // Select all <br> elements within the highlight div.
+
+let numtext = '';
+let num = -1;
+
+// Check all elements before brElements[0].
+let hasTokenWordsBeforeFirstBr = false;
+let sibling = highlight.firstChild; // Start from the first child of the highlight div.
+
+while (sibling && sibling !== brElements[0]) {
+    if (sibling.nodeType === 1 && sibling.classList.contains('token') && sibling.classList.contains('words')) {
+        hasTokenWordsBeforeFirstBr = true;
+        break; // Stop checking further once we find a match.
+    }
+    sibling = sibling.nextSibling; // Move to the next sibling.
+}
+
+if (hasTokenWordsBeforeFirstBr) {
+    num++;
+    numtext += `<span>${num}<br></span>`;
+} else {
+    numtext += '<span><br></span>';
+}
+
+// Iterate through <br> elements and check siblings between consecutive <br> tags.
+for (let i = 1; i < brElements.length; i++) {
+    const prevBr = brElements[i - 1]; // Previous <br> element.
+    const currentBr = brElements[i]; // Current <br> element.
+
+    let hasTokenWordsBetweenBrs = false;
+    let sibling = prevBr.nextElementSibling;
+
+    // Iterate through siblings between prevBr and currentBr.
+    while (sibling && sibling !== currentBr) {
+        if (sibling.classList.contains('token') && sibling.classList.contains('words')) {
+            hasTokenWordsBetweenBrs = true;
+            break; // Stop checking further once we find a match.
+        }
+        sibling = sibling.nextElementSibling; // Move to the next sibling.
+    }
+
+    if (hasTokenWordsBetweenBrs) {
+        num++;
+        numtext += `<span>${num}<br></span>`;
+    } else {
+        numtext += '<span><br></span>';
+    }
+}
+
+// Check for any siblings after the last <br> until the end of the HTML.
+const lastBr = brElements[brElements.length - 1];
+let hasTokenWordsAfterLastBr = false;
+sibling = lastBr.nextElementSibling;
+
+while (sibling) {
+    if (sibling.classList.contains('token') && sibling.classList.contains('words')) {
+        hasTokenWordsAfterLastBr = true;
+        break; // Stop checking further once we find a match.
+    }
+    sibling = sibling.nextElementSibling; // Move to the next sibling.
+}
+
+if (hasTokenWordsAfterLastBr) {
+    num++;
+    numtext += `<span>${num}<br></span>`;
+} else {
+    numtext += '<span><br></span>';
+}
 
 
             numbers.innerHTML = numtext;
@@ -2852,7 +3093,7 @@
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh47.js';
+        import Generate3DModel from './mesh48.js';
          //import  "./viz-standalone.js";
          const button = document.getElementById("3dbutton");
          //const textarea = document.getElementById('inputText');
@@ -3103,6 +3344,8 @@
         document.addEventListener('myEvent', function(event) {
             [c_was_pressed, factor_radius, requestedInfo] = event.detail;
         });
+        
+        inputText['expanded']=false
     </script>
 </body>
 

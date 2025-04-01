@@ -790,8 +790,9 @@ function collectExpression() {
             console.log(inputText.value);
         } else
             inputText.value = cleanString(inputText.value);
-        onMyInput();
+       
         update(inputText.value);
+        onMyInput();
         //console.log(groupTokens(digestHtmlString(inputhtml.innerHTML)))
         let labels = [];
         let tokens0 = digestHtmlString(inputhtml.innerHTML);
@@ -845,8 +846,9 @@ function collectExpression() {
         //inputText.value =         removeUnnecessaryBrackets(tokens).map(token => token[1]).join('');
 
         inputText.value = cleanString(tokens.map(token => token[1]).join(''));
-
-        onMyInput();
+        inputText['expanded']=false;
+        
         update(inputText.value);
+        onMyInput();
     }
 }
