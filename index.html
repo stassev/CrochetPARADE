@@ -471,6 +471,7 @@
   font-family: monospace;
   pointer-events: none; /* Avoid blocking hover */
   display:none;
+  z-index:5000;
 }
         #inputText {
             color: transparent;
@@ -2089,8 +2090,8 @@
         tooltip.id = 'custom-tooltip';
         document.body.appendChild(tooltip);
 
-        function assignIdsAndHover() {
-    const highlight = document.getElementById("highlighting");
+function assignIdsAndHover(highlight,resetHighlights) {
+    //const highlight = document.getElementById("highlighting");
     const wordTokens = highlight.querySelectorAll(".token.words"); // Select all .token.words spans
     const brElements = highlight.querySelectorAll("br"); // Select all <br> elements within the highlighting div
 
@@ -2103,6 +2104,10 @@
     let hasTokenWordsSinceLastBr = false; // Tracks if there are token words since the last <br>
 
     wordTokens.forEach((span) => {
+        if (resetHighlights==1)
+            span.style.backgroundColor="";
+        else if (resetHighlights==2 &&  span.style.backgroundColor==="yellow")
+            span.style.backgroundColor="";
         // Check if this span is before or after a <br> element
         while (
             currentBrIndex < brElements.length &&
@@ -2159,26 +2164,25 @@
         row++; // Increment row number for any remaining token words after the last <br>
     }
 }
-
 document.getElementById("inputText").addEventListener("mousemove", (e) => {
   const textarea = e.target;
   const highlighting = document.getElementById("highlighting");
-  
+
   // Get mouse coordinates relative to viewport
   const mouseX = e.clientX;
   const mouseY = e.clientY;
-  
+
   // Get highlighting layer's position
   const highlightRect = highlighting.getBoundingClientRect();
-  
+
   // Translate coordinates to highlighting layer's system
   const relativeX = mouseX - highlightRect.left;
   const relativeY = mouseY - highlightRect.top;
-  
+
   // Find spans in highlighting layer
   const spans = highlighting.querySelectorAll('.token.words');
   let hoveredSpan = null;
-  
+
   // Check which span contains the mouse
   spans.forEach((span) => {
     const spanRect = span.getBoundingClientRect();
@@ -2188,7 +2192,7 @@ document.getElementById("inputText").addEventListener("mousemove", (e) => {
       right: spanRect.right - highlightRect.left,
       bottom: spanRect.bottom - highlightRect.top
     };
-    
+
     if (
       relativeX >= adjustedSpanRect.left &&
       relativeX <= adjustedSpanRect.right &&
@@ -2198,7 +2202,7 @@ document.getElementById("inputText").addEventListener("mousemove", (e) => {
       hoveredSpan = span;
     }
   });
-  
+
   // Update tooltip
   var inputText = document.getElementById("inputText");
   if (hoveredSpan && inputText['expanded']) {
@@ -2207,10 +2211,64 @@ document.getElementById("inputText").addEventListener("mousemove", (e) => {
     tooltip.style.left = `${mouseX + 10}px`;
     tooltip.style.top = `${mouseY + 10}px`;
     tooltip.style.display = 'block';
+    textarea.dataset.hoveredId = id; // Store the hovered ID for later use
   } else {
     tooltip.style.display = 'none';
+    delete textarea.dataset.hoveredId; // Clear stored ID if no span is hovered
   }
 });
+
+
+document.getElementById("inputText").addEventListener("click", (e) => {
+    if ((e.altKey)&&(!e.ctrlKey)){          
+          let result_element = document.querySelector("#highlighting");
+    assignIdsAndHover(result_element,2);
+    triggerClickTextEvent(-1,-1,true);
+}
+  if (e.ctrlKey) { // Check if CTRL key is pressed
+    const textarea = e.target;
+    const id = textarea.dataset.hoveredId; // Retrieve stored ID from mousemove
+
+    if (id && /\(\d*\|\d*\)\d*/.test(id)) { // Validate ID format using regex
+      const match = id.match(/\((\d*)\|(\d*)\)/); // Extract row and kCount using regex groups
+      if (match) {
+        const row = Number(match[1]); // First group is 'row'
+        const kCount = Number(match[2]); // Second group is 'kCount'
+
+        // Highlight the span with the current ID
+        const currentSpan = document.getElementById(`word${id}`);
+        let reset=false;
+        if (currentSpan) {
+          currentSpan.style.backgroundColor = "yellow"; // Highlight the current span
+          
+          // Unhighlight the previously highlighted span (if any)
+          if (!(e.altKey)){
+             const previousSpanId = inputText.previousHighlightedId;
+             if (previousSpanId && (!previousSpanId.includes(id))) {
+                for (let i of previousSpanId){
+               const previousSpan = document.getElementById(`word${i}`);
+               if (previousSpan) {
+                 previousSpan.style.backgroundColor = ""; // Remove highlight from previous span
+               }}
+               reset=true;
+             }
+        }
+          // Update the dataset to track the currently highlighted span
+          inputText.previousHighlightedId.push(id);
+        }
+        // Trigger the custom event
+        triggerClickTextEvent(row, kCount,reset);
+      }
+    }
+  }
+});
+
+// Function to dispatch the custom event
+function triggerClickTextEvent(row, kCount,reset) {
+    const eventData = { row, kCount,reset }; // Data to pass with the event
+    const clickTextEvent = new CustomEvent('clickText', { detail: eventData }); // Create the custom event
+    document.dispatchEvent(clickTextEvent); // Dispatch the event
+}
 
 // 2. Hide tooltip when mouse leaves textarea
 document.getElementById("inputText").addEventListener("mouseleave", () => {
@@ -2299,15 +2357,50 @@ document.getElementById("inputText").addEventListener("mouseleave", () => {
             // Escape HTML entities
             text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             let result_element = document.querySelector("#highlighting");
+            //assignIdsAndHover(tempElement);
             // Update code
-            result_element.innerHTML = text; //.replaceAll('\n', '<br>\n');
-            // Apply Prism highlighting
-            Prism.highlightElement(result_element);
            
+    // Check if the text has changed
+    if (inputText.value !== inputText.dataset.oldText) {
+        // Create a temporary element for highlighting
+        let tempElement = document.createElement("pre");
+        tempElement.innerHTML =text;
+        tempElement.className = result_element.className;
+        //result_element.innerHTML = text; 
+        // Apply Prism highlighting to the temporary element
+        Prism.highlightElement(tempElement);
+        let inputString = tempElement.innerHTML.replaceAll('\n', '<br>'); //.replaceAll(' ', '&nbsp;');
+        tempElement.innerHTML = highlightUnmatchedBrackets(inputString);
+            assignIdsAndHover(tempElement,false);
 
-            let inputString = result_element.innerHTML.replaceAll('\n', '<br>'); //.replaceAll(' ', '&nbsp;');
-            result_element.innerHTML = highlightUnmatchedBrackets(inputString);
-            assignIdsAndHover();
+        // Compare spans in two sweeps (forward and backward)
+        let originalSpans = result_element.querySelectorAll("span");
+        let tempSpans = tempElement.querySelectorAll("span");
+
+        // Forward sweep
+        if (inputText.expanded){
+        for (let i = 0; i < Math.min(originalSpans.length, tempSpans.length); i++) {
+            if (originalSpans[i].textContent === tempSpans[i].textContent) {
+                tempSpans[i].id = originalSpans[i].id;
+                tempSpans[i].style.cssText = originalSpans[i].style.cssText;
+            }
+        }
+
+        // Backward sweep
+        for (let i = originalSpans.length - 1, j = tempSpans.length - 1; i >= 0 && j >= 0; i--, j--) {
+            if (originalSpans[i].textContent === tempSpans[j].textContent) {
+                tempSpans[j].id = originalSpans[i].id;
+                tempSpans[j].style.cssText = originalSpans[i].style.cssText;
+            }
+        }
+    }
+
+        // Overwrite the original element's content with the updated temporary element's content
+        result_element.innerHTML = tempElement.innerHTML;
+
+        // Update old text tracking
+        inputText.dataset.oldText = inputText.value;
+    }
         }
 
         // Helper function to escape special characters in regex
@@ -2545,6 +2638,7 @@ for (let i = 1; i < brElements.length; i++) {
 // Check for any siblings after the last <br> until the end of the HTML.
 const lastBr = brElements[brElements.length - 1];
 let hasTokenWordsAfterLastBr = false;
+if (lastBr){
 sibling = lastBr.nextElementSibling;
 
 while (sibling) {
@@ -2554,7 +2648,7 @@ while (sibling) {
     }
     sibling = sibling.nextElementSibling; // Move to the next sibling.
 }
-
+}
 if (hasTokenWordsAfterLastBr) {
     num++;
     numtext += `<span>${num}<br></span>`;
@@ -2843,7 +2937,8 @@ if (hasTokenWordsAfterLastBr) {
                     <li><kbd>ctrl+h</kbd>: Hide after row or stitch.</li>
                     <li><kbd>ctrl +/-</kbd>: increase/decrease radii of spheres and cylinders. Affects exported GLTF file as well.</li>
                     <li><kbd>i</kbd>: Toggle visibility of stitch information box.</li>
-                    <li><kbd>shift+left click</kbd>: Toggle persistence of stitch information box.</li>
+                    <li><kbd>shift+left click</kbd>: Toggle persistence of stitch information box. If the instructions were
+                        expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then shift+click in the 3D canvas on a stitch, also highlights the selected stitch in the editor.</li>
                     <li><kbd>p</kbd>: Write crochet chart to SVG file. For 2D projects, it shows a face-on view. For 3D projects, it shows an orthographic projection from the current view.</li>
                     <li><kbd>r</kbd>: Rotate view automatically.</li>
                     <li><kbd>o</kbd>: Rotate view a tiny amount and save crochet chart SVG corresponding to that view (only for 3D models!). Repeatedly pressing <kbd>o</kbd> leads to saving multiple charts for different views while model is rotating. Useful for creating videos of rotating 3D crochet charts. Resolution is specified only the first time key is pressed.</li>
@@ -3090,6 +3185,8 @@ if (hasTokenWordsAfterLastBr) {
                 resolve(json1);
             });
         }
+
+
     </script>
     <script type="module">
 
@@ -3124,6 +3221,8 @@ if (hasTokenWordsAfterLastBr) {
          });
  
          async function show3DModel() {
+            let result_element = document.querySelector("#highlighting");
+            assignIdsAndHover(result_element,1);
              var loadingIcon = document.getElementById('loading-icon');
              loadingIcon.style.display = 'block';
 
@@ -3346,6 +3445,12 @@ if (hasTokenWordsAfterLastBr) {
         });
         
         inputText['expanded']=false
+        inputText.dataset.oldText=inputText.value;
+        if (!inputText.previousHighlightedId) {
+    inputText.previousHighlightedId = []; // Initialize as an empty array
+    inputText.previousHighlightedIdMesh=[];
+}
+
     </script>
 </body>
 

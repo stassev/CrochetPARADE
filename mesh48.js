@@ -37,8 +37,7 @@ import {
 //    SVGRenderer
 //} from 'three/addons/renderers/SVGRenderer.js'
 export default function Generate3DModel(json0, renderer, scene, scene1, backgroundColor, c_was_pressed, factor_radius, requestedInfo) {
-
-
+    var highlightInstructions=0;
 
     resetTranslation();
     resetRotation();
@@ -539,7 +538,29 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
     }
+    function createLabel() {
+        var label = document.createElement('div');
+        label.setAttribute('id', 'myLabel');
+        label.style.position = 'absolute';
+        label.style.textAlign = 'center';
+        //const rect = renderer.domElement.offsetLeft();
+        label.style.top = renderer.domElement.offsetTop + 'px';
+        label.style.left = (renderer.domElement.offsetLeft + renderer.domElement.offsetWidth / 2) + 'px';
+        label.style.display = 'none';
+        label.style.width = renderer.domElement.offsetWidth * 0.9 + 'px';
+        label.style.transform = 'translate(-50%, 0)';
+        label.style.backgroundColor = 'white';
+        label.style.padding = '5px';
+        label.style.fontSize = '14pt';
+//        label.style.width = renderer.domElement.offsetWidth * 0.9 + 'px';
+        label.style.zIndex = '100';
+        //return label;
+        
+        document.body.appendChild(label);
 
+    }
+    ;
+ 
     // Event listener for the class change in '3dview'
     var view = document.getElementById('view3d');
     var observer = new MutationObserver(function(mutations) {
@@ -971,17 +992,140 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     var canvasClicked = false;
     var timeoutQ = true;
     var timeoutID = null;
+    var myLabel = document.getElementById('myLabel');
+    function highlightSpanById(label,highlightInstructions) {
+        let inputText = document.getElementById("inputText");
+        // Step 1: Extract the first span content containing (" + obj.name + ") [" + obj.label.split('|')[0] + "].
+        const topSpan = label.querySelector('span'); // Get the first span inside label
+        if (!topSpan) return; // Exit if no span found
+        
+        const topSpanText = topSpan.textContent; // Extract text content from the span
+        //console.log(topSpanText);
+        // Step 2: Extract the three numbers inside parentheses using regex.
+        const match = topSpanText.match(/\((\d+),(\d+)\|(\d+)\)/); // Match numbers in parentheses
+        if (!match) return; // Exit if no match found
+        
+        const [_, num1, num2, num3] = match; // Extract matched numbers
+        
+        // Step 3: Reformat into '(10,16)214' and prepend 'word'.
+        const formattedString = `word(${num1}|${num2})${num3}`;
+        //console.log(formattedString);
+        // Step 4: Check if a span with that ID exists and highlight it.
+        const targetSpan = document.getElementById(formattedString);
+        if (targetSpan) {
+          // Remove highlight from previously highlighted spans
+          if (highlightInstructions==1){
+              const previouslyHighlightedId = inputText.previousHighlightedIdMesh;
+              for (let i of previouslyHighlightedId){
+              if (i) {
+                const previousSpan = document.getElementById(i);
+                if (previousSpan) {
+                  previousSpan.style.backgroundColor = ""; // Remove highlight
+                }
+              }
+            }
+          }
+          // Highlight the current span
+          targetSpan.style.backgroundColor = "lightgreen";
+          
+          // Update dataset to track the currently highlighted span
+          inputText.previousHighlightedIdMesh.push(formattedString);
+        }
+      }
 
+    
+    //let myLabel = document.getElementById('myLabel');
+    //myLabel.style.display = 'none';
+    try {
+        document.body.removeChild(myLabel);
+        //myLabel.style.display = 'none';
+    } catch (error) {}
+    createLabel() 
+    myLabel= document.getElementById('myLabel');
+var Iold=[];
+var I = null;
     function onMouseDown(event) {
-        if (event.shiftKey && event.button === 0 && event.target === renderer.domElement)
+        if (inputText.expanded){
+        if ( event.button === 0 && event.target === renderer.domElement){
+        if (event.ctrlKey && event.altKey){highlightInstructions=2;}
+        else if (event.ctrlKey){
+            //const previouslyHighlightedId = inputText.dataset.previousHighlightedIdMesh;
+            //if (previouslyHighlightedId) {
+            //  const previousSpan = document.getElementById(previouslyHighlightedId);
+            //  if (previousSpan) {
+            //    previousSpan.style.backgroundColor = ""; // Remove highlight
+            //  }
+            //}
+            highlightInstructions=1;
+            Iold.forEach(item => {
+                item[0].object.material = item[1];
+            });
+            Iold=[];
+        }
+        else if (event.altKey){
+            const previouslyHighlightedId = inputText.previousHighlightedIdMesh;
+            for (let i of previouslyHighlightedId){
+            if (i) {
+              const previousSpan = document.getElementById(i);
+              if (previousSpan && previousSpan.style.backgroundColor==='lightgreen')  {
+                previousSpan.style.backgroundColor = ""; // Remove highlight
+              }
+            }
+            }
+            Iold.forEach(item => {
+                item[0].object.material = item[1];
+            });
+            Iold=[];
+            highlightInstructions=0;
+        }
+        else
+            highlightInstructions=0;
+        
+        
+
+        if (highlightInstructions!=0 ){
+            highlightSpanById(myLabel,highlightInstructions);
+            if ((I != null) && (Iold.length==0 || (Iold.every(item => item[0].object.id0 !== I.object.id0)))) {
+                const result = IoldMove.find(item => item[0].object.id0 === I.object.id0);
+
+                Iold.push([I, result ? result[1] : I.object.material]);
+                if (I.object.type == 0)
+                    I.object.material = selectedNodeMaterial;
+                else
+                    I.object.material = selectedEdgeMaterial;
+            }
+        }
+    }
+}
+if ((!inputText.expanded) && (event.altKey)){
+    const previouslyHighlightedId = inputText.previousHighlightedIdMesh;
+    for (let i of previouslyHighlightedId){
+    if (i) {
+      const previousSpan = document.getElementById(i);
+      if (previousSpan && previousSpan.style.backgroundColor==='lightgreen')  {
+        previousSpan.style.backgroundColor = ""; // Remove highlight
+      }
+    }
+    }
+    Iold.forEach(item => {
+        item[0].object.material = item[1];
+    });
+    Iold=[];
+    highlightInstructions=0;
+}
+
+        if (event.shiftKey && event.button === 0 && event.target === renderer.domElement){
             timeoutQ = !timeoutQ;
+            //if (myLabel)
+             
+        }
         if (!timeoutQ) {
             if (timeoutID != null)
                 clearTimeout(timeoutID);
         } else {
-            var myLabel = document.getElementById('myLabel');
+            
             try {
-                document.body.removeChild(myLabel);
+                myLabel.style.display = 'none';
             } catch (error) {}
         }
         if ((event.button === 0) && (canvasClicked)) { // Left mouse button
@@ -1002,34 +1146,15 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
     var mouse = new THREE.Vector2();
 
-    var I = null;
-    var Iold = null;
 
-    // Handle the click event
-    var oldmaterial = null;
+    var IoldMove = [];
 
-    function createLabel() {
-        var label = document.createElement('div');
-        label.setAttribute('id', 'myLabel');
-        label.style.position = 'absolute';
-        label.style.textAlign = 'center';
-        //const rect = renderer.domElement.offsetLeft();
-        label.style.top = renderer.domElement.offsetTop + 'px';
-        label.style.left = (renderer.domElement.offsetLeft + renderer.domElement.offsetWidth / 2) + 'px';
 
-        label.style.transform = 'translate(-50%, 0)';
-        label.style.backgroundColor = 'white';
-        label.style.padding = '5px';
-        label.style.fontSize = '14pt';
-        label.style.width = renderer.domElement.offsetWidth * 0.9 + 'px';
-        label.style.zIndex = '1000';
-        return label;
-    }
 
 
     function onMove(event) {
 
-        if (requestedInfo && timeoutQ) {
+        //if (requestedInfo && timeoutQ) {
             // Calculate the mouse position
             //mouse.x = ((event.clientX) / window.innerWidth) * 2 - 1;
             //mouse.y = -((event.clientY) / window.innerHeight) * 2 + 1;
@@ -1048,15 +1173,21 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             // If there is an intersected object, display its name
             //console.log(intersects[0])
             //if (intersects.length > 0) {
-            var label = false;
-            if (intersects.length != 0) {
-                label = createLabel();
+            
+            if ((intersects.length != 0) && (requestedInfo && timeoutQ)) {
+                myLabel.style.display = 'block';
+
+         myLabel.style.top = renderer.domElement.offsetTop + 'px';
+         myLabel.style.left = (renderer.domElement.offsetLeft + renderer.domElement.offsetWidth / 2) + 'px';
+         myLabel.style.width = renderer.domElement.offsetWidth * 0.9 + 'px';
+
             }
+ if(timeoutQ){
             if (intersects.length == 0) {
                 I = null;
             } else if (intersects.length == 1) {
                 I = intersects[0];
-                label.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'>" + I.object.name_long + "</span>";
+                myLabel.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'>" + I.object.name_long + "</span>";
             } else {
                 I = null;
                 for (var i of intersects) {
@@ -1069,35 +1200,47 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                 if (I == null)
                     I = intersects[0];
 
-                label.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'>" + I.object.name_long + "</span>";
+                myLabel.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'>" + I.object.name_long + "</span>";
             }
+ }
+//////
 
-            if ((Iold != null) && ((I == null) || (Iold.object.id0 != I.object.id0)))
-                Iold.object.material = oldmaterial;
+ if ((requestedInfo && timeoutQ)) {
+            if ((IoldMove.length!=0) && ((I == null) || (IoldMove.every(item => item[0].object.id0 !== I.object.id0)))){
+                if ((timeoutQ) ){
+                    IoldMove.forEach(item => {
+                        if  (Iold.every(item1 => item1[0].object.id0 !== item[0].object.id0))
+                            item[0].object.material = item[1];
+                    });
+                    IoldMove=[];
+                }
+            }
             //change colors of selected
-            if ((I != null) && (Iold == null || (Iold.object.id0 != I.object.id0))) {
-                oldmaterial = I.object.material;
+            if ( (Iold.every(item => item[0].object.id0 !== I.object.id0))){
+            if ((I != null) && (IoldMove.length==0 || (IoldMove.every(item => item[0].object.id0 !== I.object.id0)))) {
+                IoldMove.push([I,I.object.material]);
                 if (I.object.type == 0)
                     I.object.material = selectedNodeMaterial;
                 else
                     I.object.material = selectedEdgeMaterial;
             }
-
-
-            Iold = I;
+        }
+            //Iold.push(I);
+  }
+           
             //
 
 
-
-            var labelOld = document.getElementById('myLabel');
+            if (requestedInfo && timeoutQ){
             try {
-                if ((I == null) && (labelOld))
-                    document.body.removeChild(labelOld);
-                if ((!(labelOld)) && (label))
-                    document.body.appendChild(label);
-                if ((I != null) && (labelOld)) {
-                    document.body.removeChild(labelOld);
-                    document.body.appendChild(label);
+                if ((I == null) && ( (myLabel.style.display==='none')))
+                    myLabel.style.display = 'none';
+                else {
+                    myLabel.style.display = 'block';
+
+         myLabel.style.top = renderer.domElement.offsetTop + 'px';
+         myLabel.style.left = (renderer.domElement.offsetLeft + renderer.domElement.offsetWidth / 2) + 'px';
+         myLabel.style.width = renderer.domElement.offsetWidth * 0.9 + 'px';
                     //document.body.replaceChild(label, labelOld);
                 }
             } catch (error) {}
@@ -1188,10 +1331,9 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             dispatchMyEvent([c_was_pressed, factor_radius, requestedInfo]);
             if (timeoutID != null)
                 clearTimeout(timeoutID);
-            let myLabel = document.getElementById('myLabel');
             //myLabel.style.display = 'none';
             try {
-                document.body.removeChild(myLabel);
+                myLabel.style.display = 'none';
             } catch (error) {}
         }
         if (canvasClicked && (event.key === 'c')) {
@@ -1420,11 +1562,20 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             event.preventDefault();
             setTimeout(function() {
 
-                if (rowNumber != -1000) {
+             
+                if (c_was_pressed) {
+                    for (let i of NODES) {
+                        i.material = new THREE.MeshLambertMaterial({
+                            color: new THREE.Color(i.Color)
+                        });
+                        if (('is_arrow' in i) || i.type == 0)
+                            i.visible = false;
+                    }
+                }else{   if (rowNumber != -1000) {
                     for (let i = 0; i < NODES.length; i++) {
                         NODES[i].material = originalMaterials[i];
                     }
-                }
+                }}
                 var rn = null;
                 rn = (prompt('Enter a row number or stitch coordinate (in the format "row,stitch number"; e.g. "2,4") to be highlighted. Leaving the row number blank (as in ",N") will highlight the N-th stitch of every row. For example, if you enter ",0" that will highlight the beginning of each row.'));
                 var rr = [];
@@ -1459,8 +1610,42 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             }, 300);
         }
     }
+    function createClickTextListener() {
+        // Listen for the custom event
+        document.addEventListener('clickText', (event) => {
+            const { row, kCount,reset } = event.detail; // Extract row and kCount from event data
+    
+            setTimeout(function () {
+                if (reset){
 
 
+                    if (c_was_pressed) {
+                        for (let i of NODES) {
+                            if (Iold.length==0 || Iold.every(item => item[0].object.id0 !== NODES[i].id0))
+                            i.material = new THREE.MeshLambertMaterial({
+                                color: new THREE.Color(i.Color)
+                            });
+                            if (('is_arrow' in i) || i.type == 0)
+                                i.visible = false;
+                        }
+                    }else{  
+                        for (let i = 0; i < NODES.length; i++) {
+                            if (Iold.length==0 || Iold.every(item => item[0].object.id0 !== NODES[i].id0))
+                            NODES[i].material = originalMaterials[i];
+                        }
+                    }
+
+
+                }
+                for (let i = 0; i < NODES.length; i++) {
+                    if (NODES[i].row[0] === row && NODES[i].row[1] === kCount) {
+                        NODES[i].material = selectedRowMaterial;
+                    }
+                }
+            }, 300);
+        });
+    }
+    createClickTextListener();
     function handleKeyUp(event) {
         if (canvasClicked && event.key === 'Escape') {
             event.preventDefault();
@@ -1582,25 +1767,33 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
                             HIDE = 0;
 
                     } {
-                        let myLabel = document.getElementById('myLabel');
+                        //let myLabel = document.getElementById('myLabel');
                         //myLabel.style.display = 'none';
                         try {
-                            document.body.removeChild(myLabel);
+                            myLabel.style.display = 'none';
                         } catch (error) {}
                     }
-                    if (requestedInfo) {
-                        let label = createLabel();
+                    //if (requestedInfo) {
+                        if (requestedInfo) {
+                            myLabel.style.display = 'block';
+
+        myLabel.style.top = renderer.domElement.offsetTop + 'px';
+        myLabel.style.left = (renderer.domElement.offsetLeft + renderer.domElement.offsetWidth / 2) + 'px';
+        myLabel.style.width = renderer.domElement.offsetWidth * 0.9 + 'px';
+ }
+                        //var mylabel = document.getElementById('myLabel');//createLabel();
                         //console.log(str.objects[HIDE].name)
-                        label.innerHTML = "<span style='font-size: 16px; font-weight: bold;'>" + str.objects[HIDE].name + '</span>';
-                        document.body.appendChild(label);
+                        myLabel.innerHTML = "<span style='font-size: 16px; font-weight: bold;'>" + str.objects[HIDE].name + '</span>';
+                        //document.body.appendChild(label);
+ if (requestedInfo){
                         if (timeoutID != null)
                             clearTimeout(timeoutID);
                         if (timeoutQ)
                             timeoutID = setTimeout(() => {
-                                var myLabel = document.getElementById('myLabel');
+                                //var myLabel = document.getElementById('myLabel');
                                 //myLabel.style.display = 'none';
                                 try {
-                                    document.body.removeChild(myLabel);
+                                    myLabel.style.display = 'none';
                                 } catch (error) {}
                             }, 10000);
                     }
@@ -1686,24 +1879,32 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
             if (requestedInfo) {
                 {
-                    let myLabel = document.getElementById('myLabel');
+                    //let myLabel = document.getElementById('myLabel');
                     //myLabel.style.display = 'none';
                     try {
-                        document.body.removeChild(myLabel);
+                        myLabel.style.display = 'none';
                     } catch (error) {}
                 }
-                let label = createLabel();
+                //let label = createLabel();
+                myLabel.style.display = 'block';
 
+        myLabel.style.top = renderer.domElement.offsetTop + 'px';
+        myLabel.style.left = (renderer.domElement.offsetLeft + renderer.domElement.offsetWidth / 2) + 'px';
+        myLabel.style.width = renderer.domElement.offsetWidth * 0.9 + 'px';
+ }
                 //label.innerHTML = "<span style='font-size: 16px; font-weight: bold;'>" + str.objects[HIDE].name + '</span>'
-                label.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'><span style='font-size: 16px; font-weight: bold;'>(" + str.objects[HIDE].name + ") [" + str.objects[HIDE].label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + str.objects[HIDE].label.split('|')[1] + "&hellip;</span>";
-                document.body.appendChild(label);
-                if (timeoutID != null)
+                myLabel.innerHTML = "<span style='overflow-wrap: break-word; word-wrap: break-word;'><span style='font-size: 16px; font-weight: bold;'>(" + str.objects[HIDE].name + ") [" + str.objects[HIDE].label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + str.objects[HIDE].label.split('|')[1] + "&hellip;</span>";
+                //document.body.appendChild(label);
+ if (requestedInfo){ 
+               if (timeoutID != null)
                     clearTimeout(timeoutID);
                 if (timeoutQ)
                     timeoutID = setTimeout(() => {
-                        var myLabel = document.getElementById('myLabel');
+                        //var myLabel = document.getElementById('myLabel');
                         try {
-                            document.body.removeChild(myLabel);
+                            //document.body.removeChild(myLabel);
+
+                myLabel.style.display = 'none';
                         } catch (error) {}
                     }, 10000);
             }
