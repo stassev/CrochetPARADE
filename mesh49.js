@@ -1008,10 +1008,23 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         const [_, num1, num2, num3] = match; // Extract matched numbers
         
         // Step 3: Reformat into '(10,16)214' and prepend 'word'.
-        const formattedString = `word(${num1}|${num2})${num3}`;
-        //console.log(formattedString);
-        // Step 4: Check if a span with that ID exists and highlight it.
-        const targetSpan = document.getElementById(formattedString);
+        //const formattedString = `word\\(${num1}\\|${num2}\\).*`;
+        let formattedString = `word\\(\\d*\\|\\d*\\)${num3}$`;
+        //console.log(formattedString)
+        const regex = new RegExp(`${formattedString}`);
+
+        const allSpans = document.querySelectorAll('span'); // Select all span elements
+       
+        let targetSpan = null;
+        for (let span of allSpans) {
+          if (regex.test(span.id)) {
+            targetSpan = span;
+            break; // Stop once the first match is found
+          }
+        }
+        //formattedString=span.id;
+        //console.log(targetSpan)
+
         if (targetSpan) {
           // Remove highlight from previously highlighted spans
           if (highlightInstructions==1){
@@ -1029,7 +1042,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
           targetSpan.style.backgroundColor = "lightgreen";
           
           // Update dataset to track the currently highlighted span
-          inputText.previousHighlightedIdMesh.push(formattedString);
+          inputText.previousHighlightedIdMesh.push(targetSpan.id);
         }
       }
 
@@ -1216,7 +1229,7 @@ if ((!inputText.expanded) && (event.altKey)){
                 }
             }
             //change colors of selected
-            if ( (Iold.every(item => item[0].object.id0 !== I.object.id0))){
+            if ( (I != null) && (Iold.length==0||Iold.every(item => item[0].object.id0 !== I.object.id0))){
             if ((I != null) && (IoldMove.length==0 || (IoldMove.every(item => item[0].object.id0 !== I.object.id0)))) {
                 IoldMove.push([I,I.object.material]);
                 if (I.object.type == 0)
@@ -1607,7 +1620,7 @@ if ((!inputText.expanded) && (event.altKey)){
                         }}
                     }
                 }
-            }, 300);
+            }, 3000);
         }
     }
     function createClickTextListener() {
@@ -1621,7 +1634,7 @@ if ((!inputText.expanded) && (event.altKey)){
 
                     if (c_was_pressed) {
                         for (let i of NODES) {
-                            if (Iold.length==0 || Iold.every(item => item[0].object.id0 !== NODES[i].id0))
+                            if (Iold.length==0 || Iold.every(item => item[0].object.id0 !== i.id0))
                             i.material = new THREE.MeshLambertMaterial({
                                 color: new THREE.Color(i.Color)
                             });
@@ -1642,7 +1655,7 @@ if ((!inputText.expanded) && (event.altKey)){
                         NODES[i].material = selectedRowMaterial;
                     }
                 }
-            }, 300);
+            }, 3000);
         });
     }
     createClickTextListener();
