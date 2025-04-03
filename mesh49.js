@@ -968,6 +968,14 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     for (var i = 0; i < NODES.length; i++)
         originalMaterials.push(NODES[i].material);
 
+    const nodeDictionary = new Map();
+    for (const i of NODES) {
+      const key = `${i.row[0]}|${i.row[1]}`; // Create a unique key for each node
+      if (!nodeDictionary.has(key)) {
+        nodeDictionary.set(key, []); // Initialize an array for this key if it doesn't exist
+      }
+      nodeDictionary.get(key).push(i); // Add the node to the array for this key
+    }
     //scene.fog = new THREE.Fog(0xcccccc, 0.1, 10);
     //scene.fog1 = new THREE.FogExp2(0xcccccc, 0.1);
 
@@ -1624,6 +1632,7 @@ if ((!inputText.expanded) && (event.altKey)){
             }, 3000);
         }
     }
+
     function createClickTextListener() {
         // Listen for the custom event
         document.addEventListener('clickText', (event) => {
@@ -1638,13 +1647,15 @@ if ((!inputText.expanded) && (event.altKey)){
                     IoldYellow=[];
 
                 }
-                for (let i = 0; i < NODES.length; i++) {
-                    if (NODES[i].row[0] === row && NODES[i].row[1] === kCount) {
-                        IoldYellow.push([NODES[i],NODES[i].material]);
-                        NODES[i].material = selectedRowMaterial;
-                    }
-                }
-            }, 30000);
+                const keyToFind = `${row}|${kCount}`;
+const matchingNodes = nodeDictionary.get(keyToFind) || []; // Get the array or an empty array if no match
+
+// Step 3: Process the matching nodes
+for (const node of matchingNodes) {
+  IoldYellow.push([node, node.material]); // Save the old material
+  node.material = selectedRowMaterial; // Update the material
+}
+            }, 300);
         });
     }
     createClickTextListener();
