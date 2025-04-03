@@ -2920,6 +2920,13 @@ if (hasTokenWordsAfterLastBr) {
                 <li><kbd>shift+Enter</kbd>: Calculate positions of all stitches.
                 <li><kbd>ctrl+Enter</kbd> (experimental!): Keep positions of already placed stitches. Then calculate positions of newly added stitches since last calculation. Speeds up calculation, but results will be poorer than rerunning whole calculation by pressing on "Calculate..." button or pressing <kbd>shift+Enter</kbd>.</li>
                 <li><kbd>ctrl+r</kbd> (experimental!): Same as the previous one, but recalculates only the positions calculated last time the calculation was run. So, it undoes the last calculation and restarts the calculation with the new stitches only. Speeds up code, but will lead to poorer results than rerunning the whole calculation again.</li>
+                <li><kbd>left ctrl+left click</kbd>: If the instructions were
+                    expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then ctrl+click in the text input on a stitch highlights the selected stitch in the editor and in the 3d canvas simultaneously, removing previous highlights.
+                </li>
+                <li><kbd>left ctrl+alt+left click</kbd>: If the instructions were
+                    expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then ctrl+click in the text input on a stitch highlights the selected stitch in the editor and in the 3d canvas simultaneously. Unlike ctrl+click, this shortcut does not remove previous highlights.
+                </li>
+                <li><kbd>alt+left click</kbd>: Clears previous highlights in the editor and 3d canvas.
             </ul>
             <p> Shortcuts in 3D view. To activate, click on the 3D canvas first.</p>
             <p>
@@ -2937,8 +2944,15 @@ if (hasTokenWordsAfterLastBr) {
                     <li><kbd>ctrl+h</kbd>: Hide after row or stitch.</li>
                     <li><kbd>ctrl +/-</kbd>: increase/decrease radii of spheres and cylinders. Affects exported GLTF file as well.</li>
                     <li><kbd>i</kbd>: Toggle visibility of stitch information box.</li>
-                    <li><kbd>shift+left click</kbd>: Toggle persistence of stitch information box. If the instructions were
-                        expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then shift+click in the 3D canvas on a stitch, also highlights the selected stitch in the editor.</li>
+                    <li><kbd>shift+left click</kbd>: Toggle persistence of stitch information box.</li>
+                    <li><kbd>left ctrl+left click</kbd>: If the instructions were
+                        expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then ctrl+click in the 3D canvas on a stitch highlights the selected stitch in the editor and in the 3d canvas simultaneously, removing previous highlights.
+                    </li>
+                    <li><kbd>left ctrl+alt+left click</kbd>: If the instructions were
+                        expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then ctrl+click in the 3D canvas on a stitch highlights the selected stitch in the editor and in the 3d canvas simultaneously. Unlike ctrl+click, this shortcut does not remove previous highlights.
+                    </li>
+                    <li><kbd>alt+left click</kbd>: Clears previous highlights in the editor and 3d canvas.
+                    </li>
                     <li><kbd>p</kbd>: Write crochet chart to SVG file. For 2D projects, it shows a face-on view. For 3D projects, it shows an orthographic projection from the current view.</li>
                     <li><kbd>r</kbd>: Rotate view automatically.</li>
                     <li><kbd>o</kbd>: Rotate view a tiny amount and save crochet chart SVG corresponding to that view (only for 3D models!). Repeatedly pressing <kbd>o</kbd> leads to saving multiple charts for different views while model is rotating. Useful for creating videos of rotating 3D crochet charts. Resolution is specified only the first time key is pressed.</li>
