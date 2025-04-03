@@ -1644,7 +1644,7 @@ if ((!inputText.expanded) && (event.altKey)){
                         NODES[i].material = selectedRowMaterial;
                     }
                 }
-            }, 3000);
+            }, 30000);
         });
     }
     createClickTextListener();
