@@ -38,7 +38,8 @@ import {
 //} from 'three/addons/renderers/SVGRenderer.js'
 export default function Generate3DModel(json0, renderer, scene, scene1, backgroundColor, c_was_pressed, factor_radius, requestedInfo) {
     var highlightInstructions=0;
-
+    var Iold=[];
+    var IoldYellow=[];
     resetTranslation();
     resetRotation();
     resetTranslationMinMax();
@@ -1055,7 +1056,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
     } catch (error) {}
     createLabel() 
     myLabel= document.getElementById('myLabel');
-var Iold=[];
+
 var I = null;
     function onMouseDown(event) {
         if (inputText.expanded){
@@ -1629,29 +1630,17 @@ if ((!inputText.expanded) && (event.altKey)){
             const { row, kCount,reset } = event.detail; // Extract row and kCount from event data
     
             setTimeout(function () {
-                if (reset){
+                if (reset && IoldYellow.length>0){
 
-
-                    if (c_was_pressed) {
-                        for (let i of NODES) {
-                            if (Iold.length==0 || Iold.every(item => item[0].object.id0 !== i.id0))
-                            i.material = new THREE.MeshLambertMaterial({
-                                color: new THREE.Color(i.Color)
-                            });
-                            if (('is_arrow' in i) || i.type == 0)
-                                i.visible = false;
-                        }
-                    }else{  
-                        for (let i = 0; i < NODES.length; i++) {
-                            if (Iold.length==0 || Iold.every(item => item[0].object.id0 !== NODES[i].id0))
-                            NODES[i].material = originalMaterials[i];
-                        }
-                    }
-
+                    IoldYellow.forEach(item => {
+                        item[0].material = item[1];
+                    });
+                    IoldYellow=[];
 
                 }
                 for (let i = 0; i < NODES.length; i++) {
                     if (NODES[i].row[0] === row && NODES[i].row[1] === kCount) {
+                        IoldYellow.push([NODES[i],NODES[i].material]);
                         NODES[i].material = selectedRowMaterial;
                     }
                 }
