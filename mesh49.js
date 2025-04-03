@@ -1023,36 +1023,39 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         const regex = new RegExp(`${formattedString}`);
 
         const allSpans = document.querySelectorAll('span'); // Select all span elements
-       
+        if (highlightInstructions==1){
+            const previouslyHighlightedId = inputText.previousHighlightedIdMesh;
+            for (let i of previouslyHighlightedId){
+            if (i) {
+                    const elements = document.querySelectorAll(`[id="${i}"]`); // Find all elements with the same ID
+                    elements.forEach(element => {
+                      if (element.style.backgroundColor === 'lightgreen') {
+                        element.style.backgroundColor = ""; // Remove highlight
+                      }
+                    });
+                
+            }
+          }
+        }
         let targetSpan = null;
         for (let span of allSpans) {
           if (regex.test(span.id)) {
             targetSpan = span;
-            break; // Stop once the first match is found
+            if (targetSpan) {
+                // Remove highlight from previously highlighted spans
+               
+                // Highlight the current span
+                targetSpan.style.backgroundColor = "lightgreen";
+                
+                // Update dataset to track the currently highlighted span
+                inputText.previousHighlightedIdMesh.push(targetSpan.id);
+              }
           }
         }
         //formattedString=span.id;
         //console.log(targetSpan)
 
-        if (targetSpan) {
-          // Remove highlight from previously highlighted spans
-          if (highlightInstructions==1){
-              const previouslyHighlightedId = inputText.previousHighlightedIdMesh;
-              for (let i of previouslyHighlightedId){
-              if (i) {
-                const previousSpan = document.getElementById(i);
-                if (previousSpan) {
-                  previousSpan.style.backgroundColor = ""; // Remove highlight
-                }
-              }
-            }
-          }
-          // Highlight the current span
-          targetSpan.style.backgroundColor = "lightgreen";
-          
-          // Update dataset to track the currently highlighted span
-          inputText.previousHighlightedIdMesh.push(targetSpan.id);
-        }
+
       }
 
     
@@ -1088,10 +1091,12 @@ var I = null;
             const previouslyHighlightedId = inputText.previousHighlightedIdMesh;
             for (let i of previouslyHighlightedId){
             if (i) {
-              const previousSpan = document.getElementById(i);
-              if (previousSpan && previousSpan.style.backgroundColor==='lightgreen')  {
-                previousSpan.style.backgroundColor = ""; // Remove highlight
-              }
+                const elements = document.querySelectorAll(`[id="${i}"]`); // Find all elements with the same ID
+                elements.forEach(element => {
+                  if (element.style.backgroundColor === 'lightgreen') {
+                    element.style.backgroundColor = ""; // Remove highlight
+                  }
+                });
             }
             }
             Iold.forEach(item => {
