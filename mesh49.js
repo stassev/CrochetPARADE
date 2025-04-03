@@ -1080,7 +1080,7 @@ var I = null;
             //}
             highlightInstructions=1;
             Iold.forEach(item => {
-                item[0].object.material = item[1];
+                item[0].material = item[1];
             });
             Iold=[];
         }
@@ -1095,7 +1095,7 @@ var I = null;
             }
             }
             Iold.forEach(item => {
-                item[0].object.material = item[1];
+                item[0].material = item[1];
             });
             Iold=[];
             highlightInstructions=0;
@@ -1107,14 +1107,19 @@ var I = null;
 
         if (highlightInstructions!=0 ){
             highlightSpanById(myLabel,highlightInstructions);
-            if ((I != null) && (Iold.length==0 || (Iold.every(item => item[0].object.id0 !== I.object.id0)))) {
-                const result = IoldMove.find(item => item[0].object.id0 === I.object.id0);
-
-                Iold.push([I, result ? result[1] : I.object.material]);
-                if (I.object.type == 0)
-                    I.object.material = selectedNodeMaterial;
-                else
-                    I.object.material = selectedEdgeMaterial;
+            if ((I != null) && (Iold.length==0 || (Iold.every(item => item[0].id0 !== I.object.id0)))) {
+                
+                const keyToFind = `${I.object.row[0]}|${I.object.row[1]}`;
+                const matchingNodes = nodeDictionary.get(keyToFind) || []; // Get the array or an empty array if no match
+                
+                // Step 3: Process the matching nodes
+                for (const node of matchingNodes) {
+                    const result = IoldMove.find(item => item[0].object.id0 === node.id0);
+                    Iold.push([node, result ? result[1] : node.material]); // Save the old material
+                    //Iold.push([node,  node.material]);
+                    node.material = selectedEdgeMaterial; // Update the material
+                }
+                
             }
         }
     }
@@ -1130,7 +1135,7 @@ if ((!inputText.expanded) && (event.altKey)){
     }
     }
     Iold.forEach(item => {
-        item[0].object.material = item[1];
+        item[0].material = item[1];
     });
     Iold=[];
     highlightInstructions=0;
@@ -1231,22 +1236,22 @@ if ((!inputText.expanded) && (event.altKey)){
             if ((IoldMove.length!=0) && ((I == null) || (IoldMove.every(item => item[0].object.id0 !== I.object.id0)))){
                 if ((timeoutQ) ){
                     IoldMove.forEach(item => {
-                        if  (Iold.every(item1 => item1[0].object.id0 !== item[0].object.id0))
+                        if  (Iold.every(item1 => item1[0].id0 !== item[0].object.id0))
                             item[0].object.material = item[1];
                     });
                     IoldMove=[];
                 }
             }
             //change colors of selected
-            if ( (I != null) && (Iold.length==0||Iold.every(item => item[0].object.id0 !== I.object.id0))){
-            if ((I != null) && (IoldMove.length==0 || (IoldMove.every(item => item[0].object.id0 !== I.object.id0)))) {
+            if ( (I != null) && (Iold.length==0||Iold.every(item => item[0].id0 !== I.object.id0))&&
+             (IoldMove.length==0 || (IoldMove.every(item => item[0].object.id0 !== I.object.id0)))) {
                 IoldMove.push([I,I.object.material]);
                 if (I.object.type == 0)
                     I.object.material = selectedNodeMaterial;
                 else
                     I.object.material = selectedEdgeMaterial;
             }
-        }
+        
             //Iold.push(I);
   }
            
