@@ -1662,7 +1662,8 @@ const matchingNodes = nodeDictionary.get(keyToFind) || []; // Get the array or a
 
 // Step 3: Process the matching nodes
 for (const node of matchingNodes) {
-  IoldYellow.push([node, node.material]); // Save the old material
+    if (IoldYellow.every(item => item[0].id0 !== node.id0))
+        IoldYellow.push([node, node.material]); // Save the old material
   node.material = selectedRowMaterial; // Update the material
 }
             }, 300);
