@@ -2378,7 +2378,7 @@ const oldTextLength = inputText.dataset.oldText.length;
             assignIdsAndHover(tempElement,false);
 
 
-            if  (Math.abs(valueLength - oldTextLength) <= 1){
+            if  (Math.abs(valueLength - oldTextLength) <= 10){
         // Compare spans in two sweeps (forward and backward)
         let originalSpans = result_element.querySelectorAll("span");
         let tempSpans = tempElement.querySelectorAll("span");
