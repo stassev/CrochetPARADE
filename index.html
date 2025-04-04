@@ -2359,9 +2359,11 @@ document.getElementById("inputText").addEventListener("mouseleave", () => {
             let result_element = document.querySelector("#highlighting");
             //assignIdsAndHover(tempElement);
             // Update code
-           
+            const valueLength = inputText.value.length;
+const oldTextLength = inputText.dataset.oldText.length;
+
     // Check if the text has changed
-    if (inputText.value !== inputText.dataset.oldText) {
+    if (inputText.value !== inputText.dataset.oldText ) {
         // Create a temporary element for highlighting
         let tempElement = document.createElement("pre");
         tempElement.innerHTML =text;
@@ -2373,26 +2375,30 @@ document.getElementById("inputText").addEventListener("mouseleave", () => {
         tempElement.innerHTML = highlightUnmatchedBrackets(inputString);
             assignIdsAndHover(tempElement,false);
 
+
+            if  (Math.abs(valueLength - oldTextLength) <= 1){
         // Compare spans in two sweeps (forward and backward)
         let originalSpans = result_element.querySelectorAll("span");
         let tempSpans = tempElement.querySelectorAll("span");
 
+
         // Forward sweep
         if (inputText.expanded){
-        for (let i = 0; i < Math.min(originalSpans.length, tempSpans.length); i++) {
-            if (originalSpans[i].textContent === tempSpans[i].textContent) {
-                tempSpans[i].id = originalSpans[i].id;
-                tempSpans[i].style.cssText = originalSpans[i].style.cssText;
-            }
-        }
-
-        // Backward sweep
+                    // Backward sweep
         for (let i = originalSpans.length - 1, j = tempSpans.length - 1; i >= 0 && j >= 0; i--, j--) {
             if (originalSpans[i].textContent === tempSpans[j].textContent) {
                 tempSpans[j].id = originalSpans[i].id;
                 tempSpans[j].style.cssText = originalSpans[i].style.cssText;
             }
         }
+        for (let i = 0; i < Math.min(originalSpans.length, tempSpans.length); i++) {
+            if (originalSpans[i].textContent === tempSpans[i].textContent) {
+                tempSpans[i].id = originalSpans[i].id;
+                tempSpans[i].style.cssText = originalSpans[i].style.cssText;
+            }
+        }
+    }
+
     }
 
         // Overwrite the original element's content with the updated temporary element's content
