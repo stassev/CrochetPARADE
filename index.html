@@ -2380,8 +2380,8 @@ const oldTextLength = inputText.dataset.oldText.length;
 
             if  (Math.abs(valueLength - oldTextLength) <= 10){
         // Compare spans in two sweeps (forward and backward)
-        let originalSpans = result_element.querySelectorAll("span");
-        let tempSpans = tempElement.querySelectorAll("span");
+        let originalSpans = result_element.querySelectorAll(".token.words");
+        let tempSpans = tempElement.querySelectorAll(".token.words");
 
 
         // Forward sweep
@@ -2392,12 +2392,14 @@ const oldTextLength = inputText.dataset.oldText.length;
                 tempSpans[j].id = originalSpans[i].id;
                 tempSpans[j].style.cssText = originalSpans[i].style.cssText;
             }
+            else break;
         }
         for (let i = 0; i < Math.min(originalSpans.length, tempSpans.length); i++) {
             if (originalSpans[i].textContent === tempSpans[i].textContent) {
                 tempSpans[i].id = originalSpans[i].id;
                 tempSpans[i].style.cssText = originalSpans[i].style.cssText;
-            }
+            } else
+            break;
         }
     }
 
