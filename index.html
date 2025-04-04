@@ -2380,27 +2380,53 @@ const oldTextLength = inputText.dataset.oldText.length;
 
             if  (Math.abs(valueLength - oldTextLength) <= 10){
         // Compare spans in two sweeps (forward and backward)
-        let originalSpans = result_element.querySelectorAll(".token.words");
-        let tempSpans = tempElement.querySelectorAll(".token.words");
+        let originalSpans = result_element.querySelectorAll("*");
+        let tempSpans = tempElement.querySelectorAll("*");
 
 
         // Forward sweep
         if (inputText.expanded){
                     // Backward sweep
-        for (let i = originalSpans.length - 1, j = tempSpans.length - 1; i >= 0 && j >= 0; i--, j--) {
-            if (originalSpans[i].textContent === tempSpans[j].textContent) {
-                tempSpans[j].id = originalSpans[i].id;
-                tempSpans[j].style.cssText = originalSpans[i].style.cssText;
-            }
-            else break;
+                    let forwardIndex = 0;
+let backwardIndex = originalSpans.length - 1;
+let tempForwardIndex = 0;
+let tempBackwardIndex = tempSpans.length - 1;
+
+let forwardStopped = false; // Flag to track if the forward sweep has stopped
+let backwardStopped = false; // Flag to track if the backward sweep has stopped
+
+while (forwardIndex <= backwardIndex && tempForwardIndex <= tempBackwardIndex) {
+    // Forward sweep (only if it hasn't stopped)
+    if (!forwardStopped) {
+        if (
+            originalSpans[forwardIndex].textContent === tempSpans[tempForwardIndex].textContent
+        ) {
+            tempSpans[tempForwardIndex].id = originalSpans[forwardIndex].id;
+            tempSpans[tempForwardIndex].style.cssText = originalSpans[forwardIndex].style.cssText;
+            forwardIndex++;
+            tempForwardIndex++;
+        } else {
+            forwardStopped = true; // Stop the forward sweep
         }
-        for (let i = 0; i < Math.min(originalSpans.length, tempSpans.length); i++) {
-            if (originalSpans[i].textContent === tempSpans[i].textContent) {
-                tempSpans[i].id = originalSpans[i].id;
-                tempSpans[i].style.cssText = originalSpans[i].style.cssText;
-            } else
-            break;
+    }
+
+    // Backward sweep (only if it hasn't stopped)
+    if (!backwardStopped) {
+        if (
+            originalSpans[backwardIndex].textContent === tempSpans[tempBackwardIndex].textContent
+        ) {
+            tempSpans[tempBackwardIndex].id = originalSpans[backwardIndex].id;
+            tempSpans[tempBackwardIndex].style.cssText = originalSpans[backwardIndex].style.cssText;
+            backwardIndex--;
+            tempBackwardIndex--;
+        } else {
+            backwardStopped = true; // Stop the backward sweep
         }
+    }
+
+    // Exit loop if both directions have stopped
+    if (forwardStopped && backwardStopped) break;
+}
     }
 
     }
