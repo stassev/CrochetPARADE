@@ -2239,20 +2239,22 @@ document.getElementById("inputText").addEventListener("click", (e) => {
         const currentSpan = document.getElementById(`word${id}`);
         let reset=false;
         if (currentSpan) {
-          currentSpan.style.backgroundColor = "yellow"; // Highlight the current span
-          
+
           // Unhighlight the previously highlighted span (if any)
           if (!(e.altKey)){
-             const previousSpanId = inputText.previousHighlightedId;
-             if (previousSpanId && (!previousSpanId.includes(id))) {
-                for (let i of previousSpanId){
-               const previousSpan = document.getElementById(`word${i}`);
-               if (previousSpan) {
-                 previousSpan.style.backgroundColor = ""; // Remove highlight from previous span
-               }}
-               reset=true;
-             }
+
+  const highlight = document.getElementById("highlighting");
+            const wordTokens = highlight.querySelectorAll(".token.words"); 
+ wordTokens.forEach((span) => {
+if (span.style.backgroundColor==="yellow")
+            span.style.backgroundColor="";
+        });
+        reset=true;
+         // Highlight the current span
+          
+        inputText.previousHighlightedId=[];
         }
+        currentSpan.style.backgroundColor = "yellow";
           // Update the dataset to track the currently highlighted span
           inputText.previousHighlightedId.push(id);
         }
