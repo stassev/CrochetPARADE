@@ -2425,7 +2425,12 @@ while (forwardIndex <= backwardIndex && tempForwardIndex <= tempBackwardIndex) {
     }
 
     // Exit loop if both directions have stopped
-    if (forwardStopped && backwardStopped) break;
+    if (forwardStopped && backwardStopped) {
+        tempSpans[tempBackwardIndex].id='';
+        tempBackwardIndex--;
+        tempSpans[tempForwardIndex].id ='';
+        tempForwardIndex++;
+    };
 }
     }
 
