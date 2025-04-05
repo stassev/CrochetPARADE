@@ -662,6 +662,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             node['name_long'] = "<span style='font-size: 16px; font-weight: bold;'>(" + obj.name + ") [" + obj.label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + obj.label.split('|')[1] + "&hellip;";
             node['name'] = "<span style='font-size: 16px; font-weight: bold;'>(" + obj.name + ") [" + obj.label.split('|')[0] + "]</span>";
             node['type'] = 0;
+            node['stnum'] = parseInt(obj.name.split('|')[1]);
             node['id0'] = obj.name.split('|')[0];
             node['row'] = [parseInt(obj.name.split('|')[0].split(',')[0]), parseInt(obj.name.split('|')[0].split(',')[1])];
             node['Color'] = obj.label.split('|')[2];
@@ -814,7 +815,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
         const A = (new THREE.Vector3(tail.pos[0], tail.pos[1], tail.pos[2]));
         const B = (new THREE.Vector3(head.pos[0], head.pos[1], head.pos[2]));
-
+        let stnum=parseInt(head.name.split('|')[1]);
         var row = [parseInt(head.name.split('|')[0].split(',')[0]), parseInt(head.name.split('|')[0].split(',')[1])];
         if ((head.label.split('|')[0] == 'ch')) {
             if (!('ch' in stLen)) {
@@ -877,6 +878,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
 
         line['Color'] = edge.Color;
         line['color'] = edge.color;
+        line['stnum']=stnum;
         line['type'] = 1;
         //"(" + obj.name + ") [" + obj.label.split('|')[0] + "]<br>" + obj.label.split('|')[1]
         line['name_long'] = "<span style='font-size: 16px; font-weight: bold;'>(" + head.name + ") [" + head.label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + head.label.split('|')[1] + "&hellip;<br>" + 'stretched by ' + Math.round(100 * (edge['stretch'] - 1)) + '%';
@@ -913,6 +915,7 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
             arrowhead['is_arrow'] = true;
             arrowhead['Color'] = edge.Color;
             arrowhead['type'] = 2;
+            arrowhead['stnum']=stnum;
             // Add the arrowhead to the scene
             scene.add(arrowhead);
 
@@ -975,6 +978,15 @@ export default function Generate3DModel(json0, renderer, scene, scene1, backgrou
         nodeDictionary.set(key, []); // Initialize an array for this key if it doesn't exist
       }
       nodeDictionary.get(key).push(i); // Add the node to the array for this key
+    }
+
+    const stnumDictionary = new Map();
+    for (const i of NODES) {
+      const key = i.stnum; // Create a unique key for each node
+      if (!stnumDictionary.has(key)) {
+        stnumDictionary.set(key, []); // Initialize an array for this key if it doesn't exist
+      }
+      stnumDictionary.get(key).push(i); // Add the node to the array for this key
     }
     //scene.fog = new THREE.Fog(0xcccccc, 0.1, 10);
     //scene.fog1 = new THREE.FogExp2(0xcccccc, 0.1);
@@ -1118,13 +1130,28 @@ var I = null;
                 const matchingNodes = nodeDictionary.get(keyToFind) || []; // Get the array or an empty array if no match
                 
                 // Step 3: Process the matching nodes
+                let stnum=-1;
                 for (const node of matchingNodes) {
                     const result = IoldMove.find(item => item[0].object.id0 === node.id0);
                     Iold.push([node, result ? result[1] : node.material]); // Save the old material
                     //Iold.push([node,  node.material]);
+                    stnum=node.stnum;
                     node.material = selectedEdgeMaterial; // Update the material
                 }
                 
+                const matchingNodes1 = stnumDictionary.get(stnum) || []; // Get the array or an empty array if no match
+                
+                // Step 3: Process the matching nodes
+                for (const node of matchingNodes1) {
+                    const result = IoldMove.find(item => item[0].object.id0 === node.id0);
+                    if  (Iold.length==0 ||Iold.every(item => item[0].id0!== I.object.id0)){
+                      Iold.push([node, result ? result[1] : node.material]); // Save the old material
+                      //Iold.push([node,  node.material]);
+                      node.material = selectedEdgeMaterial; // Update the material
+                    }
+                }
+
+
             }
         }
     }
@@ -1659,13 +1686,27 @@ if ((!inputText.expanded) && (event.altKey)){
                 }
                 const keyToFind = `${row}|${kCount}`;
 const matchingNodes = nodeDictionary.get(keyToFind) || []; // Get the array or an empty array if no match
-
+let stnum=-1;
 // Step 3: Process the matching nodes
 for (const node of matchingNodes) {
-    if (IoldYellow.every(item => item[0].id0 !== node.id0))
+    if (IoldYellow.every(item => item[0].id0 !== node.id0)){
         IoldYellow.push([node, node.material]); // Save the old material
+stnum=node.stnum;
+    }
   node.material = selectedRowMaterial; // Update the material
 }
+
+const matchingNodes1 = stnumDictionary.get(stnum) || []; // Get the array or an empty array if no match
+                
+// Step 3: Process the matching nodes
+for (const node of matchingNodes1) {
+    if (IoldYellow.every(item => item[0].id0 !== node.id0)){
+        IoldYellow.push([node,node.material]); // Save the old material
+      //Iold.push([node,  node.material]);
+      node.material = selectedRowMaterial; // Update the material
+    }
+}
+
             }, 300);
         });
     }
