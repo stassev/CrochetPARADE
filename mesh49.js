@@ -1133,7 +1133,9 @@ var I = null;
                 let stnum=-1;
                 for (const node of matchingNodes) {
                     const result = IoldMove.find(item => item[0].object.id0 === node.id0);
-                    Iold.push([node, result ? result[1] : node.material]); // Save the old material
+                    const result1 = IoldYellow.find(item => item[0].id0 === node.id0);
+        
+                    Iold.push([node, result1 ? result1[1] : (result ? result[1] : node.material)]); // Save the old material
                     //Iold.push([node,  node.material]);
                     stnum=node.stnum;
                     node.material = selectedEdgeMaterial; // Update the material
@@ -1143,9 +1145,10 @@ var I = null;
                 
                 // Step 3: Process the matching nodes
                 for (const node of matchingNodes1) {
-                    const result = IoldMove.find(item => item[0].object.id0 === node.id0);
                     if  (Iold.length==0 ||Iold.every(item => item[0].id0!== node.id0)){
-                      Iold.push([node, result ? result[1] : node.material]); // Save the old material
+                        const result = IoldMove.find(item => item[0].object.id0 === node.id0);
+                        const result1 = IoldYellow.find(item => item[0].id0 === node.id0);
+                        Iold.push([node, result1 ? result1[1] : (result ? result[1] : node.material)]);
                       //Iold.push([node,  node.material]);
                       node.material = selectedEdgeMaterial; // Update the material
                     }
@@ -1690,7 +1693,10 @@ let stnum=-1;
 // Step 3: Process the matching nodes
 for (const node of matchingNodes) {
     if (IoldYellow.every(item => item[0].id0 !== node.id0)){
-        IoldYellow.push([node, node.material]); // Save the old material
+
+        const result = Iold.find(item => item[0].id0 === node.id0);
+        IoldYellow.push([node, result ? result[1] : node.material]); // Save the old material
+        //IoldYellow.push([node, node.material]); // Save the old material
 stnum=node.stnum;
     }
   node.material = selectedRowMaterial; // Update the material
@@ -1701,7 +1707,10 @@ const matchingNodes1 = stnumDictionary.get(stnum) || []; // Get the array or an 
 // Step 3: Process the matching nodes
 for (const node of matchingNodes1) {
     if (IoldYellow.every(item => item[0].id0 !== node.id0)){
-        IoldYellow.push([node,node.material]); // Save the old material
+        const result = Iold.find(item => item[0].id0 === node.id0);
+        IoldYellow.push([node, result ? result[1] : node.material]); // Save the old material
+        
+        //IoldYellow.push([node,node.material]); // Save the old material
       //Iold.push([node,  node.material]);
       node.material = selectedRowMaterial; // Update the material
     }
