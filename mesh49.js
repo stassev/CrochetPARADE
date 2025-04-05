@@ -2334,11 +2334,16 @@ for (const node of matchingNodes1) {
                     //console.log(nodeId);
                     //console.log('1', edge1);
                     //console.log('2', edge2);
-                    if (!edge1) edge1 = null;
+                    let color='black';
+                    if (!edge1){edge1 = null;
+                        try{color=edge2.label;}catch (error) {}}
+                     else
+                     try{color=edge1.label;}catch (error) {}
                     if (!edge2) edge2 = null;
                     if (edge1 !== null || edge2 !== null) {
                         if (nodeId === 'ch' || nodeId === 'ring') {
-                            drawChainBetweenEdges(draw, edge1, edge2, size, symbolMap['ch'], nodeId);
+                            console.log(color)
+                            drawChainBetweenEdges(draw, edge1, edge2, size, symbolMap['ch'], nodeId,color);
                         } else {
                             drawLineBetweenEdges(draw, edge1, edge2, size, 'plum', 1);
                             if (hasTopBar[nodeId]) {
@@ -2387,9 +2392,9 @@ for (const node of matchingNodes1) {
 
                                     //let start = edge2.start.map((coord, i) => (2 * coord + edge1.start[i] + edge2.end[i]) / 4);
                                     //console.log(end, edge.end);
-                                    drawSymbolAlongEdge(draw, start, end, symbol, size, false, nodeId, comesFromLine);
+                                    drawSymbolAlongEdge(draw, start, end, symbol, size, false, nodeId, comesFromLine,edge1e.label);
                                 } catch (error) {
-                                    drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine);
+                                    drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine,edge.label);
                                 }
                                 //} else
                                 //    drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine);
@@ -2449,9 +2454,9 @@ for (const node of matchingNodes1) {
                                     let edge1s = edges.find(edge0 => edge0.head === edgeWithSmallestTail.tail);
                                     let edge2s = edges.find(edge0 => edge0.tail === edgeWithSmallestTail.tail);
                                     let start = edge2s.start.map((coord, i) => (2 * coord + edge1s.start[i] + edge2s.end[i]) / 4);
-                                    drawSymbolAlongEdge(draw, start, end, symbol, size, false, nodeId, false);
+                                    drawSymbolAlongEdge(draw, start, end, symbol, size, false, nodeId, false,edge1e.label);
                                 } catch (error) {
-                                    drawSymbolAlongEdge(draw, edgeWithSmallestTail.start, incomingRedEdges[0].end, symbol, size, false, nodeId, false);
+                                    drawSymbolAlongEdge(draw, edgeWithSmallestTail.start, incomingRedEdges[0].end, symbol, size, false, nodeId, false,edgeWithSmallestTail.label);
                                     //return edgeWithSmallestTail.start; // Return edge.start for the smallest tail
                                 }
                             } else {
@@ -2518,7 +2523,7 @@ for (const node of matchingNodes1) {
             return [x1, y1];
         }
 
-        function drawChainBetweenEdges(draw, edge1, edge2, size, symbolPath, nodeId) {
+        function drawChainBetweenEdges(draw, edge1, edge2, size, symbolPath, nodeId,color) {
             let x1, y1, x2, y2;
             //console.log(edge1, edge2, nodeId, size);
             // Calculate average points
@@ -2570,7 +2575,7 @@ for (const node of matchingNodes1) {
             const symbol = draw.path(centeredPath)
                 .fill('none')
                 .stroke({
-                    color: 'black',
+                    color: color,
                     width: 1
                 });
 
@@ -2696,12 +2701,12 @@ for (const node of matchingNodes1) {
             }
             draw.line(x1, y1, x2, y2)
                 .stroke({
-                    color: lineColor,
+                    color: edge1.label,
                     width: lineWidth
                 });
         }
 
-        function drawSymbolAlongEdge(draw, start, end, symbolPath, size, isChain, nodeId, comesFromLine) {
+        function drawSymbolAlongEdge(draw, start, end, symbolPath, size, isChain, nodeId, comesFromLine,color) {
 
 
             let x1, y1, x2, y2;
@@ -2744,14 +2749,14 @@ for (const node of matchingNodes1) {
             }
             let fill = 'none';
             if (nodeId === 'ss') {
-                fill = 'black';
+                fill = color;
                 scaleY *= 0.4;
                 scaleX = scaleY / 1.333;
             }
             const symbol = draw.path(centeredPath)
                 .fill(fill)
                 .stroke({
-                    color: 'black',
+                    color: color,
                     width: 1
                 });
             if (nodeId === 'line' || comesFromLine) {
