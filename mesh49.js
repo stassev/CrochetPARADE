@@ -38,6 +38,7 @@ import {
 //} from 'three/addons/renderers/SVGRenderer.js'
 export default function Generate3DModel(json0, renderer, scene, scene1, backgroundColor, c_was_pressed, factor_radius, requestedInfo) {
     var highlightInstructions=0;
+var exportSVGinColor=false;
     var Iold=[];
     var IoldYellow=[];
     resetTranslation();
@@ -2334,15 +2335,22 @@ for (const node of matchingNodes1) {
                     //console.log(nodeId);
                     //console.log('1', edge1);
                     //console.log('2', edge2);
+
                     let color='black';
+if (exportSVGinColor){
                     if (!edge1){edge1 = null;
                         try{color=edge2.label;}catch (error) {}}
                      else
                      try{color=edge1.label;}catch (error) {}
+}else{                
+        if (!edge1)
+            edge1 = null;
+    
                     if (!edge2) edge2 = null;
+}
                     if (edge1 !== null || edge2 !== null) {
                         if (nodeId === 'ch' || nodeId === 'ring') {
-                            console.log(color)
+                            //console.log(color)
                             drawChainBetweenEdges(draw, edge1, edge2, size, symbolMap['ch'], nodeId,color);
                         } else {
                             drawLineBetweenEdges(draw, edge1, edge2, size, 'plum', 1);
@@ -2372,6 +2380,7 @@ for (const node of matchingNodes1) {
                                 const symbol = symbolMap[nodeId] || 'M0,-2.5 L0,2.5';
                                 //if (nodeId === 'ss') {
                                 let end, start;
+let color='black';
                                 try {
                                     let edge1e = edges.find(edge0 => edge0.head === edge.head);
                                     let edge2e = edges.find(edge0 => edge0.tail === edge.head);
@@ -2392,9 +2401,13 @@ for (const node of matchingNodes1) {
 
                                     //let start = edge2.start.map((coord, i) => (2 * coord + edge1.start[i] + edge2.end[i]) / 4);
                                     //console.log(end, edge.end);
-                                    drawSymbolAlongEdge(draw, start, end, symbol, size, false, nodeId, comesFromLine,edge1e.label);
+if (exportSVGinColor)
+color=edge1e.label;
+                                    drawSymbolAlongEdge(draw, start, end, symbol, size, false, nodeId, comesFromLine,color);
                                 } catch (error) {
-                                    drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine,edge.label);
+if (exportSVGinColor)
+color=edge.label;
+                                    drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine,color);
                                 }
                                 //} else
                                 //    drawSymbolAlongEdge(draw, edge.start, edge.end, symbol, size, false, nodeId, comesFromLine);
@@ -2442,7 +2455,7 @@ for (const node of matchingNodes1) {
 
                             // Find the edge with the smallest tail
                             const edgeWithSmallestTail = edges.find(edge => edge.tail === smallestTail && edge.color === 'red');
-
+let color='black';
                             if (edgeWithSmallestTail) {
                                 //console.log("Start point of edge with smallest tail:", edgeWithSmallestTail.start);
 
@@ -2454,9 +2467,13 @@ for (const node of matchingNodes1) {
                                     let edge1s = edges.find(edge0 => edge0.head === edgeWithSmallestTail.tail);
                                     let edge2s = edges.find(edge0 => edge0.tail === edgeWithSmallestTail.tail);
                                     let start = edge2s.start.map((coord, i) => (2 * coord + edge1s.start[i] + edge2s.end[i]) / 4);
-                                    drawSymbolAlongEdge(draw, start, end, symbol, size, false, nodeId, false,edge1e.label);
+if (exportSVGinColor)
+color=edge1e.label;
+                                    drawSymbolAlongEdge(draw, start, end, symbol, size, false, nodeId, false,color);
                                 } catch (error) {
-                                    drawSymbolAlongEdge(draw, edgeWithSmallestTail.start, incomingRedEdges[0].end, symbol, size, false, nodeId, false,edgeWithSmallestTail.label);
+if (exportSVGinColor)
+color=edgeWithSmallestTail.label;
+                                    drawSymbolAlongEdge(draw, edgeWithSmallestTail.start, incomingRedEdges[0].end, symbol, size, false, nodeId, false,color);
                                     //return edgeWithSmallestTail.start; // Return edge.start for the smallest tail
                                 }
                             } else {
@@ -2699,9 +2716,12 @@ for (const node of matchingNodes1) {
                 y1 = y0 - dy / 2 * 0.8;
                 y2 = y0 + dy / 2 * 0.8;
             }
+let color='black';
+if (exportSVGinColor)
+color=edge1.label;
             draw.line(x1, y1, x2, y2)
                 .stroke({
-                    color: edge1.label,
+                    color: color,
                     width: lineWidth
                 });
         }
