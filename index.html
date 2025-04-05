@@ -1376,7 +1376,7 @@
             expandExprCheckboxContainer1.style.marginTop = '10px';
 
             var expandExprCheckboxLabel1 = document.createElement('label');
-            expandExprCheckboxLabel1.textContent = "Run this dialog twice in a row? If set, stitch numbers will appear on hover in editor.";
+            expandExprCheckboxLabel1.textContent = "Run this dialog twice in a row? If set, stitches will be indexed in the editor, and stitch numbers will appear on hover in editor.";
             expandExprCheckboxLabel1.style.marginRight = '10px';
 
             var expandExprCheckbox1 = document.createElement('input');
@@ -3124,6 +3124,18 @@ if (hasTokenWordsAfterLastBr) {
             <tr>
                 <td><code>turn</code></td>
                 <td>Special command: <code>turn</code> for turning the work at the end of a row or round. (See "Direction of sequential stitch attachment." for more details.)</td>
+            </tr>
+            <tr>
+                <td><code>...</code></td>
+                <td>Special command: Ellipsis (<code>...</code>) in the beginning of a new line indicates the previous line is continued on the current line.</td>
+            </tr>
+            <tr>
+                <td><code>&lt;</code><br><code>&gt;</code></td>
+                <td>Special commands: These indicate a repetition starts/ends at that symbol. Example: 3*[sc,&lt;,ch,&gt;,dc] translates to [ch,dc],[sc,ch,dc],[sc,ch]</td>
+            </tr>
+            <tr>
+                <td><code>.</code><br><code>@</code><br><code>~^!</code></td>
+                <td>Special commands: Indicate a labeled stitch, attachment to a label/stitch, and modifiers, respectively. Example: sc.A,dc@A (see "Attachment to a label" in the Manual) </td>
             </tr>
         </table>
     </div>
