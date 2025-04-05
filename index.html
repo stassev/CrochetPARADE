@@ -2093,8 +2093,14 @@
 function assignIdsAndHover(highlight,resetHighlights) {
     //const highlight = document.getElementById("highlighting");
     const wordTokens = highlight.querySelectorAll(".token.words"); // Select all .token.words spans
-    const brElements = highlight.querySelectorAll("br"); // Select all <br> elements within the highlighting div
-
+    //const brElements = highlight.querySelectorAll("br"); // Select all <br> elements within the highlighting div
+    let brElements = Array.from(highlight.querySelectorAll("br")); // Convert NodeList to array
+brElements = brElements.filter((br, index) => {
+  const nextElement = br.nextElementSibling;
+  return !(nextElement && 
+          nextElement.classList.contains("special") && 
+          nextElement.innerText === "...");
+});
     let row = 0; // Line number counter
     let idCounter = 0; // Global ID counter
     let kCounter = 0; // Counter for spans since the last <br>
