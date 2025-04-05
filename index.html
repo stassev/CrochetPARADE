@@ -2660,7 +2660,7 @@ for (let i = 1; i < brElements.length; i++) {
     let sibling = prevBr.nextElementSibling;
 
     // Iterate through siblings between prevBr and currentBr.
-    while (sibling && sibling !== currentBr) {
+    while (sibling && sibling !== currentBr  && (!(sibling.classList.contains('special')&&sibling.innerText==='...'))) {
         if (sibling.classList.contains('token') && sibling.classList.contains('words')) {
             hasTokenWordsBetweenBrs = true;
             break; // Stop checking further once we find a match.
@@ -2682,7 +2682,7 @@ let hasTokenWordsAfterLastBr = false;
 if (lastBr){
 sibling = lastBr.nextElementSibling;
 
-while (sibling) {
+while (sibling && (!(sibling.classList.contains('special')&&sibling.innerText==='...'))) {
     if (sibling.classList.contains('token') && sibling.classList.contains('words')) {
         hasTokenWordsAfterLastBr = true;
         break; // Stop checking further once we find a match.
