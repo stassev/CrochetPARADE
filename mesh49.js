@@ -1144,7 +1144,7 @@ var I = null;
                 // Step 3: Process the matching nodes
                 for (const node of matchingNodes1) {
                     const result = IoldMove.find(item => item[0].object.id0 === node.id0);
-                    if  (Iold.length==0 ||Iold.every(item => item[0].id0!== I.object.id0)){
+                    if  (Iold.length==0 ||Iold.every(item => item[0].id0!== node.id0)){
                       Iold.push([node, result ? result[1] : node.material]); // Save the old material
                       //Iold.push([node,  node.material]);
                       node.material = selectedEdgeMaterial; // Update the material
