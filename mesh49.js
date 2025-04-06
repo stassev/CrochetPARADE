@@ -2983,8 +2983,8 @@ if (exportSVGinColor)
         const form = document.createElement('form');
         form.innerHTML = `
             <label>
-                Resolution of the SVG file (default: 1500):
-                <input type="number" id="svgHeight" min="50" max="15000" value="1500" required>
+                Resolution of the SVG file :
+                <input type="number" id="svgHeight" min="50" max="15000" value="700" required>
             </label>
             <br><br>
             <label>
