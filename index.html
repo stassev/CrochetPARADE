@@ -2092,7 +2092,10 @@
 
 function assignIdsAndHover(highlight,resetHighlights) {
     //const highlight = document.getElementById("highlighting");
+    //console.log('Numbers='+highlight.querySelectorAll(".token.number").length)
+    //return
     const wordTokens = highlight.querySelectorAll(".token.words"); // Select all .token.words spans
+
     //const brElements = highlight.querySelectorAll("br"); // Select all <br> elements within the highlighting div
     let brElements = Array.from(highlight.querySelectorAll("br")); // Convert NodeList to array
 brElements = brElements.filter((br, index) => {
@@ -3295,7 +3298,21 @@ if (hasTokenWordsAfterLastBr) {
  
          async function show3DModel() {
             let result_element = document.querySelector("#highlighting");
-            assignIdsAndHover(result_element,1);
+            if (result_element.querySelectorAll(".token.number").length>0){
+                
+                const wordTokens = result_element.querySelectorAll(".token.words"); // Select all .token.words spans
+                tooltip.style.display = 'none';
+                delete textarea.dataset.hoveredId; 
+                wordTokens.forEach((span) => {
+                   span.style.backgroundColor="";
+                   span.id="";
+                });
+                textarea['expanded']=false;
+            }else{
+                textarea['expanded']=true;
+                assignIdsAndHover(result_element,1);
+                
+            }
              var loadingIcon = document.getElementById('loading-icon');
              loadingIcon.style.display = 'block';
 
