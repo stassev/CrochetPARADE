@@ -1011,6 +1011,7 @@ var exportSVGinColor=false;
     var rotateAndSave = false;
     var rotateAndSaveSizeSet = -1;
     var rotateAndSaveOrthographic = true;
+    var rotateAndSaveExportInColor=false;
     var canvasClicked = false;
     var timeoutQ = true;
     var timeoutID = null;
@@ -2230,38 +2231,15 @@ for (const node of matchingNodes1) {
     function saveSvg(rotateAndSave = false) {
         let size;
         var orthographicQ = true;
+    
+        // Helper function to execute "a ton more stuff happens after"
+        function executePostProcessing() {
+
+            console.log("Size:", size, "OrthographicQ:", orthographicQ, "ExportSVGinColor:", exportSVGinColor);
+
         const projectionMatrix = camera.projectionMatrix;
         const worldMatrix = camera.matrixWorldInverse;
 
-        //console.log(1, rotateAndSaveSizeSet, rotateAndSave);
-        if (rotateAndSaveSizeSet == -1 || (!rotateAndSave)) {
-            while (true) {
-                try {
-                    let s = prompt('Enter the height (in pixels) of the SVG file. This will affect size of labels. If size is negative, will use perspective projection. Otherwise, will use orthographic projection. Default: 1500');
-                    if (s === '')
-                        size = 1500;
-                    else {
-                        size = parseInt(s);
-                        if (size < 0) {
-                            orthographicQ = false;
-                        } else orthographicQ = true;
-                        size = Math.abs(size);
-                    }
-                } catch (error) {
-                    size = -1;
-                }
-                if ((Math.abs(size) > 50) && (Math.abs(size) < 15000))
-                    break;
-            }
-            if (rotateAndSave) {
-                rotateAndSaveSizeSet = size;
-                rotateAndSaveOrthographic = orthographicQ;
-            } else
-                rotateAndSaveSizeSet = -1;
-        } else {
-            size = rotateAndSaveSizeSet;
-            orthographicQ = rotateAndSaveOrthographic;
-        }
         if (c_was_pressed) {
             c_was_pressed = false;
             for (let i = 0; i < NODES.length; i++) {
@@ -2369,23 +2347,25 @@ for (const node of matchingNodes1) {
                     //console.log('2', edge2);
 
                     let color='black';
-if (exportSVGinColor){
-                    if (!edge1){edge1 = null;
-                        try{color=edge2.label;}catch (error) {}}
-                     else
-                     try{color=edge1.label;}catch (error) {}
-}else{                
-        if (!edge1)
-            edge1 = null;
-    
-                    if (!edge2) edge2 = null;
-}
+                    if (exportSVGinColor){
+                        if (!edge1){
+                            edge1 = null;
+                            try{color=edge2.label;}catch (error) {}
+                        } else{
+                             try{color=edge1.label;}catch (error) {}
+                        }
+                        if (!edge2) edge2 = null;
+                    }else{                
+                        if (!edge1) edge1 = null;
+                        if (!edge2) edge2 = null;
+                    }
                     if (edge1 !== null || edge2 !== null) {
                         if (nodeId === 'ch' || nodeId === 'ring') {
                             //console.log(color)
                             drawChainBetweenEdges(draw, edge1, edge2, size, symbolMap['ch'], nodeId,color);
                         } else {
-                            drawLineBetweenEdges(draw, edge1, edge2, size, 'plum', 1);
+                            if (!exportSVGinColor)
+                                drawLineBetweenEdges(draw, edge1, edge2, size, 'plum', 1);
                             if (hasTopBar[nodeId]) {
                                 //drawParallelLineThroughCenter(draw, edge1, edge2, size, 'black', 1);
                                 drawLineBetweenEdges(draw, edge1, edge2, size, 'black', 1);
@@ -2736,6 +2716,7 @@ color=edgeWithSmallestTail.label;
                 [x1, y1] = calculateProjection(avgPoint1, orthographicQ);
                 [x2, y2] = calculateProjection(avgPoint2, orthographicQ);
             }
+            let color=lineColor;
             if (lineColor === 'black') {
                 let x0 = (x1 + x2) / 2.0;
                 let y0 = (y1 + y2) / 2.0;
@@ -2745,10 +2726,11 @@ color=edgeWithSmallestTail.label;
                 x2 = x0 + dx / 2 * 0.8;
                 y1 = y0 - dy / 2 * 0.8;
                 y2 = y0 + dy / 2 * 0.8;
-            }
-let color='black';
+            
 if (exportSVGinColor)
-color=edge1.label;
+    color=edge1.label;
+            }
+
             draw.line(x1, y1, x2, y2)
                 .stroke({
                     color: color,
@@ -2983,7 +2965,124 @@ color=edge1.label;
         // Save crochet symbols SVG
         saveSVGToFile(drawSymbols, 'crochet_symbols.svg', size);
         restoreCoordinates(graphData);
+    }
 
+    if (rotateAndSaveSizeSet == -1 || (!rotateAndSave)) {
+        // Create the modal popup
+        const modal = document.createElement('div');
+        modal.style.position = 'fixed';
+        modal.style.top = '50%';
+        modal.style.left = '50%';
+        modal.style.transform = 'translate(-50%, -50%)';
+        modal.style.backgroundColor = '#fff';
+        modal.style.padding = '20px';
+        modal.style.border = '1px solid #ccc';
+        modal.style.zIndex = 1000;
+
+        // Modal content
+        const form = document.createElement('form');
+        form.innerHTML = `
+            <label>
+                Resolution of the SVG file (default: 1500):
+                <input type="number" id="svgHeight" min="50" max="15000" value="1500" required>
+            </label>
+            <br><br>
+            <label>
+                Projection (for 3D projects):
+                <input type="radio" name="projection" value="orthographic" checked> Orthographic
+                <input type="radio" name="projection" value="perspective"> Perspective
+            </label>
+            <br><br>
+            <label>
+                <input type="checkbox" id="colorCheckbox"> Export SVG in color
+            </label>
+            <br><br>
+            <button type="submit">Submit</button>
+            <button type="button" id="cancelButton">Cancel</button>
+        `;
+
+        function initializeProjectionBehavior() {
+            const renderingRadioButtons = document.querySelectorAll('input[name="rendering"]');
+        
+            // Function to handle disabling/enabling projection radio buttons
+            function handleRenderingChange() {
+                const projectionRadioButtons = document.querySelectorAll('input[name="projection"]');
+                const orthographicRadio = document.querySelector('input[name="projection"][value="orthographic"]');
+        
+                const selectedRendering = Array.from(renderingRadioButtons).find(radio => radio.checked)?.value;
+        
+                if (selectedRendering === '2D') {
+                    // Disable projection radio buttons and select Orthographic
+                    projectionRadioButtons.forEach(radio => {
+                        radio.disabled = true;
+                    });
+                    if (orthographicRadio) orthographicRadio.checked = true; // Ensure Orthographic is selected
+                } else {
+                    // Enable projection radio buttons
+                    projectionRadioButtons.forEach(radio => {
+                        radio.disabled = false;
+                    });
+                }
+            }
+        
+            // Add event listeners to all rendering radio buttons
+            renderingRadioButtons.forEach(radio => {
+                radio.addEventListener('change', handleRenderingChange);
+            });
+        
+            // Initialize the state on creation
+            handleRenderingChange();
+        }
+        
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const heightInput = document.getElementById('svgHeight');
+            const projectionInput = form.querySelector('input[name="projection"]:checked');
+            const colorCheckboxInput = document.getElementById('colorCheckbox');
+            
+
+            size = parseInt(heightInput.value);
+            if (size >= 50 && size <= 15000) {
+                orthographicQ = projectionInput.value === 'orthographic';
+                exportSVGinColor = colorCheckboxInput.checked;
+
+                if (rotateAndSave) {
+                    rotateAndSaveSizeSet = size;
+                    rotateAndSaveOrthographic = orthographicQ;
+                    rotateAndSaveExportInColor = exportSVGinColor;
+                } else {
+                    rotateAndSaveSizeSet = -1;
+                }
+
+                // Remove the modal after submission
+                document.body.removeChild(modal);
+
+                // Execute post-processing logic here
+                executePostProcessing();
+            } else {
+                alert('Please enter a valid height between 50 and 15000.');
+            }
+        });
+
+        const cancelButton = form.querySelector('#cancelButton');
+        cancelButton.addEventListener('click', () => {
+            // Remove the modal without saving
+            document.body.removeChild(modal);
+        });
+
+        // Append form to modal and modal to body
+        modal.appendChild(form);
+        document.body.appendChild(modal);
+        initializeProjectionBehavior();
+    } else {
+        size = rotateAndSaveSizeSet;
+        orthographicQ = rotateAndSaveOrthographic;
+        exportSVGinColor = rotateAndSaveExportInColor;
+
+        // Execute post-processing logic here since saved values are used
+        executePostProcessing();
+    }
     }
 
     function adjustSVGToSymmetricBBox(draw) {
