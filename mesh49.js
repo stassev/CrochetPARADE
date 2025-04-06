@@ -2230,6 +2230,38 @@ for (const node of matchingNodes1) {
     function saveSvg(rotateAndSave = false) {
         let size;
         var orthographicQ = true;
+        const projectionMatrix = camera.projectionMatrix;
+        const worldMatrix = camera.matrixWorldInverse;
+
+        //console.log(1, rotateAndSaveSizeSet, rotateAndSave);
+        if (rotateAndSaveSizeSet == -1 || (!rotateAndSave)) {
+            while (true) {
+                try {
+                    let s = prompt('Enter the height (in pixels) of the SVG file. This will affect size of labels. If size is negative, will use perspective projection. Otherwise, will use orthographic projection. Default: 1500');
+                    if (s === '')
+                        size = 1500;
+                    else {
+                        size = parseInt(s);
+                        if (size < 0) {
+                            orthographicQ = false;
+                        } else orthographicQ = true;
+                        size = Math.abs(size);
+                    }
+                } catch (error) {
+                    size = -1;
+                }
+                if ((Math.abs(size) > 50) && (Math.abs(size) < 15000))
+                    break;
+            }
+            if (rotateAndSave) {
+                rotateAndSaveSizeSet = size;
+                rotateAndSaveOrthographic = orthographicQ;
+            } else
+                rotateAndSaveSizeSet = -1;
+        } else {
+            size = rotateAndSaveSizeSet;
+            orthographicQ = rotateAndSaveOrthographic;
+        }
         if (c_was_pressed) {
             c_was_pressed = false;
             for (let i = 0; i < NODES.length; i++) {
@@ -2485,9 +2517,7 @@ color=edgeWithSmallestTail.label;
                 }
             });
         }
-        const projectionMatrix = camera.projectionMatrix;
-        const worldMatrix = camera.matrixWorldInverse;
-
+        
         function calculateProjection(data, orthographicQ) {
             // Assuming xR, yR, zR, xU, yU, zU, xC, yC, zC are global variables
             // Also assuming size, fov, and aspect are globally defined if needed
@@ -2823,35 +2853,6 @@ color=edge1.label;
                 originX: 'center',
                 originY: 'center'
             });
-        }
-        //console.log(1, rotateAndSaveSizeSet, rotateAndSave);
-        if (rotateAndSaveSizeSet == -1 || (!rotateAndSave)) {
-            while (true) {
-                try {
-                    let s = prompt('Enter the height (in pixels) of the SVG file. This will affect size of labels. If size is negative, will use perspective projection. Otherwise, will use orthographic projection. Default: 1500');
-                    if (s === '')
-                        size = 1500;
-                    else {
-                        size = parseInt(s);
-                        if (size < 0) {
-                            orthographicQ = false;
-                        } else orthographicQ = true;
-                        size = Math.abs(size);
-                    }
-                } catch (error) {
-                    size = -1;
-                }
-                if ((Math.abs(size) > 50) && (Math.abs(size) < 15000))
-                    break;
-            }
-            if (rotateAndSave) {
-                rotateAndSaveSizeSet = size;
-                rotateAndSaveOrthographic = orthographicQ;
-            } else
-                rotateAndSaveSizeSet = -1;
-        } else {
-            size = rotateAndSaveSizeSet;
-            orthographicQ = rotateAndSaveOrthographic;
         }
 
         //console.log(2, rotateAndSaveSizeSet, rotateAndSave);
