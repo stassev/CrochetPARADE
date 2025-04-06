@@ -2984,7 +2984,7 @@ if (exportSVGinColor)
         form.innerHTML = `
             <label>
                 Resolution of the SVG file :
-                <input type="number" id="svgHeight" min="50" max="15000" value="700" required>
+                <input  style='padding:2px;' type="number" id="svgHeight" min="50" max="15000" value="700" required>
             </label>
             <br><br>
             <label>
@@ -2994,7 +2994,7 @@ if (exportSVGinColor)
             </label>
             <br><br>
             <label>
-                <input type="checkbox" id="colorCheckbox"> Export SVG in color
+                <input type="checkbox" id="colorCheckbox"> Export crochet diagram in color
             </label>
             <br><br>
             <button type="submit">Submit</button>
