@@ -910,9 +910,9 @@ sc2tog,sc
 DOT: separate=0
 # The values below were automatically generated after moving and rotating the 
 # body parts of the snowman after pressing the "Object Transform" button.
-#TRANSFORM_OBJECT: 0,0,-1.526,0,0,0,0
-#TRANSFORM_OBJECT: 1,0,0,0,0,0,0
-#TRANSFORM_OBJECT: 2,0,0.9748263306878693,0,2.220058808536787,0,0`;
+TRANSFORM_OBJECT: 0,0,-1.526,0,0,0,0
+TRANSFORM_OBJECT: 1,0,0,0,0,0,0
+TRANSFORM_OBJECT: 2,0,0.9748263306878693,0,2.220058808536787,0,0`;
 
 var textSnowman = `#Old amigurumi showcase
 #Kept it as a showcase for the old more complicated way of 
@@ -2365,7 +2365,7 @@ function parse_definitions(text) {
 
 
     for (let l of text.split('\n')) {
-        if ((l.trim().slice(0, 4) !== 'DEF:') && (l.trim()[0] !== '#') && (l.trim().slice(0, 4) !== 'DOT:')) { //remove lines starting with Def. or #
+        if ((l.trim().slice(0, 4) !== 'DEF:') && (l.trim()[0] !== '#') && (l.trim().slice(0, 4) !== 'DOT:') && (l.trim().slice(0, 17) !== 'TRANSFORM_OBJECT:')) { //remove lines starting with Def. or #
             let l0 = '';
             for (let c of l) {
                 if (c === '#') //remove string after a #
@@ -2956,7 +2956,7 @@ function duplicateRepeated_before_evaluating_indices(str, i_start0 = 0, stitch_i
                         if (main.trim() === '')
                             i_start = i_start_AT;
 
-                        if (main.trim().slice(0, 4) !== 'DOT:' && main.trim().slice(0, 4) !== 'DEF:' && main.trim().slice(0, 6) !== 'COLOR:' && main.trim()[0] !== '#')
+                        if (main.trim().slice(0, 4) !== 'DOT:' && main.trim().slice(0, 17) !== 'TRANSFORM_OBJECT:'  && main.trim().slice(0, 4) !== 'DEF:' && main.trim().slice(0, 6) !== 'COLOR:' && main.trim()[0] !== '#')
                             stitch_ind_in_text.push([i_start, main.trim()]); ///HERE!;;
                     }
                 }
@@ -3294,7 +3294,7 @@ function evaluate_indices_and_stop(text, substitute) {
         const lines = text.split('\n');
 
         // Use regex to match lines starting with DEF: or DOT: (with optional leading whitespace)
-        const regex = /^\s*(DEF:|DOT:|BACKGROUND:|#TRANSFORM_OBJECT:)/;
+        const regex = /^\s*(DEF:|DOT:|BACKGROUND:|TRANSFORM_OBJECT:)/;
 
         // Filter the lines that match the regex and join them back into a string
         const extractedLines = lines
