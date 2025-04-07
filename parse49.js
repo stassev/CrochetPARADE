@@ -3294,7 +3294,7 @@ function evaluate_indices_and_stop(text, substitute) {
         const lines = text.split('\n');
 
         // Use regex to match lines starting with DEF: or DOT: (with optional leading whitespace)
-        const regex = /^\s*(DEF:|DOT:|BACKGROUND:)/;
+        const regex = /^\s*(DEF:|DOT:|BACKGROUND:|#TRANSFORM_OBJECT:)/;
 
         // Filter the lines that match the regex and join them back into a string
         const extractedLines = lines

@@ -80,6 +80,10 @@
             color: rgb(121, 42, 121);
         }
 
+        .language-html .transform {
+            font-weight: 540;
+            color: rgb(111, 59, 174);
+        }
         .language-html .dot1 {
             font-weight: 540;
             color: rgb(150, 50, 50);
@@ -2299,7 +2303,9 @@ document.getElementById("inputText").addEventListener("mouseleave", () => {
                 //{pattern:/^(\((\((\((\((\((\((\((\((\((\([^()]*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)|[^()])*\)/,greedy:true
                 //}],
 
-                'comment': /\\[^\\]*?(?:\\|$)|#.*/,
+              
+                'transform': {pattern:/^\s*(#TRANSFORM_OBJECT:).*$/m,greedy: true
+            },  'comment': {pattern:/\\[^\\]*?(?:\\|$)|#.*/,greedy:true},
                 'def': {
                     pattern: /^(\s*)(DEF:.*)/m,
                     lookbehind: true
@@ -2773,6 +2779,11 @@ if (hasTokenWordsAfterLastBr) {
         .token.dot1 {
             font-weight:540;
             color: rgb(150, 50, 50);
+        }
+
+        .token.transform {
+            font-weight: 540;
+            color: rgb(111, 59, 174);
         }
         .token.dot2 {
             font-weight:540;
