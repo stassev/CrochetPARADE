@@ -1046,6 +1046,8 @@
         <b>CrochetPARADE was updated to support crocheting in the back and front loops. See the Mosaic crochet showcase as well as the manual.</b>
     </div> -->
     <script>
+            var tempElement = document.createElement("pre");
+        
         var shape;
     </script>
     <script src="bezier49.js"></script>
@@ -2376,7 +2378,7 @@ const oldTextLength = inputText.dataset.oldText.length;
     // Check if the text has changed
     if (inputText.value !== inputText.dataset.oldText ) {
         // Create a temporary element for highlighting
-        let tempElement = document.createElement("pre");
+        
         tempElement.innerHTML =text;
         tempElement.className = result_element.className;
         //result_element.innerHTML = text; 
