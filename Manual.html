@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Apr 3, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Apr 8, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -717,6 +717,15 @@ BACKGROUND: white</code></pre>
     #Setting it too high (above 0.15 or so) can cause failure to 
     #converge. Default: 0.1
     DOT: learning_rate=0.02</code></pre>
+
+    <h3 id="transform-object">TRANSFORM_OBJECT: command</h3>
+<p>
+    Objects can be translated by {tx,ty,tz} units and rotated by the Euler angles {rx,ry,rz} (in radians) by specifying 
+    <code>TRANSFORM_OBJECT:object_number,tx,ty,tz,rx,ry,rz</code>
+    This is best done using the "Object Transform" tool, which interactively allows the user to move and rotate objects. 
+    In this context, an object is a separately crocheted pattern, not connected to other patterns. See the Amigurumi example.
+
+</p>
     <h2 id="specifying-attachment-points">Specifying attachment points</h2>
     <p>Stitches on a given row/round are automatically attached one-by-one
         to consecutive stitches in the previous row/round. If the work is turned
