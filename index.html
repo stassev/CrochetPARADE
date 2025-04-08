@@ -1167,7 +1167,7 @@
         document.getElementById('mouse').style.display = 'none';
         document.getElementById('display').style.display = 'none';
         document.addEventListener('keydown', function(event) {
-            if ((event.altKey) && ((event.ctrlKey)) && (event.key === '1'))
+            if ((event.altKey) && ((event.ctrlKey|| event.metaKey)) && (event.key === '1'))
                 showinfo = !showinfo;
             if (showinfo) {
                 document.getElementById('mouse').style.display = 'flex';
@@ -1562,10 +1562,10 @@
         // var layouts = ['sideBySide', 'stacked', 'editorOnly', '3dViewOnly']
         var layouts = ['sideBySide', 'editorOnly', '3dViewOnly'];
         document.addEventListener('keydown', function(event) {
-            if (event.ctrlKey && event.key === 'r') {
+            if ((event.ctrlKey|| event.metaKey) && event.key === 'r') {
                 event.preventDefault();
             }
-            if (event.ctrlKey && event.key === 'l') {
+            if ((event.ctrlKey|| event.metaKey) && event.key === 'l') {
                 event.preventDefault();
                 // Call the function to toggle the layout
                 let l = layouts[((++layoutNumber) % 3)];
@@ -2236,12 +2236,12 @@ document.getElementById("inputText").addEventListener("mousemove", (e) => {
 
 
 document.getElementById("inputText").addEventListener("click", (e) => {
-    if ((e.altKey)&&(!e.ctrlKey)){          
+    if ((e.altKey)&&(!(e.ctrlKey|| e.metaKey))){          
           let result_element = document.querySelector("#highlighting");
     assignIdsAndHover(result_element,2);
     triggerClickTextEvent(-1,-1,true);
 }
-  if (e.ctrlKey) { // Check if CTRL key is pressed
+  if (e.ctrlKey|| e.metaKey) { // Check if CTRL key is pressed
     const textarea = e.target;
     const id = textarea.dataset.hoveredId; // Retrieve stored ID from mousemove
 
@@ -2991,10 +2991,10 @@ if (hasTokenWordsAfterLastBr) {
                 <li><kbd>left ctrl+left click</kbd>: If the instructions were
                     expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then ctrl+click in the text input on a stitch highlights the selected stitch in the editor and in the 3d canvas simultaneously, removing previous highlights.
                 </li>
-                <li><kbd>left ctrl+alt+left click</kbd>: If the instructions were
+                <li><kbd>left ctrl+left alt+left click</kbd>: If the instructions were
                     expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then ctrl+click in the text input on a stitch highlights the selected stitch in the editor and in the 3d canvas simultaneously. Unlike ctrl+click, this shortcut does not remove previous highlights.
                 </li>
-                <li><kbd>alt+left click</kbd>: Clears previous highlights in the editor and 3d canvas.
+                <li><kbd>left alt+left click</kbd>: Clears previous highlights in the editor and 3d canvas.
             </ul>
             <p> Shortcuts in 3D view. To activate, click on the 3D canvas first.</p>
             <p>
@@ -3016,10 +3016,10 @@ if (hasTokenWordsAfterLastBr) {
                     <li><kbd>left ctrl+left click</kbd>: If the instructions were
                         expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then ctrl+click in the 3D canvas on a stitch highlights the selected stitch in the editor and in the 3d canvas simultaneously, removing previous highlights.
                     </li>
-                    <li><kbd>left ctrl+alt+left click</kbd>: If the instructions were
+                    <li><kbd>left ctrl+left alt+left click</kbd>: If the instructions were
                         expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then ctrl+click in the 3D canvas on a stitch highlights the selected stitch in the editor and in the 3d canvas simultaneously. Unlike ctrl+click, this shortcut does not remove previous highlights.
                     </li>
-                    <li><kbd>alt+left click</kbd>: Clears previous highlights in the editor and 3d canvas.
+                    <li><kbd>left alt+left click</kbd>: Clears previous highlights in the editor and 3d canvas.
                     </li>
                     <li><kbd>p</kbd>: Write crochet chart to SVG file. For 2D projects, it shows a face-on view. For 3D projects, it shows an orthographic projection from the current view.</li>
                     <li><kbd>r</kbd>: Rotate view automatically.</li>

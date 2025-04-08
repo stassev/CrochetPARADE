@@ -1086,8 +1086,8 @@ var I = null;
     function onMouseDown(event) {
         if (inputText.expanded){
         if ( event.button === 0 && event.target === renderer.domElement){
-        if (event.ctrlKey && event.altKey){highlightInstructions=2;}
-        else if (event.ctrlKey){
+        if ((event.ctrlKey|| event.metaKey) && event.altKey){highlightInstructions=2;}
+        else if (event.ctrlKey|| event.metaKey){
             //const previouslyHighlightedId = inputText.dataset.previousHighlightedIdMesh;
             //if (previouslyHighlightedId) {
             //  const previousSpan = document.getElementById(previouslyHighlightedId);
