@@ -3220,7 +3220,7 @@ if (exportSVGinColor)
     function initializeObjectData(objectValue) {
         if (objectValue === -1) {
             // Check for all existing #TRANSFORM_OBJECT: entries
-            const allTransformsRegex = /$\s*TRANSFORM_OBJECT:\s*(\d+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)/gm;
+            const allTransformsRegex = /^\s*TRANSFORM_OBJECT:\s*(\d+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)/gm;
             let match;
             let currentText = inputText.value;
             let text0 = '';
@@ -3241,7 +3241,7 @@ if (exportSVGinColor)
             }
         } else {
             // Original logic for specific objectValue
-            const regex = new RegExp(`$\s*TRANSFORM_OBJECT:\s*${objectValue},(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?)`, 'gm');
+            const regex = new RegExp(`^\s*TRANSFORM_OBJECT:\s*${objectValue},(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?),(-?\\d+(\\.\\d+)?)`, 'gm');
             let currentText = inputText.value;
             let text0 = '';
             let k=0;
@@ -3300,7 +3300,7 @@ if (exportSVGinColor)
     }
 
     function readInstructions() {
-        const allTransformsRegex = /$\s*TRANSFORM_OBJECT:\s*(\d+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)/gm;
+        const allTransformsRegex = /^\s*TRANSFORM_OBJECT:\s*(\d+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)/gm;
         let match;
         let currentText = inputText.value;
         let k=0;
