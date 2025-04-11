@@ -91,7 +91,7 @@ struct EdgeInfo {
 };
 
 
-Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* inflate,double* learningRate,bool*inflateQ,double*separate) {
+Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* inflate,double* learningRate,bool*inflateQ,double*separate,int*viscousiterations,double*viscoustimestep,double*viscousdamping) {
     std::unordered_map<std::string, int> nodeIndexMap;
     std::vector<EdgeInfo> edges;
     bool isJacDef = false;  // Add this variable to track Jac definition
@@ -149,9 +149,37 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
             {
                 size_t found = line.find("iterations");
                 if (found != std::string::npos) {
+                    // Check if "viscous_iterations" is in the string before "iterations"
+                    size_t viscous_found = line.find("viscous_iterations");
+                    if (viscous_found == std::string::npos) {
+                        found = line.find_first_of("0123456789", found);
+                        size_t end = line.find_first_not_of("0123456789", found);
+                        *iterations = std::stoi(line.substr(found, end - found));
+                    }
+                }
+            }
+            {
+                size_t found = line.find("viscous_iterations");
+                if (found != std::string::npos) {
                     found = line.find_first_of("0123456789", found);
                     size_t end = line.find_first_not_of("0123456789", found);
-                    *iterations = std::stoi(line.substr(found, end - found));
+                    *viscousiterations = std::stoi(line.substr(found, end - found));
+                }
+            }
+            {
+                size_t found = line.find("viscous_timestep");
+                if (found != std::string::npos) {
+                    found = line.find_first_of("0123456789.", found);
+                    size_t end = line.find_first_not_of("0123456789.", found);
+                    *viscoustimestep = std::stod(line.substr(found, end - found));
+                }
+            }
+            {
+                size_t found = line.find("viscous_damping");
+                if (found != std::string::npos) {
+                    found = line.find_first_of("0123456789.", found);
+                    size_t end = line.find_first_not_of("0123456789.", found);
+                    *viscousdamping = std::stod(line.substr(found, end - found));
                 }
             }
             {
@@ -308,6 +336,159 @@ void dijkstra(Graph& graph, int start_node) {
         }
     }
 }
+// Modified rescaleCoordinates with 3D support
+void rescaleCoordinates(Graph& graph, std::vector<double>& flat_positions, int numDimensions) {
+    double current_avg = 0.0;
+    double target_avg = 0.0;
+    int count = 0;
+    
+    // Calculate average distances for connected nodes
+    for (int i = 0; i < graph.num_nodes; ++i) {
+        for (int j : graph.neighbors[i]) {
+            if (j < i) continue;
+            
+            double dx = flat_positions[i*numDimensions] - flat_positions[j*numDimensions];
+            double dy = flat_positions[i*numDimensions+1] - flat_positions[j*numDimensions+1];
+            double dz = (numDimensions == 3) ? 
+                flat_positions[i*numDimensions+2] - flat_positions[j*numDimensions+2] : 0.0;
+            double current_dist = sqrt(dx*dx + dy*dy + dz*dz);
+            double target_dist = graph.flat_distance_matrix[i * graph.num_nodes + j];
+            
+            current_avg += current_dist;
+            target_avg += target_dist;
+            count++;
+        }
+    }
+    
+    if (count > 0 && target_avg > 1e-9) {
+        double scale_factor = target_avg / current_avg;
+        
+        // Apply scaling to all nodes except fixed ones
+        for (int i = 0; i < graph.num_nodes; ++i) {
+            if (!graph.flat_specified_positions[i]) {
+                flat_positions[i*numDimensions] *= scale_factor;
+                flat_positions[i*numDimensions+1] *= scale_factor;
+                if (numDimensions == 3) {
+                    flat_positions[i*numDimensions+2] *= scale_factor;
+                }
+            }
+        }
+    }
+}
+void physicsStep(Graph& graph, std::vector<double>& flat_positions, int numDimensions, int physics_iters = 100,
+    double dt = 0.1, double viscousDamping = 1) {
+std::vector<double> forces(graph.num_nodes * numDimensions, 0.0);
+std::vector<double> velocities(graph.num_nodes * numDimensions, 0.0);
+
+// Initialize velocities to zero
+std::fill(velocities.begin(), velocities.end(), 0.0);
+
+for (int iter = 0; iter < physics_iters; ++iter) {
+    if (iter==0){
+std::fill(forces.begin(), forces.end(), 0.0);
+
+// Spring forces
+for (int i = 0; i < graph.num_nodes; ++i) {
+for (size_t n_idx = 0; n_idx < graph.neighbors[i].size(); ++n_idx) {
+    int j = graph.neighbors[i][n_idx];
+    if (j < i) continue;
+    
+    double target_dist = graph.dist_to_neighbor[i][n_idx];
+    double dx = flat_positions[i*numDimensions] - flat_positions[j*numDimensions];
+    double dy = flat_positions[i*numDimensions+1] - flat_positions[j*numDimensions+1];
+    double dz = (numDimensions == 3) ? 
+        flat_positions[i*numDimensions+2] - flat_positions[j*numDimensions+2] : 0.0;
+    double current_dist = sqrt(dx*dx + dy*dy + dz*dz);
+    
+    if (current_dist > 1e-9) {
+        double force = (current_dist - target_dist) / current_dist;
+        
+        // Apply forces to both nodes
+        if (!graph.flat_specified_positions[i]) {
+            forces[i*numDimensions] -= dx * force;
+            forces[i*numDimensions+1] -= dy * force;
+            if (numDimensions == 3) forces[i*numDimensions+2] -= dz * force;
+        }
+        if (!graph.flat_specified_positions[j]) {
+            forces[j*numDimensions] += dx * force;
+            forces[j*numDimensions+1] += dy * force;
+            if (numDimensions == 3) forces[j*numDimensions+2] += dz * force;
+        }
+    }
+}
+}
+    }
+
+// Kick 1: Apply forces to update velocities
+for (int i = 0; i < graph.num_nodes; ++i) {
+if (!graph.flat_specified_positions[i]) {
+    for (int dim = 0; dim < numDimensions; ++dim) {
+        int idx = i*numDimensions + dim;
+        //forces[idx] -= viscousDamping * velocities[idx];
+        //velocities[idx] += forces[idx] * (dt / 2.0);  // Half step
+        velocities[idx]=(dt*forces[idx] + 2.0* velocities[idx])/(2.0 + dt*viscousDamping);
+    }
+}
+}
+
+// Drift: Update positions based on velocities
+for (int i = 0; i < graph.num_nodes; ++i) {
+if (!graph.flat_specified_positions[i]) {
+    for (int dim = 0; dim < numDimensions; ++dim) {
+        int idx = i*numDimensions + dim;
+        flat_positions[idx] += velocities[idx] * dt;
+    }
+}
+}
+
+// Recalculate forces based on new positions for viscous term
+std::fill(forces.begin(), forces.end(), 0.0);
+
+// Spring forces
+for (int i = 0; i < graph.num_nodes; ++i) {
+for (size_t n_idx = 0; n_idx < graph.neighbors[i].size(); ++n_idx) {
+    int j = graph.neighbors[i][n_idx];
+    if (j < i) continue;
+    
+    double target_dist = graph.dist_to_neighbor[i][n_idx];
+    double dx = flat_positions[i*numDimensions] - flat_positions[j*numDimensions];
+    double dy = flat_positions[i*numDimensions+1] - flat_positions[j*numDimensions+1];
+    double dz = (numDimensions == 3) ? 
+        flat_positions[i*numDimensions+2] - flat_positions[j*numDimensions+2] : 0.0;
+    double current_dist = sqrt(dx*dx + dy*dy + dz*dz);
+    
+    if (current_dist > 1e-9) {
+        double force = (current_dist - target_dist) / current_dist;
+        
+        // Apply forces to both nodes
+        if (!graph.flat_specified_positions[i]) {
+            forces[i*numDimensions] -= dx * force;
+            forces[i*numDimensions+1] -= dy * force;
+            if (numDimensions == 3) forces[i*numDimensions+2] -= dz * force;
+        }
+        if (!graph.flat_specified_positions[j]) {
+            forces[j*numDimensions] += dx * force;
+            forces[j*numDimensions+1] += dy * force;
+            if (numDimensions == 3) forces[j*numDimensions+2] += dz * force;
+        }
+    }
+}
+}
+// Kick 2: Apply forces again to update velocities (including viscous damping)
+for (int i = 0; i < graph.num_nodes; ++i) {
+if (!graph.flat_specified_positions[i]) {
+    for (int dim = 0; dim < numDimensions; ++dim) {
+        int idx = i*numDimensions + dim;
+        // Viscous damping force
+        //forces[idx] -= viscousDamping * velocities[idx];
+        //velocities[idx] += (forces[idx]-viscousDamping * velocities[idx]) * (dt / 2.0);  // Half step//
+        //rewrite implicitly:
+        velocities[idx]=(dt*forces[idx] + 2.0* velocities[idx])/(2.0 + dt*viscousDamping);
+    }
+}
+}
+}
+}
 
 extern "C" const char* performLayout(const char* jsInput) {
 
@@ -322,7 +503,10 @@ extern "C" const char* performLayout(const char* jsInput) {
     double learningRate = 0.1;
     bool inflateQ=false;
     double separate=1.5;
-    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&inflate,&learningRate,&inflateQ,&separate);
+    int viscousiterations=10;
+    double viscoustimestep=0.1;
+    double viscousdamping=1.0;
+    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&inflate,&learningRate,&inflateQ,&separate,&viscousiterations,&viscoustimestep,&viscousdamping);
     const int numDimensions =Ndim;
     {
         //#pragma omp for nowait
@@ -430,10 +614,13 @@ extern "C" const char* performLayout(const char* jsInput) {
                 std::cout<<"Iteration = "<<iter<<" Error = "<<sqrt(error/n_edges)<<std::endl;
 
                 n_ave_F=0.0;
+                for (int dim = 0; dim < numDimensions; ++dim) 
+                    ave_forces[dim]=0;
                 for (int i = 0; i < graph.num_nodes; ++i) {
                     if (graph.flat_specified_positions[i]){
                         for (int dim = 0; dim < numDimensions; ++dim) {
                             ave_forces[dim]+=flat_forces[i * numDimensions + dim];
+                            flat_forces[i * numDimensions + dim]=0;
                         }
                         n_ave_F++;
                     }
@@ -446,7 +633,7 @@ extern "C" const char* performLayout(const char* jsInput) {
                 for (int i = 0; i < graph.num_nodes; ++i) {
                     if (!graph.flat_specified_positions[i]){
                         for (int dim = 0; dim < numDimensions; ++dim) {
-                            flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim];
+                            flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim]-F * ave_forces[dim];
                             flat_forces[i * numDimensions + dim]=0;
                             double x=flat_positions[i * numDimensions + dim];
                             if (abs(x)>1.e5 || isnan(x)){
@@ -454,20 +641,10 @@ extern "C" const char* performLayout(const char* jsInput) {
                             }
                         }
                     } 
-                    else {
-                        for (int dim = 0; dim < numDimensions; ++dim) {
-                            flat_positions[i * numDimensions + dim] -= F * ave_forces[dim];
-                            flat_forces[i * numDimensions + dim]=0;
-                            double x=flat_positions[i * numDimensions + dim];
-                            if (abs(x)>1.e5 || isnan(x)){
-                                not_converged=true;
-                            }
-                        }
-                    }
+                   
                     
                 }
-                for (int dim = 0; dim < numDimensions; ++dim) 
-                    ave_forces[dim]=0;
+                
                 if (not_converged){
                     learningRate/=3.;
                     std::cout<<"Failed to converge. Learning rate reduced to: "<<learningRate<<std::endl;
@@ -475,6 +652,10 @@ extern "C" const char* performLayout(const char* jsInput) {
                 }
             }
         }
+if (viscousiterations>0){
+        rescaleCoordinates(graph, flat_positions, numDimensions);
+        physicsStep(graph, flat_positions, numDimensions,viscousiterations,viscoustimestep,viscousdamping);
+}   
         for (int i = 0; i < graph.num_nodes; ++i) {
             jsOutput << "{\"name\": \""<<graph.nodes[i]<<"\",\"pos\": \"";
             jsOutput << flat_positions[i * numDimensions];
@@ -560,12 +741,14 @@ extern "C" const char* performLayout(const char* jsInput) {
 
 
 
-
+                for (int dim = 0; dim < numDimensions; ++dim) 
+                    ave_forces[dim]=0;
                 n_ave_F=0.0;
                 for (int i = 0; i < graph.num_nodes; ++i) {
                     if (graph.flat_specified_positions[i]){
                         for (int dim = 0; dim < numDimensions; ++dim) {
                             ave_forces[dim]+=flat_forces[i * numDimensions + dim];
+                            flat_forces[i * numDimensions + dim]=0;
                         }
                         n_ave_F++;
                     }
@@ -578,7 +761,7 @@ extern "C" const char* performLayout(const char* jsInput) {
                 for (int i = 0; i < graph.num_nodes; ++i) {
                     if (!graph.flat_specified_positions[i]){
                         for (int dim = 0; dim < numDimensions; ++dim) {
-                            flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim];
+                            flat_positions[i * numDimensions + dim] -= F * flat_forces[i * numDimensions + dim]-F * ave_forces[dim];
                             flat_forces[i * numDimensions + dim]=0;
                             double x=flat_positions[i * numDimensions + dim];
                             if (abs(x)>1.e5 || isnan(x)){
@@ -586,20 +769,9 @@ extern "C" const char* performLayout(const char* jsInput) {
                             }
                         }
                     } 
-                    else {
-                        for (int dim = 0; dim < numDimensions; ++dim) {
-                            flat_positions[i * numDimensions + dim] -= F * ave_forces[dim];
-                            flat_forces[i * numDimensions + dim]=0;
-                            double x=flat_positions[i * numDimensions + dim];
-                            if (abs(x)>1.e5 || isnan(x)){
-                                not_converged=true;
-                            }
-                        }
-                    }
+                    
                     
                 }
-                for (int dim = 0; dim < numDimensions; ++dim) 
-                    ave_forces[dim]=0;
                 if (not_converged){
                     learningRate/=3.;
                     std::cout<<"Failed to converge. Learning rate reduced to: "<<learningRate<<std::endl;
@@ -646,6 +818,10 @@ extern "C" const char* performLayout(const char* jsInput) {
 
             }
         }
+if (viscousiterations>0){
+        rescaleCoordinates(graph, flat_positions, numDimensions);
+        physicsStep(graph, flat_positions, numDimensions,viscousiterations,viscoustimestep,viscousdamping);
+}   
         for (int i = 0; i < graph.num_nodes; ++i) {
             jsOutput << "{\"name\": \""<<graph.nodes[i]<<"\",\"pos\": \"";
             jsOutput << flat_positions[i * numDimensions];

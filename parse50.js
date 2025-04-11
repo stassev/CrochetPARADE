@@ -264,7 +264,8 @@ COLOR: Blue
 $k=0$,3ch.A[11]+!,(3ch,sk,>,dc.A[k++]^!,dc@[@].A[k++]^!)*6,dc.A[k++]^!,ss@[%,2]
 COLOR: Red
 $k=0$,@[-1,0],ch,[3ch,sc@[dc:@+1],[hdc,2dc,hdc]@A[k++]~,[hdc,2dc,hdc]@A[k++],>,sc@[dc:@]]*6,sc@[-1,-1]
-DOT: start=37`;
+DOT: start=37
+DOT: viscous_iterations=1000`;
 
 var textSquare = `#Granny square showcase
 # Own design, incorporating a modified version of the flower in the "Irish crochet flower 1" showcase.
@@ -284,6 +285,7 @@ $c=0$,3ch,[3tr@chsp[c++],3ch,3tr@chsp[c++],ch,>,(4dc@chsp[c++],ch)*2]*4,4dc@chsp
 COLOR: Green
 ch,2sk,5sc,[sc,dc@[@],sc@[@],13sc,>,6sc]*4,ss@[%,0]
 DOT: start=1
+DOT: viscous_iterations=20
 `;
 
 var textTestEdgeOfSpaces1 = `10ch,turn
@@ -559,13 +561,18 @@ ss1@[-1,-2],ss0@1X,ss2togA*6
 DOT: start=2
 #The stocking is a bit overinflated, causing increased tension in the stitches.
 #You can see that if you press 's'. The red stitches are the ones that are
-#too tense. To reduce the tension in the model, uncomment the line below by
+#too tense. To reduce the tension in the model, we are going to do some viscous relaxation below:
+
+DOT: viscous_iterations=500
+
+# Alternatively (or along with the setting above), uncomment the line below by
 #removing the leading '#'. That does slow down the calculation a couple of times.
 #DOT: inflate=1.0
 `;
 
 
 var textBootie = `#Baby booties showcase
+# Updated Apr 11,2025.
 COLOR: Violet
 9ch,turn
 sk,(hdc2inc,3hdc,3dc,dc5inc).R,turn
@@ -594,9 +601,10 @@ var textBlanket = `#Baby blanket showcase
 DEF: dc=Copy(dc,3)
 COLOR: Ivory
 [7ch]*10,5ch,turn
-$K=0,m=0$,3ch,dc2inc,3sk,sc,[3ch.C[m,K++],3dc,3sk,sc]*10,turn
-{$m++,k=0$,3ch,dc2inc,[sc,3ch.C[m,k++],3dc]@C[m-1,K-k]*10,sc@[-1,2],turn
+$K=0,m=0$,4ch,dc2inc,3sk,sc,[3ch.C[m,K++]!+,3dc,3sk,sc]*10,turn
+{$m++,k=0$,4ch,dc2inc,[sc,3ch.C[m,k++]!+,3dc]@C[m-1,K-k]*10,sc@[-1,3],turn
 }*15
+DOT: start=1
 `;
 
 var textHat = `# Hat showcase
@@ -645,10 +653,12 @@ sc2inc*9
 [84sc
 ]*7
 83sc,ss@[%,0]
-#Ensure the hat is not overinflated. Setting this
+#Ensure the hat is not overinflated. Setting the inflate
 #parameter slows down the code by a factor of two.
 #The default value for inflate is infinity.
 DOT: inflate=2.0
+#The viscous relaxation allows for reducing the tension in some stitches even further.
+DOT: viscous_iterations=50
 `;
 
 
@@ -688,6 +698,8 @@ ch,54_,3ch,turn
 4sk,O,O,O,O,O,O,O,O,OX,X,X,X,X,O,O,OX,X,X,X,X,O,OX,O,O,O,OX,O,OX,O,O,OX,O,OX,O,O,O,OX,O,O,O,O,O,OX,O,O,3ch,turn
 4sk,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O,O
 DOT: start=1
+#For rendering in 2D, this works better:
+#DOT: start=5
 `;
 
 var textFlower = `# Irish crochet showcase
@@ -734,6 +746,7 @@ $s=0$,[18sc,3sc2inc,18sc]@Row1,4ch.chain_spaceA[s++],turn
 
 #Control the separation between the disjoint pieces. Default is 1.5
 DOT: separate=0.8
+DOT: viscous_iterations=1000
 `;
 
 var textFlower2 = `# Irish crochet flower showcase
@@ -838,7 +851,8 @@ ch,sk,[sc,hdc5puff,sc]*6,sc,turn
 2ch,sk,[dc,dc4pc,dc]*6,dc,turn
 2ch,sk,[dc,dc5pc,dc]*6,dc,turn
 
-DOT: start=5`;
+DOT: start=5
+DOT: viscous_iterations=500`;
 var textSnowman2 = `#Simple amigurumi showcase
 COLOR:white
 ring.R
@@ -1002,6 +1016,7 @@ DOT: separate=0
 # When nodes are fixed in position as above, the code needs a lot
 # more iterations to converge well.
 DOT: iterations=4000
+DOT: viscous_iterations=0
 `;
 //start_anew: '&start_anew^A(hidden):~::!-skip-A',
 var Dictionary = {

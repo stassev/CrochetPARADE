@@ -1017,15 +1017,15 @@
         <div class="title-author">
             <p class="title">CrochetPARADE: Crochet PAttern Renderer, Analyzer and DEbugger</p>
             <p class="author">Svetlin Tassev</p>
-            <p class="date">Updated: Apr 7, 2025. Latest: <a href="https://crochetparade.org/crochetforum/showthread.php?tid=26" target="_blank">(1) Improved workflow. (2) Simplifying crochet patterns. (3) Exporting color charts.</a>
+            <p class="date">Updated: Apr 11, 2025. Latest:  <a href="https://crochetparade.org/crochetforum/showthread.php?tid=28" target="_blank">Improved physics engine behind the 3d models</a>. Previously: <a href="https://crochetparade.org/crochetforum/showthread.php?tid=26" target="_blank">(1) Improved workflow. (2) Simplifying crochet patterns. (3) Exporting color charts.</a>
         </div>
         </p>
     </div>
     </div>
     <div id="announcement" style="background-color:rgb(253, 79, 79);color:#ffffff; font-size: 14pt; position: relative;">
         <span style="cursor: pointer; position: absolute; top: 5px; right: 5px;font-size:20pt;font-weight:600" onclick='closeAnnouncement("announcement")'>×</span>
-        <b>The platform has been tested with the latest Chrome, Brave and Firefox browsers. <br>
-            Some Safari versions have issues loading it correctly.</b>
+        <b>The platform has been tested with the latest Chrome, Brave and Firefox browsers. Some Safari versions have issues loading it correctly. <br>
+            The platform is not designed for mobile devices and works best on a computer.</b>
     </div>
     
     <div style="height:2pt"></div>
@@ -2317,11 +2317,11 @@ greedy:true},
                 },
 
                 'dot1': {
-                    pattern: /^\s*(DOT:)\s*(\"(.*)|separate(\s*)=(\s*)[\.\d]+|inflate(\s*)=(\s*)[\.\d]+|learning_rate(\s*)=(\s*)[\.\d]+|start(\s*)=(\s*)\d+|iterations(\s*)=(\s*)\d+)/m,
+                    pattern: /^\s*(DOT:)\s*(\"(.*)|separate(\s*)=(\s*)[\.\d]+|inflate(\s*)=(\s*)[\.\d]+|learning_rate(\s*)=(\s*)[\.\d]+|start(\s*)=(\s*)\d+|iterations(\s*)=(\s*)\d+|viscous_iterations(\s*)=(\s*)\d+|viscous_timestep(\s*)=(\s*)[\.\d]+|viscous_damping(\s*)=(\s*)[\.\d]+)/m,
                     greedy: true
                 },
                 'dot2': {
-                    pattern: /^\s*(DOT:)\s*(\"(.*)|separate|inflate|learning_rate|iterations|start)(\s*)=?/m,
+                    pattern: /^\s*(DOT:)\s*(\"(.*)|separate|inflate|learning_rate|iterations|start|viscous_damping|viscous_timestep|viscous_iterations)(\s*)=?/m,
                     greedy: true
                 },
                 'dot': {
@@ -3236,7 +3236,7 @@ if (hasTokenWordsAfterLastBr) {
             }
         };
     </script>
-    <script async src="./graph4.js"></script>
+    <script async src="./graph.js"></script>
     <script>
         function transformJsonWithPos(inputJson, inputJson2) {
             const data = JSON.parse(inputJson);

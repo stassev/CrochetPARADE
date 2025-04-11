@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Apr 9, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: Apr 11, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -732,7 +732,25 @@ BACKGROUND: white</code></pre>
     #The learning rate controls the rate at which the code converges. 
     #Setting it too high (above 0.15 or so) can cause failure to 
     #converge. Default: 0.1
-    DOT: learning_rate=0.02</code></pre>
+    DOT: learning_rate=0.02
+    # The viscous_iterations keyword sets the number of iterations 
+    # for the "viscous relaxation" post-processing step, which helps 
+    # fix overly loose or tight stitches after inflating the project with 'inflate'. Higher 
+    # values allow more relaxation.
+    # Default value: 10. 
+    DOT: viscous_iterations=10 
+    # The viscous_damping keyword controls how much resistance is applied 
+    # during viscous relaxation. Higher values increase damping and slow relaxation; 
+    # lower values speed it up. 
+    # Default value: 1.0. 
+    DOT: viscous_damping=1.0 
+    # The viscous_timestep keyword sets the time step for each iteration 
+    # during viscous relaxation, affecting how quickly adjustments are made. 
+    # Smaller values result in finer adjustments but slower overall processing. 
+    # Large values may lead to failure to converge.
+    # Default value: 0.1. 
+    DOT: viscous_timestep=0.1 
+</code></pre>
 
     <p>Locations of nodes as well as new hidden nodes outside of stitches can be specified as {x,y,z} (in units of a chain length) right after the node name. Below is an example</p>
 <code>ring
