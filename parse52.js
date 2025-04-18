@@ -170,6 +170,40 @@ sca2tog,2sc2tog,COLOR: blue,sc2tog,COLOR: green,sc,sc2tog
 sca6tog
 `;
 
+var textStrawberries=`# This is my version of the strawberry stitch.
+
+# To see the strawberries in color, click on
+# the 3D canvas after calculating the model.
+# Then press 'c', and then increase the
+# yarn thickness by pressing ctrl+ a couple of times.
+
+# Note that the physics engine is not aware of 
+# your intent when placing stitches, so some of 
+# the strawberries will end up behind 
+# and some in front of the project. 
+# You can play around with the value below
+# to initiate the stitches at different locations. 
+# Delete the # sign first to uncomment the line.
+#DOT:start=1
+
+# Change the default dc height a bit.
+DEF: dc=Copy(dc,2.8)
+# slacksc below is just a sc stitch, which the
+# pattern (in real life) forces you to make slacker
+# than the usual sc. One could define it also as:
+#DEF: slacksc=Copy(sc,1.5)
+DEF: slacksc=&sc^A(sc):B~A-B::!-1-A;B-1.5-A
+COLOR:red
+6*(4ch),4ch,turn
+sk,6*(4sc),3sc,ch,turn
+sk,[3sc,dc5inc]*6,3sc,COLOR:green,ch,turn
+[sk,[3scbl,slacksc5tog]*6,3scbl,COLOR:red,ch,turn
+sk,scbl,dc5inc,[3scbl,dc5inc]*6,scbl,COLOR:green,ch,turn
+sk,scbl,slacksc5tog,[3scbl,slacksc5tog]*6,scbl,>,COLOR:red,ch,turn
+sk,[3scbl,dc5inc]*6,3scbl,COLOR:green,ch,turn
+]*7
+`;
+
 var textBLFLtest = `10ch,turn
 ch,sk,9sc,turn
 ch,sk,9scbl,turn
