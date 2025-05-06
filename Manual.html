@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: Apr 11, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: May 6, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -647,9 +647,6 @@ sk,ch,9sc
     <p>Stitching in the front and back loops is done by adding 'fl' or 'bl' at the end of a stitch name, such as
         <code>scbl</code> (single crochet in the back loop), <code>dcfl</code> (double crochet in the front loop), etc. By default,
         only the basic stitches (ss, sc, hdc, dc, tr, dtr,trtr) are supported with the 'bl' and 'fl' options. They are rendered in 3D by slightly shifting them behind and in front of the project for 'bl' and 'fl', respectively.
-        One cannot combine 'fl/bl' with 'Ninc/Ntog', although a workaround is to define a custom stitch. For example, <code>scbl3inc</code> can be defined as:
-        <pre><code>DEF: scbl3inc=3(scbl@1[@+1]),@[@+1]
-        </code></pre>
         If you want to add the 'fl/bl' option to other stitches, then
         one should use a raw stitch definition (see "Raw stitch definitions and grammar"). When exporting a crochet chart to SVG, 'fl' and 'bl' stitches are rendered using their standard symbols.
     </p>

@@ -212,6 +212,22 @@ ch,sk,9scfl,turn
 DOT:iterations=2000
 DOT: learning_rate=0.05`;
 
+var textChevron=`#To see the colors of the chevron pattern, 
+#first click on the 3D model.
+#Then press 'c' to show the colors.
+
+COLOR:Antique White
+3*(27ch),3ch,turn
+sk,sc2tog,[12sc,sc3inc,12sc,>,2sk]*3,sc2tog,ch,turn
+[sk,scbl2tog,[12scbl,scbl3inc,12scbl,>,2sk]*3,scbl2tog,ch,turn
+]*10
+{COLOR:Dark Khaki
+[sk,scbl2tog,[12scbl,scbl3inc,12scbl,>,2sk]*3,scbl2tog,ch,turn
+]*12
+COLOR:Antique White
+[sk,scbl2tog,[12scbl,scbl3inc,12scbl,>,2sk]*3,scbl2tog,ch,turn
+]*12}*2`;
+
 var textMosaic = `#To see the mosaic pattern, first click on the 3D model.
 #Then press 'c' to show the colors.
 #Then increase the yarn thickness by pressing 'ctrl+=' 3 times, 
@@ -1294,14 +1310,15 @@ function handle_Ninc(stitch, N) {
         }
     TopNew = TopNew.slice(0, -1);
 
-    const regex = /(\d+)?([A-Za-z_0-9]+)/g;
+    const regex = /(\d+)?([A-Za-z_0-9\[\]]+)/g;
     var nameBottom;
     var Bottom = '';
     var k = 0;
     while (match = regex.exec(bottom)) {
         const name = match[2];
         var number = match[1];
-        nameBottom = name;
+        nameBottom = name.replace(/\[[^\]]*\]$/, '');
+
         if (!number)
             number = '';
         Bottom += number + name;
@@ -1380,16 +1397,24 @@ function handle_Ntog(stitch, N) {
         k++;
     }
 
-    const regex = /(\d+)?([A-Za-z_0-9]+)/g;
-    var Bottom = '';
-    for (var kb = 0; kb < N; kb++)
-        while (match = regex.exec(bottom)) {
-            const name = match[2];
-            var number = match[1];
-            if (!number)
-                number = '';
-            Bottom += number + name + String(kb) + ';';
+    const regex = /(\d+)?([A-Za-z_0-9]+(\[[^\]]*\])?)/g;
+    let Bottom = '';
+    for (let kb = 0; kb < N; kb++) {
+        let match;
+        while ((match = regex.exec(bottom))) {
+            let name = match[2]; // e.g., foo, foo[bar]
+            let number = match[1] || '';
+            let bracketPart = '';
+    
+            // Extract bracket part if present
+            const bracketMatch = name.match(/(\[[^\]]*\])/);
+            if (bracketMatch) {
+                bracketPart = bracketMatch[1]; // e.g., [bar]
+                name = name.replace(bracketPart, ''); // Remove bracket part from name
+            }
+            Bottom += number + name + String(kb) + (bracketPart || '') + ';';
         }
+    }
     Bottom = Bottom.slice(0, -1);
 
 
@@ -3822,7 +3847,7 @@ function export_to_dot(Stitches, json) {
 
 
             if (doJacobian) {
-                let name = '"' + pos1 + '_jacobian' + bOrig.jacobian + '"';
+                let name = '"'+pos0+"a" + pos1 + '_jacobian' + bOrig.jacobian + '"';
                 if (json) {
                     let POS = findPosByNameFromJson(json, name);
                     if (POS.length > 0) {
@@ -3839,7 +3864,7 @@ function export_to_dot(Stitches, json) {
                 text += ',{"type":"edge","tail":"' + pos0 + '","head":' + name + ',"penwidth":"4","color":"red","len":"' + 0.2 + '","label":"' + s['Color'] + '"}\n';
                 textS += '"' + pos0 + '" -- ' + name + ' ' + 0.2 + '\n';
                 JACS.push([pos0, bOrig.jacobian, '"' + pos0 + '"---' + name, name.slice(1, -1)]);
-                pos0 = pos1 + '_jacobian' + bOrig.jacobian;
+                pos0 = pos0+"a"+pos1 + '_jacobian' + bOrig.jacobian;
             }
 
             if (hidden) {
