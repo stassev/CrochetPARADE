@@ -1477,6 +1477,177 @@
                 update(inputText.value); onMyInput();
             }
         }
+    function lathe() {   
+        inputText.value=parseCrochetLathe(inputText.value);
+        update(inputText.value); onMyInput();
+    }
+        
+    function parseCrochetLathe(inputText) {
+    const lines = inputText.trim().split('\n');
+    let output = [];
+    let mode = 'normal'; // can be 'normal', 'back', or 'front'
+    let prevRowTokens = [];
+    let inMagicCircle=false;
+    for (let line of lines) {
+        line = line.trim();
+        if (!line) continue;
+
+        // Detect magic circle/ring start
+        if (/start with a magic (circle|ring)/i.test(line)) {
+            output.push('ring.R');
+            inMagicCircle = true;  // flag to handle first row differently
+            continue;
+        }
+
+        // Detect loop start (non-magic circle)
+        if (line.toLowerCase().startsWith("start with:")) {
+            const m = line.match(/(\d+)\s*st/);
+            if (m) {
+                output.push(`${m[1]}ch`);
+            }
+            continue;
+        }
+        // Detect back/front loop mode switches
+        if (line.includes("BACK loops only")) {
+            mode = 'back';
+            continue;
+        }
+        if (line.includes("FRONT loops only")) {
+            mode = 'front';
+            continue;
+        }
+        // Parse row instructions
+        let m = line.match(/^Row\s+\d+\s*\[.*?\]:\s*(.*)/);
+        if (m) {
+            let instr = m[1].replace(/in the magic circle/g,'').replace(/ /g, ''); // Remove spaces
+            let tokens = instr.split(',');
+            let paradeTokens = [];
+            prevRowTokens = tokens;
+            for (let token of tokens) {
+                // Match a plain number (e.g. 5)
+                if (/^\d+$/.test(token)) {
+                    if (mode === 'normal') paradeTokens.push(`${token}sc`);
+                    else if (mode === 'back') paradeTokens.push(`${token}scbl`);
+                    else if (mode === 'front') paradeTokens.push(`${token}scfl`);
+                }
+                // Match inc or dec with optional number (e.g. inc, inc4, dec, dec3)
+                else if (/^inc(\d*)$/i.test(token)) {
+                    let n = token.match(/^inc(\d*)$/i)[1];
+                    let count = n ? parseInt(n) + 1 : 2;
+                    let prefix = mode === 'normal' ? 'sc' : (mode === 'back' ? 'scbl' : 'scfl');
+                    paradeTokens.push(`${prefix}${count}inc`);
+                }
+                else if (/^dec(\d*)$/i.test(token)) {
+                    let n = token.match(/^dec(\d*)$/i)[1];
+                    let count = n ? parseInt(n) + 1 : 2;
+                    let prefix = mode === 'normal' ? 'sc' : (mode === 'back' ? 'scbl' : 'scfl');
+                    paradeTokens.push(`${prefix}${count}tog`);
+                }
+                else {
+                    paradeTokens.push(token);
+                }
+            }
+            if (inMagicCircle) {
+                inMagicCircle=false;
+                output.push(`(${paradeTokens.join(', ')})@R`);
+            }
+            else
+            output.push(paradeTokens.join(', '));
+            mode = 'normal'; // Reset mode after each row
+            continue;
+        }
+        // Handle rows like "Row 34 [31 st]: 31"
+        m = line.match(/^Row\s+\d+\s*\[.*?\]:\s*(\d+)$/);
+        if (m) {
+            let n = m[1];
+            if (mode === 'normal') output.push(`${n}sc`);
+            else if (mode === 'back') output.push(`${n}scbl`);
+            else if (mode === 'front') output.push(`${n}scfl`);
+            mode = 'normal'; // Reset mode after each row
+        }
+// Handle "fasten off"
+m = line.match(/^Row\s+\d+\s*:.*fasten off/i);
+        if (m) {
+            // Compute N from prevRowTokens
+            let N = 0;
+            for (let token of prevRowTokens) {
+                if (/^\d+$/.test(token)) {
+                    N += parseInt(token);
+                } else if (/^inc(\d*)$/i.test(token)) {
+                    let n = token.match(/^inc(\d*)$/i)[1];
+                    N += n ? parseInt(n) + 1 : 2;
+                } else if (/^dec(\d*)$/i.test(token)) {
+                    N += 1;
+                }
+            }
+            output.push(`sc${N}tog`);
+            prevRowTokens = [];
+        }
+    }
+    return output.join('\n');
+}
+
+
+function parseLatheUrl(url) {
+    // Parse the URL and extract the data parameter
+    const urlObj = new URL(url);
+    const dataString = urlObj.searchParams.get('data');
+    if (!dataString) throw new Error('No data parameter found in URL.');
+
+    // Split the data into numbers
+    const dataArr = dataString.split(',').map(Number);
+
+    // Group into {x, y, dummy}
+    let pointsRaw = [];
+    for (let i = 0; i < dataArr.length; i += 3) {
+        pointsRaw.push({ x: dataArr[i], y: dataArr[i + 1], dummy: dataArr[i + 2] });
+    }
+
+    // Find numStitches as the maximum of all x and y
+    let maxVal = 0;
+    pointsRaw.forEach(pt => {
+        maxVal = Math.max(maxVal, pt.x, pt.y);
+    });
+    const numStitches = maxVal;
+
+    // Scale x and y by dividing by numStitches
+    const points = pointsRaw.map(pt => {
+        const scaledX = pt.x / numStitches;
+        const scaledY = pt.y / numStitches;
+        return {
+            x: scaledX,
+            y: scaledY,
+            handleLeft: { x: scaledX, y: scaledY },
+            handleRight: { x: scaledX, y: scaledY }
+        };
+    });
+
+    // Example thicknessPoints (unchanged, as per your sample)
+    const thicknessPoints = [
+        {"x":0,"y":5,"handleLeft":{"x":0,"y":5},"handleRight":{"x":50,"y":5}},
+        {"x":500,"y":5,"handleLeft":{"x":450,"y":5},"handleRight":{"x":550,"y":5}},
+        {"x":999,"y":5,"handleLeft":{"x":949,"y":5},"handleRight":{"x":999,"y":5}}
+    ];
+
+    // Compose the final JSON
+    const result = {
+        points: points,
+        thicknessPoints: thicknessPoints,
+        numStitches: numStitches.toString(),
+        scatterShape: true,
+        xAxisRange: "1.5",
+        yAxisLength: "1.5",
+        thicknessB: false
+    };
+
+    return result;
+}
+
+//// Example usage:
+//const url = "data=5.25,0.25,0,5.75,2.75,0,8.75,5.5,0,13,5.5,0,16.5,2.5,0,18.5,2.25,1,21.5,2.25,0,22,0.25,0";
+//const jsonResult = parseLatheUrl(url);
+//console.log(JSON.stringify(jsonResult, null, 2));
+
     </script>
     <div>
         <select id="examples">
@@ -1530,6 +1701,7 @@
             <button class="dropbtn" onclick="toggleDropdown('toolsDropdown')">Tools &#9660;</button>
             <div class="dropdown-content" id="toolsDropdown">
                 <button class="button" id="transformButton">Object Transform</button>
+                <button class="button" id="latheButton" onclick="lathe()">Convert Crochet Lathe instructions to CrochetPARADE</button>
                 <button class="button" id="expandButton" onclick="expandExpression()">Expand instructions</button>
                 <button class="button" id="collectButton" onclick="collectExpression()">Simplify instructions</button>
             </div>
