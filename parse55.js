@@ -228,6 +228,48 @@ COLOR:Antique White
 [sk,scbl2tog,[12scbl,scbl3inc,12scbl,>,2sk]*3,scbl2tog,ch,turn
 ]*12}*2`;
 
+var textApple= `#To see the colors of the apple, first click on the 3D model.
+#Then press 'c' to show the colors.
+#Then increase the yarn thickness by pressing 'ctrl+=' 6 times, 
+#which will quadruple the thickness.
+COLOR:Saddle brown 
+ring
+sc6inc
+COLOR:rgb(255,20,20)
+6sc2inc
+sc,5*[sc2inc,sc],sc2inc
+sc2inc,5*[2sc,sc2inc],2sc
+2sc,5*[sc2inc,3sc],sc2inc,sc
+sc2inc,4*[3sc,sc2inc],2*[4sc,sc2inc],3sc
+5sc,sc2inc,6sc,2*[sc2inc,7sc],sc2inc,6sc,sc2inc,sc
+sc2inc,2*[9sc,sc2inc],10sc,sc2inc,10sc
+12sc,sc2inc,14sc,sc2inc,15sc,sc2inc,2sc
+16sc,sc2inc,24sc,sc2inc,7sc
+10sc,sc2inc,25sc,sc2inc,14sc
+sc2inc,3*[6sc,sc2inc],3*[7sc,sc2inc],7sc
+4sc,sc2inc,6sc,4*[sc2inc,7sc],2*[sc2inc,6sc],sc2inc,2sc
+31sc,sc2tog,35sc
+3sc,4*[sc2tog,6sc],4*[sc2tog,5sc],sc2tog,2sc
+sc2tog,2*[3sc,sc2tog],7*[4sc,sc2tog],4sc
+4sc,5*[sc2tog,6sc],sc2tog,2sc
+7sc,2*[sc2tog,12sc],sc2tog,5sc
+6sc,2*[sc2tog,11sc],sc2tog,5sc
+sc2tog,34sc
+13sc,sc2tog,16sc,sc2tog,2sc
+20sc,sc2tog,11sc
+3sc,2*[sc2tog,9sc],sc2tog,5sc
+sc2tog,3sc,3*[sc2tog,4sc],sc2tog,4sc
+2sc,5*[sc2tog,2sc],sc2tog
+sc2tog,5*[sc,sc2tog],sc
+COLOR: Saddle brown
+6sc2tog
+sc6tog
+DEF:core=Copy(ss,0.1,12)
+core@[0,0]
+5ch
+#DOT:viscous_iterations=100
+`
+
 var textMosaic = `#To see the mosaic pattern, first click on the 3D model.
 #Then press 'c' to show the colors.
 #Then increase the yarn thickness by pressing 'ctrl+=' 3 times, 
