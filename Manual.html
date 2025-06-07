@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: May 6, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: June 7, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -1232,9 +1232,12 @@ DEF: p=3ch,ss@5[%,-4]
         depth of 2, meaning Stitch A attaches to the attachment point of
         <code>C</code>, and not to <code>C</code> directly.</p>
     <p>A bottom node followed by <code>[front]</code> or <code>[back]</code>
-        specifies that the stitch is worked in the front/back loop. For example, the
+        specifies that the stitch is worked in the front/back loop/post. For example, the
         default definition of double crochet in the back loop is
         <code>&dcbl^A(dcbl):B[back]~A-B::!-1-A;B-2-A</code>.
+        The default amount of "sticking" distance in front/in the back is 0.2 times the chain length. You can change that by adding a number after front/back. So, for example the definition
+        of front-post double crochet is:
+        <code>&fpdc^A(fpdc):B[front0.6]~A-B::!-1-A;B-1.5-A</code>
     </p>
     <p>The order in which the bottom nodes are written specifies the
         attachment order of the current stitch to the top nodes of the previous
