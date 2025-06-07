@@ -29,6 +29,15 @@ struct Jacobian {
     std::string jac2;
     std::string jac3;
     std::string jac4;
+    double jac5;
+};
+
+struct JacobianIndices {
+    int idx1;
+    int idx2;
+    int idx3;
+    int idx4;
+    double value;
 };
 
 struct Graph {
@@ -41,7 +50,7 @@ struct Graph {
     std::vector<std::vector<double>> dist_to_neighbor; 
     std::vector<bool> flat_specified_positions;
     std::vector<std::vector<double>> nodes_pos;  // Added vector for node positions
-    std::vector<std::vector<int>> jacobians;  // Add the jacobians array
+    std::vector<JacobianIndices> jacobians;  // Add the jacobians array
 
 
     Graph(int n) : num_nodes(n), nodes(n, ""), N_neighbors(n, 0),
@@ -247,12 +256,13 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
 
         if (isJacDef) {
             std::smatch matchResult;
-            if (std::regex_search(line, matchResult, std::regex("\"([^\"]+)\"\\s*---\\s*\"([^\"]+)\"\\s*---\\s*\"([^\"]+)\"\\s*---\\s*\"([^\"]+)\""))) {
+            if (std::regex_search(line, matchResult, std::regex("\"([^\"]+)\"\\s*---\\s*\"([^\"]+)\"\\s*---\\s*\"([^\"]+)\"\\s*---\\s*\"([^\"]+)\"---(\\d*\\.?\\d*)"))) {
                 Jacobian jac;
                 jac.jac1 = matchResult[1];
                 jac.jac2 = matchResult[2];
                 jac.jac3 = matchResult[3];
                 jac.jac4 = matchResult[4];
+                jac.jac5 = std::stod(matchResult[5]);
                 jacs.push_back(jac);  // Push the extracted nodes into the jacs vector
             }
         }
@@ -286,13 +296,14 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
 
     // Loop over jacs and find the indices of the nodes
     for (const auto& jac : jacs) {
-        std::vector<int> indices =  {
-            nodeIndexMap[jac.jac1],
-            nodeIndexMap[jac.jac2],
-            nodeIndexMap[jac.jac3],
-            nodeIndexMap[jac.jac4]
-        };
-        graph.jacobians.push_back(indices);  // Copy the indices into the graph.jacobians array
+        JacobianIndices ji = {
+    nodeIndexMap[jac.jac1],
+    nodeIndexMap[jac.jac2],
+    nodeIndexMap[jac.jac3],
+    nodeIndexMap[jac.jac4],
+    jac.jac5
+};
+graph.jacobians.push_back(ji);
     }
 
 
@@ -784,10 +795,11 @@ if (viscousiterations>0){
                 double norm;  
                 for (const auto& item : graph.jacobians) {
                     // Extract the coordinates of the 4 points using the node indices
-                    int i1 = item[0];
-                    int i2 = item[1];
-                    int i3 = item[2];
-                    int i4 = item[3];
+                    int i1 = item.idx1;
+                    int i2 = item.idx2;
+                    int i3 = item.idx3;
+                    int i4 = item.idx4;
+                    double value=item.value;
                     for (int dim = 0; dim < numDimensions; ++dim) {
                         vx[dim]=flat_positions[i3*numDimensions+dim]-flat_positions[i1*numDimensions+dim];
                         vy[dim]=-flat_positions[i3*numDimensions+dim]+flat_positions[i2*numDimensions+dim];
@@ -803,10 +815,10 @@ if (viscousiterations>0){
                     //dot=vz[0]*vn[0]+vz[1]*vn[1]+vz[2]*vn[2];
                     //if (dot<=0){
                         for (int dim = 0; dim < numDimensions; ++dim){
-                            flat_positions[i4*numDimensions+dim]=(flat_positions[i3*numDimensions+dim]+flat_positions[i4*numDimensions+dim])/2.+0.2*vn[dim]/2.;
+                            flat_positions[i4*numDimensions+dim]=(flat_positions[i3*numDimensions+dim]+flat_positions[i4*numDimensions+dim])/2.+value*vn[dim]/2.;
                             //flat_positions[i1*numDimensions+dim]-=0.2*vn[dim]/3.;
                             //flat_positions[i2*numDimensions+dim]-=0.2*vn[dim]/3.;
-                            flat_positions[i3*numDimensions+dim]=flat_positions[i4*numDimensions+dim]-0.2*vn[dim];
+                            flat_positions[i3*numDimensions+dim]=flat_positions[i4*numDimensions+dim]-value*vn[dim];
                             //flat_forces[i4*numDimensions+dim]+=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim];
                             //flat_forces[i1*numDimensions+dim]-=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim]/3.;
                             //flat_forces[i2*numDimensions+dim]-=(dot-0.2)/(abs(dot)+1.e-2)*vn[dim]/3.;

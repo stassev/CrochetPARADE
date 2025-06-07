@@ -2294,7 +2294,7 @@ function parse_StitchCode(r, id, id_attach, Stitches, turns) {
         throw new Error('Top stitch unparseable. Type of stitch needs to be specified for all top nodes in parenthesis: ' + stitch);
 
     //const regex = /(\d+)?([A-Za-z_0-9]+)/g;
-    const regex = /(\d+)?([A-Za-z_0-9]+)\[*([back|front]*)\]*/g;
+    const regex = /(\d+)?([A-Za-z_0-9]+)\[*([back|front]*)(\d*\.?\d*)\]*/g;
     const bottomNodesNames = [];
 
     var bottomNodes = {};
@@ -2324,6 +2324,14 @@ function parse_StitchCode(r, id, id_attach, Stitches, turns) {
             bottomNodes[name]['jacobian'] = 1;
         else if (match[3])
             throw new Error('Bottom node loop attachment specification can be either "[front]" or "[back]": ' + stitch);
+        //console.log(match[4],match[4].length,parseFloat(match[4]))
+        if (['front','back'].includes(match[3])){
+        if (match[4].length!==0){
+            bottomNodes[name]['jacobian']*=parseFloat(match[4]);
+        }else{
+            bottomNodes[name]['jacobian']*=0.2;
+        }}
+        //console.log(bottomNodes[name]['jacobian'],'  ',match[4],' ',match[4].length)
         k++;
     }
 
@@ -3903,8 +3911,8 @@ function export_to_dot(Stitches, json) {
                     text += ',{"type":"node","name":' + name + ',"label":"hidden|' + s['Color'] + '","style":"invis","width":"0","height":"0"}\n';
                     textS += name + '\n';
                 }
-                text += ',{"type":"edge","tail":"' + pos0 + '","head":' + name + ',"penwidth":"4","color":"red","len":"' + 0.2 + '","label":"' + s['Color'] + '"}\n';
-                textS += '"' + pos0 + '" -- ' + name + ' ' + 0.2 + '\n';
+                text += ',{"type":"edge","tail":"' + pos0 + '","head":' + name + ',"penwidth":"4","color":"red","len":"'  + Math.abs(bOrig.jacobian) + '","label":"' + s['Color'] + '"}\n';
+                textS += '"' + pos0 + '" -- ' + name + ' ' + Math.abs(bOrig.jacobian) + '\n';
                 JACS.push([pos0, bOrig.jacobian, '"' + pos0 + '"---' + name, name.slice(1, -1)]);
                 pos0 = pos0+"a"+pos1 + '_jacobian' + bOrig.jacobian;
             }
@@ -3941,12 +3949,12 @@ function export_to_dot(Stitches, json) {
             if (nodes.red.length < 1)
                 console.log('Requested back/front loop attachment, but no red edges connected to ' + i3);
             else {
-                if (value == 1)
-                    textS += '"' + nodes.blue[0] + '"---"' + nodes.red.slice(-1) + '"---' + jtext + '\n';
-                else if (value == -1)
-                    textS += '"' + nodes.red.slice(-1) + '"---"' + nodes.blue[0] + '"---' + jtext + '\n';
+                if (value >0)
+                    textS += '"' + nodes.blue[0] + '"---"' + nodes.red.slice(-1) + '"---' + jtext + '---'+Math.abs(value).toString() + '\n';
+                else if (value < 0)
+                    textS += '"' + nodes.red.slice(-1) + '"---"' + nodes.blue[0] + '"---' + jtext + '---'+Math.abs(value).toString() + '\n';
                 else
-                    throw new Error('Not sure what to do with a Jacobian whose values is not +/-1: ' + jac);
+                    throw new Error('Not sure what to do with a Jacobian whose values is zero or non-numeric: ' + jac);
             }
         }
     }
