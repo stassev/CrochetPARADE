@@ -945,6 +945,20 @@ ch,sk,[sc,hdc5puff,sc]*6,sc,turn
 
 DOT: start=5
 DOT: viscous_iterations=500`;
+
+var textWaffle=`# Waffle stitch demo. To see better the texture of the stitch, click on the
+# 3D model (once it's generated), and then press 'c' 
+# on the keyboard. Then press "ctrl" and "+" (or "=") at the same 
+# time three times.
+
+COLOR: rgb(180,100,100)
+38ch,ch,turn
+2sk,36dc,2ch,turn
+[2sk,dc,[fpdc,2dc]*11,fpdc,dc,2ch,turn
+2sk,2dc,[2fpdc,dc]*11,dc,>,2ch,turn
+]*10
+`
+
 var textSnowman2 = `#Simple amigurumi showcase
 COLOR:white
 ring.R
