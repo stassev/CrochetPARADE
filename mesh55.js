@@ -2384,7 +2384,7 @@ for (const node of matchingNodes1) {
                                 incomingNode = incomingNode._gvid;
                                 //console.log(0, nodeId);
                                 //console.log(1, incomingNode);
-                                if (nodeId.endsWith('fl') || nodeId.endsWith('bl')) {
+                                if (nodeId.endsWith('fl') || nodeId.endsWith('bl')|| nodeId.startsWith('fp')|| nodeId.startsWith('bp')) {
                                     incomingNode = edges.find(edge => edge.head === incomingNode).tail;
                                     //console.log(2, incomingNode);
                                 }
