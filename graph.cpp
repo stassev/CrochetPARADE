@@ -78,12 +78,15 @@ struct Graph {
         N_neighbors[destination]++;
     }
 
-    void addNode(int n, std::string str, const std::vector<double>& pos = {}) {
+    void addNode(int n, std::string str, const std::vector<double>& pos = {},bool ic_guess=false) {
         nodes[n] = str;
         if (!pos.empty()) {
             // If coordinates are specified, update the positions and set specified_positions flag
             nodes_pos[n] = pos;//pos.size() == 2 ? std::vector<double>{pos[0], pos[1], 0.0} : pos;
-            flat_specified_positions[n] = true;
+            if (ic_guess)
+                flat_specified_positions[n] = false;
+            else
+                flat_specified_positions[n] = true;
         } else {
             flat_specified_positions[n] = false;
         }
@@ -100,7 +103,7 @@ struct EdgeInfo {
 };
 
 
-Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* inflate,double* learningRate,bool*inflateQ,double*separate,int*viscousiterations,double*viscoustimestep,double*viscousdamping) {
+Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* inflate,double* learningRate,bool*inflateQ,double*separate,int*viscousiterations,double*viscoustimestep,double*viscousdamping,bool*ic_guess) {
     std::unordered_map<std::string, int> nodeIndexMap;
     std::vector<EdgeInfo> edges;
     bool isJacDef = false;  // Add this variable to track Jac definition
@@ -201,6 +204,17 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
                 }
             }
             {
+                size_t found = line.find("ic_guess");
+                if (found != std::string::npos) {
+                    found = line.find_first_of("tT1", found);
+                    //size_t end = line.find_first_not_of("0123456789.", found);
+                    //*inflate = std::stod(line.substr(found, end - found));
+                    if (found != std::string::npos) {
+                        *ic_guess=true;
+                    }
+                }
+            }
+            {
                 size_t found = line.find("learning_rate");
                 if (found != std::string::npos) {
                     found = line.find_first_of("0123456789.", found);
@@ -273,7 +287,7 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
     Graph graph(i_nodes);
 
     for (const auto& tempNode : tempNodes) {
-        graph.addNode(nodeIndexMap[tempNode.first], tempNode.first, tempNode.second);
+        graph.addNode(nodeIndexMap[tempNode.first], tempNode.first, tempNode.second,*ic_guess);
     }
 
     //for (auto it = nodeIndexMap.begin(); it != nodeIndexMap.end(); ++it) {
@@ -517,7 +531,8 @@ extern "C" const char* performLayout(const char* jsInput) {
     int viscousiterations=10;
     double viscoustimestep=0.1;
     double viscousdamping=1.0;
-    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&inflate,&learningRate,&inflateQ,&separate,&viscousiterations,&viscoustimestep,&viscousdamping);
+    bool ic_guess=false;
+    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&inflate,&learningRate,&inflateQ,&separate,&viscousiterations,&viscoustimestep,&viscousdamping,&ic_guess);
     const int numDimensions =Ndim;
     {
         //#pragma omp for nowait
@@ -566,14 +581,16 @@ extern "C" const char* performLayout(const char* jsInput) {
             not_converged=false;
             check_convergence++;
             // Initialize positions
-            srand(seed);   // Seed the random number generator
-            for (int i = 0; i < graph.num_nodes*numDimensions; ++i) {
-                if (graph.flat_specified_positions[i / numDimensions]) {
-                    flat_positions[i] = graph.nodes_pos[i / numDimensions][i % numDimensions];
-                } else {
-                    flat_positions[i] = (static_cast<double>(rand()) / static_cast<double>(RAND_MAX) - 0.5) * 10.0;
-                }
-            }
+            
+             srand(seed);   // Seed the random number generator
+             for (int i = 0; i < graph.num_nodes*numDimensions; ++i) {
+                 if (graph.flat_specified_positions[i / numDimensions] || ((ic_guess) && (  graph.nodes_pos[i / numDimensions].size() == numDimensions) )) {
+                     flat_positions[i] = graph.nodes_pos[i / numDimensions][i % numDimensions];
+                 } else {
+                     flat_positions[i] = (static_cast<double>(rand()) / static_cast<double>(RAND_MAX) - 0.5) * 10.0;
+                 }
+             }
+            
 
             // forces
 
@@ -693,7 +710,7 @@ if (viscousiterations>0){
             // Initialize positions
             srand(seed);   // Seed the random number generator
             for (int i = 0; i < graph.num_nodes*numDimensions; ++i) {
-                if (graph.flat_specified_positions[i / numDimensions]) {
+                if (graph.flat_specified_positions[i / numDimensions] || ((ic_guess) && (  graph.nodes_pos[i / numDimensions].size() == numDimensions) )) {
                     flat_positions[i] = graph.nodes_pos[i / numDimensions][i % numDimensions];
                 } else {
                     flat_positions[i] = (static_cast<double>(rand()) / static_cast<double>(RAND_MAX) - 0.5) * 10.0;
