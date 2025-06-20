@@ -103,7 +103,7 @@ struct EdgeInfo {
 };
 
 
-Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* inflate,double* learningRate,bool*inflateQ,double*separate,int*viscousiterations,double*viscoustimestep,double*viscousdamping,bool*ic_guess) {
+Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iterations,double* inflate,double* learningRate,bool*inflateQ,double*separate,int*viscousiterations,double*viscoustimestep,double*viscousdamping,bool*ic_guess,double*repulsion_radius) {
     std::unordered_map<std::string, int> nodeIndexMap;
     std::vector<EdgeInfo> edges;
     bool isJacDef = false;  // Add this variable to track Jac definition
@@ -176,6 +176,14 @@ Graph readDotFile(const std::string& dotContent, int* Ndim, int* seed, int* iter
                     found = line.find_first_of("0123456789", found);
                     size_t end = line.find_first_not_of("0123456789", found);
                     *viscousiterations = std::stoi(line.substr(found, end - found));
+                }
+            }
+            {
+                size_t found = line.find("repulsion_radius");
+                if (found != std::string::npos) {
+                    found = line.find_first_of("0123456789", found);
+                    size_t end = line.find_first_not_of("0123456789", found);
+                    *repulsion_radius = std::stoi(line.substr(found, end - found));
                 }
             }
             {
@@ -532,7 +540,8 @@ extern "C" const char* performLayout(const char* jsInput) {
     double viscoustimestep=0.1;
     double viscousdamping=1.0;
     bool ic_guess=false;
-    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&inflate,&learningRate,&inflateQ,&separate,&viscousiterations,&viscoustimestep,&viscousdamping,&ic_guess);
+    double repulsion_radius=1e100;
+    Graph graph= readDotFile(dotContent,&Ndim,&seed,&iterations,&inflate,&learningRate,&inflateQ,&separate,&viscousiterations,&viscoustimestep,&viscousdamping,&ic_guess,&repulsion_radius);
     const int numDimensions =Ndim;
     {
         //#pragma omp for nowait
@@ -611,7 +620,7 @@ extern "C" const char* performLayout(const char* jsInput) {
                         for (int j = i+1; j < graph.num_nodes; ++j) {
                             if ((!graph.flat_specified_positions[i]) || (!graph.flat_specified_positions[j])){
                                 double len = graph.flat_distance_matrix[i * graph.num_nodes + j];
-                                if ((len < sINF) && (len > 0)) {
+                                if ((len < sINF) &&(len<repulsion_radius) && (len > 0)) {
                                     len *= len;//
                                     double d2 = 0.0;
 
@@ -736,7 +745,7 @@ if (viscousiterations>0){
                         for (int j = i+1; j < graph.num_nodes; ++j) {
                             if ((!graph.flat_specified_positions[i]) || (!graph.flat_specified_positions[j])){
                                 double len = graph.flat_distance_matrix[i * graph.num_nodes + j];
-                                if ((len < sINF) && (len > 0)) {
+                                if ((len < sINF)&&(len<repulsion_radius) && (len > 0)) {
                                     len *= len;//
                                     double d2 = 0.0;
 

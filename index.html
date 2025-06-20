@@ -1017,7 +1017,7 @@
         <div class="title-author">
             <p class="title">CrochetPARADE: Crochet PAttern Renderer, Analyzer and DEbugger</p>
             <p class="author">Svetlin Tassev</p>
-            <p class="date">Updated: June 7, 2025. Added texture to back/front post stitches. See the new waffle stitch demo <a href="https://crochetparade.org/crochetforum/showthread.php?tid=37"  target="_blank">waffle stitch demo</a>.
+            <p class="date">Updated: June 20, 2025. Allow for more localized repulsion between stitches when inflating the model. See <a href="https://crochetparade.org/crochetforum/showthread.php?tid=39"  target="_blank">amigurumi legs demo</a>.
         </div>
         </p>
     </div>
@@ -2493,11 +2493,11 @@ greedy:true},
                 },
 
                 'dot1': {
-                    pattern: /^\s*(DOT:)\s*(\"(.*)|separate(\s*)=(\s*)[\.\d]+|inflate(\s*)=(\s*)[\.\d]+|learning_rate(\s*)=(\s*)[\.\d]+|start(\s*)=(\s*)\d+|iterations(\s*)=(\s*)\d+|viscous_iterations(\s*)=(\s*)\d+|viscous_timestep(\s*)=(\s*)[\.\d]+|viscous_damping(\s*)=(\s*)[\.\d]+)/m,
+                    pattern: /^\s*(DOT:)\s*(\"(.*)|separate(\s*)=(\s*)[\.\d]+|inflate(\s*)=(\s*)[\.\d]+|learning_rate(\s*)=(\s*)[\.\d]+|start(\s*)=(\s*)\d+|iterations(\s*)=(\s*)\d+|repulsion_radius(\s*)=(\s*)[\.\d]+|viscous_iterations(\s*)=(\s*)\d+|viscous_timestep(\s*)=(\s*)[\.\d]+|viscous_damping(\s*)=(\s*)[\.\d]+)/m,
                     greedy: true
                 },
                 'dot2': {
-                    pattern: /^\s*(DOT:)\s*(\"(.*)|separate|inflate|learning_rate|iterations|start|viscous_damping|viscous_timestep|viscous_iterations)(\s*)=?/m,
+                    pattern: /^\s*(DOT:)\s*(\"(.*)|separate|inflate|learning_rate|iterations|start|viscous_damping|viscous_timestep|viscous_iterations|repulsion_radius)(\s*)=?/m,
                     greedy: true
                 },
                 'dot': {
@@ -3412,7 +3412,7 @@ if (hasTokenWordsAfterLastBr) {
             }
         };
     </script>
-    <script async src="./graph1.js"></script>
+    <script async src="./graph2.js"></script>
     <script>
         function transformJsonWithPos(inputJson, inputJson2) {
             const data = JSON.parse(inputJson);

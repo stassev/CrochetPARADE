@@ -245,7 +245,7 @@
             4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
     </p>
     <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: June 7, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: June 20, 2025.</p>
     <h1 id="introduction">Introduction</h1>
     <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -726,6 +726,10 @@ BACKGROUND: white</code></pre>
     #The default value for inflate is infinity. Reasonable values 
     #to try are 0.5-3.0.
     DOT: inflate=2.0
+    # The repulsion_radius allows for more localized repulsion between nodes when
+    # inflating the model. It sets the maximum graph-theoretical distance for which
+    # node repulsion is included. Nodes that are further away do not repel.
+    DOT: repulsion_radius=10 # (Default: infinity)
     #The learning rate controls the rate at which the code converges. 
     #Setting it too high (above 0.15 or so) can cause failure to 
     #converge. Default: 0.1
