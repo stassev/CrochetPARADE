@@ -31,7 +31,7 @@ import {
     returnRotational,
     returnTranslation,
     setRotationAngles
-} from './transform_controls56.js';
+} from './transform_controls57.js';
 
 //import {
 //    SVGRenderer
@@ -187,7 +187,7 @@ var exportSVGinColor=false;
     //    rendererSVG.domElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
 
-    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse56.json0);
+    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse57.json0);
     console.log(str);
 
     const uniqueLabels = new Set(); // Use a Set to store unique labels
@@ -665,7 +665,23 @@ var exportSVGinColor=false;
             node['type'] = 0;
             node['stnum'] = parseInt(obj.name.split('|')[1]);
             node['id0'] = obj.name.split('|')[0];
-            node['row'] = [parseInt(obj.name.split('|')[0].split(',')[0]), parseInt(obj.name.split('|')[0].split(',')[1])];
+
+function extractIJFromString(str) {
+  const regex = /[^\|]*\|\d+a(\d+),(\d+)\|[^\|]*/;
+  const match = str.match(regex);
+  if (match) {
+    const I = parseInt(match[1], 10);
+    const J = parseInt(match[2], 10);
+    return [I, J];
+  }
+  return null; // or throw error, or return empty array, etc.
+}
+let result = extractIJFromString(obj.name);
+if (result)
+    node['row']=result
+else
+    node['row'] = [parseInt(obj.name.split('|')[0].split(',')[0]), parseInt(obj.name.split('|')[0].split(',')[1])];
+console.log('aaa',node['row'])
             node['Color'] = obj.label.split('|')[2];
             node['objectValue'] = objectValue;
             node['attachmentLabel']=obj.attachmentLabel;
@@ -817,7 +833,24 @@ var exportSVGinColor=false;
         const A = (new THREE.Vector3(tail.pos[0], tail.pos[1], tail.pos[2]));
         const B = (new THREE.Vector3(head.pos[0], head.pos[1], head.pos[2]));
         let stnum=parseInt(head.name.split('|')[1]);
-        var row = [parseInt(head.name.split('|')[0].split(',')[0]), parseInt(head.name.split('|')[0].split(',')[1])];
+        //var row = [parseInt(head.name.split('|')[0].split(',')[0]), parseInt(head.name.split('|')[0].split(',')[1])];
+        var row;
+        function extractIJFromString(str) {
+  const regex = /[^\|]*\|\d+a(\d+),(\d+)\|[^\|]*/;
+  const match = str.match(regex);
+  if (match) {
+    const I = parseInt(match[1], 10);
+    const J = parseInt(match[2], 10);
+    return [I, J];
+  }
+  return null; // or throw error, or return empty array, etc.
+}
+let result = extractIJFromString(head.name);
+if (result)
+    row=result
+else
+    row = [parseInt(head.name.split('|')[0].split(',')[0]), parseInt(head.name.split('|')[0].split(',')[1])];
+console.log('aaa',row)
         if ((head.label.split('|')[0] == 'ch')) {
             if (!('ch' in stLen)) {
                 stLen['ch'] = 0;
