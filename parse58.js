@@ -30,6 +30,18 @@ function enclosePattern(input) {
 var EXTRA_DOTS = '';
 var backgroundColor = '';
 
+var textTestObjectTransformWithFL=`ring.R
+(6sc)@R
+5scfl
+start_anew
+ring.R2
+
+DOT: separate=0
+
+TRANSFORM_OBJECT: 0,0,0,0,0,0,0
+TRANSFORM_OBJECT: 1,-0.456,-0.702,-0.951,-1.2758356832078548,1.2688543661998777,1.2042771838760873
+`
+
 var textEarth = `# To see the colors of planet Earth, click on the
 # 3D model (once it's generated), and then press 'c' 
 # on the keyboard. To make the stitches thicker,

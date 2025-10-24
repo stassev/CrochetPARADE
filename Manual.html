@@ -1311,6 +1311,9 @@ DEF: p=3ch,ss@5[%,-4]
             <p>The <code>turn</code> directive, should always be the last in a row/round/line of the code. No stitches can follow
                 it, unless they are on a new line.</p>
         </li>
+        <li>
+            <p>If your project looks inside-out, or equivalently it seems it is following left-hand crochet directions, then you should try using another start value (set <code>DOT: start=2</code> or if unsuccessful, try other values). The reason is that the physics engine does not know which side you intend to be inside and which the outside. So, it picks at random. That is why paying around with the initial random seed by setting a start value will help resolve this.</p>
+        </li>
     </ul>
     <h3 id="limitations">Limitations</h3>
     <ul>

@@ -31,7 +31,7 @@ import {
     returnRotational,
     returnTranslation,
     setRotationAngles
-} from './transform_controls57.js';
+} from './transform_controls58.js';
 
 //import {
 //    SVGRenderer
@@ -187,7 +187,7 @@ var exportSVGinColor=false;
     //    rendererSVG.domElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
 
-    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse57.json0);
+    var str = JSON.parse(JSON.stringify(json0)); //JSON.parse58.json0);
     console.log(str);
 
     const uniqueLabels = new Set(); // Use a Set to store unique labels
@@ -644,27 +644,73 @@ var exportSVGinColor=false;
         color: new THREE.Color(0.0, 0.0, 0.3)
     });
 
-    var NODES = [];
-    var NODEShidden = [];
-    var NODES1 = [];
-    // Create the nodes
-    let objectValue = -1;
-    //console.log(str);
-    str.objects.forEach((obj) => {
-        if (str.edges.find((edge) => obj._gvid === edge.head) === undefined) {
-            // Do things if no match is found (i.e., if it's undefined)
-            objectValue++;
+// Helper: assign consecutive weakly-connected component ids to obj.objectValue
+function computeObjectValues(str) {
+    const idStr = (x) => String(x);
+    const idOf = (o) => idStr(o._gvid);
+
+    // Index objects
+    const idToObj = new Map();
+    for (const o of str.objects) idToObj.set(idOf(o), o);
+
+    // Build undirected adjacency including isolated nodes
+    const adj = new Map();
+    idToObj.forEach((_, k) => adj.set(k, new Set()));
+    if (Array.isArray(str.edges)) {
+        for (const e of str.edges) {
+            const a = idStr(e.tail);
+            const b = idStr(e.head);
+            if (!adj.has(a)) adj.set(a, new Set());
+            if (!adj.has(b)) adj.set(b, new Set());
+            adj.get(a).add(b);
+            adj.get(b).add(a);
         }
-        obj['objectValue'] = objectValue;
-        if (obj.label.split('|')[0] !== "hidden") {
-            const pos = obj.pos; //.split(',').map(Number);
-            const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
-            node.position.set(pos[0], pos[1], pos[2]);
-            node['name_long'] = "<span style='font-size: 16px; font-weight: bold;'>(" + obj.name + ") [" + obj.label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + obj.label.split('|')[1] + "&hellip;";
-            node['name'] = "<span style='font-size: 16px; font-weight: bold;'>(" + obj.name + ") [" + obj.label.split('|')[0] + "]</span>";
-            node['type'] = 0;
-            node['stnum'] = parseInt(obj.name.split('|')[1]);
-            node['id0'] = obj.name.split('|')[0];
+    }
+
+    // DFS to label components with consecutive integers starting at 0
+    const visited = new Set();
+    let comp = 0;
+    for (const start of adj.keys()) {
+        if (visited.has(start)) continue;
+        const stack = [start];
+        visited.add(start);
+        while (stack.length) {
+            const v = stack.pop();
+            const o = idToObj.get(v);
+            if (o) o.objectValue = comp;
+            const nbrs = adj.get(v);
+            if (!nbrs) continue;
+            for (const nb of nbrs) {
+                if (!visited.has(nb)) { visited.add(nb); stack.push(nb); }
+            }
+        }
+        comp++;
+    }
+    return comp; // number of components
+}
+
+var NODES = [];
+var NODEShidden = [];
+var NODES1 = [];
+// Create the nodes
+let objectValue = -1;
+//console.log(str);
+
+// NEW: compute per-node objectValue labels (consecutive component ids)
+const __componentCount = computeObjectValues(str);
+objectValue = __componentCount - 1;
+
+str.objects.forEach((obj) => {
+    // objectValue per-node already assigned by computeObjectValues(str)
+    if (obj.label.split('|')[0] !== "hidden") {
+        const pos = obj.pos; //.split(',').map(Number);
+        const node = new THREE.Mesh(nodeGeometry, nodeMaterial);
+        node.position.set(pos[0], pos[1], pos[2]);
+        node['name_long'] = "<span style='font-size: 16px; font-weight: bold;'>(" + obj.name + ") [" + obj.label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + obj.label.split('|')[1] + "&hellip;";
+        node['name'] = "<span style='font-size: 16px; font-weight: bold;'>(" + obj.name + ") [" + obj.label.split('|')[0] + "]</span>";
+        node['type'] = 0;
+        node['stnum'] = parseInt(obj.name.split('|')[1]);
+        node['id0'] = obj.name.split('|')[0];
 
 function extractIJFromString(str) {
   const regex = /[^\|]*\|\d+a(\d+),(\d+)\|[^\|]*/;
@@ -682,160 +728,158 @@ if (result)
 else
     node['row'] = [parseInt(obj.name.split('|')[0].split(',')[0]), parseInt(obj.name.split('|')[0].split(',')[1])];
 console.log('aaa',node['row'])
-            node['Color'] = obj.label.split('|')[2];
-            node['objectValue'] = objectValue;
-            node['attachmentLabel']=obj.attachmentLabel;
-            scene.add(node);
-            NODES.push(node);
-            //console.log(obj);
-        }
-    });
-    maxObjects = objectValue;
-
-
-
-    //Find average edge scaling factor
-    var lenF = 0.0,
-        totLen = 0.0;
-    for (let edge of str.edges) {
-        edge['Color'] = edge.label;
-
-        const tail = str.objects.find((obj) => obj._gvid === edge.tail);
-        const head = str.objects.find((obj) => obj._gvid === edge.head);
-        edge['objectValue'] = tail['objectValue'];
-        edge['attachmentLabel']=head['attachmentLabel'];
-
-        edge['length'] = Math.sqrt((tail.pos[0] - head.pos[0]) ** 2 + (tail.pos[1] - head.pos[1]) ** 2 + (tail.pos[2] - head.pos[2]) ** 2);
-        if (['red', 'blue'].includes(edge.color)) {
-            lenF += edge.length;
-            totLen += parseFloat(edge.len);
-        }
+        node['Color'] = obj.label.split('|')[2];
+        node['objectValue'] = obj['objectValue']; // use per-node component id
+        node['attachmentLabel']=obj.attachmentLabel;
+        scene.add(node);
+        NODES.push(node);
+        //console.log(obj);
     }
-    lenF = (lenF / totLen);
-    var STATS = '';
-    STATS += '\n';
-    STATS += ("Radius of the sphere bounding the project is " + String(Math.round(10 / lenF) / 10) + " chain stitches.\nThe sphere is centered at center of the 3D view,\ncoinciding with the center of mass of the stitches.\n");
-    //console.log(lenF)
-    for (let edge of str.edges) {
-        edge['stretch'] = (edge.length / lenF) / parseFloat(edge.len);
-        //console.log(edge.stretch)
+});
+maxObjects = objectValue;
+
+
+
+//Find average edge scaling factor
+var lenF = 0.0,
+    totLen = 0.0;
+for (let edge of str.edges) {
+    edge['Color'] = edge.label;
+
+    const tail = str.objects.find((obj) => obj._gvid === edge.tail);
+    const head = str.objects.find((obj) => obj._gvid === edge.head);
+    edge['objectValue'] = tail['objectValue'];
+    edge['attachmentLabel']=head['attachmentLabel'];
+
+    edge['length'] = Math.sqrt((tail.pos[0] - head.pos[0]) ** 2 + (tail.pos[1] - head.pos[1]) ** 2 + (tail.pos[2] - head.pos[2]) ** 2);
+    if (['red', 'blue'].includes(edge.color)) {
+        lenF += edge.length;
+        totLen += parseFloat(edge.len);
     }
+}
+lenF = (lenF / totLen);
+var STATS = '';
+STATS += '\n';
+STATS += ("Radius of the sphere bounding the project is " + String(Math.round(10 / lenF) / 10) + " chain stitches.\nThe sphere is centered at center of the 3D view,\ncoinciding with the center of mass of the stitches.\n");
+//console.log(lenF)
+for (let edge of str.edges) {
+    edge['stretch'] = (edge.length / lenF) / parseFloat(edge.len);
+    //console.log(edge.stretch)
+}
 
 
 
-    // 1. Add a directional light
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
-    directionalLight.position.set(0, 0, 3);
-    scene.add(directionalLight);
+// 1. Add a directional light
+const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
+directionalLight.position.set(0, 0, 3);
+scene.add(directionalLight);
 
-    const directionalLight1 = new THREE.DirectionalLight(0xffffff, 3);
-    directionalLight1.position.set(0, 0, -3);
-    scene.add(directionalLight1);
+const directionalLight1 = new THREE.DirectionalLight(0xffffff, 3);
+directionalLight1.position.set(0, 0, -3);
+scene.add(directionalLight1);
 
-    // 2. Add an ambient light
-    const ambientLight = new THREE.AmbientLight(0x404040, 3);
-    scene.add(ambientLight);
+// 2. Add an ambient light
+const ambientLight = new THREE.AmbientLight(0x404040, 3);
+scene.add(ambientLight);
 
-    // Create a material for the edges
-    const edgeMaterialBlue = new THREE.MeshLambertMaterial({
-        color: new THREE.Color(0, 0, 0.9)
-    });
+// Create a material for the edges
+const edgeMaterialBlue = new THREE.MeshLambertMaterial({
+    color: new THREE.Color(0, 0, 0.9)
+});
 
-    const edgeMaterialRed = new THREE.MeshLambertMaterial({
-        color: new THREE.Color(0.9, 0, 0)
-    });
+const edgeMaterialRed = new THREE.MeshLambertMaterial({
+    color: new THREE.Color(0.9, 0, 0)
+});
 
-    const edgeMaterialGray = new THREE.MeshLambertMaterial({
-        color: new THREE.Color(0.7, 0.7, 0.7)
-    });
+const edgeMaterialGray = new THREE.MeshLambertMaterial({
+    color: new THREE.Color(0.7, 0.7, 0.7)
+});
 
-    const selectedEdgeMaterial = new THREE.LineBasicMaterial({
-        color: new THREE.Color(0., 0.8, 0),
-        linewidth: 2
-    });
+const selectedEdgeMaterial = new THREE.LineBasicMaterial({
+    color: new THREE.Color(0., 0.8, 0),
+    linewidth: 2
+});
 
-    const selectedRowMaterial = new THREE.MeshBasicMaterial({
-        color: 0xffff65
-    });
+const selectedRowMaterial = new THREE.MeshBasicMaterial({
+    color: 0xffff65
+});
 
-    var stLen = {};
-    var stTot = {};
+var stLen = {};
+var stTot = {};
 
 
 
-    /////////////////////
+/////////////////////
 
-    //var colorscale = {
-    //    0: [165, 0, 38],
-    //    1: [215, 48, 39],
-    //    2: [244, 109, 67],
-    //    3: [253, 174, 97],
-    //    4: [254, 224, 144],
-    //    5: [224, 243, 248],
-    //    6: [171, 217, 233],
-    //    7: [116, 173, 209],
-    //    8: [69, 117, 180],
-    //    9: [49, 54, 149]
-    //}
+//var colorscale = {
+//    0: [165, 0, 38],
+//    1: [215, 48, 39],
+//    2: [244, 109, 67],
+//    3: [253, 174, 97],
+//    4: [254, 224, 144],
+//    5: [224, 243, 248],
+//    6: [171, 217, 233],
+//    7: [116, 173, 209],
+//    8: [69, 117, 180],
+//    9: [49, 54, 149]
+//}
 
-    var colorscale = {
-        0: [0., 0, 0.9],
-        1: [0., 0, 0.9],
-        2: [0.6, 0.6, 0.6],
-        3: [0.6, 0.6, 0.6],
-        4: [0.6, 0.6, 0.6],
-        5: [0.9, 0, 0],
-        6: [0.9, 0, 0]
-    };
+var colorscale = {
+    0: [0., 0, 0.9],
+    1: [0., 0, 0.9],
+    2: [0.6, 0.6, 0.6],
+    3: [0.6, 0.6, 0.6],
+    4: [0.6, 0.6, 0.6],
+    5: [0.9, 0, 0],
+    6: [0.9, 0, 0]
+};
 
-    function color(key) {
-        if (key >= 6)
-            return colorscale[6].map(function(channel) {
-                return channel;
-            });
-        else if (key <= 0)
-            return colorscale[0].map(function(channel) {
-                return channel;
-            });
-        var keys = Object.keys(colorscale).map(Number);
-        var lowerKey = Math.max.apply(null, keys.filter(function(k) {
-            return k <= key;
-        }));
-        var upperKey = Math.min.apply(null, keys.filter(function(k) {
-            return k > key;
-        }));
-        var lowerColor = colorscale[lowerKey];
-        var upperColor = colorscale[upperKey];
-        var t = (key - lowerKey) / (upperKey - lowerKey);
-        var interpolatedColor = lowerColor.map(function(channel, i) {
-            return channel + t * (upperColor[i] - channel);
-        });
-        return interpolatedColor.map(function(channel) {
+function color(key) {
+    if (key >= 6)
+        return colorscale[6].map(function(channel) {
             return channel;
         });
-    }
+    else if (key <= 0)
+        return colorscale[0].map(function(channel) {
+            return channel;
+        });
+    var keys = Object.keys(colorscale).map(Number);
+    var lowerKey = Math.max.apply(null, keys.filter(function(k) {
+        return k <= key;
+    }));
+    var upperKey = Math.min.apply(null, keys.filter(function(k) {
+        return k > key;
+    }));
+    var lowerColor = colorscale[lowerKey];
+    var upperColor = colorscale[upperKey];
+    var t = (key - lowerKey) / (upperKey - lowerKey);
+    var interpolatedColor = lowerColor.map(function(channel, i) {
+        return channel + t * (upperColor[i] - channel);
+    });
+    return interpolatedColor.map(function(channel) {
+        return channel;
+    });
+}
 
 
-    /////////////////////
+/////////////////////
 
-    //// Create the edges
-    str.edges.forEach((edge) => {
+//// Create the edges
+str.edges.forEach((edge) => {
 
-        const tail = str.objects.find((obj) => obj._gvid === edge.tail);
-        const head = str.objects.find((obj) => obj._gvid === edge.head);
-        let objectValue = tail.objectValue;
-        if (!objectValue)
-            objectValue = head.objectValue;
-        //console.log('ok', objectValue, tail, head);
-        edge['start'] = [tail.pos[0], tail.pos[1], tail.pos[2]];
-        edge['end'] = [head.pos[0], head.pos[1], head.pos[2]];
+    const tail = str.objects.find((obj) => obj._gvid === edge.tail);
+    const head = str.objects.find((obj) => obj._gvid === edge.head);
+    let objectValue = (tail.objectValue !== undefined) ? tail.objectValue : head.objectValue; // avoid treating 0 as falsy
+    //console.log('ok', objectValue, tail, head);
+    edge['start'] = [tail.pos[0], tail.pos[1], tail.pos[2]];
+    edge['end'] = [head.pos[0], head.pos[1], head.pos[2]];
 
-        const A = (new THREE.Vector3(tail.pos[0], tail.pos[1], tail.pos[2]));
-        const B = (new THREE.Vector3(head.pos[0], head.pos[1], head.pos[2]));
-        let stnum=parseInt(head.name.split('|')[1]);
-        //var row = [parseInt(head.name.split('|')[0].split(',')[0]), parseInt(head.name.split('|')[0].split(',')[1])];
-        var row;
-        function extractIJFromString(str) {
+    const A = (new THREE.Vector3(tail.pos[0], tail.pos[1], tail.pos[2]));
+    const B = (new THREE.Vector3(head.pos[0], head.pos[1], head.pos[2]));
+    let stnum=parseInt(head.name.split('|')[1]);
+    //var row = [parseInt(head.name.split('|')[0].split(',')[0]), parseInt(head.name.split('|')[0].split(',')[1])];
+    var row;
+    function extractIJFromString(str) {
   const regex = /[^\|]*\|\d+a(\d+),(\d+)\|[^\|]*/;
   const match = str.match(regex);
   if (match) {
@@ -851,147 +895,148 @@ if (result)
 else
     row = [parseInt(head.name.split('|')[0].split(',')[0]), parseInt(head.name.split('|')[0].split(',')[1])];
 console.log('aaa',row)
-        if ((head.label.split('|')[0] == 'ch')) {
-            if (!('ch' in stLen)) {
-                stLen['ch'] = 0;
-                stTot['ch'] = 0;
-            }
-            stLen['ch'] += edge.stretch;
-            stTot['ch']++;
-        } else if ((edge.color == "red")) {
-            if (!(head.label.split('|')[0] in stLen)) {
-                stLen[head.label.split('|')[0]] = 0;
-                stTot[head.label.split('|')[0]] = 0;
-            }
-            stLen[head.label.split('|')[0]] += edge.stretch;
-            stTot[head.label.split('|')[0]]++;
+    if ((head.label.split('|')[0] == 'ch')) {
+        if (!('ch' in stLen)) {
+            stLen['ch'] = 0;
+            stTot['ch'] = 0;
         }
-
-
-        // const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        var material;
-        if (edge.color === "red")
-            material = edgeMaterialRed;
-        else
-            material = edgeMaterialBlue;
-        //var rgbArray = edge.rgb
-        //const color = new THREE.Color(rgbArray[0], rgbArray[1], rgbArray[2]);
-        //const material = new THREE.LineBasicMaterial({
-        //    color: color,
-        //    linewidth: 2
-        //});
-        //const line = new THREE.Line(geometry, material);
-
-
-
-        ///
-        const distance = A.distanceTo(B);
-        var radius = 0.003;
-        var non = false;
-        edge['gray'] = 0;
-        if (edge.color === 'gray') {
-            edge['gray'] = 1;
-            radius /= 5.0;
-            material = edgeMaterialGray;
-            non = true;
+        stLen['ch'] += edge.stretch;
+        stTot['ch']++;
+    } else if ((edge.color == "red")) {
+        if (!(head.label.split('|')[0] in stLen)) {
+            stLen[head.label.split('|')[0]] = 0;
+            stTot[head.label.split('|')[0]] = 0;
         }
-        // 2. Create a THREE.CylinderGeometry object
-        const geometry = new THREE.CylinderGeometry(radius, radius, distance, 5);
+        stLen[head.label.split('|')[0]] += edge.stretch;
+        stTot[head.label.split('|')[0]]++;
+    }
+
+
+    // const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    var material;
+    if (edge.color === "red")
+        material = edgeMaterialRed;
+    else
+        material = edgeMaterialBlue;
+    //var rgbArray = edge.rgb
+    //const color = new THREE.Color(rgbArray[0], rgbArray[1], rgbArray[2]);
+    //const material = new THREE.LineBasicMaterial({
+    //    color: color,
+    //    linewidth: 2
+    //});
+    //const line = new THREE.Line(geometry, material);
+
+
+
+    ///
+    const distance = A.distanceTo(B);
+    var radius = 0.003;
+    var non = false;
+    edge['gray'] = 0;
+    if (edge.color === 'gray') {
+        edge['gray'] = 1;
+        radius /= 5.0;
+        material = edgeMaterialGray;
+        non = true;
+    }
+    // 2. Create a THREE.CylinderGeometry object
+    const geometry = new THREE.CylinderGeometry(radius, radius, distance, 5);
+
+    // 3. Position the cylinder between the two points
+    const midpoint = new THREE.Vector3().addVectors(A, B).divideScalar(2);
+    const line = new THREE.Mesh(geometry, material);
+    line.position.copy(midpoint);
+
+    // 4. Orient the cylinder along the vector formed by the two points
+    const direction = new THREE.Vector3().subVectors(B, A).normalize();
+    const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+    line.quaternion.copy(quaternion);
+
+    ///
+
+    line['Color'] = edge.Color;
+    line['color'] = edge.color;
+    line['stnum']=stnum;
+    line['type'] = 1;
+    //"(" + obj.name + ") [" + obj.label.split('|')[0] + "]<br>" + obj.label.split('|')[1]
+    line['name_long'] = "<span style='font-size: 16px; font-weight: bold;'>(" + head.name + ") [" + head.label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + head.label.split('|')[1] + "&hellip;<br>" + 'stretched by ' + Math.round(100 * (edge['stretch'] - 1)) + '%';
+    line['name'] = "<span style='font-size: 16px; font-weight: bold;'>(" + head.name + ") [" + head.label.split('|')[0] + '] stretched by ' + Math.round(100 * (edge['stretch'] - 1)) + '%</span>';
+    line['id0'] = (edge.head).toString() + "-" + (edge.tail).toString();
+    line['row'] = row;
+    line['stretch'] = edge.stretch;
+    scene.add(line);
+
+
+
+    var arrowhead;
+
+    // Create a cylinder for the arrowhead; create scene1 objects
+    if (!non) {
+        const arrowheadGeometry = new THREE.CylinderGeometry(radius, radius * 1.7, distance * 0.2, 10);
+        const arrowheadMaterial = new THREE.MeshBasicMaterial({
+            color: material.color,
+            transparent: true,
+            opacity: 0.8
+        });
+        arrowhead = new THREE.Mesh(arrowheadGeometry, arrowheadMaterial);
+
+        // Position the arrowhead at the midpoint between points A and B
+        const arrowheadMidpoint = new THREE.Vector3().addVectors(A, B).divideScalar(2);
+        arrowhead.position.copy(arrowheadMidpoint);
+
+        // Orient the arrowhead along the vector formed by the two points
+        const arrowheadDirection = new THREE.Vector3().subVectors(B, A).normalize();
+        const arrowheadQuaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), arrowheadDirection);
+        arrowhead.setRotationFromQuaternion(arrowheadQuaternion);
+        arrowhead['row'] = row;
+        arrowhead['stretch'] = edge.stretch;
+        arrowhead['is_arrow'] = true;
+        arrowhead['Color'] = edge.Color;
+        arrowhead['type'] = 2;
+        arrowhead['stnum']=stnum;
+        // Add the arrowhead to the scene
+        scene.add(arrowhead);
+
+
+
+        // Create a buffer geometry
+
+
 
         // 3. Position the cylinder between the two points
-        const midpoint = new THREE.Vector3().addVectors(A, B).divideScalar(2);
-        const line = new THREE.Mesh(geometry, material);
-        line.position.copy(midpoint);
+
+        const line1 = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+            color: edge.Color
+        }));
+
+        line1.position.copy(midpoint);
 
         // 4. Orient the cylinder along the vector formed by the two points
-        const direction = new THREE.Vector3().subVectors(B, A).normalize();
-        const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
-        line.quaternion.copy(quaternion);
-
-        ///
-
-        line['Color'] = edge.Color;
-        line['color'] = edge.color;
-        line['stnum']=stnum;
-        line['type'] = 1;
-        //"(" + obj.name + ") [" + obj.label.split('|')[0] + "]<br>" + obj.label.split('|')[1]
-        line['name_long'] = "<span style='font-size: 16px; font-weight: bold;'>(" + head.name + ") [" + head.label.split('|')[0] + "]</span><br><b>C1:</b> &hellip;" + head.label.split('|')[1] + "&hellip;<br>" + 'stretched by ' + Math.round(100 * (edge['stretch'] - 1)) + '%';
-        line['name'] = "<span style='font-size: 16px; font-weight: bold;'>(" + head.name + ") [" + head.label.split('|')[0] + '] stretched by ' + Math.round(100 * (edge['stretch'] - 1)) + '%</span>';
-        line['id0'] = (edge.head).toString() + "-" + (edge.tail).toString();
-        line['row'] = row;
-        line['stretch'] = edge.stretch;
-        scene.add(line);
+        line1.quaternion.copy(quaternion);
+        line1['objectValue'] = objectValue;
+        // Add the line to the scene
+        scene1.add(line1);
+        NODES1.push(line1);
+    }
+    ///
 
 
 
-        var arrowhead;
+    if (!(non)) {
+        line['objectValue'] = objectValue;
+        line['attachmentLabel']=edge.attachmentLabel;
+        NODES.push(line);
+        arrowhead['objectValue'] = objectValue;
+        arrowhead['attachmentLabel']=edge.attachmentLabel;
+        NODES.push(arrowhead);
+    } else {
+        line['objectValue'] = objectValue;
+        line['attachmentLabel']=edge.attachmentLabel;
+        NODEShidden.push(line);
+    }
+});
+//console.log(NODES)
 
-        // Create a cylinder for the arrowhead; create scene1 objects
-        if (!non) {
-            const arrowheadGeometry = new THREE.CylinderGeometry(radius, radius * 1.7, distance * 0.2, 10);
-            const arrowheadMaterial = new THREE.MeshBasicMaterial({
-                color: material.color,
-                transparent: true,
-                opacity: 0.8
-            });
-            arrowhead = new THREE.Mesh(arrowheadGeometry, arrowheadMaterial);
-
-            // Position the arrowhead at the midpoint between points A and B
-            const arrowheadMidpoint = new THREE.Vector3().addVectors(A, B).divideScalar(2);
-            arrowhead.position.copy(arrowheadMidpoint);
-
-            // Orient the arrowhead along the vector formed by the two points
-            const arrowheadDirection = new THREE.Vector3().subVectors(B, A).normalize();
-            const arrowheadQuaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), arrowheadDirection);
-            arrowhead.setRotationFromQuaternion(arrowheadQuaternion);
-            arrowhead['row'] = row;
-            arrowhead['stretch'] = edge.stretch;
-            arrowhead['is_arrow'] = true;
-            arrowhead['Color'] = edge.Color;
-            arrowhead['type'] = 2;
-            arrowhead['stnum']=stnum;
-            // Add the arrowhead to the scene
-            scene.add(arrowhead);
-
-
-
-            // Create a buffer geometry
-
-
-
-            // 3. Position the cylinder between the two points
-
-            const line1 = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
-                color: edge.Color
-            }));
-
-            line1.position.copy(midpoint);
-
-            // 4. Orient the cylinder along the vector formed by the two points
-            line1.quaternion.copy(quaternion);
-            line1['objectValue'] = objectValue;
-            // Add the line to the scene
-            scene1.add(line1);
-            NODES1.push(line1);
-        }
-        ///
-
-
-
-        if (!(non)) {
-            line['objectValue'] = objectValue;
-            line['attachmentLabel']=edge.attachmentLabel;
-            NODES.push(line);
-            arrowhead['objectValue'] = objectValue;
-            arrowhead['attachmentLabel']=edge.attachmentLabel;
-            NODES.push(arrowhead);
-        } else {
-            line['objectValue'] = objectValue;
-            line['attachmentLabel']=edge.attachmentLabel;
-            NODEShidden.push(line);
-        }
-    });
-    //console.log(NODES)
 
     STATS += '\n';
     STATS += 'Average vertical (horizontal for chains) stretching of stitches:\n';
