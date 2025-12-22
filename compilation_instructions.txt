@@ -1,1 +1,11 @@
 /usr/lib/emscripten/em++ -Wall graph.cpp -o graph3.js -O3 -ffast-math -sEXPORTED_FUNCTIONS='_performLayout,_malloc,_free' -sEXPORTED_RUNTIME_METHODS='ccall,UTF8ToString,stringToUTF8'  -sALLOW_MEMORY_GROWTH=1  -s MAXIMUM_MEMORY=4GB
+
+
+/usr/lib/emscripten/em++ -Wall periphery.cpp -o periphery3.js \ 
+  -O3 -std=c++17 \
+  -sEXPORTED_FUNCTIONS='_find_periphery,_cancel_periphery,_malloc,_free' \
+  -sEXPORTED_RUNTIME_METHODS='ccall,UTF8ToString,stringToUTF8,lengthBytesUTF8' \
+  -sALLOW_MEMORY_GROWTH=1 \
+  -sMAXIMUM_MEMORY=4GB \
+  -sINITIAL_MEMORY=536870912 \
+  -sENVIRONMENT=web,worker

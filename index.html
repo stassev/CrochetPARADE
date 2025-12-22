@@ -84,7 +84,18 @@
             font-weight: 540;
             color: rgb(111, 59, 174);
         }
-        .language-html .dot1 {
+        
+        .language-html .indexarray {
+            font-weight: 540;
+            color: rgb(130, 80, 180);
+            /* Color for INDEX_ARRAY: lines */
+        }
+.language-html .sortlabel {
+            font-weight: 540;
+            color: rgb(90, 90, 190);
+            /* Color for SORT_LABEL: lines */
+        }
+.language-html .dot1 {
             font-weight: 540;
             color: rgb(150, 50, 50);
         }
@@ -883,9 +894,38 @@
                 /* Stack the sections */
             }
         }
-    </style>
+    
+/* --- Consolidated highlight classes (text) --- */
+#highlighting .hl-periphery { background-color: yellow; }
+#highlighting .hl-select-text { background-color: yellow; }
+#highlighting .hl-select-mesh { background-color: lightgreen; }
+
+</style>
     <link rel="icon" type="image/png" href="icon.png">
 
+
+
+    <script>
+      // Programmatic edits to #inputText should go through cpSetEditorText so they can be undone/redone.
+      // A fuller undo/redo history is installed later (after the editor is initialized).
+      window.cpSetEditorText = window.cpSetEditorText || function (newText, opts) {
+        try {
+          const ta = document.getElementById('inputText');
+          if (!ta) {
+            window.__CP_PENDING_EDITOR_TEXT = String(newText ?? '');
+            return;
+          }
+          if (window.__CP_EDITOR_HISTORY && typeof window.__CP_EDITOR_HISTORY.apply === 'function') {
+            window.__CP_EDITOR_HISTORY.apply(String(newText ?? ''), opts || {});
+            return;
+          }
+          ta.value = String(newText ?? '');
+          try { update(ta.value); } catch (e) {}
+          try { onMyInput(); } catch (e) {}
+          try { sync_scroll(ta); } catch (e) {}
+        } catch (e) {}
+      };
+    </script>
 
 </head>
 
@@ -898,13 +938,13 @@
     <div id="generatorDialog">
 
         <div style="display: flex; align-items: center; gap: 10px;">
-            <img class="logo" src="./logo.png" alt="CrochetPARADE" style=""">
+            <img class="logo" src="./logo.png" alt="CrochetPARADE" style="">
             <button id="okayButton" style="font-size: 1.2em; padding: 10px 20px; background-color: #fbce1a;">Generate</button>
             <button id="resetShapeButton" onclick="resetPoints()" style="font-size: 1.2em; padding: 10px 20px;">Reset</button>
 
             <button id="exportButton" style="font-size: 1.2em; padding: 10px 20px; background-color: #4CAF50;">Export</button>
             <button id="importButton" style="font-size: 1.2em; padding: 10px 20px; background-color: #2196F3;">Import</button>
-            <button id="clButton"" style=" top: 10px; right: 10px; font-size: 1.2em; background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer;">×</button>
+            <button id="clButton" style=" top: 10px; right: 10px; font-size: 1.2em; background-color: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer;">×</button>
 
         </div>
         <br>
@@ -1017,10 +1057,9 @@
         <div class="title-author">
             <p class="title">CrochetPARADE: Crochet PAttern Renderer, Analyzer and DEbugger</p>
             <p class="author">Svetlin Tassev</p>
-            <p class="date">Updated: June 20, 2025. Allow for more localized repulsion between stitches when inflating the model. See <a href="https://crochetparade.org/crochetforum/showthread.php?tid=39&pid=71#pid71"  target="_blank">amigurumi legs demo</a>.
+            <p class="date"><span style="background-color: yellow;">Updated: Dec 22, 2025.</span>
+ <a href="https://crochetparade.org/crochetforum/showthread.php?tid=57&pid=152"  target="_blank">Edge Work Made Simple: Periphery Finder + INDEX_ARRAY + SORT_LABEL.</a>. See Granny Square Stitching demo.</p>
         </div>
-        </p>
-    </div>
     </div>
     <div id="announcement" style="background-color:rgb(253, 79, 79);color:#ffffff; font-size: 14pt; position: relative;">
         <span style="cursor: pointer; position: absolute; top: 5px; right: 5px;font-size:20pt;font-weight:600" onclick='closeAnnouncement("announcement")'>×</span>
@@ -1055,7 +1094,7 @@
         
         var shape;
     </script>
-    <script src="bezier58.js"></script>
+    <script src="bezier59.js"></script>
     <script>
         window.onload = function() {
             document.getElementById('thicknessB').checked = false;
@@ -1146,12 +1185,12 @@
 
 
 
-    <script src="./parse58.js"></script>
+    <script src="./parse59.js"></script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
 
 
-    <script src="simplify58.js"></script>
+    <script src="simplify59.js"></script>
     <div id="mouse">
         <span id="left" class="buttonM"></span>
         <span id="middle" class="buttonM">
@@ -1468,17 +1507,40 @@
 
             function proceedWithExpansion() {
                 var inputText = document.getElementById("inputText");
-                inputText.value = cleanString(evaluate_indices_and_stop(inputText.value, expandExpr));
+                cpSetEditorText(cleanString(evaluate_indices_and_stop(inputText.value, expandExpr)), { preserveSelection: false });
                 if (twice){
-                    inputText.value = cleanString(evaluate_indices_and_stop(inputText.value, expandExpr));
+                    cpSetEditorText(cleanString(evaluate_indices_and_stop(inputText.value, expandExpr)), { preserveSelection: false });
                     inputText['expanded']=true;
                 } else {inputText['expanded']=false;}
                
                 update(inputText.value); onMyInput();
+                // If a periphery is currently highlighted in the 3D view, re-apply the same
+                // highlighting to the expanded text after the DOM has re-rendered.
+                setTimeout(function () {
+                    try {
+                        if (!(inputText && inputText['expanded'])) return;
+
+                        // Avoid applying stale periphery highlights from a previous 3D session.
+                        const sess = (window.__peripheryDialogState && typeof window.__peripheryDialogState.sessionId === 'number')
+                            ? window.__peripheryDialogState.sessionId : null;
+                        const selSess = (typeof window.__peripheryHighlightSessionId === 'number')
+                            ? window.__peripheryHighlightSessionId : null;
+                        if (sess != null && selSess != null && sess !== selSess) return;
+
+                        const labs = (Array.isArray(window.__currentPeripheryNodeLabels) && window.__currentPeripheryNodeLabels.length)
+                            ? window.__currentPeripheryNodeLabels
+                            : ((Array.isArray(window.__peripherySceneHighlightedNodeLabels) && window.__peripherySceneHighlightedNodeLabels.length)
+                                ? window.__peripherySceneHighlightedNodeLabels
+                                : null);
+                        if (labs && typeof window.highlightPeripheryInText === 'function') {
+                            window.highlightPeripheryInText(labs);
+                        }
+                    } catch (e) {}
+                }, 0);
             }
         }
     function lathe() {   
-        inputText.value=parseCrochetLathe(inputText.value);
+        cpSetEditorText(parseCrochetLathe(inputText.value), { preserveSelection: false });
         update(inputText.value); onMyInput();
     }
         
@@ -1684,6 +1746,3017 @@ function parseLatheUrl(url) {
                 <button class="button" onclick="saveDebugInfo()">Save debug info</button>
             </div>
         </div>
+<script>
+  // Unified highlight colors (single source of truth for text + 3D)
+  // Bright defaults; edit this object to change all highlight colors.
+  window.__HL_COLORS = window.__HL_COLORS || {
+    periphery:    '#FFFF00', // Magenta'#F78DFF',
+    ctrlD:        '#80FF80', // Orange#FFB281
+    ctrlF:        '#FFFFFF', // Yellow
+    hover:        '#00FF00', // Green
+    selectCanvas: '#19FFA7' , // bluish #00B7FF #10FF10
+    selectText:   '#3CF6FF', // bluish
+  };
+</script>
+
+<script type="module">
+  import { find_periphery, sort_edge_dot, cancel_find_periphery } from './periphery_wasm.js';
+
+  // make available globally if needed
+  window.find_periphery = find_periphery;
+
+  function getPeripheryDialogState() {
+    if (!window.__peripheryDialogState) {
+      window.__peripheryDialogState = {
+        sessionId: 0,
+
+        // Cached results for the current 3D session (reset when a new 3D calc starts)
+        periphGraphsBaseAll: null,   // all periphery components (NOT including extras)
+        periphGraphsExtras: null,    // optional extra graphs (longest-cycle / breaking-cycle)
+        customPeripheries: [],     // user-saved custom periphery graphs for this 3D session
+        customPeripheryCounter: 0, // incrementing label for Custom periphery 1,2,...
+        periphKmax: null,            // cache key #1
+        periphOptsKey: null,         // cache key #2 (advanced opts)
+
+        // Advanced options (mirrors periphery.js opts)
+        periphOpts: {
+          leap_max: 0,
+          include_bridge_edges_in_output: false,
+          include_longest_cycle_subgraph: false,
+          include_breaking_cycle_subgraph: false
+        },
+
+        // UI state
+        kmax: 10,
+        selectedIndex: 0,
+        boxPos: null,
+        runToken: 0,
+
+        // Label UI state
+        applyLabelOpen: false,
+        applyLabelText: '',
+        applyLabelEvalCounter: false,
+        applyLabelSaveIndexArray: false,
+        applyLabelSaveSortLabel: true,
+        applyLabelCounterStart: 0,
+        applyLabelCounterReverse: false,
+        periphCacheInvalidatedMsg: ''
+      };
+    }
+
+    const st = window.__peripheryDialogState;
+
+    // Backwards-compat: if older fields exist, map them once.
+    if ((!('periphGraphsBaseAll' in st) || st.periphGraphsBaseAll == null) && Array.isArray(st.periphGraphsAll)) {
+      st.periphGraphsBaseAll = st.periphGraphsAll;
+    }
+    if (!('periphGraphsBaseAll' in st)) st.periphGraphsBaseAll = null;
+    if (!('periphGraphsExtras' in st)) st.periphGraphsExtras = null;
+                st.customPeripheries = [];
+                st.customPeripheryCounter = 0;
+
+    if (typeof st.sessionId !== 'number') st.sessionId = 0;
+    if (!('periphKmax' in st)) st.periphKmax = null;
+    if (!('periphOptsKey' in st)) st.periphOptsKey = null;
+                st.periphCacheInvalidatedMsg = '';
+    if (!('periphCacheInvalidatedMsg' in st)) st.periphCacheInvalidatedMsg = '';
+
+    if (!('applyLabelSaveIndexArray' in st)) st.applyLabelSaveIndexArray = false;
+    if (!('applyLabelSaveSortLabel' in st)) st.applyLabelSaveSortLabel = true;
+
+    if (!st.periphOpts || typeof st.periphOpts !== 'object') {
+      st.periphOpts = {
+        leap_max: 0,
+        include_bridge_edges_in_output: false,
+        include_longest_cycle_subgraph: false,
+        include_breaking_cycle_subgraph: false
+      };
+    } else {
+      if (typeof st.periphOpts.leap_max !== 'number') st.periphOpts.leap_max = 0;
+      if (typeof st.periphOpts.include_bridge_edges_in_output !== 'boolean') st.periphOpts.include_bridge_edges_in_output = false;
+      if (typeof st.periphOpts.include_longest_cycle_subgraph !== 'boolean') st.periphOpts.include_longest_cycle_subgraph = false;
+      if (typeof st.periphOpts.include_breaking_cycle_subgraph !== 'boolean') st.periphOpts.include_breaking_cycle_subgraph = false;
+    }
+
+    if (typeof st.kmax !== 'number') st.kmax = 10;
+    if (typeof st.N !== 'number') st.N = 3;
+    if (typeof st.selectedIndex !== 'number') st.selectedIndex = 0;
+    if (typeof st.runToken !== 'number') st.runToken = 0;
+
+    if (typeof st.applyLabelOpen !== 'boolean') st.applyLabelOpen = false;
+    if (typeof st.applyLabelText !== 'string') st.applyLabelText = '';
+
+    return st;
+  }
+
+  function ensurePeripheryDialogStyles() {
+    if (document.getElementById('peripheryDialogStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'peripheryDialogStyles';
+    style.textContent = `
+      @keyframes periphSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+      .periphHelpWrap { position: relative; display: inline-flex; align-items: center; }
+      .periphHelpBtn {
+        width: 18px; height: 18px; border-radius: 50%;
+        border: 1px solid #888; background: #fff; color: #444;
+        font-size: 12px; line-height: 16px; padding: 0;
+        display: inline-flex; align-items: center; justify-content: center;
+        cursor: pointer;
+      }
+      .periphHelpBtn:hover { background: #f0f0f0; }
+      .periphHelpPopup {
+        position: absolute; top: 22px; right: 0; z-index: 9999;
+        display: none; width: 380px;
+        padding: 8px; border: 1px solid #ccc; border-radius: 8px;
+        background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        font-size: 12px; line-height: 1.25; color: #333;
+      }
+
+    `;
+    document.head.appendChild(style);
+  }
+
+  // ---------------- Dialog creation ----------------
+
+  function createPeripheryModal() {
+    ensurePeripheryDialogStyles();
+
+    let modal = document.getElementById('peripheryModal');
+    if (modal) return modal;
+
+    const state = getPeripheryDialogState();
+
+    modal = document.createElement('div');
+    modal.id = 'peripheryModal';
+    Object.assign(modal.style, {
+      display: 'none',
+      background: 'white',
+      padding: '18px',
+      borderRadius: '8px',
+      minWidth: '340px',
+      maxWidth: '520px',
+      boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+      fontFamily: 'sans-serif',
+      fontSize: '14px',
+      maxHeight: 'calc(100vh - 40px)',
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      boxSizing: 'border-box',
+      position: 'fixed',
+      zIndex: 10000
+    });
+
+    // Initial position (restore if user moved it before)
+    if (state.boxPos && typeof state.boxPos.left === 'number' && typeof state.boxPos.top === 'number') {
+      modal.style.left = state.boxPos.left + 'px';
+      modal.style.top = state.boxPos.top + 'px';
+      modal.style.transform = 'none';
+    } else {
+      modal.style.left = '50%';
+      modal.style.top = '50%';
+      modal.style.transform = 'translate(-50%,-50%)';
+    }
+
+    modal.innerHTML = `
+      <div id="periphDragHandle"
+           style="display:flex;position:sticky;top:-18px;z-index:1;align-items:center;justify-content:space-between;cursor:move;user-select:none;
+                  margin:-18px -18px 12px -18px;padding:10px 12px;border-bottom:1px solid #ddd;
+                  background:#f7f7f7;border-radius:8px 8px 0 0">
+        <div style="font-size:15px;font-weight:700">Find project periphery</div>
+      </div>
+
+      <div style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:8px">
+        <label for="kmaxInput">Kmax</label>
+        <span class="periphHelpWrap">
+          <button type="button" class="periphHelpBtn" data-help="By limiting the search for alternative paths between an edge’s endpoints, Kmax controls how many cycles we can detect that include that edge. Edges with no alternate routes (within Kmax) look “more peripheral.”">?</button>
+          <div class="periphHelpPopup"></div>
+        </span>
+      </div>
+        <input id="kmaxInput" type="number" min="2" step="1" value="10"
+               style="width:100%;padding:6px;margin-top:4px"/>
+      </div>
+      <details id="periphAdvancedDetails"
+               style="margin-bottom:10px;border:1px solid #ddd;border-radius:8px;padding:8px;background:#fafafa">
+        <summary style="cursor:pointer;font-weight:600">Advanced settings</summary>
+
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:10px">
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div>Max hops</div>
+              <span class="periphHelpWrap">
+                <button type="button" class="periphHelpBtn"
+                        data-help="Lets the tool connect separate periphery-groups by ‘hopping’ through nearby stitches; formally it adds shortest paths of length ≤ max_hops between periphery components in the original graph.">?</button>
+                <div class="periphHelpPopup"></div>
+              </span>
+            </div>
+            <input id="periphLeapMax" type="number" min="0" max="8" step="1" value="0"
+                   style="width:90px;padding:6px"/>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <label for="periphIncludeBridge" style="cursor:pointer">Include bridge edges in output</label>
+              <span class="periphHelpWrap">
+                <button type="button" class="periphHelpBtn"
+                        data-help="When hops are used, this decides whether the connecting hop-edges are also highlighted; formally output includes periphery edges plus (or excluding) bridge edges.">?</button>
+                <div class="periphHelpPopup"></div>
+              </span>
+            </div>
+            <input id="periphIncludeBridge" type="checkbox"/>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <label for="periphIncludeLongestCycle" style="cursor:pointer">Include longest-cycle subgraph</label>
+              <span class="periphHelpWrap">
+                <button type="button" class="periphHelpBtn"
+                        data-help="Adds an extra result that’s the biggest loop found inside the main periphery group of stitches; formally the longest simple cycle in the largest periphery graph.">?</button>
+                <div class="periphHelpPopup"></div>
+              </span>
+            </div>
+            <input id="periphIncludeLongestCycle" type="checkbox"/>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <label for="periphIncludeBreakingCycle" style="cursor:pointer">Include breaking-cycle subgraph</label>
+              <span class="periphHelpWrap">
+                <button type="button" class="periphHelpBtn"
+                        data-help="Adds an extra result that’s the shortest simple cycle whose edge-removal makes the component a forest.">?</button>
+                <div class="periphHelpPopup"></div>
+              </span>
+            </div>
+            <input id="periphIncludeBreakingCycle" type="checkbox"/>
+          </div>
+
+        </div>
+      </details>
+
+      <div id="periphStatus"
+           style="display:none;align-items:center;gap:8px;margin-top:10px;color:#444;font-size:13px">
+        <span id="periphSpinner"
+              style="width:14px;height:14px;border:2px solid #bbb;border-top:2px solid #444;border-radius:50%;
+                     display:inline-block;animation:periphSpin 0.9s linear infinite"></span>
+        <span id="periphStatusText"></span>
+      </div>
+
+      <details id="periphLabelDetails"
+               style="margin-top:10px;display:none;border:1px solid #ddd;border-radius:8px;padding:8px;background:#fafafa">
+        <summary style="cursor:pointer;font-weight:600">Apply label to periphery stitches</summary>
+
+        <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+          <input id="periphApplyLabelInput" type="text" placeholder="A[k]"
+                 style="flex:1;padding:6px" />
+          <button id="periphApplyLabelBtn" type="button">OK</button>
+        </div>
+
+
+        <div id="periphCounterPickRow" style="margin-top:8px;display:none;align-items:center;gap:8px;flex-wrap:wrap">
+          <label for="periphCounterPick" style="color:#444;font-size:13px">Counter:</label>
+          <select id="periphCounterPick" style="padding:4px 6px"></select>
+          <span id="periphCounterPickHint" style="color:#666;font-size:12px"></span>
+        </div>
+
+<div style="margin-top:8px;display:flex;flex-direction:column;gap:6px">
+          <div id="periphEvalRow" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;color:#444;font-size:13px;opacity:0.65"
+                   id="periphEvalCounterLabel">
+              <input id="periphEvalCounterChk" type="checkbox" disabled />
+              Evaluate counter
+            </label>
+
+            <label style="display:flex;align-items:center;gap:6px;color:#444;font-size:13px;opacity:0.65"
+                   id="periphCounterStartLabel">
+              Start:
+              <input id="periphCounterStart" type="number" value="0" style="width:90px;padding:4px" disabled />
+            </label>
+</div>
+
+          <div id="periphIndexRow" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;color:#444;font-size:13px;opacity:0.65"
+                   id="periphIndexArrayLabel">
+              <input id="periphIndexArrayChk" type="checkbox" disabled />
+              Save counter values as INDEX_ARRAY
+            </label>
+</div>
+
+          <div id="periphSortLabelRow" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;color:#444;font-size:13px;opacity:0.65"
+                   id="periphSortLabelLabel">
+              <input id="periphSortLabelChk" type="checkbox" />
+              Save stitch order as SORT_LABEL
+            </label>
+            <label style="display:none;align-items:center;gap:6px;color:#444;font-size:13px;opacity:0.65" id="periphCounterReverseLabel">
+                            <input id="periphCounterReverse" type="checkbox" disabled />
+                            Reverse order
+                          </label>
+
+          </div>
+
+          <span id="periphCounterHint" style="color:#666;font-size:12px"></span>
+        </div>
+
+        <div style="margin-top:6px;color:#666;font-size:12px;line-height:1.25">
+          Default behavior treats your label as plain text (e.g. <code>A</code>, <code>B[k++]</code>, <code>C[m++,n++]</code>).
+          If a counter is detected in the label with ++ or -- (say A[k++]) you can enable “Evaluate counter” to replace it with numbers while labeling. The enumeration follows the order of the stitches in the periphery in that case.
+          If the counter is of the form Label[counter] (STRONGLY RECOMMENDED if using a counter!), then you can Save the counter values as an <code>INDEX_ARRAY:</code> that stores the values in the order they appear in the periphery. If your label has no counter (e.g. <code>A</code>), you can optionally generate a <code>SORT_LABEL:</code> so the label’s stitches are processed in periphery order. <code>SORT_LABEL:</code> only works for labeling adjacent(!) stitches as they share a single label. 
+        </div>
+      </details>
+
+      
+      <div id="periphEditEdgesRow" style="display:none;justify-content:flex-end;margin-top:10px">
+        <button id="periphEditEdgesBtn" type="button">Edit edges</button>
+      </div>
+
+      <details id="periphEditEdgesDetails" style="display:none;margin-top:10px;border:1px solid #ddd;border-radius:8px;padding:8px;background:#fafafa">
+        <summary style="cursor:pointer">Custom periphery editor</summary>
+        <div style="margin-top:8px;font-size:12px;line-height:1.25">
+          One edge per line, format: <code>node1 -- node2</code>. Nodes are derived automatically from the edges.
+        </div>
+        <textarea id="periphEditEdgesTextarea" rows="8"
+          style="width:100%;margin-top:8px;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;font-size:12px;padding:8px;border:1px solid #ccc;border-radius:8px"></textarea>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+          <button id="periphSaveCustomPeripheryBtn" type="button">Save custom periphery</button>
+          <button id="periphCloseEditEdgesBtn" type="button">Close editor</button>
+        </div>
+        <div id="periphEditEdgesMsg" style="display:none;margin-top:6px;color:#b00;font-size:12px"></div>
+      </details>
+
+      <div id="periphMessage" style="margin-top:10px;color:#444;font-size:13px"></div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+        <button id="periphCancelBtn" type="button">Cancel</button>
+            <button id="periphStopBtn" type="button" style="display:none">Stop calculation</button>
+        <button id="periphDoneBtn" type="button" style="display:none">Done</button>
+        <button id="periphRunBtn" type="button">Run</button>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const kmaxInput = modal.querySelector('#kmaxInput');
+    const advDetails = modal.querySelector('#periphAdvancedDetails');
+    const leapMaxInput = modal.querySelector('#periphLeapMax');
+    const includeBridgeInput = modal.querySelector('#periphIncludeBridge');
+    const includeLongestCycleInput = modal.querySelector('#periphIncludeLongestCycle');
+    const includeBreakingCycleInput = modal.querySelector('#periphIncludeBreakingCycle');
+    const msg = modal.querySelector('#periphMessage');
+    const labelDetails = modal.querySelector('#periphLabelDetails');
+    const labelInput = modal.querySelector('#periphApplyLabelInput');
+    const labelOkBtn = modal.querySelector('#periphApplyLabelBtn');
+
+    // Per-label feedback area (shows how many labels were added)
+    const labelApplyMsg = document.createElement('div');
+    labelApplyMsg.id = 'periphApplyLabelMsg';
+    labelApplyMsg.style.marginTop = '6px';
+    labelApplyMsg.style.color = '#444';
+    labelApplyMsg.style.fontSize = '12px';
+    labelApplyMsg.style.display = 'none';
+    try {
+      const row = labelOkBtn && labelOkBtn.closest('div');
+      if (row) row.insertAdjacentElement('afterend', labelApplyMsg);
+    } catch (e) {}
+
+    const evalCounterLabel = modal.querySelector('#periphEvalCounterLabel');
+    const evalCounterChk = modal.querySelector('#periphEvalCounterChk');
+    const evalRow = modal.querySelector('#periphEvalRow');
+    const indexArrayLabel = modal.querySelector('#periphIndexArrayLabel');
+    const indexArrayChk = modal.querySelector('#periphIndexArrayChk');
+    const indexRow = modal.querySelector('#periphIndexRow');
+    const sortLabelRow = modal.querySelector('#periphSortLabelRow');
+    const sortLabelLabel = modal.querySelector('#periphSortLabelLabel');
+    const sortLabelChk = modal.querySelector('#periphSortLabelChk');
+    const counterStartLabel = modal.querySelector('#periphCounterStartLabel');
+    const counterStartInput = modal.querySelector('#periphCounterStart');
+    const counterReverseLabel = modal.querySelector('#periphCounterReverseLabel');
+    const counterReverseChk = modal.querySelector('#periphCounterReverse');
+    const counterHint = modal.querySelector('#periphCounterHint');
+const counterPickRow = modal.querySelector('#periphCounterPickRow');
+    const counterPickSel = modal.querySelector('#periphCounterPick');
+    const counterPickHint = modal.querySelector('#periphCounterPickHint');
+
+
+    // Keep a reference to the currently shown graphs (depends on N)
+    let currentShownGraphs = [];
+
+    // Auto-default label mode when a counter is detected, unless user manually toggles modes.
+    let labelModeTouched = false;
+    let lastLabelForModeDefault = null;
+    let lastCounterPickSig = null;
+
+    // Persist label UI state
+    labelDetails.addEventListener('toggle', () => {
+      state.applyLabelOpen = !!labelDetails.open;
+    });
+
+    function findCounterTokens(template) {
+      const t = String(template || '');
+      const toks = [];
+
+      // post: name++ / name--
+      const rePost = /(^|[^A-Za-z0-9_])([A-Za-z_][A-Za-z0-9_]*)(\+\+|--)/g;
+      // pre: ++name / --name
+      const rePre  = /(^|[^A-Za-z0-9_])(\+\+|--)([A-Za-z_][A-Za-z0-9_]*)/g;
+
+      let m;
+      while ((m = rePost.exec(t)) !== null) {
+        const raw = m[2] + m[3];
+        const start = m.index + (m[1] ? m[1].length : 0);
+        toks.push({
+          raw,
+          name: m[2],
+          op: m[3],
+          position: 'post',
+          start,
+          end: start + raw.length
+        });
+      }
+      while ((m = rePre.exec(t)) !== null) {
+        const raw = m[2] + m[3];
+        const start = m.index + (m[1] ? m[1].length : 0);
+        toks.push({
+          raw,
+          name: m[3],
+          op: m[2],
+          position: 'pre',
+          start,
+          end: start + raw.length
+        });
+      }
+
+      // De-duplicate by (start,end,raw) in case regexes overlap (shouldn't, but be safe).
+      const seen = new Set();
+      const out = [];
+      toks.sort((a,b)=>a.start-b.start);
+      for (const tok of toks) {
+        const k = tok.start + ':' + tok.end + ':' + tok.raw;
+        if (seen.has(k)) continue;
+        seen.add(k);
+        out.push(tok);
+      }
+      return out;
+    }
+
+    function findIndexArrayTokens(template) {
+      const t = String(template || '');
+      const toks = [];
+      // Plain index placeholder: [name]
+      const re = /\[\s*([A-Za-z_][A-Za-z0-9_]*)\s*\]/g;
+
+      let m;
+      while ((m = re.exec(t)) !== null) {
+        toks.push({
+          raw: m[0],
+          name: m[1],
+          start: m.index,
+          end: m.index + m[0].length
+        });
+      }
+
+      // De-duplicate by (start,end,name).
+      const seen = new Set();
+      const out = [];
+      toks.sort((a, b) => a.start - b.start);
+      for (const tok of toks) {
+        const k = tok.start + ':' + tok.end + ':' + tok.name;
+        if (seen.has(k)) continue;
+        seen.add(k);
+        out.push(tok);
+      }
+      return out;
+    }
+
+
+    function parseCounterCandidates(template) {
+      const t = String(template || '');
+      // Collect identifiers from inside [...] groups, including comma-separated lists.
+      // Each identifier may be plain (name), post (name++/name--), or pre (++name/--name).
+      const byName = new Map(); // name -> {name, hasPlain, hasEval, firstPos}
+      const order = []; // names in first-appearance order
+
+      const bracketRe = /\[([^\]]*)\]/g;
+      let m;
+      while ((m = bracketRe.exec(t)) !== null) {
+        const inside = String(m[1] || '');
+        const parts = inside.split(',').map(s => String(s).trim()).filter(Boolean);
+        for (const part of parts) {
+          let name = null;
+          let hasPlain = false;
+          let hasEval = false;
+
+          // post: name++ / name--
+          let mm = part.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*(\+\+|--)$/);
+          if (mm) {
+            name = mm[1];
+            hasEval = true;
+          } else {
+            // pre: ++name / --name
+            mm = part.match(/^(\+\+|--)\s*([A-Za-z_][A-Za-z0-9_]*)$/);
+            if (mm) {
+              name = mm[2];
+              hasEval = true;
+            } else {
+              // plain: name
+              mm = part.match(/^([A-Za-z_][A-Za-z0-9_]*)$/);
+              if (mm) {
+                name = mm[1];
+                hasPlain = true;
+              }
+            }
+          }
+
+          if (!name) continue;
+
+          if (!byName.has(name)) {
+            byName.set(name, { name, hasPlain: false, hasEval: false, firstPos: order.length });
+            order.push(name);
+          }
+          const rec = byName.get(name);
+          rec.hasPlain = rec.hasPlain || hasPlain;
+          rec.hasEval = rec.hasEval || hasEval;
+        }
+      }
+
+      const candidates = order.map(nm => byName.get(nm));
+      return { candidates, byName };
+    }
+
+    function getSelectedCounterName(label) {
+      const parsed = parseCounterCandidates(label);
+      const candidates = parsed.candidates || [];
+
+      // If multiple candidates exist, selection comes from the dropdown.
+      if (counterPickSel && candidates.length > 1) {
+        return String(counterPickSel.value || '').trim() || null;
+      }
+
+      // Otherwise, try bracket candidates first.
+      if (candidates.length === 1) return candidates[0].name;
+
+      // Fallback: if there's exactly one ++/-- token anywhere, use its name.
+      const toks = findCounterTokens(label);
+      if (toks.length === 1) return toks[0].name;
+
+      // Fallback: if there's exactly one [name] placeholder anywhere, use its name.
+      const idxToks = findIndexArrayTokens(label);
+      if (idxToks.length === 1) return idxToks[0].name;
+
+      return null;
+    }
+
+    function setLabelOpacity(el, enabled) {
+      if (!el) return;
+      el.style.opacity = enabled ? '1' : '0.65';
+    }
+
+
+    function updateCounterUI() {
+      const label = (labelInput.value || '').trim();
+      if (label !== lastLabelForModeDefault) {
+        labelModeTouched = false;
+        lastLabelForModeDefault = label;
+      }
+
+      const parsed = parseCounterCandidates(label);
+      const candidates = parsed.candidates || [];
+      const sig = candidates.map(c => `${c.name}:${c.hasPlain ? 'P' : ''}${c.hasEval ? 'E' : ''}`).join('|');
+      const hasMany = candidates.length > 1;
+
+      // Show a counter-picker when there are multiple candidate counters inside brackets.
+      if (counterPickRow && counterPickSel) {
+        if (hasMany) {
+          counterPickRow.style.display = 'flex';
+
+          // Rebuild options when the candidate list changes.
+          if (sig !== lastCounterPickSig) {
+            counterPickSel.innerHTML = '';
+            for (const c of candidates) {
+              const opt = document.createElement('option');
+              opt.value = c.name;
+              opt.textContent = c.name;
+              counterPickSel.appendChild(opt);
+            }
+            lastCounterPickSig = sig;
+          }
+
+          // Choose selected counter (persisted if possible, otherwise first in list).
+          let desired = String((state && state.applyLabelSelectedCounter) || counterPickSel.value || '').trim();
+          if (!desired || !parsed.byName.has(desired)) desired = candidates[0].name;
+          counterPickSel.value = desired;
+          state.applyLabelSelectedCounter = desired;
+
+          if (counterPickHint) {
+            counterPickHint.textContent = `(${candidates.length} found: ${candidates.map(c => c.name).join(', ')})`;
+          }
+        } else {
+          counterPickRow.style.display = 'none';
+          if (counterPickHint) counterPickHint.textContent = '';
+          // Keep lastCounterPickSig in sync so we don't rebuild unnecessarily.
+          lastCounterPickSig = sig;
+        }
+      }
+
+      const selectedName = getSelectedCounterName(label);
+      if (selectedName) state.applyLabelSelectedCounter = selectedName;
+
+      const allCounterTokens = findCounterTokens(label);
+      const hasEvalForSelected = !!(selectedName && allCounterTokens.some(t => t.name === selectedName));
+      const rec = selectedName ? parsed.byName.get(selectedName) : null;
+      const hasPlainForSelected = !!(rec && rec.hasPlain);
+
+      const canEvalCounter = hasEvalForSelected;
+      const canIndexArray = hasPlainForSelected;
+
+      // SORT_LABEL is available when the label has no counter/INDEX_ARRAY placeholder (plain label, e.g. A).
+      const idxToks = findIndexArrayTokens(label);
+      const hasAnyCounterish = (allCounterTokens.length > 0) || (idxToks.length > 0) || (candidates.length > 0);
+      // Allow plain labels plus optional bracket groups of comma-separated integers, including empty brackets (A[]).
+      // Examples allowed: A, edge, Label[0,1,313], A[], A[0][1]
+      const canSortLabel = (!!label) && (/^[A-Za-z_][A-Za-z0-9_]*(?:\[\s*(?:-?\d+(?:\s*,\s*-?\d+)*)?\s*\])*$/.test(label)) && (!hasAnyCounterish);
+
+      if (sortLabelRow) sortLabelRow.style.display = 'flex';
+      if (sortLabelChk) {
+        sortLabelChk.disabled = !canSortLabel;
+        if (!canSortLabel) {
+          sortLabelChk.checked = false;
+        } else {
+          // Default to checked for plain labels (but respect the persisted state if user changed it).
+          if (typeof state.applyLabelSaveSortLabel !== 'boolean') state.applyLabelSaveSortLabel = true;
+          sortLabelChk.checked = !!state.applyLabelSaveSortLabel;
+        }
+      }
+      setLabelOpacity(sortLabelLabel, canSortLabel);
+
+      // Enable/disable checkboxes based on the chosen counter.
+      if (evalCounterChk) {
+        evalCounterChk.disabled = !canEvalCounter;
+        if (!canEvalCounter) evalCounterChk.checked = false;
+      }
+      if (indexArrayChk) {
+        indexArrayChk.disabled = !canIndexArray;
+        if (!canIndexArray) indexArrayChk.checked = false;
+      }
+
+      // Default: if a valid counter is detected for the selected name, pre-select the matching mode.
+      if (!labelModeTouched) {
+        if (canEvalCounter && !canIndexArray && evalCounterChk && !evalCounterChk.disabled) {
+          evalCounterChk.checked = true;
+          if (indexArrayChk) indexArrayChk.checked = false;
+        } else if (canIndexArray && !canEvalCounter && indexArrayChk && !indexArrayChk.disabled) {
+          indexArrayChk.checked = true;
+          if (evalCounterChk) evalCounterChk.checked = false;
+        } else if (canEvalCounter && canIndexArray) {
+          // If the selected counter supports both (rare), prefer Evaluate.
+          if (evalCounterChk && !evalCounterChk.disabled) {
+            evalCounterChk.checked = true;
+            if (indexArrayChk) indexArrayChk.checked = false;
+          } else if (indexArrayChk && !indexArrayChk.disabled) {
+            indexArrayChk.checked = true;
+            if (evalCounterChk) evalCounterChk.checked = false;
+          }
+        } else {
+          if (evalCounterChk) evalCounterChk.checked = false;
+          if (indexArrayChk) indexArrayChk.checked = false;
+        }
+        state.applyLabelEvalCounter = !!(evalCounterChk && evalCounterChk.checked);
+        state.applyLabelSaveIndexArray = !!(indexArrayChk && indexArrayChk.checked);
+      }
+
+      // Mutual exclusion safety
+      if (evalCounterChk && indexArrayChk && evalCounterChk.checked && indexArrayChk.checked) {
+        if (canEvalCounter) indexArrayChk.checked = false;
+        else if (canIndexArray) evalCounterChk.checked = false;
+        else { evalCounterChk.checked = false; indexArrayChk.checked = false; }
+      }
+
+      const evalOn = !!(canEvalCounter && evalCounterChk && evalCounterChk.checked);
+      const idxOn = !!(canIndexArray && indexArrayChk && indexArrayChk.checked);
+      const modeOn = evalOn || idxOn;
+
+      const sortOn = !!(canSortLabel && sortLabelChk && sortLabelChk.checked);
+      const revOn = modeOn || sortOn;
+      // Move/hide "Reverse order" so it only appears next to the active option.
+      if (counterReverseLabel) {
+        if (!revOn) {
+          counterReverseLabel.style.display = 'none';
+        } else {
+          counterReverseLabel.style.display = 'flex';
+          // Place next to whichever option is currently enabled (checked).
+          if (evalOn && evalRow) {
+            // Put it after "Evaluate counter" and before "Start".
+            if (counterStartLabel && counterStartLabel.parentElement === evalRow) {
+              evalRow.insertBefore(counterReverseLabel, counterStartLabel);
+            } else {
+              evalRow.appendChild(counterReverseLabel);
+            }
+          } else if (idxOn && indexRow) {
+            indexRow.appendChild(counterReverseLabel);
+          } else if (sortOn && sortLabelRow) {
+            sortLabelRow.appendChild(counterReverseLabel);
+          } else if (sortLabelRow) {
+            // Fallback anchor.
+            sortLabelRow.appendChild(counterReverseLabel);
+          }
+        }
+      }
+
+
+      // Start value only applies to Evaluate mode; hide it for index-array mode.
+      const startEnabled = evalOn;
+      if (counterStartLabel) counterStartLabel.style.display = idxOn ? 'none' : 'flex';
+      if (counterStartInput) counterStartInput.disabled = !startEnabled;
+      if (counterReverseChk) counterReverseChk.disabled = !revOn;
+
+      setLabelOpacity(evalCounterLabel, canEvalCounter);
+      setLabelOpacity(indexArrayLabel, canIndexArray);
+      setLabelOpacity(counterStartLabel, startEnabled);
+      setLabelOpacity(counterReverseLabel, revOn);
+
+      if (counterHint) {
+        if (!selectedName) {
+          counterHint.textContent = 'No counter detected.';
+        } else if (hasMany) {
+          const bits = [];
+          if (canIndexArray) bits.push('Save as index array');
+          if (canEvalCounter) bits.push('Evaluate');
+          counterHint.textContent = `Multiple counters detected. Selected: ${selectedName}. Available: ${bits.join(' / ') || 'none'}.`;
+        } else if (canEvalCounter) {
+          // Show the exact token (e.g. s++) if present.
+          const tok = allCounterTokens.find(t => t.name === selectedName);
+          counterHint.textContent = `Detected counter: ${(tok && tok.raw) ? tok.raw : selectedName}`;
+        } else if (canIndexArray) {
+          counterHint.textContent = `Detected index placeholder: ${selectedName}`;
+        } else {
+          counterHint.textContent = `Selected: ${selectedName}`;
+        }
+      }
+    }
+
+
+    labelInput.addEventListener('input', () => {
+      // When the template changes, revert to the default mode selection for the new template.
+      if (labelInput.value !== lastLabelForModeDefault) {
+        labelModeTouched = false;
+        lastLabelForModeDefault = labelInput.value;
+      }
+      state.applyLabelText = labelInput.value;
+      updateCounterUI();
+    });
+
+    if (counterPickSel) {
+      counterPickSel.addEventListener('change', () => {
+        // When the user chooses a different counter, default the mode for that counter.
+        labelModeTouched = false;
+        if (state) state.applyLabelSelectedCounter = String(counterPickSel.value || '').trim();
+        updateCounterUI();
+      });
+    }
+
+
+    if (evalCounterChk) {
+      evalCounterChk.addEventListener('change', () => {
+        labelModeTouched = true;
+        // Mutual exclusion: only one of the two label modes can be active.
+        if (evalCounterChk.checked && indexArrayChk) indexArrayChk.checked = false;
+        state.applyLabelEvalCounter = !!evalCounterChk.checked;
+        if (indexArrayChk) state.applyLabelSaveIndexArray = !!indexArrayChk.checked;
+        updateCounterUI();
+      });
+    }
+    if (indexArrayChk) {
+      indexArrayChk.addEventListener('change', () => {
+        labelModeTouched = true;
+        // Mutual exclusion: only one of the two label modes can be active.
+        if (indexArrayChk.checked && evalCounterChk) evalCounterChk.checked = false;
+        state.applyLabelSaveIndexArray = !!indexArrayChk.checked;
+        if (evalCounterChk) state.applyLabelEvalCounter = !!evalCounterChk.checked;
+        updateCounterUI();
+      });
+    }
+
+    if (sortLabelChk) {
+      sortLabelChk.addEventListener('change', () => {
+        state.applyLabelSaveSortLabel = !!sortLabelChk.checked;
+        updateCounterUI();
+      });
+}
+
+    if (counterStartInput) {
+      counterStartInput.addEventListener('input', () => {
+        const v = parseInt(counterStartInput.value, 10);
+        state.applyLabelCounterStart = Number.isFinite(v) ? v : 0;
+      });
+    }
+    if (counterReverseChk) {
+      counterReverseChk.addEventListener('change', () => {
+        state.applyLabelCounterReverse = !!counterReverseChk.checked;
+      });
+    }
+
+    function appendIndexArrayLine(text, counterName, values) {
+  const name = String(counterName || '').trim();
+  if (!name) return String(text || '');
+
+  const vals = Array.isArray(values) ? values : [];
+  const line = `INDEX_ARRAY: ${name} = {${vals.map(v => String(v)).join(', ')}}`;
+
+  // Remove any existing INDEX_ARRAY line for this counter (keep others).
+  const re = new RegExp('^\\s*INDEX_ARRAY:\\s*' + escapeRegExp(name) + '\\s*=\\s*', 'i');
+
+  const lines = String(text || '').replace(/\r\n/g, '\n').split('\n');
+  const filtered = lines.filter(l => !re.test(String(l || '')));
+
+  // Trim trailing blank lines so our INDEX_ARRAY line is truly last.
+  while (filtered.length && String(filtered[filtered.length - 1]).trim() === '') filtered.pop();
+
+  filtered.push(line);
+  return filtered.join('\n') + '\n';
+}
+
+function _canonicalSortLabelName(s) {
+  return String(s || '').replace(/\s+/g, '').trim();
+}
+
+function appendSortLabelLine(text, labelName, values) {
+  const name = _canonicalSortLabelName(labelName);
+  if (!name) return String(text || '');
+
+  const vals = Array.isArray(values) ? values : [];
+  const line = `SORT_LABEL: ${name} = {${vals.map(v => String(v)).join(', ')}}`;
+
+  const lines = String(text || '').replace(/\r\n/g, '\n').split('\n');
+
+  // Remove any existing SORT_LABEL line whose label name canonicalizes to the same thing (keep others).
+  const filtered = [];
+  for (const l of lines) {
+    const s = String(l || '');
+    const m = s.match(/^\s*SORT_LABEL:\s*(.*?)\s*=\s*/i);
+    if (m) {
+      const existing = _canonicalSortLabelName(m[1]);
+      if (existing === name) continue;
+    }
+    filtered.push(s);
+  }
+
+  // Trim trailing blank lines so our SORT_LABEL line is truly last.
+  while (filtered.length && String(filtered[filtered.length - 1]).trim() === '') filtered.pop();
+
+  filtered.push(line);
+  return filtered.join('\n') + '\n';
+}
+
+// Apply label to currently highlighted periphery stitches in the expanded text view.
+    labelOkBtn.addEventListener('click', () => {
+      const template = (labelInput.value || '').trim();
+      if (!template) return;
+
+      // Must have expanded text view to apply (we operate on #highlighting spans)
+      if (!window.inputText || !inputText.expanded) {
+               alert('To apply labels, first Expand the instructions (Tools → Expand instructions and select "Run this dialog twice in a row?").');
+        return;
+      }
+
+      const highlightingEl = document.getElementById('highlighting');
+      const textareaEl = document.getElementById('inputText');
+      if (!highlightingEl || !textareaEl) return;
+
+      // Determine the currently selected periphery graph (so we can label in periphery-graph order, not text order)
+      const idx = Math.max(0, Math.min(state.selectedIndex || 0, (currentShownGraphs.length || 1) - 1));
+      const graph = currentShownGraphs[idx] || null;
+
+      // Collect existing labels (dot form) from the current highlighted text.
+      const existing = new Set();
+      highlightingEl.querySelectorAll('span.token.labeldot').forEach(sp => {
+        const t = (sp.textContent || '').trim();
+        if (!t) return;
+        existing.add(t.replace(/^\./, ''));
+      });
+
+      // Targets: all periphery-highlighted stitch spans
+      // Periphery highlighting is tracked via the hl-periphery class (via __TextHL),
+      // but keep the older data-periphery-highlight selector as a fallback.
+      const targets = [...highlightingEl.querySelectorAll('span[id^="word"].hl-periphery')];
+      if (!targets || targets.length === 0) {
+        msg.textContent = 'No periphery-highlighted stitches found to label. Select a periphery graph first.';
+        return;
+      }
+
+      // Parse stitch-number from span id format: word(<a>|<b>)<stnum>
+      const tokInfos = targets.map(tok => {
+        const id = String(tok.id || '');
+        const m = id.match(/\)(\d+)$/);
+        const st = m ? parseInt(m[1], 10) : NaN;
+        return { tok, stnum: Number.isFinite(st) ? st : null };
+      });
+
+      const tokInfosTextOrder = tokInfos.slice();
+
+      // Build ordering by stitch-number in the order nodes appear in the periphery graph (fallback to current DOM order).
+      const orderStnums = [];
+      const seenSt = new Set();
+      const stRe = /\|(\d+)/g;
+
+      if (graph && Array.isArray(graph.nodes)) {
+        for (const nl of graph.nodes) {
+          if (typeof nl !== 'string') continue;
+          stRe.lastIndex = 0;
+          let mm;
+          while ((mm = stRe.exec(nl)) !== null) {
+            const st = parseInt(mm[1], 10);
+            if (!Number.isFinite(st)) continue;
+            if (!seenSt.has(st)) {
+              seenSt.add(st);
+              orderStnums.push(st);
+            }
+          }
+        }
+      }
+
+      // Fallback ordering: the order the spans appear in the DOM (still stable).
+      if (orderStnums.length === 0) {
+        for (const info of tokInfos) {
+          if (info.stnum == null) continue;
+          if (!seenSt.has(info.stnum)) {
+            seenSt.add(info.stnum);
+            orderStnums.push(info.stnum);
+          }
+        }
+      }
+
+
+      const selectedName = getSelectedCounterName(template);
+      const parsed = parseCounterCandidates(template);
+      const allCounterTokens = findCounterTokens(template);
+      const selectedEvalToken = selectedName ? (allCounterTokens.find(t => t.name === selectedName) || null) : null;
+      const rec = selectedName ? parsed.byName.get(selectedName) : null;
+
+      const canEvalCounter = !!selectedEvalToken;
+      const canIndexArray = !!(rec && rec.hasPlain);
+
+      const evalCounterOn = !!(canEvalCounter && evalCounterChk && evalCounterChk.checked);
+      const indexArrayOn = !!(canIndexArray && indexArrayChk && indexArrayChk.checked);
+
+      // SORT_LABEL is for plain labels with no counter (e.g. A). When enabled, we emit a
+      // permutation that reorders the label’s stitch list from text order -> periphery order.
+      const idxToks2 = findIndexArrayTokens(template);
+      const hasAnyCounterish2 = (allCounterTokens.length > 0) ||
+                                (idxToks2.length > 0) ||
+                                (parsed && Array.isArray(parsed.candidates) && parsed.candidates.length > 0);
+
+      const canSortLabelHere = (!!template) && (/^[A-Za-z_][A-Za-z0-9_]*(?:\[\s*(?:-?\d+(?:\s*,\s*-?\d+)*)?\s*\])*$/.test(template)) && (!hasAnyCounterish2);
+      const sortLabelOn = !!(canSortLabelHere && sortLabelChk && sortLabelChk.checked);
+
+      const modeOn = (evalCounterOn || indexArrayOn);
+
+      const reverseOrder = !!((evalCounterOn || indexArrayOn || sortLabelOn) && counterReverseChk && counterReverseChk.checked);
+      if (reverseOrder) orderStnums.reverse();
+
+      const indexMap = new Map(orderStnums.map((st, i) => [st, i]));
+      tokInfos.sort((a, b) => {
+        const ia = (a.stnum != null && indexMap.has(a.stnum)) ? indexMap.get(a.stnum) : 1e9;
+        const ib = (b.stnum != null && indexMap.has(b.stnum)) ? indexMap.get(b.stnum) : 1e9;
+        return ia - ib;
+      });
+
+      // If requested, compute the SORT_LABEL permutation mapping from text-order -> periphery-order.
+      let sortLabelValues = null;
+      if (sortLabelOn) {
+        const idxByTok = new Map(tokInfosTextOrder.map((info, i) => [info.tok, i]));
+        sortLabelValues = tokInfos.map(info => idxByTok.get(info.tok));
+        if (sortLabelValues.some(v => (typeof v !== 'number' || !Number.isFinite(v)))) sortLabelValues = null;
+      }
+
+      // Plan labels to apply (either literal template, or with counter evaluated)
+      const labelsToApply = [];
+
+      // Optional: gather per-stitch counter values into an INDEX_ARRAY line (indexArrayOn mode).
+      const indexArrayName = (indexArrayOn && selectedName) ? selectedName : null;
+      let indexArrayValuesTextOrder = null;
+
+      let counterValue = 0;
+      if ((evalCounterOn || indexArrayOn) && counterStartInput) {
+        const v = parseInt(counterStartInput.value, 10);
+        counterValue = Number.isFinite(v) ? v : 0;
+      }
+      const counterTok = evalCounterOn ? selectedEvalToken : null;
+
+      function nextCounter() {
+        if (!counterTok) return null;
+        const delta = (counterTok.op === '++') ? 1 : -1;
+        if (counterTok.position === 'post') {
+          const out = counterValue;
+          counterValue += delta;
+          return out;
+        } else {
+          counterValue += delta;
+          return counterValue;
+        }
+      }
+
+      // Index-array mode uses an implicit post-increment (k++ semantics) while walking the periphery order.
+      function nextIndexArrayValue() {
+        const out = counterValue;
+        counterValue += 1;
+        return out;
+      }
+
+      for (let i = 0; i < tokInfos.length; i++) {
+        if (!counterTok) {
+          labelsToApply.push(template);
+        } else {
+          const v = nextCounter();
+          const lab = template.slice(0, counterTok.start) + String(v) + template.slice(counterTok.end);
+          labelsToApply.push(lab);
+        }
+
+        if (indexArrayOn) {
+          tokInfos[i].__periphIndexArrayVal = nextIndexArrayValue();
+        }
+      }
+
+      if (indexArrayOn && indexArrayName) {
+        indexArrayValuesTextOrder = tokInfosTextOrder
+          .map(info => info.__periphIndexArrayVal)
+          .filter(v => v !== undefined && v !== null);
+      }
+
+      // Warn if any of the to-be-added labels already exist.
+      const newLabelSet = new Set(labelsToApply);
+      const overlaps = [];
+      newLabelSet.forEach(lab => { if (existing.has(lab)) overlaps.push(lab); });
+
+      if (overlaps.length > 0) {
+        const sample = overlaps.slice(0, 5).map(x => `"${x}"`).join(', ');
+        const more = overlaps.length > 5 ? ` (+${overlaps.length - 5} more)` : '';
+        const ok = confirm(`One or more labels you’re adding already exist in the text: ${sample}${more}\n\nContinue and add them anyway?`);
+        if (!ok) return;
+      } else if (!counterTok && existing.has(template)) {
+        const ok = confirm(`Label "${template}" already exists in the text.\n\nContinue and add it anyway?`);
+        if (!ok) return;
+      }
+
+      // Insert .LABEL after each periphery-highlighted token span
+      for (let i = 0; i < tokInfos.length; i++) {
+        const tok = tokInfos[i].tok;
+        const lab = labelsToApply[i];
+
+        // Blindly wrap token with bracket spans and add .LABEL after the closing bracket.
+        const openB = document.createElement('span');
+        openB.className = 'token bracket';
+        openB.textContent = '[';
+        tok.insertAdjacentElement('beforebegin', openB);
+        
+        const openB1 = document.createElement('span');
+        openB1.className = 'token bracket';
+        openB1.textContent = '[';
+        tok.insertAdjacentElement('beforebegin', openB1);
+
+        const closeB = document.createElement('span');
+        closeB.className = 'token bracket';
+        closeB.textContent = ']';
+        tok.insertAdjacentElement('afterend', closeB);
+        
+
+        const sp = document.createElement('span');
+        sp.className = 'token labeldot';
+        sp.textContent = '.' + lab;
+        closeB.insertAdjacentElement('afterend', sp);
+        
+        const closeB1 = document.createElement('span');
+        closeB1.className = 'token bracket';
+        closeB1.textContent = ']';
+        sp.insertAdjacentElement('afterend', closeB1);
+        
+      }
+
+      // Update the textarea from the modified highlighting, then re-render Prism highlighting.
+      let newText = highlightingEl.innerText.replace(/\u00a0/g, ' ');
+
+      // In index-array mode, append an INDEX_ARRAY line as the last line (and refresh highlighting).
+      if (indexArrayOn && indexArrayName && Array.isArray(indexArrayValuesTextOrder)) {
+        newText = appendIndexArrayLine(newText, indexArrayName, indexArrayValuesTextOrder);
+      }
+
+      if (sortLabelOn && Array.isArray(sortLabelValues) && sortLabelValues.length === tokInfos.length) {
+        newText = appendSortLabelLine(newText, template, sortLabelValues);
+      }
+
+      cpSetEditorText(newText, { preserveSelection: true });
+
+      // Force a full highlight refresh so #highlighting stays synced with #inputText
+      // (the incremental span-diff update can get confused by programmatic insertions).
+      try {
+        inputText.dataset.oldText = '';
+        inputText.previousHighlighting = '';
+      } catch (e) {}
+
+      try { update(newText); } catch (e) {}
+      // Ensure textarea/highlighting widths reflow for long lines (avoid wrapping desync)
+      try { onMyInput(); } catch (e) {}
+
+      // Tell the user how many labels we added.
+      const labelsAdded = tokInfos.length;
+      try {
+        if (labelApplyMsg) {
+          labelApplyMsg.textContent = `Added ${labelsAdded} label(s).`;
+          labelApplyMsg.style.display = 'block';
+        } else if (msg) {
+          msg.textContent = `Added ${labelsAdded} label(s).`;
+        }
+      } catch (e) {}
+
+
+
+      // Feedback: tell the user how many labels were inserted.
+      try {
+        const labelsAdded = (typeof tokInfos !== 'undefined' && tokInfos && tokInfos.length) ? tokInfos.length : 0;
+        const addedMsg = `Added ${labelsAdded} label(s).`;
+        if (msg) msg.textContent = addedMsg;
+      } catch (e) {}
+
+      // Re-apply periphery highlighting to ensure sync (and keep the 3D highlight consistent)
+      const idx2 = Math.max(0, Math.min(state.selectedIndex || 0, (currentShownGraphs.length || 1) - 1));
+      if (currentShownGraphs[idx2]) {
+        try { highlightPeripheryGraph(currentShownGraphs[idx2]); } catch (e) {}
+      }
+    });
+
+    const statusRow = modal.querySelector('#periphStatus');
+    const statusText = modal.querySelector('#periphStatusText');
+    const spinnerEl = modal.querySelector('#periphSpinner');
+    const runBtn = modal.querySelector('#periphRunBtn');
+    const stopBtn = modal.querySelector('#periphStopBtn');
+    const cancelBtn = modal.querySelector('#periphCancelBtn');
+    const doneBtn = modal.querySelector('#periphDoneBtn');
+    const editRow = modal.querySelector('#periphEditEdgesRow');
+    const editBtn = modal.querySelector('#periphEditEdgesBtn');
+    const editDetails = modal.querySelector('#periphEditEdgesDetails');
+    const editTA = modal.querySelector('#periphEditEdgesTextarea');
+    const saveCustomBtn = modal.querySelector('#periphSaveCustomPeripheryBtn');
+    const closeEditBtn = modal.querySelector('#periphCloseEditEdgesBtn');
+    const editMsg = modal.querySelector('#periphEditEdgesMsg');
+    // --- Autocomplete for node names in the custom edge editor ---
+    // Node names come from json0.objects[].name (the DOT node id / stitch id).
+    // When the user is typing the *right* side of an edge ("nodeA -- <here>"),
+    // suggestions are restricted to nodes that are connected to nodeA in json0.edges
+    // (treated as undirected for autocomplete).
+    let periphNodeNames = [];
+    let periphAdj = new Map(); // name -> Set(neighbor names)
+
+    function _periphNormNodeKey(s) {
+      return String(s || '').replace(/\s+/g, '').trim().toLowerCase();
+    }
+
+    function refreshPeriphNodeNamesFromJson0() {
+      try {
+        const j0 = (typeof json0 !== 'undefined') ? json0 : (window && window.json0);
+        const objs = j0 && Array.isArray(j0.objects) ? j0.objects : [];
+        const eds  = j0 && Array.isArray(j0.edges) ? j0.edges : [];
+
+        const nameSet = new Set();
+        const gvidToName = new Map();
+
+        for (const o of objs) {
+          if (!o || typeof o.name !== 'string') continue;
+          const nm = String(o.name).trim();
+          if (!nm) continue;
+          nameSet.add(nm);
+          if (o._gvid !== undefined && o._gvid !== null) {
+            gvidToName.set(String(o._gvid), nm);
+          }
+        }
+
+        periphNodeNames = Array.from(nameSet);
+        periphNodeNames.sort((a,b) => a.localeCompare(b));
+
+        // Build undirected adjacency from json0.edges (tail/head reference _gvid)
+        periphAdj = new Map();
+        for (const nm of periphNodeNames) periphAdj.set(nm, new Set());
+
+        for (const e of eds) {
+          if (!e) continue;
+          const a = gvidToName.get(String(e.tail));
+          const b = gvidToName.get(String(e.head));
+          if (!a || !b) continue;
+          if (!periphAdj.has(a)) periphAdj.set(a, new Set());
+          if (!periphAdj.has(b)) periphAdj.set(b, new Set());
+          periphAdj.get(a).add(b);
+          periphAdj.get(b).add(a);
+        }
+      } catch (e) {
+        periphNodeNames = [];
+        periphAdj = new Map();
+      }
+    }
+
+    const nodeSuggest = document.createElement('div');
+    nodeSuggest.id = 'periphNodeSuggest';
+    Object.assign(nodeSuggest.style, {
+      position: 'absolute',
+      display: 'none',
+      background: 'white',
+      border: '1px solid #ccc',
+      borderRadius: '10px',
+      boxShadow: '0 6px 18px rgba(0,0,0,0.18)',
+      maxHeight: '180px',
+      overflowY: 'auto',
+      fontSize: '12px',
+      lineHeight: '1.25',
+      padding: '4px 0',
+      zIndex: 10001
+    });
+    modal.appendChild(nodeSuggest);
+
+    let suggestOpen = false;
+    let suggestItems = [];
+    let suggestIndex = -1;
+    let suggestCtx = null; // {start,end}
+
+    function hideNodeSuggest() {
+      nodeSuggest.style.display = 'none';
+      nodeSuggest.innerHTML = '';
+      suggestOpen = false;
+      suggestItems = [];
+      suggestIndex = -1;
+      suggestCtx = null;
+    }
+
+    // Expose suggestion controls so global Escape handlers can avoid clearing highlights
+    // when the autocomplete popup is showing.
+    try {
+      window.__periphHideNodeSuggest = hideNodeSuggest;
+      window.__periphIsSuggestOpen = () => !!suggestOpen;
+    } catch (e) {}
+
+
+    // Install a global Escape guard so that when autocomplete suggestions are visible,
+    // Escape ONLY closes the suggestions and does NOT clear any highlights (text or canvas).
+    // This must suppress BOTH keydown and keyup, because the 3D canvas clears highlights on keyup Escape.
+    try {
+      if (!window.__periphEscapeGuardInstalled) {
+        window.__periphEscapeGuardInstalled = true;
+        (function () {
+          let suppressEscapeKeyupOnce = false;
+
+          document.addEventListener('keydown', function (ev) {
+            try {
+              if (ev && ev.key === 'Escape' && window.__periphIsSuggestOpen && window.__periphIsSuggestOpen()) {
+                if (window.__periphHideNodeSuggest) window.__periphHideNodeSuggest();
+                suppressEscapeKeyupOnce = true;
+                ev.preventDefault();
+                try { ev.stopPropagation(); } catch (e) {}
+                try { if (ev.stopImmediatePropagation) ev.stopImmediatePropagation(); } catch (e) {}
+              }
+            } catch (e) {}
+          }, true);
+
+          document.addEventListener('keyup', function (ev) {
+            try {
+              if (ev && ev.key === 'Escape' && suppressEscapeKeyupOnce) {
+                suppressEscapeKeyupOnce = false;
+                ev.preventDefault();
+                try { ev.stopPropagation(); } catch (e) {}
+                try { if (ev.stopImmediatePropagation) ev.stopImmediatePropagation(); } catch (e) {}
+              }
+            } catch (e) {}
+          }, true);
+        })();
+      }
+    } catch (e) {}
+
+    function positionNodeSuggest() {
+      try {
+        const mRect = modal.getBoundingClientRect();
+        const taRect = editTA.getBoundingClientRect();
+        nodeSuggest.style.left = Math.max(0, (taRect.left - mRect.left)) + 'px';
+        nodeSuggest.style.top  = Math.max(0, (taRect.bottom - mRect.top + 6)) + 'px';
+        const w = Math.max(180, Math.min(taRect.width, mRect.width - 24));
+        nodeSuggest.style.width = w + 'px';
+      } catch (e) {}
+    }
+
+    function setSuggestActive(i) {
+      const kids = Array.from(nodeSuggest.querySelectorAll('[data-idx]'));
+      for (const k of kids) {
+        const idx = parseInt(k.getAttribute('data-idx'), 10);
+        if (idx === i) {
+          k.style.background = '#eef5ff';
+        } else {
+          k.style.background = 'transparent';
+        }
+      }
+    }
+
+    function showNodeSuggest(list, ctx) {
+      if (!list || list.length === 0 || !ctx) { hideNodeSuggest(); return; }
+      suggestCtx = ctx;
+      suggestItems = list;
+      // Do NOT auto-select the first suggestion; allow user to keep typing freely.
+      suggestIndex = -1;
+      positionNodeSuggest();
+      nodeSuggest.innerHTML = '';
+      list.forEach((nm, i) => {
+        const item = document.createElement('div');
+        item.textContent = nm;
+        item.setAttribute('data-idx', String(i));
+        Object.assign(item.style, {
+          padding: '6px 10px',
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis'
+        });
+        item.addEventListener('mouseenter', () => {
+          suggestIndex = i;
+          setSuggestActive(suggestIndex);
+        });
+        item.addEventListener('mousedown', (ev) => {
+          ev.preventDefault(); // keep focus in textarea
+          // Recompute context at click-time (cursor may have moved)
+          suggestCtx = extractSuggestContextFromTextarea();
+          applyNodeSuggestion(nm);
+        });
+        nodeSuggest.appendChild(item);
+      });
+      nodeSuggest.style.display = 'block';
+      suggestOpen = true;
+      setSuggestActive(suggestIndex);
+    }
+
+    function extractSuggestContextFromTextarea() {
+      if (!editTA) return null;
+      const txt = String(editTA.value || '');
+      const cur = editTA.selectionStart || 0;
+
+      // Find current line boundaries
+      const lineStart = txt.lastIndexOf('\n', Math.max(0, cur - 1)) + 1;
+      let lineEnd = txt.indexOf('\n', cur);
+      if (lineEnd < 0) lineEnd = txt.length;
+
+      const line = txt.slice(lineStart, lineEnd);
+      const inLinePos = cur - lineStart;
+
+      // Determine which side (left/right) the cursor is editing.
+      // If '--' isn't present yet, treat the whole line as the left node.
+      const sep = line.indexOf('--');
+      let side = 'left';
+      let leftNodeRaw = line.trim();
+      if (sep >= 0) {
+        leftNodeRaw = line.slice(0, sep).trim();
+        side = (inLinePos <= sep) ? 'left' : 'right';
+      }
+
+      let segStart = lineStart;
+      let segEnd = lineEnd;
+
+      if (sep >= 0) {
+        if (inLinePos > sep && inLinePos < sep + 2) return null; // cursor inside dashes
+        if (inLinePos <= sep) {
+          segStart = lineStart;
+          segEnd = lineStart + sep;
+        } else {
+          segStart = lineStart + sep + 2;
+          segEnd = lineEnd;
+        }
+      }
+
+      // Expand token around the cursor within [segStart, segEnd)
+      let start = cur;
+      let end = cur;
+
+      // Clamp to segment
+      if (start > segEnd) start = segEnd;
+      if (end > segEnd) end = segEnd;
+      if (start < segStart) start = segStart;
+      if (end < segStart) end = segStart;
+
+      // Grow left and right while not whitespace
+      while (start > segStart && !/\s/.test(txt[start - 1])) start--;
+      while (end < segEnd && !/\s/.test(txt[end])) end++;
+
+      // If cursor is sitting on whitespace, pull token to the left
+      if (start === end) {
+        let p = cur;
+        while (p > segStart && /\s/.test(txt[p - 1])) p--;
+        let p2 = p;
+        while (p2 > segStart && !/\s/.test(txt[p2 - 1])) p2--;
+        start = p2;
+        end = p;
+      }
+
+      const rawToken = txt.slice(start, end);
+      const token = rawToken.replace(/\s+/g, '').trim(); // strip unnecessary spaces for matching
+      // If there's no token yet (e.g. user just typed "-- " and hasn't started the 2nd node),
+      // keep context so we can show suggestions and insert at the cursor.
+      if (!token) {
+        return { start: cur, end: cur, token: '', side, leftNodeRaw, sep };
+      }
+      return { start, end, token, side, leftNodeRaw, sep };
+    }
+
+    function applyNodeSuggestion(nm) {
+      if (!editTA || !suggestCtx) return;
+      const v = String(editTA.value || '');
+      const start = suggestCtx.start;
+      const end = suggestCtx.end;
+
+      const before = v.slice(0, start);
+      const after = v.slice(end);
+      editTA.value = before + nm + after;
+
+      const newPos = before.length + nm.length;
+      editTA.selectionStart = editTA.selectionEnd = newPos;
+      hideNodeSuggest();
+      // Trigger downstream UI (so user sees "clean" token)
+      editTA.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function updateNodeSuggest() {
+      if (!editTA || !editDetails || editDetails.style.display === 'none') { hideNodeSuggest(); return; }
+      if (!editDetails.open) { hideNodeSuggest(); return; }
+      if (!periphNodeNames || periphNodeNames.length === 0) refreshPeriphNodeNamesFromJson0();
+
+      const ctx = extractSuggestContextFromTextarea();
+      if (!ctx) { hideNodeSuggest(); return; }
+
+      const tok = (ctx.token || '').toLowerCase();
+
+      // If user is typing the right side of an edge, prefer neighbors of the left node.
+      let candidates = periphNodeNames;
+
+      if (ctx.side === 'right' && ctx.sep >= 0) {
+        const leftNorm = _periphNormNodeKey(ctx.leftNodeRaw || '');
+        let baseName = null;
+
+        if (leftNorm) {
+          // exact match on normalized node name
+          const exact = periphNodeNames.filter(nm => _periphNormNodeKey(nm) === leftNorm);
+          if (exact.length === 1) {
+            baseName = exact[0];
+          } else {
+            // if user is still typing, allow a unique prefix match
+            const pref = periphNodeNames.filter(nm => _periphNormNodeKey(nm).startsWith(leftNorm));
+            if (pref.length === 1) baseName = pref[0];
+          }
+        }
+
+        if (baseName) {
+          const neigh = periphAdj && periphAdj.get(baseName);
+          candidates = neigh ? Array.from(neigh) : [];
+          candidates.sort((a,b) => a.localeCompare(b));
+        }
+      }
+
+      const tokNorm = _periphNormNodeKey(ctx.token || '');
+      const list = [];
+      for (const nm of candidates) {
+        const key = _periphNormNodeKey(nm);
+        if (key.startsWith(tokNorm)) {
+          list.push(nm);
+          if (list.length >= 12) break;
+        }
+      }
+      showNodeSuggest(list, ctx);
+    }
+
+    // Keep suggestions positioned if the dialog is moved or resized
+    window.addEventListener('resize', () => { if (suggestOpen) positionNodeSuggest(); });
+
+    // Update suggestions as user types
+    if (editTA) {
+      editTA.addEventListener('input', (ev) => {
+        // Strip unneeded spaces around the edge separator as a typing convenience
+        // (doesn't change node ids; just makes the editor cleaner)
+        updateNodeSuggest();
+
+        // Live preview: re-run sort+highlight when the *edge set* changes due to a committed
+        // line add/remove (or a paste/cut), so typing inside a node name stays responsive.
+        try {
+          if (_periphEdgeEditorIsOpen()) {
+            const parsed = _periphParseEdgesLoose(editTA.value);
+            const setStr = _periphEdgeSetToStr(parsed.edges);
+            const edgeCount = parsed.edges.length;
+
+            const countChanged = (edgeCount !== _periphPrevEdgeCount);
+            const setChanged = (setStr !== _periphPrevEdgeSetStr);
+
+            const it = String(ev && ev.inputType || '');
+            const committed = /LineBreak|delete|cut|paste|undo|redo/i.test(it);
+
+            if (countChanged || (setChanged && committed)) {
+              _periphPrevEdgeCount = edgeCount;
+              _periphPrevEdgeSetStr = setStr;
+              _periphScheduleEditorPreview('edges changed');
+            }
+          }
+        } catch (e) {}
+      });
+
+      editTA.addEventListener('keydown', (ev) => {
+        if (!suggestOpen) return;
+
+        if (ev.key === 'ArrowDown') {
+          ev.preventDefault();
+          if (suggestIndex < 0) suggestIndex = 0;
+          else suggestIndex = Math.min(suggestItems.length - 1, suggestIndex + 1);
+          setSuggestActive(suggestIndex);
+          return;
+        }
+        if (ev.key === 'ArrowUp') {
+          ev.preventDefault();
+          if (suggestIndex < 0) suggestIndex = Math.max(0, suggestItems.length - 1);
+          else suggestIndex = Math.max(0, suggestIndex - 1);
+          setSuggestActive(suggestIndex);
+          return;
+        }
+
+        if (ev.key === 'Enter') {
+          // Only accept a suggestion if the user has explicitly selected one (via arrows/hover).
+          if (suggestIndex >= 0) {
+            ev.preventDefault();
+            const nm = suggestItems[suggestIndex];
+            if (nm) applyNodeSuggestion(nm);
+          } else {
+            // Let Enter create a newline; just hide the popup.
+            hideNodeSuggest();
+          }
+          return;
+        }
+
+        if (ev.key === 'Tab') {
+          // Tab accepts only if a suggestion is explicitly selected; otherwise let focus move.
+          if (suggestIndex >= 0) {
+            ev.preventDefault();
+            const nm = suggestItems[suggestIndex];
+            if (nm) applyNodeSuggestion(nm);
+          } else {
+            hideNodeSuggest();
+          }
+          return;
+        }
+
+        if (ev.key === 'Escape') {
+          ev.preventDefault();
+          try { ev.stopPropagation(); } catch (e) {}
+          try { if (ev.stopImmediatePropagation) ev.stopImmediatePropagation(); } catch (e) {}
+          hideNodeSuggest();
+          return;
+        }
+      });
+
+      editTA.addEventListener('blur', () => {
+        // Delay so click selection works
+        setTimeout(() => hideNodeSuggest(), 150);
+      });
+    }
+
+    // Refresh node names whenever the editor is opened
+    if (editDetails) {
+      editDetails.addEventListener('toggle', () => {
+        if (editDetails.open) {
+          refreshPeriphNodeNamesFromJson0();
+          setTimeout(() => updateNodeSuggest(), 0);
+        } else {
+          hideNodeSuggest();
+        }
+      });
+    }
+    // --- end autocomplete ---
+
+
+    function normalizePeriphOptsFromUI() {
+      const rawLeap = leapMaxInput ? parseInt(leapMaxInput.value, 10) : 0;
+      const leap = isFinite(rawLeap) ? Math.max(0, Math.min(8, rawLeap)) : 0;
+      if (leapMaxInput) leapMaxInput.value = String(leap);
+
+      const opts = {
+        leap_max: leap,
+        include_bridge_edges_in_output: !!(includeBridgeInput && includeBridgeInput.checked),
+        include_longest_cycle_subgraph: !!(includeLongestCycleInput && includeLongestCycleInput.checked),
+        include_breaking_cycle_subgraph: !!(includeBreakingCycleInput && includeBreakingCycleInput.checked)
+      };
+      return opts;
+    }
+
+    function periphOptsKey(opts) {
+      // Stable key (insertion order is stable because we construct the object in a fixed order)
+      try { return JSON.stringify(opts); } catch (e) { return String(opts); }
+    }
+
+    function invalidatePeripheryCache(reason) {
+      const had = ((Array.isArray(state.periphGraphsBaseAll) && state.periphGraphsBaseAll.length) ||
+                   (Array.isArray(state.periphGraphsExtras) && state.periphGraphsExtras.length));
+      // Clear cached results so a re-run is required.
+      state.periphGraphsBaseAll = null;
+      state.periphGraphsExtras = null;
+      state.periphKmax = null;
+      state.selectedIndex = 0;
+      state.periphCacheInvalidatedMsg = reason || 'Settings changed — cached peripheries cleared. Click Re-run to compute again.';
+      try { renderResultsFromState(); } catch (e) {}
+      return had;
+    }
+
+    function persistPeriphOpts() {
+      const opts = normalizePeriphOptsFromUI();
+      const newKey = periphOptsKey(opts);
+      const oldKey = state.periphOptsKey;
+      const hadCache = ((Array.isArray(state.periphGraphsBaseAll) && state.periphGraphsBaseAll.length) ||
+                       (Array.isArray(state.periphGraphsExtras) && state.periphGraphsExtras.length));
+      state.periphOpts = opts;
+      state.periphOptsKey = newKey;
+      if (hadCache && oldKey !== newKey) {
+        invalidatePeripheryCache('Advanced settings changed — cached peripheries cleared. Click Re-run to recompute.');
+      }
+    }
+
+    // Persist advanced settings as the user edits them (so reopen keeps them)
+    if (leapMaxInput) leapMaxInput.addEventListener('input', persistPeriphOpts);
+    if (includeBridgeInput) includeBridgeInput.addEventListener('change', persistPeriphOpts);
+    if (includeLongestCycleInput) includeLongestCycleInput.addEventListener('change', persistPeriphOpts);
+    if (includeBreakingCycleInput) includeBreakingCycleInput.addEventListener('change', persistPeriphOpts);
+
+    // Help popups (question-mark buttons)
+    function hideAllPeriphHelp() {
+      modal.querySelectorAll('.periphHelpPopup').forEach(p => { p.style.display = 'none'; p.textContent = ''; });
+    }
+    modal.querySelectorAll('.periphHelpBtn').forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        const wrap = btn.closest('.periphHelpWrap');
+        if (!wrap) return;
+        const pop = wrap.querySelector('.periphHelpPopup');
+        if (!pop) return;
+        const help = btn.getAttribute('data-help') || '';
+        const isOpen = (pop.style.display === 'block');
+        hideAllPeriphHelp();
+        if (!isOpen) {
+          pop.textContent = help;
+          pop.style.display = 'block';
+        }
+      });
+    });
+    document.addEventListener('click', hideAllPeriphHelp);
+
+    let periphIsBusy = false;
+
+    function setBusy(isBusy, label) {
+      periphIsBusy = !!isBusy;
+      if (spinnerEl) {
+        spinnerEl.style.display = isBusy ? 'inline-block' : 'none';
+      }
+      if (stopBtn) {
+        stopBtn.style.display = isBusy ? "inline-block" : "none";
+        stopBtn.disabled = !isBusy;
+      }
+      if (isBusy) {
+        statusRow.style.display = 'flex';
+        statusText.textContent = label || 'Calculating...';
+      } else {
+        statusRow.style.display = 'none';
+        statusText.textContent = '';
+      }
+      runBtn.disabled = isBusy;
+      kmaxInput.disabled = isBusy;
+      if (leapMaxInput) leapMaxInput.disabled = isBusy;
+      if (includeBridgeInput) includeBridgeInput.disabled = isBusy;
+      if (includeLongestCycleInput) includeLongestCycleInput.disabled = isBusy;
+      if (includeBreakingCycleInput) includeBreakingCycleInput.disabled = isBusy;
+    }
+
+    function renderResultsFromState() {
+      // Keep current Kmax input value (do not overwrite user edits).
+      // state.kmax is updated from the input via listeners.
+      // Restore advanced settings
+      if (leapMaxInput) leapMaxInput.value = String((state.periphOpts && typeof state.periphOpts.leap_max === 'number') ? state.periphOpts.leap_max : 0);
+      if (includeBridgeInput) includeBridgeInput.checked = !!(state.periphOpts && state.periphOpts.include_bridge_edges_in_output);
+      if (includeLongestCycleInput) includeLongestCycleInput.checked = !!(state.periphOpts && state.periphOpts.include_longest_cycle_subgraph);
+      if (includeBreakingCycleInput) includeBreakingCycleInput.checked = !!(state.periphOpts && state.periphOpts.include_breaking_cycle_subgraph);
+
+      // Remove old periphery selector UI (if any)
+      const oldRow = modal.querySelector('#peripherySelectRow');
+      if (oldRow) oldRow.remove();
+      const oldSel = modal.querySelector('#peripherySelect');
+      if (oldSel) oldSel.remove();
+      const oldDel = modal.querySelector('#peripheryDeleteBtn');
+      if (oldDel) oldDel.remove();
+
+      const baseAll = Array.isArray(state.periphGraphsBaseAll) ? state.periphGraphsBaseAll : [];
+      const extras = Array.isArray(state.periphGraphsExtras) ? state.periphGraphsExtras : [];
+      const custom = Array.isArray(state.customPeripheries) ? state.customPeripheries : [];
+
+      // Show all base periphery graphs (extras/custom peripheries are always shown on top).
+      const shownGraphs = custom.concat(extras, baseAll);
+      currentShownGraphs = shownGraphs;
+
+      if (shownGraphs.length > 0) {
+        state.periphCacheInvalidatedMsg = '';
+        msg.textContent = `Found ${baseAll.length} periphery graph(s)` + (extras.length ? ` + ${extras.length} extra graph(s)` : ``) + `. Showing ${shownGraphs.length}. Choose one to highlight:`;
+        // Show label UI once we have results
+        labelDetails.style.display = 'block';
+        if (state.applyLabelOpen) labelDetails.open = true;
+        labelInput.value = state.applyLabelText || '';
+        if (evalCounterChk) evalCounterChk.checked = !!state.applyLabelEvalCounter;
+        if (indexArrayChk) indexArrayChk.checked = !!state.applyLabelSaveIndexArray;
+        if (sortLabelChk) sortLabelChk.checked = !!state.applyLabelSaveSortLabel;
+        if (counterStartInput) counterStartInput.value = String(state.applyLabelCounterStart ?? 0);
+        if (counterReverseChk) counterReverseChk.checked = !!state.applyLabelCounterReverse;
+        try { updateCounterUI(); } catch (e) {}
+
+        const nCustom = custom.length;
+        const nExtra = extras.length;
+
+        // Selector row (select + delete button for custom peripheries)
+        const selRow = document.createElement('div');
+        selRow.id = 'peripherySelectRow';
+        selRow.style.display = 'flex';
+        selRow.style.alignItems = 'center';
+        selRow.style.gap = '8px';
+        selRow.style.marginTop = '6px';
+
+        const sel = document.createElement('select');
+        sel.id = 'peripherySelect';
+        sel.style.flex = '1';
+        sel.style.width = '100%';
+
+        const delBtn = document.createElement('button');
+        delBtn.id = 'peripheryDeleteBtn';
+        delBtn.type = 'button';
+        delBtn.textContent = '🗑';
+        delBtn.title = 'Delete selected custom periphery';
+        delBtn.style.padding = '4px 10px';
+        delBtn.style.border = '1px solid #ccc';
+        delBtn.style.borderRadius = '10px';
+        delBtn.style.background = '#fff';
+        delBtn.style.cursor = 'pointer';
+        delBtn.style.display = 'none'; // only shown for custom items
+
+        selRow.appendChild(sel);
+        selRow.appendChild(delBtn);
+
+        shownGraphs.forEach((g, idx) => {
+          const opt = document.createElement('option');
+          opt.value = String(idx);
+
+          let label;
+          if (idx < nCustom) {
+            label =
+              (g && typeof g.name === 'string' && g.name.trim()) ? g.name.trim() :
+              (g && typeof g.__name === 'string' && g.__name.trim()) ? g.__name.trim() :
+              `Custom #${idx + 1}`;
+          } else if (idx < (nCustom + nExtra)) {
+            label = `Extra #${(idx - nCustom) + 1}`;
+          } else {
+            label = `Periphery #${(idx - nCustom - nExtra) + 1}`;
+          }
+
+          const eCount = Array.isArray(g.edges) ? g.edges.length : 0;
+          const nCount = Array.isArray(g.nodes) ? g.nodes.length : 0;
+
+          opt.textContent = `${label} – ${eCount} edges, ${nCount} nodes`;
+          sel.appendChild(opt);
+        });
+
+        // Restore selected index (clamp)
+        const safeIdx = Math.max(0, Math.min(state.selectedIndex || 0, shownGraphs.length - 1));
+        sel.value = String(safeIdx);
+
+        function updateDeleteBtn() {
+          const idxNow = parseInt(sel.value, 10);
+          const isCustom = Number.isFinite(idxNow) && idxNow >= 0 && idxNow < nCustom;
+          delBtn.style.display = isCustom ? 'inline-block' : 'none';
+          delBtn.disabled = !isCustom;
+        }
+
+        delBtn.addEventListener('click', () => {
+          const idxNow = parseInt(sel.value, 10);
+          if (!Number.isFinite(idxNow) || idxNow < 0) return;
+          if (!Array.isArray(state.customPeripheries)) state.customPeripheries = [];
+          if (idxNow >= state.customPeripheries.length) return; // not a custom periphery
+
+          const g = state.customPeripheries[idxNow];
+          const nm =
+            (g && typeof g.name === 'string' && g.name.trim()) ? g.name.trim() :
+            (g && typeof g.__name === 'string' && g.__name.trim()) ? g.__name.trim() :
+            `Custom #${idxNow + 1}`;
+
+          if (!window.confirm(`Delete "${nm}"?\n\nThis cannot be undone.`)) return;
+
+          // Remove the custom periphery
+          state.customPeripheries.splice(idxNow, 1);
+
+          // After deletion, keep the same index so the "next" item (which shifts into this slot)
+          // becomes selected. If we deleted the last item, clamping will choose the new last.
+          state.selectedIndex = idxNow;
+
+          try { renderResultsFromState(); } catch (e) {}
+        });
+
+        updateDeleteBtn();
+
+        const buttonBar = (cancelBtn && cancelBtn.parentNode) ? cancelBtn.parentNode : null;
+        // Insert the selector row into the same container as the main Cancel/Done/Run button bar.
+        const insertParent = (buttonBar && buttonBar.parentNode) ? buttonBar.parentNode : modal;
+        if (buttonBar && insertParent) {
+          if (selRow.parentNode !== insertParent) {
+            insertParent.insertBefore(selRow, buttonBar);
+          } else if (selRow.nextSibling !== buttonBar) {
+            insertParent.insertBefore(selRow, buttonBar);
+          }
+        } else {
+          modal.appendChild(selRow);
+        }
+
+        // Highlight currently selected graph immediately
+        try { highlightPeripheryGraph(shownGraphs[safeIdx]); } catch (e) {}
+
+        sel.addEventListener('change', () => {
+          const idx = parseInt(sel.value, 10);
+          state.selectedIndex = idx;
+          try { updateDeleteBtn(); } catch (e) {}
+          try { highlightPeripheryGraph(shownGraphs[idx]); } catch (e) {}
+        });
+
+        doneBtn.style.display = 'inline-block'; // only after we have results
+        if (editRow) editRow.style.display = 'flex';
+        if (editDetails) { editDetails.style.display = 'none'; editDetails.open = false; }
+        runBtn.textContent = 'Re-run';
+      } else {
+        msg.textContent = state.periphCacheInvalidatedMsg ? state.periphCacheInvalidatedMsg : '';
+        labelDetails.style.display = 'none';
+        currentShownGraphs = [];
+        try {
+          if (typeof window.clearPeripheryHighlightInScene === 'function') {
+            window.clearPeripheryHighlightInScene();
+          }
+        } catch (e) {}
+        try {
+          if (typeof window.highlightPeripheryInText === 'function') {
+            window.highlightPeripheryInText([]);
+          }
+        } catch (e) {}
+        doneBtn.style.display = 'none';
+        if (editRow) editRow.style.display = 'none';
+        if (editDetails) { editDetails.style.display = 'none'; editDetails.open = false; }
+        runBtn.textContent = 'Run';
+      }
+    }
+
+
+    // If Kmax changes, cached peripheries are no longer valid and require a re-run.
+    kmaxInput.addEventListener('input', () => {
+      const k = parseInt(kmaxInput.value, 10);
+      if (!Number.isInteger(k) || k < 2) {
+        // Don't invalidate cache on partial/invalid input; just keep state in sync when possible.
+        return;
+      }
+      state.kmax = k;
+
+      const hadCache = ((Array.isArray(state.periphGraphsBaseAll) && state.periphGraphsBaseAll.length) ||
+                        (Array.isArray(state.periphGraphsExtras) && state.periphGraphsExtras.length));
+      // If we previously computed for a different Kmax, force a re-run.
+      if (hadCache && state.periphKmax != null && k !== state.periphKmax) {
+        invalidatePeripheryCache('Kmax changed — cached peripheries cleared. Click Re-run to compute again.');
+      } else {
+        renderResultsFromState();
+      }
+    });
+
+
+    // Expose a refresh hook used when reopening
+    modal.refreshPeripheryUI = () => {
+      renderResultsFromState();
+    };
+
+    // Cancel closes the dialog AND clears periphery highlights (restores original colors)
+    cancelBtn.addEventListener('click', () => {
+      try { _periphInvalidateEditorPreview(); } catch (e) {}
+      try { hideNodeSuggest(); } catch (e) {}
+
+      try {
+        if (typeof window.clearPeripheryHighlightInScene === 'function') {
+          window.clearPeripheryHighlightInScene();
+        }
+      } catch (e) {}
+      try {
+        // Clear periphery highlights in expanded text (if any)
+        if (typeof window.highlightPeripheryInText === 'function') {
+          window.highlightPeripheryInText([]);
+        }
+      } catch (e) {}
+      try { window.__currentPeripheryNodeLabels = []; } catch (e) {}
+      try { window.__peripherySceneHighlightedNodeLabels = []; } catch (e) {}
+      try { window.__peripheryHighlightSessionId = null; } catch (e) {}
+      if (periphIsBusy) {
+        try { cancel_find_periphery(); } catch {}
+        state.runToken++;
+        setBusy(false);
+        statusRow.style.display = 'flex';
+        statusText.textContent = 'Cancelled.';
+      }
+
+      modal.style.display = 'none';
+    });
+
+    if (stopBtn) {
+      stopBtn.addEventListener('click', () => {
+        if (!periphIsBusy) return;
+        try { cancel_find_periphery(); } catch {}
+        state.runToken++;
+        setBusy(false);
+        statusRow.style.display = 'flex';
+        statusText.textContent = 'Cancelled.';
+      });
+    }
+
+
+    // Done closes the dialog (only visible after calculation finishes)
+    doneBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    // Edge editor (custom periphery)
+    function _periphSelectedGraph() {
+      const idx = Math.max(0, Math.min(state.selectedIndex || 0, (currentShownGraphs.length || 1) - 1));
+      return currentShownGraphs[idx] || null;
+    }
+
+    function _periphEdgesToText(g) {
+      if (!g || !Array.isArray(g.edges)) return '';
+      return g.edges
+        .map(e => (Array.isArray(e) && e.length >= 2) ? `${String(e[0])} -- ${String(e[1])}` : '')
+        .filter(Boolean)
+        .join('\n');
+    }
+
+    function _periphParseEdges(raw) {
+      const lines = String(raw || '').split(/\r?\n/);
+      const edges = [];
+      const nodesSet = new Set();
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line || line.startsWith('#')) continue;
+        const mm = line.match(/^(.+?)\s*--\s*(.+)$/);
+        if (!mm) return { ok: false, error: `Line ${i + 1}: expected "node1 -- node2".` };
+        const a = mm[1].trim();
+        const b = mm[2].trim();
+        if (!a || !b) return { ok: false, error: `Line ${i + 1}: missing node name.` };
+        edges.push([a, b]);
+        nodesSet.add(a);
+        nodesSet.add(b);
+      }
+      if (edges.length === 0) return { ok: false, error: 'No edges found. Add at least one edge.' };
+      return { ok: true, edges, nodes: Array.from(nodesSet) };
+    }
+
+    function _periphEditMsg(msgStr, kind) {
+      if (!editMsg) return;
+      editMsg.textContent = msgStr || '';
+      editMsg.style.display = msgStr ? 'block' : 'none';
+      if (!msgStr) return;
+      if (kind === 'ok' || kind === 'info') editMsg.style.color = '#0a0';
+      else if (kind === 'warn') editMsg.style.color = '#b80';
+      else editMsg.style.color = '#b00';
+    }
+
+
+    function _periphEdgeEditorIsOpen() {
+      return !!(modal && modal.style.display !== 'none' &&
+        editDetails && editDetails.open && editDetails.style.display !== 'none' &&
+        editTA);
+    }
+
+    function _periphScrollTAtoLine(ta, lineIndex) {
+      if (!ta) return;
+      const st = window.getComputedStyle(ta);
+      let lh = parseFloat(st.lineHeight);
+      if (!isFinite(lh)) {
+        const fs = parseFloat(st.fontSize);
+        lh = isFinite(fs) ? (fs * 1.25) : 16;
+      }
+      const target = Math.max(0, (lineIndex - 2) * lh);
+      ta.scrollTop = target;
+    }
+
+    function _periphFlashTA(ta) {
+      if (!ta) return;
+      const old = ta.style.boxShadow;
+      ta.style.boxShadow = '0 0 0 2px rgba(0, 128, 0, 0.35)';
+      setTimeout(() => { try { ta.style.boxShadow = old; } catch (e) {} }, 900);
+    }
+
+    function _periphFocusOrAddEdgeInEditor(aName, bName) {
+      if (!_periphEdgeEditorIsOpen()) return;
+
+      const a = String(aName || '').trim();
+      const b = String(bName || '').trim();
+      if (!a || !b) return;
+
+      const na = _periphNormNodeKey(a);
+      const nb = _periphNormNodeKey(b);
+
+      const raw = String(editTA.value || '');
+      const lines = raw.split(/\r?\n/);
+
+      let offset = 0;
+      let found = null;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const mm = line.match(/^\s*(.*?)\s*--\s*(.*?)\s*$/);
+        if (mm) {
+          const u = _periphNormNodeKey(mm[1]);
+          const v = _periphNormNodeKey(mm[2]);
+          if ((u === na && v === nb) || (u === nb && v === na)) {
+            found = { lineIndex: i, start: offset, end: offset + line.length };
+            break;
+          }
+        }
+        offset += line.length + 1;
+      }
+
+      // Ensure the editor is visible/open.
+      try { editDetails.style.display = 'block'; editDetails.open = true; } catch (e) {}
+
+      if (found) {
+        try { editTA.focus(); } catch (e) {}
+        try { editTA.setSelectionRange(found.start, found.end); } catch (e) {}
+        _periphScrollTAtoLine(editTA, found.lineIndex);
+        _periphEditMsg(`Edge: ${a} -- ${b}`, 'info');
+        _periphFlashTA(editTA);
+        return;
+      }
+
+      // Not found -> append to bottom
+      let text = raw;
+      if (text.length && !text.endsWith('\n')) text += '\n';
+      const newLine = `${a} -- ${b}`;
+      const newStart = text.length;
+      text += newLine + '\n';
+      editTA.value = text;
+
+      // Keep live-preview bookkeeping in sync when we modify the textarea programmatically.
+      // (Otherwise a subsequent delete can fail to trigger a preview refresh.)
+      try {
+        const pnow = _periphParseEdgesLoose(editTA.value);
+        _periphPrevEdgeCount = pnow.edges.length;
+        _periphPrevEdgeSetStr = _periphEdgeSetToStr(pnow.edges);
+      } catch (e) {}
+
+      try { editTA.focus(); } catch (e) {}
+      try { editTA.setSelectionRange(newStart, newStart + newLine.length); } catch (e) {}
+      editTA.scrollTop = editTA.scrollHeight;
+
+      _periphEditMsg(`Added edge: ${a} -- ${b}`, 'ok');
+      _periphFlashTA(editTA);
+
+      // Live preview: sort+highlight (no saving) after adding an edge via Alt+Click.
+      _periphScheduleEditorPreview("edge added");
+    }
+
+    // --- Live preview while editing: sort edges + update 3D/text highlights (no saving) ---
+    let _periphPrevEdgeCount = 0;
+    let _periphPrevEdgeSetStr = '';
+    let _periphPreviewTimer = null;
+    let _periphPreviewReqId = 0;  // monotonically increasing preview version id
+
+    function _periphInvalidateEditorPreview() {
+      // Invalidate any in-flight async preview updates (e.g. waiting on sort_edge_dot),
+      // so they can't re-apply highlighting after the editor/dialog is closed.
+      _periphPreviewReqId++;
+      if (_periphPreviewTimer) {
+        try { clearTimeout(_periphPreviewTimer); } catch (e) {}
+        _periphPreviewTimer = null;
+      }
+    }
+
+    function _periphEdgeKeyUndirected(a, b) {
+      const aa = String(a || '').trim();
+      const bb = String(b || '').trim();
+      return (aa <= bb) ? (aa + '||' + bb) : (bb + '||' + aa);
+    }
+
+    function _periphEdgeSetToStr(edges) {
+      const keys = [];
+      for (const e of edges || []) {
+        if (!Array.isArray(e) || e.length < 2) continue;
+        const a = String(e[0] ?? '').trim();
+        const b = String(e[1] ?? '').trim();
+        if (!a || !b) continue;
+        keys.push(_periphEdgeKeyUndirected(a, b));
+      }
+      keys.sort();
+      return keys.join('\n');
+    }
+
+    // Loose parser: collects valid "node1 -- node2" lines and ignores other malformed lines
+    // so we can keep previewing while the user is mid-edit on a line.
+    function _periphParseEdgesLoose(raw) {
+      const lines = String(raw || '').split(/\r?\n/);
+      const edges = [];
+      const nodesSet = new Set();
+      let skipped = 0;
+      for (let i = 0; i < lines.length; i++) {
+        const line0 = lines[i];
+        const line = String(line0 || '').trim();
+        if (!line || line.startsWith('#')) continue;
+        const mm = line.match(/^(.+?)\s*--\s*(.+)$/);
+        if (!mm) { skipped++; continue; }
+        const a = String(mm[1] || '').trim();
+        const b = String(mm[2] || '').trim();
+        if (!a || !b) { skipped++; continue; }
+        edges.push([a, b]);
+        nodesSet.add(a); nodesSet.add(b);
+      }
+      return { edges, nodes: Array.from(nodesSet), skipped };
+    }
+
+    function _periphEdgesToQuotedDot(edges) {
+      const parts = [];
+      for (const e of edges || []) {
+        if (!Array.isArray(e) || e.length < 2) continue;
+        const a = String(e[0] ?? '').trim();
+        const b = String(e[1] ?? '').trim();
+        if (!a || !b) continue;
+        const qa = a.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        const qb = b.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+        parts.push(`"${qa}" -- "${qb}";`);
+      }
+      return `graph G {\n  ${parts.join('\n  ')}\n}`;
+    }
+
+    function _periphParseQuotedDot(dotStr) {
+      const outEdges = [];
+      const outNodes = [];
+      const seenNodes = new Set();
+      const re = /"((?:\\.|[^"\\])*)"\s*--\s*"((?:\\.|[^"\\])*)"/g;
+      let m;
+      while ((m = re.exec(String(dotStr || ''))) !== null) {
+        const a = String(m[1] || '').replace(/\\\"/g, '"').replace(/\\\\/g, '\\').trim();
+        const b = String(m[2] || '').replace(/\\\"/g, '"').replace(/\\\\/g, '\\').trim();
+        if (!a || !b) continue;
+        outEdges.push([a, b]);
+        if (!seenNodes.has(a)) { seenNodes.add(a); outNodes.push(a); }
+        if (!seenNodes.has(b)) { seenNodes.add(b); outNodes.push(b); }
+      }
+      return (outEdges.length ? { nodes: outNodes, edges: outEdges } : null);
+    }
+
+    function _periphNormalizeSortEdgeDotResult(res) {
+      if (!res) return null;
+
+      // If sort_edge_dot returns a DOT string
+      if (typeof res === 'string') {
+        return _periphParseQuotedDot(res);
+      }
+
+      // If it returns an object with a DOT string
+      if (typeof res === 'object') {
+        if (typeof res.dot === 'string') return _periphParseQuotedDot(res.dot);
+        if (typeof res.dot_simple === 'string') return _periphParseQuotedDot(res.dot_simple);
+        if (typeof res.sorted_dot === 'string') return _periphParseQuotedDot(res.sorted_dot);
+
+        // If it returns nodes/edges directly
+        if (Array.isArray(res.nodes) && Array.isArray(res.edges)) {
+          return { nodes: res.nodes.map(x => String(x).trim()).filter(Boolean),
+                   edges: res.edges.filter(e => Array.isArray(e) && e.length >= 2)
+                                  .map(e => [String(e[0]).trim(), String(e[1]).trim()])
+                                  .filter(e => e[0] && e[1]) };
+        }
+      }
+      return null;
+    }
+
+    async function _periphSortEdgesForPreview(edges) {
+      // Use sort_edge_dot if available; otherwise fall back to raw edges.
+      const dot = _periphEdgesToQuotedDot(edges);
+
+      // Try a few signatures (sort_edge_dot has changed in the past).
+      let res = null;
+      try {
+        res = sort_edge_dot(dot);
+      } catch (e) {
+        try { res = sort_edge_dot(dot, Infinity); } catch (e2) { res = null; }
+      }
+      try {
+        if (res && typeof res.then === 'function') res = await res;
+      } catch (e) {}
+
+      // If it returns an array of graph objects/components
+      if (Array.isArray(res) && res.length) {
+        const nodeSet = new Set();
+        const nodesOut = [];
+        const edgesOut = [];
+        for (const g of res) {
+          const norm = _periphNormalizeSortEdgeDotResult(g);
+          if (!norm) continue;
+          for (const n of norm.nodes || []) {
+            const s = String(n).trim();
+            if (s && !nodeSet.has(s)) { nodeSet.add(s); nodesOut.push(s); }
+          }
+          for (const e of norm.edges || []) {
+            if (!Array.isArray(e) || e.length < 2) continue;
+            const a = String(e[0] || '').trim();
+            const b = String(e[1] || '').trim();
+            if (a && b) edgesOut.push([a, b]);
+          }
+        }
+        if (nodesOut.length && edgesOut.length) return { nodes: nodesOut, edges: edgesOut };
+      }
+
+      const norm = _periphNormalizeSortEdgeDotResult(res);
+      if (norm && norm.nodes && norm.edges) return norm;
+
+      // Fallback: keep as entered (still highlight)
+      const nodeSet = new Set();
+      const edgesOut = [];
+      for (const e of edges || []) {
+        if (!Array.isArray(e) || e.length < 2) continue;
+        const a = String(e[0] || '').trim();
+        const b = String(e[1] || '').trim();
+        if (!a || !b) continue;
+        edgesOut.push([a, b]);
+        nodeSet.add(a); nodeSet.add(b);
+      }
+      return { nodes: Array.from(nodeSet), edges: edgesOut };
+    }
+function _periphScheduleEditorPreview(reason) {
+  if (!_periphEdgeEditorIsOpen()) return;
+
+  // bump request id so older async runs become stale
+  const reqId = ++_periphPreviewReqId;
+
+  if (_periphPreviewTimer) clearTimeout(_periphPreviewTimer);
+  _periphPreviewTimer = setTimeout(() => {
+    _periphRunEditorPreview(reason, reqId).catch(() => {});
+  }, 0);
+}
+
+async function _periphRunEditorPreview(reason, reqId) {
+  if (!_periphEdgeEditorIsOpen()) return;
+
+  // if we're already stale before we begin, abort
+  if (reqId !== _periphPreviewReqId) return;
+
+  const raw = String(editTA.value || '');
+  const parsed = _periphParseEdgesLoose(raw);
+
+  if (!parsed.edges.length) {
+    // only clear if this is still the latest request
+    if (reqId !== _periphPreviewReqId) return;
+
+    try { if (typeof window.clearPeripheryHighlightInScene === 'function') window.clearPeripheryHighlightInScene(); } catch (e) {}
+    try { if (window.inputText && inputText.expanded && typeof window.highlightPeripheryInText === 'function') window.highlightPeripheryInText([]); } catch (e) {}
+    _periphEditMsg(parsed.skipped ? `No valid edges to preview (ignored ${parsed.skipped}).` : '');
+    return;
+  }
+
+  // ✅ FAST immediate preview (no waiting on sort_edge_dot)
+  // This prevents the “arrowhead-only” intermediate state.
+  try {
+    highlightPeripheryGraph({ nodes: parsed.nodes || [], edges: parsed.edges || [] });
+  } catch (e) {}
+
+  // Now do the canonical sorting step
+  const sorted = await _periphSortEdgesForPreview(parsed.edges);
+
+  // If another edit happened while we were sorting, discard this result
+  if (reqId !== _periphPreviewReqId) return;
+
+  // If the editor/dialog was closed while sorting, do not re-apply highlights.
+  if (!_periphEdgeEditorIsOpen()) return;
+
+  if (!sorted || !sorted.edges || !sorted.edges.length) return;
+
+  // ✅ Apply sorted/canonical preview (final authoritative highlight)
+  try {
+    highlightPeripheryGraph({ nodes: sorted.nodes || [], edges: sorted.edges || [] });
+  } catch (e) {}
+
+  if (parsed.skipped) _periphEditMsg(`Preview updated (ignored ${parsed.skipped} malformed line${parsed.skipped===1?'':'s'}).`, 'ok');
+  else _periphEditMsg('Preview updated.', 'ok');
+}
+
+
+
+    // Allow the 3D module to jump/add edges into the custom-edge editor via Alt+Click.
+    window.__peripheryEdgeEditorIsOpen = _periphEdgeEditorIsOpen;
+    window.__peripheryEdgeEditorPickEdge = function(a, b) {
+      if (!_periphEdgeEditorIsOpen()) return;
+      _periphFocusOrAddEdgeInEditor(a, b);
+      // Ensure 3D/text highlight preview stays in sync when edges are added via Alt+Click.
+      _periphScheduleEditorPreview('edge picked');
+    };
+
+
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        if (!editDetails || !editTA) return;
+        editDetails.style.display = 'block';
+        editDetails.open = true;
+        _periphEditMsg('');
+        const g = _periphSelectedGraph();
+        editTA.value = _periphEdgesToText(g);
+
+        // Initialize preview bookkeeping so we only recompute when a *new* valid edge line is added/removed.
+        try {
+          const parsed0 = _periphParseEdgesLoose(editTA.value);
+          _periphPrevEdgeCount = parsed0.edges.length;
+          _periphPrevEdgeSetStr = _periphEdgeSetToStr(parsed0.edges);
+        } catch (e) {}
+
+        // focus for quick edits
+        try { editTA.focus(); } catch (e) {}
+      });
+    }
+
+    if (closeEditBtn) {
+      closeEditBtn.addEventListener('click', () => {
+        try { _periphInvalidateEditorPreview(); } catch (e) {}
+        try { hideNodeSuggest(); } catch (e) {}
+        if (editDetails) { editDetails.open = false; editDetails.style.display = 'none'; }
+        _periphEditMsg('');
+        // Revert highlight back to the currently selected periphery graph (not an unsaved edit preview).
+        try {
+          const g = _periphSelectedGraph();
+          if (g) highlightPeripheryGraph(g);
+        } catch (e) {}
+      });
+    }
+
+    // If the user collapses the editor, stop any in-flight preview work and restore the base selection highlight.
+    if (editDetails) {
+      editDetails.addEventListener('toggle', () => {
+        if (!editDetails.open) {
+          try { _periphInvalidateEditorPreview(); } catch (e) {}
+          try { hideNodeSuggest(); } catch (e) {}
+          try {
+            const g = _periphSelectedGraph();
+            if (g) highlightPeripheryGraph(g);
+          } catch (e) {}
+        }
+      });
+    }
+
+
+    if (saveCustomBtn) {
+      saveCustomBtn.addEventListener('click', async () => {
+        if (!editTA) return;
+        const rawText = String(editTA.value || '');
+        const parsed = _periphParseEdges(rawText);
+        if (!parsed.ok) {
+          _periphEditMsg(parsed.error || 'Could not parse edges.');
+          return;
+        }
+
+        // Build a quoted DOT string (periphery.js parses quoted node ids: "A" -- "B")
+        function _edgesToQuotedDot(edges) {
+          const parts = [];
+          for (const e of edges || []) {
+            if (!Array.isArray(e) || e.length < 2) continue;
+            const a = String(e[0] ?? '').trim();
+            const b = String(e[1] ?? '').trim();
+            if (!a || !b) continue;
+            // Escape quotes/backslashes so DOT stays valid
+            const qa = a.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+            const qb = b.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+            parts.push(`"${qa}" -- "${qb}";`);
+          }
+          return `graph G {\n  ${parts.join('\n  ')}\n}`;
+        }
+
+        function _parseQuotedDot(dotStr) {
+          const outEdges = [];
+          const outNodes = [];
+          const seenNodes = new Set();
+          const re = /"((?:\\.|[^"])*)"\s*--\s*"((?:\\.|[^"])*)"/g;
+          let m;
+          while ((m = re.exec(dotStr || '')) !== null) {
+            const a = String(m[1] || '').replace(/\\\"/g, '"').replace(/\\\\/g, '\\').trim();
+            const b = String(m[2] || '').replace(/\\\"/g, '"').replace(/\\\\/g, '\\').trim();
+            if (!a || !b) continue;
+            outEdges.push([a, b]);
+            if (!seenNodes.has(a)) { seenNodes.add(a); outNodes.push(a); }
+            if (!seenNodes.has(b)) { seenNodes.add(b); outNodes.push(b); }
+          }
+          return (outEdges.length ? { nodes: outNodes, edges: outEdges } : null);
+        }
+
+        function _normalizeSortEdgeDotResult(res) {
+          if (!res) return null;
+
+          // If sort_edge_dot returns a DOT string
+          if (typeof res === 'string') {
+            return _parseQuotedDot(res);
+          }
+
+          // If it returns an object with dot_simple / dot
+          if (typeof res === 'object') {
+            if (typeof res.dot_simple === 'string') {
+              const p = _parseQuotedDot(res.dot_simple);
+              if (p) return p;
+            }
+            if (typeof res.dot === 'string') {
+              const p = _parseQuotedDot(res.dot);
+              if (p) return p;
+            }
+
+            // If it returns {nodes, edges}
+            if (Array.isArray(res.edges) && res.edges.length) {
+              const nodes = Array.isArray(res.nodes) ? res.nodes.map(x => String(x).trim()).filter(Boolean) : [];
+              const edges = res.edges
+                .filter(e => Array.isArray(e) && e.length >= 2)
+                .map(e => [String(e[0]).trim(), String(e[1]).trim()])
+                .filter(e => e[0] && e[1]);
+              if (edges.length) {
+                const nodeSet = new Set();
+                const nodesOut = [];
+                for (const n of nodes) { if (!nodeSet.has(n)) { nodeSet.add(n); nodesOut.push(n); } }
+                for (const [a,b] of edges) {
+                  if (!nodeSet.has(a)) { nodeSet.add(a); nodesOut.push(a); }
+                  if (!nodeSet.has(b)) { nodeSet.add(b); nodesOut.push(b); }
+                }
+                return { nodes: nodesOut, edges };
+              }
+            }
+          }
+
+          // If it returns an array of graph objects/components
+          if (Array.isArray(res) && res.length) {
+            const nodeSet = new Set();
+            const nodesOut = [];
+            const edgesOut = [];
+            for (const g of res) {
+              const norm = _normalizeSortEdgeDotResult(g);
+              if (!norm) continue;
+              for (const n of norm.nodes || []) {
+                const s = String(n).trim();
+                if (s && !nodeSet.has(s)) { nodeSet.add(s); nodesOut.push(s); }
+              }
+              for (const e of norm.edges || []) {
+                if (Array.isArray(e) && e.length >= 2) {
+                  const a = String(e[0]).trim(), b = String(e[1]).trim();
+                  if (a && b) edgesOut.push([a,b]);
+                }
+              }
+            }
+            return edgesOut.length ? { nodes: nodesOut, edges: edgesOut } : null;
+          }
+
+          return null;
+        }
+
+        // Use periphery.js's sort_edge_dot to normalize/sort the edited edges
+        let sortedNodes = parsed.nodes;
+        let sortedEdges = parsed.edges;
+
+        const quotedDot = _edgesToQuotedDot(parsed.edges);
+        try {
+          if (typeof sort_edge_dot === 'function') {
+            // Try a couple of likely call signatures (sort_edge_dot has changed over time)
+            const callVariants = [
+              () => sort_edge_dot(quotedDot),
+              () => sort_edge_dot(quotedDot, Infinity),
+              () => sort_edge_dot(quotedDot, Infinity, {}),
+              () => sort_edge_dot(rawText),
+            ];
+
+            for (const fn of callVariants) {
+              try {
+                let res = fn();
+                if (res && typeof res.then === 'function') res = await res;
+                const norm = _normalizeSortEdgeDotResult(res);
+                if (norm && Array.isArray(norm.edges) && norm.edges.length) {
+                  sortedNodes = norm.nodes;
+                  sortedEdges = norm.edges;
+                  break;
+                }
+              } catch (e) {
+                // try next variant
+              }
+            }
+          }
+        } catch (e) {
+          // fall back to parsed ordering
+        }
+
+        if (!Array.isArray(state.customPeripheries)) state.customPeripheries = [];
+        state.customPeripheryCounter = (state.customPeripheryCounter || 0) + 1;
+        const name = `Custom periphery ${state.customPeripheryCounter}`;
+
+        const customGraph = {
+          __custom: true,
+          name: name,
+          __name: name,
+          nodes: sortedNodes,
+          edges: sortedEdges,
+        };
+
+        // Put on top and select it
+        state.customPeripheries.unshift(customGraph);
+        state.selectedIndex = 0;
+
+        // Update the editor text to the normalized version so the user can see what was saved.
+        try { editTA.value = _periphEdgesToText(customGraph); } catch (e) {}
+
+        // Close editor and refresh dropdown/highlight
+        if (editDetails) { editDetails.open = false; editDetails.style.display = 'none'; }
+        _periphEditMsg('');
+
+        try { renderResultsFromState(); } catch (e) {}
+      });
+    }
+
+
+    // Dragging
+    (function enableDrag() {
+      const dragHandle = modal.querySelector('#periphDragHandle');
+      let dragging = false;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      dragHandle.addEventListener('mousedown', (e) => {
+        dragging = true;
+        // If centered via transform, convert to absolute px first
+        const rect = modal.getBoundingClientRect();
+        if (modal.style.transform && modal.style.transform !== 'none') {
+          modal.style.left = rect.left + 'px';
+          modal.style.top = rect.top + 'px';
+          modal.style.transform = 'none';
+        }
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        dragHandle.style.cursor = 'grabbing';
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (!dragging) return;
+        const rect = modal.getBoundingClientRect();
+        const w = rect.width;
+        const h = rect.height;
+
+        let left = e.clientX - offsetX;
+        let top = e.clientY - offsetY;
+
+        // Clamp to viewport so it doesn't get lost
+        left = Math.max(0, Math.min(left, window.innerWidth - w));
+        top = Math.max(0, Math.min(top, window.innerHeight - h));
+
+        modal.style.left = left + 'px';
+        modal.style.top = top + 'px';
+
+        // Save position continuously
+        state.boxPos = { left, top };
+      });
+
+      document.addEventListener('mouseup', () => {
+        dragging = false;
+        dragHandle.style.cursor = 'move';
+      });
+    })();
+
+    // Run (compute peripheries)
+    runBtn.addEventListener('click', async () => {
+      const kmax = parseInt(kmaxInput.value, 10);
+      // Persist settings for this 3D rendering/session
+      const kmaxVal = isFinite(kmax) ? kmax : 10;
+      // NOTE: base periphery graphs are cached per 3D-session AND per Kmax+opts (extras are stored separately).
+      state.kmax = kmaxVal;
+      // Persist advanced settings
+      persistPeriphOpts();
+      const optsForRun = state.periphOpts || {};
+      const optsKeyForRun = state.periphOptsKey || periphOptsKey(optsForRun);
+
+      // Read DOT string produced by current 3D calc
+      const dotData = window.dot_simple;
+      if (typeof dotData !== 'string' || dotData.trim().length === 0) {
+        msg.textContent = 'Please press “Calculate and show model” first, then run Find project periphery.';
+        return;
+      }
+
+      const myToken = ++state.runToken;
+      setBusy(true, 'Calculating periphery graphs (this can take a while)…');
+      doneBtn.style.display = 'none';
+
+      // Clear any existing periphery highlights immediately when starting a (re)calculation.
+      try { if (typeof window.clearPeripheryHighlightInScene === 'function') window.clearPeripheryHighlightInScene(); } catch (e) {}
+      try { if (typeof window.highlightPeripheryInText === 'function') window.highlightPeripheryInText([]); } catch (e) {}
+      try { window.__currentPeripheryNodeLabels = []; } catch (e) {}
+      try { window.__peripherySceneHighlightedNodeLabels = []; } catch (e) {}
+      try { window.__peripheryHighlightSessionId = (window.__peripheryDialogState && typeof window.__peripheryDialogState.sessionId === 'number') ? window.__peripheryDialogState.sessionId : null; } catch (e) {}
+
+      try {
+        const cachedBase = Array.isArray(state.periphGraphsBaseAll) ? state.periphGraphsBaseAll : null;
+        if (cachedBase && cachedBase.length > 0 && state.periphKmax === kmaxVal && state.periphOptsKey === optsKeyForRun) {
+          setBusy(false);
+          modal.refreshPeripheryUI();
+          return;
+        }
+
+        // Let the browser paint the spinner/status before heavy work begins.
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+
+        // We want to cache *all* periphery graphs for this 3D session so changing N later
+        // won't trigger a recompute. periphery.js already computes all components internally
+        // and then slices to N, so using a large N mostly affects the size of the returned list.
+        const Nall = 100000;
+
+        const rawGraphs = await find_periphery(dotData, state.kmax, Nall, optsForRun);
+console.log(rawGraphs);
+        // Sanity-check + normalize output: keep only graphs with non-empty nodes+edges arrays.
+        const cleaned = (Array.isArray(rawGraphs) ? rawGraphs : []).filter(g => {
+          if (!g || typeof g !== 'object') return false;
+          if (!Array.isArray(g.nodes) || !Array.isArray(g.edges)) return false;
+          if (g.nodes.length === 0 || g.edges.length === 0) return false;
+          // edges must look like [uLabel, vLabel]
+          for (const e of g.edges) {
+            if (!Array.isArray(e) || e.length < 2) return false;
+            if (typeof e[0] !== 'string' || typeof e[1] !== 'string') return false;
+          }
+          return true;
+        });
+
+        // Identify optional "extras" appended by periphery.js (if enabled). We only pull from the end.
+        function isSimpleCycleGraph(g) {
+          if (!g || !Array.isArray(g.nodes) || !Array.isArray(g.edges)) return false;
+          if (g.nodes.length < 3) return false;
+          if (g.edges.length !== g.nodes.length) return false;
+          const deg = new Map();
+          for (const e of g.edges) {
+            const a = e[0], b = e[1];
+            deg.set(a, (deg.get(a) || 0) + 1);
+            deg.set(b, (deg.get(b) || 0) + 1);
+          }
+          // In a simple cycle (undirected), each node touches exactly 2 edges.
+          for (const n of g.nodes) {
+            if ((deg.get(n) || 0) !== 2) return false;
+          }
+          return true;
+        }
+
+        const extras = [];
+        let baseAll = cleaned.slice();
+
+        // breaking-cycle is appended after longest-cycle when both are enabled
+        if (optsForRun && optsForRun.include_breaking_cycle_subgraph) {
+          const cand = baseAll[baseAll.length - 1];
+          if (cand && isSimpleCycleGraph(cand)) {
+            extras.unshift(cand);
+            baseAll = baseAll.slice(0, -1);
+          }
+        }
+        if (optsForRun && optsForRun.include_longest_cycle_subgraph) {
+          const cand = baseAll[baseAll.length - 1];
+          if (cand && isSimpleCycleGraph(cand)) {
+            extras.unshift(cand);
+            baseAll = baseAll.slice(0, -1);
+          }
+        }
+
+        // Ignore if a newer run started
+        if (state.runToken !== myToken) return;
+
+        if (!Array.isArray(baseAll) || baseAll.length === 0) {
+          // Keep extras if any, but typically if there are no base peripheries there's nothing useful to highlight.
+          state.periphGraphsBaseAll = null;
+          state.periphGraphsExtras = Array.isArray(extras) && extras.length ? extras : null;
+          state.periphKmax = null;
+          state.selectedIndex = 0;
+          setBusy(false);
+          modal.refreshPeripheryUI();
+          msg.textContent = (extras && extras.length)
+            ? 'No periphery graphs found, but an extra cycle graph is available.'
+            : 'No periphery graphs found.';
+          return;
+        }
+
+        // Save *all* base peripheries + any extras for this 3D session+Kmax+opts
+        state.periphGraphsBaseAll = baseAll;
+        state.periphGraphsExtras = extras;
+        state.periphKmax = kmaxVal;
+        state.selectedIndex = 0;
+
+        state.periphOptsKey = optsKeyForRun;
+        state.periphOpts = optsForRun;
+
+        // Warn if we hit the hard cap (means there might be more peripheries than we saved)
+        if (baseAll.length >= 100000) {
+          console.warn('Periphery cache reached the cap of 100000 graphs; there may be more peripheries than cached.');
+        }
+
+        setBusy(false);
+        modal.refreshPeripheryUI();
+
+      } catch (err) {
+        console.error(err);
+        setBusy(false);
+        msg.textContent = 'Error while running find_periphery. See console.';
+      }
+    });
+
+    // Initialize from current state
+    renderResultsFromState();
+
+    return modal;
+  }
+
+  // Open dialog when user clicks menu item
+  window.showFindPeripheryDialog = function () {
+    const modal = createPeripheryModal();
+    // Sync state with current input values without overwriting the inputs.
+    try {
+      const kEl = modal.querySelector('#kmaxInput');
+      const k = parseInt(kEl && kEl.value, 10);
+      if (Number.isInteger(k) && k >= 2) state.kmax = k;
+    } catch (e) {}
+
+    if (typeof modal.refreshPeripheryUI === 'function') modal.refreshPeripheryUI();
+    modal.style.display = 'block';
+  };
+
+// ---------------- Highlight
+// ---------------- Text highlight manager (source-based) ----------------
+// Tracks highlights by *source* so different mechanisms don't clobber each other.
+// IDs are stored as the full span id string (e.g. "word(12|3)396") or without the "word" prefix.
+window.__TextHL = window.__TextHL || (function () {
+  // Source sets (for compatibility and quick clearing)
+  const sources = {
+    periphery: new Set(),
+    ctrlD: new Set(),
+    ctrlF: new Set(),
+    hover: new Set(),
+    selectCanvas: new Set(), // legacy alias: selectMesh
+    selectText: new Set(),
+  };
+
+  function canonSource(src) {
+    return (src === 'selectMesh') ? 'selectCanvas' : src;
+  }
+
+  // Keep existing class names where possible so any CSS hooks remain valid.
+  const clsFor = {
+    periphery: 'hl-periphery',
+    ctrlD: 'hl-ctrld',
+    ctrlF: 'hl-ctrlf',
+    hover: 'hl-hover',
+    selectCanvas: 'hl-select-mesh',
+    selectText: 'hl-select-text',
+  };
+
+  // Per-span state: base background + layered highlights with epochs.
+  // Map<spanId, { baseBg: string, layers: Map<src, {epoch:number, color:string}> }>
+  const perId = new Map();
+  let epoch = 1;
+
+  function _highlightingEl() {
+    return document.getElementById('highlighting') || document.querySelector('#highlighting');
+  }
+
+  function _norm(id) {
+    if (!id) return null;
+    let s = String(id);
+    if (!s.startsWith('word')) {
+      if (s.startsWith('(')) s = 'word' + s;
+      else if (s.startsWith('#word')) s = s.replace(/^#/, '');
+      else s = 'word' + s;
+    }
+    return s;
+  }
+
+  function _getSpan(nid) {
+    try {
+      const sp = document.getElementById(nid);
+      if (sp) return sp;
+      const hl = _highlightingEl();
+      if (!hl) return null;
+      const esc = (window.CSS && CSS.escape) ? CSS.escape(nid) : nid.replace(/([#.;,[\]{}()*+?^$|])/g, '\\$1');
+      return hl.querySelector('#' + esc);
+    } catch (e) {}
+    return null;
+  }
+
+  function _ensure(nid, span) {
+    let st = perId.get(nid);
+    if (!st) {
+      st = { baseBg: (span && span.style) ? (span.style.backgroundColor || '') : '', layers: new Map() };
+      perId.set(nid, st);
+    }
+    return st;
+  }
+
+  function _setClass(nid, src, on) {
+    const span = _getSpan(nid);
+    if (!span || !span.classList) return;
+    const cls = clsFor[src];
+    if (!cls) return;
+    if (on) span.classList.add(cls);
+    else span.classList.remove(cls);
+  }
+
+  function _apply(nid) {
+    const span = _getSpan(nid);
+    const st = perId.get(nid);
+    if (!span || !span.style || !st) return;
+
+    let best = null;
+    for (const v of st.layers.values()) {
+      if (v && (!best || v.epoch > best.epoch)) best = v;
+    }
+    span.style.backgroundColor = best ? best.color : (st.baseBg || '');
+  }
+
+  function _colorFor(src) {
+    try {
+      return (window.__HL_COLORS && window.__HL_COLORS[src]) ? window.__HL_COLORS[src] : null;
+    } catch (e) {}
+    return null;
+  }
+
+  function add(source, idOrIds) {
+    const src = canonSource(source);
+    if (!sources[src]) return;
+
+    const ids = Array.isArray(idOrIds) ? idOrIds : [idOrIds];
+    const color = _colorFor(src) || 'yellow';
+    const e = ++epoch;
+
+    for (const id of ids) {
+      const nid = _norm(id);
+      if (!nid) continue;
+      sources[src].add(nid);
+
+      const span = _getSpan(nid);
+      const st = _ensure(nid, span);
+      st.layers.set(src, { epoch: e, color });
+
+      _setClass(nid, src, true);
+      _apply(nid);
+    }
+  }
+
+  function remove(source, id) {
+    const src = canonSource(source);
+    if (!sources[src]) return;
+    const nid = _norm(id);
+    if (!nid) return;
+
+    sources[src].delete(nid);
+    const st = perId.get(nid);
+    if (st) st.layers.delete(src);
+
+    _setClass(nid, src, false);
+    _apply(nid);
+  }
+
+  function clearSource(source) {
+    const src = canonSource(source);
+    const set = sources[src];
+    if (!set) return;
+
+    const arr = Array.from(set);
+    for (const nid of arr) {
+      const st = perId.get(nid);
+      if (st) st.layers.delete(src);
+      _setClass(nid, src, false);
+      _apply(nid);
+    }
+    set.clear();
+  }
+
+  function clearAll() {
+    Object.keys(sources).forEach(clearSource);
+    perId.clear();
+  }
+
+  function reapply() {
+    for (const [src, set] of Object.entries(sources)) {
+      for (const nid of set) {
+        _setClass(nid, src, true);
+        _apply(nid);
+      }
+    }
+  }
+
+  function snapshot(source) {
+    const src = canonSource(source);
+    const set = sources[src];
+    return set ? Array.from(set) : [];
+  }
+
+  return { add, remove, clearSource, clearAll, reapply, snapshot };
+})();// Clear ALL text highlights on Escape (keep consistent with 3D Escape restore).
+  // This clears periphery + selection highlights in expanded text.
+  try {
+    if (!window.__TextHL_EscHooked) {
+      window.__TextHL_EscHooked = true;
+      document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape') return;
+        // If the Custom Periphery Editor autocomplete is open, Escape should only hide it.
+        try {
+          if (window.__periphIsSuggestOpen && window.__periphIsSuggestOpen()) {
+            if (window.__periphHideNodeSuggest) window.__periphHideNodeSuggest();
+            e.preventDefault();
+            try { e.stopPropagation(); } catch (err2) {}
+            try { if (e.stopImmediatePropagation) e.stopImmediatePropagation(); } catch (err2) {}
+            return;
+          }
+        } catch (err) {}
+        try { if (window.__TextHL) window.__TextHL.clearAll(); } catch (err) {}
+        try { window.__currentPeripheryNodeLabels = []; } catch (err) {}
+        try { window.__peripherySceneHighlightedNodeLabels = []; } catch (err) {}
+        try { window.__peripheryHighlightSessionId = null; } catch (err) {}
+        // Legacy inline style cleanup (defensive). Only touch word spans / our highlight classes so Prism 'unknown' token styling stays intact.
+        try {
+          const hl = document.getElementById('highlighting');
+          if (hl) {
+            const spans = hl.querySelectorAll('span[id^="word("], span.hl-periphery, span.hl-select-text, span.hl-select-mesh');
+            spans.forEach(sp => {
+              if (sp && sp.style && sp.style.backgroundColor) sp.style.backgroundColor = '';
+              if (sp && sp.classList) {
+                sp.classList.remove('hl-periphery');
+                sp.classList.remove('hl-select-text');
+                sp.classList.remove('hl-select-mesh');
+              }
+            });
+          }
+        } catch (err) {}
+      }, false);
+    }
+  } catch (err) {}
+
+
+
+  function highlightPeripheryGraph(graph) {
+    if (!graph || !Array.isArray(graph.nodes) || !Array.isArray(graph.edges)) return;
+
+    try { window.__currentPeripheryNodeLabels = (graph.nodes || []).slice(); } catch (e) {}
+    try { window.__peripheryHighlightSessionId = (window.__peripheryDialogState && typeof window.__peripheryDialogState.sessionId === 'number') ? window.__peripheryDialogState.sessionId : window.__peripheryHighlightSessionId; } catch (e) {}
+    // 1) 3D scene
+    if (typeof window.highlightPeripheryInScene === 'function') {
+      window.highlightPeripheryInScene(graph.nodes, graph.edges);
+    } else {
+      console.warn('highlightPeripheryInScene is not defined. Did you add it to mesh59.js?');
+    }
+
+    // 2) Text (only if expanded)
+    if (window.inputText && inputText.expanded) {
+      if (typeof window.highlightPeripheryInText === 'function') {
+        window.highlightPeripheryInText(graph.nodes);
+      } else {
+        console.warn('highlightPeripheryInText is not yet defined (we can add it once we know the exact text mapping).');
+      }
+    }
+  }
+
+  // NOTE: highlightPeripheryInText is stubbed below and will be refined once
+  // we see how the text spans are actually structured after expansion.
+// Highlight periphery stitches in expanded text in YELLOW.
+// nodeLabels: array of DOT node labels (e.g. "10,8|272", "11,0|275a12,8|296_jacobian0.2", ...)
+window.highlightPeripheryInText = function (nodeLabels) {
+  if (!window.inputText || !inputText.expanded) return;
+
+  const highlightingEl = document.getElementById('highlighting');
+  if (!highlightingEl) return;
+
+  // Clear previous periphery highlights only (leave selection highlights alone)
+  try { if (window.__TextHL) window.__TextHL.clearSource('periphery'); } catch (e) {}
+
+  if (!Array.isArray(nodeLabels) || nodeLabels.length === 0) return;
+
+  // Only highlight *simple* node labels: "i,j|stnum"
+  // Composite labels like "...a...|..._jacobian..." are intentionally ignored to avoid false positives.
+  const simpleRe = /^\s*\d+\s*,\s*\d+\s*\|\s*(\d+)\s*$/;
+  const stnumSet = new Set();
+  for (const lab of nodeLabels) {
+    const mm = String(lab || '').match(simpleRe);
+    if (mm && mm[1]) stnumSet.add(mm[1]);
+  }
+  if (stnumSet.size === 0) return;
+
+  // Scan spans once and match on the trailing stitch number part: word(row|k)STNUM
+  const spans = highlightingEl.querySelectorAll('span[id^="word("]');
+  const spanRe = /^word\(\d*\|\d*\)(\d+)$/;
+
+  for (const span of spans) {
+    const sid = span && span.id ? span.id : '';
+    if (!sid) continue;
+    const mm = sid.match(spanRe);
+    if (!mm || !mm[1]) continue;
+    if (!stnumSet.has(mm[1])) continue;
+
+    try { if (window.__TextHL) window.__TextHL.add('periphery', sid); } catch (e) {}
+  }
+
+  // Remember current periphery nodes so we can re-apply after text re-render.
+  try { window.__currentPeripheryNodeLabels = nodeLabels.slice(); } catch (e) {}
+};
+
+</script>
 
 
 
@@ -1704,6 +4777,7 @@ function parseLatheUrl(url) {
                 <button class="button" id="latheButton" onclick="lathe()">Convert Crochet Lathe instructions to CrochetPARADE</button>
                 <button class="button" id="expandButton" onclick="expandExpression()">Expand instructions</button>
                 <button class="button" id="collectButton" onclick="collectExpression()">Simplify instructions</button>
+                <button class="button" id="findEdgesButton" onclick="window.showFindPeripheryDialog()">Find project periphery</button>
             </div>
         </div>
         <div class="dropdown">
@@ -1774,11 +4848,12 @@ function parseLatheUrl(url) {
     </script>
 
 
-    <script src="sphere-generator58.js"></script>
+    <script src="sphere-generator59.js"></script>
 
     <script>
         var json0 = '';
         var jsonOld = '';
+        var dot_simple='';
         var reset_json = 1;
         setTimeout(function() {
             const radioButtons = document.querySelectorAll('input[name="rendering"]');
@@ -1807,8 +4882,10 @@ function parseLatheUrl(url) {
                 ['Amigurumi: simplistic snowman (~4sec)', textSnowman2, 3],
                 ['OLD amigurumi example (~15sec)', textSnowman, 3],
                 ['Baby blanket (~7sec)', textBlanket, 3],
+                ['Baby blanket with sc edge (~7sec)', textBlanketEdge, 3],
                 ['Swatch 1 (~8sec)', textSwatch2, 2],
                 ['Swatch 2 (~8sec)', textSwatch, 3],
+                ['Granny square stitching (~4sec)',textGrannySquareStitching,3],
                 ['Stocking (~12sec)', textStocking, 3],
                 ['Hat (~3min)', textHat, 3],
                 ['Mixed styles: lacy hat (~12sec)', textLacyHat, 3],
@@ -1907,7 +4984,7 @@ function parseLatheUrl(url) {
                         }
                         var scatter = document.getElementById('scatter').checked;
 
-                        inputText.value = generate_sphere(Ncirc, scatter);
+                        cpSetEditorText(generate_sphere(Ncirc, scatter), { preserveSelection: false });
 
                         radioButtons.forEach((radioButton) => {
                             if (radioButton.value === '3D') {
@@ -2037,7 +5114,7 @@ function parseLatheUrl(url) {
 
                         generatorDialog.style.display = 'none';
                         let scatter = document.getElementById('scatterShape').checked;
-                        inputText.value = generate_shape(scatter);
+                        cpSetEditorText(generate_shape(scatter), { preserveSelection: false });
 
                         radioButtons.forEach((radioButton) => {
                             if (radioButton.value === '3D') {
@@ -2052,7 +5129,7 @@ function parseLatheUrl(url) {
                     });
 
                 } else {
-                    inputText.value = textOptions[index][1];
+                    cpSetEditorText(textOptions[index][1].replace(/\t/g, '    ').replace(/\r/g, ''), { preserveSelection: false });
                     radioButtons.forEach((radioButton) => {
                         if (radioButton.value === String(selectedNdim) + 'D') {
                             radioButton.checked = true;
@@ -2060,7 +5137,7 @@ function parseLatheUrl(url) {
                         }
                     });
 
-                    inputText.value = inputText.value.replace(/\t/g, '    ').replace(/\r/g, '')
+                    // (normalized by cpSetEditorText above)
                    
                     update(inputText.value); onMyInput();
                 }
@@ -2279,6 +5356,19 @@ function assignIdsAndHover(highlight,resetHighlights) {
     //return
     const wordTokens = highlight.querySelectorAll(".token.words"); // Select all .token.words spans
 
+    // Consolidated clearing (source-based). Do this once per call.
+    try {
+      if (resetHighlights===1) {
+        // Clear only text-selection highlights; periphery is managed separately and will be re-applied if needed.
+        if (window.__TextHL) window.__TextHL.clearSource('selectText');
+      } else if (resetHighlights===2) {
+        // Legacy mode: do NOT clear canvas-origin highlights here.
+        if (window.__TextHL) window.__TextHL.clearSource('selectText');
+      
+        //if (window.__TextHL) window.__TextHL.clearSource('selectMesh');
+      }
+    } catch (e) {}
+
     //const brElements = highlight.querySelectorAll("br"); // Select all <br> elements within the highlighting div
     let brElements = Array.from(highlight.querySelectorAll("br")); // Convert NodeList to array
 brElements = brElements.filter((br, index) => {
@@ -2296,11 +5386,7 @@ brElements = brElements.filter((br, index) => {
     let hasTokenWordsSinceLastBr = false; // Tracks if there are token words since the last <br>
 
     wordTokens.forEach((span) => {
-        if (resetHighlights==1)
-            span.style.backgroundColor="";
-        else if (resetHighlights==2 &&  span.style.backgroundColor==="yellow")
-            span.style.backgroundColor="";
-        // Check if this span is before or after a <br> element
+// Check if this span is before or after a <br> element
         while (
             currentBrIndex < brElements.length &&
             span.compareDocumentPosition(brElements[currentBrIndex]) & Node.DOCUMENT_POSITION_PRECEDING
@@ -2350,11 +5436,12 @@ brElements = brElements.filter((br, index) => {
             //}
         }
     });
-
-    // After processing all spans, check for any remaining token words after the last <br>
+// After processing all spans, check for any remaining token words after the last <br>
     if (hasTokenWordsSinceLastBr) {
         row++; // Increment row number for any remaining token words after the last <br>
     }
+    try { if (window.__TextHL) window.__TextHL.reapply(); } catch (e) {}
+
 }
 document.getElementById("inputText").addEventListener("mousemove", (e) => {
   const textarea = e.target;
@@ -2404,20 +5491,48 @@ document.getElementById("inputText").addEventListener("mousemove", (e) => {
     tooltip.style.top = `${mouseY + 10}px`;
     tooltip.style.display = 'block';
     textarea.dataset.hoveredId = id; // Store the hovered ID for later use
+    // Text hover highlighting (source: hover). Avoid re-applying on every mousemove,
+    // so hover doesn't always "win" over other mechanisms.
+    //try {
+    //  if (window.__TextHL) {
+    //    const prev = textarea.dataset.lastHoverHLId;
+    //    if (prev !== id) {
+    //      window.__TextHL.clearSource('hover');
+    //      window.__TextHL.add('hover', id);
+    //      textarea.dataset.lastHoverHLId = id;
+    //    }
+    //  }
+    //} catch (e) {}
+
   } else {
     tooltip.style.display = 'none';
     delete textarea.dataset.hoveredId; // Clear stored ID if no span is hovered
+    // Clear hover highlight when leaving any span / when text isn't expanded.
+    //try { if (window.__TextHL) window.__TextHL.clearSource('hover'); } catch (e) {}
+    //try { delete textarea.dataset.lastHoverHLId; } catch (e) {}
+
   }
 });
 
 
 document.getElementById("inputText").addEventListener("click", (e) => {
-    if ((e.altKey)&&(!(e.ctrlKey|| e.metaKey))){          
-          let result_element = document.querySelector("#highlighting");
-    assignIdsAndHover(result_element,2);
-    triggerClickTextEvent(-1,-1,true);
+    if ((e.altKey)&&(!(e.ctrlKey|| e.metaKey))){
+  // Clear text selection highlights (source-based) AND any legacy inline-yellow.
+  try { if (window.__TextHL) { window.__TextHL.clearSource('selectText'); } } catch (e) {}
+  try {
+    const h = document.getElementById("highlighting");
+    if (h) {
+      const spans = h.querySelectorAll(".token.words");
+      spans.forEach((sp) => { if (sp && sp.style && (sp.style.backgroundColor==="yellow" || sp.style.backgroundColor==="lightgreen")) sp.style.backgroundColor=""; });
+    }
+  } catch (e) {}
+  // Legacy: keep id assignment/hover bookkeeping; do NOT clear periphery highlights.
+  let result_element = document.querySelector("#highlighting");
+  assignIdsAndHover(result_element,1);
+  triggerClickTextEvent(-1,-1,true);
+  return;
 }
-  if (e.ctrlKey|| e.metaKey) { // Check if CTRL key is pressed
+if (e.ctrlKey|| e.metaKey) { // Check if CTRL key is pressed
     const textarea = e.target;
     const id = textarea.dataset.hoveredId; // Retrieve stored ID from mousemove
 
@@ -2434,19 +5549,21 @@ document.getElementById("inputText").addEventListener("click", (e) => {
 
           // Unhighlight the previously highlighted span (if any)
           if (!(e.altKey)){
-
-  const highlight = document.getElementById("highlighting");
-            const wordTokens = highlight.querySelectorAll(".token.words"); 
- wordTokens.forEach((span) => {
-if (span.style.backgroundColor==="yellow")
-            span.style.backgroundColor="";
-        });
-        reset=true;
-         // Highlight the current span
-          
-        inputText.previousHighlightedId=[];
-        }
-        currentSpan.style.backgroundColor = "yellow";
+            try { if (window.__TextHL) window.__TextHL.clearSource('selectText'); } catch (e) {}
+            // Legacy fallback (inline yellow) if manager missing
+            if (!window.__TextHL) {
+              const highlight = document.getElementById("highlighting");
+              const wordTokens = highlight ? highlight.querySelectorAll(".token.words") : [];
+              wordTokens.forEach((span) => { if (span.style.backgroundColor==="yellow") span.style.backgroundColor=""; });
+            }
+            reset=true;
+            inputText.previousHighlightedId=[];
+          }
+          if (window.__TextHL) {
+            try { window.__TextHL.add('selectText', id); } catch (e) {}
+          } else {
+            currentSpan.style.backgroundColor = "yellow";
+          }
           // Update the dataset to track the currently highlighted span
           inputText.previousHighlightedId.push(id);
         }
@@ -2456,6 +5573,23 @@ if (span.style.backgroundColor==="yellow")
     }
   }
 });
+// Also clear text-selection on Alt+Click directly on the highlighted overlay (some layouts capture clicks there).
+try {
+  const __hlEl = document.getElementById("highlighting");
+  if (__hlEl) {
+    __hlEl.addEventListener("click", (e) => {
+      if ((e.altKey) && (!(e.ctrlKey || e.metaKey))) {
+        try { if (window.__TextHL) { window.__TextHL.clearSource('selectText'); } } catch (err) {}
+        try {
+          const spans = __hlEl.querySelectorAll(".token.words");
+          spans.forEach((sp) => { if (sp && sp.style && (sp.style.backgroundColor==="yellow" || sp.style.backgroundColor==="lightgreen")) sp.style.backgroundColor=""; });
+        } catch (err) {}
+        try { triggerClickTextEvent(-1,-1,true); } catch (err) {}
+      }
+    });
+  }
+} catch (e) {}
+
 
 // Function to dispatch the custom event
 function triggerClickTextEvent(row, kCount,reset) {
@@ -2485,7 +5619,10 @@ document.getElementById("inputText").addEventListener("mouseleave", () => {
 //pattern:/^\s*(TRANSFORM_OBJECT:)[^#\\\n]*/m,
 pattern:/^\s*TRANSFORM_OBJECT:\s*(\d+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+),(-?[\d.]+)/m
 ,greedy: true
-            },  'comment': {pattern:/\\[^\\]*?(?:\\|$)|#.*/ ,
+            },
+            'indexarray': {pattern:/^\s*INDEX_ARRAY:(\s*|\s*[A-Za-z_]\w*\s*=\s*\{\s*\d+(\s*,\s*\d+)*\s*\}\s*)$/m,greedy: true},
+            'sortlabel': {pattern:/^\s*SORT_LABEL:(\s*|\s*[A-Za-z_]\w*(?:\[(?:\s*-?\d+(?:\s*,\s*-?\d+)*\s*)?\])*\s*=\s*\{\s*\d+(\s*,\s*\d+)*\s*\}\s*)$/m,greedy: true},
+  'comment': {pattern:/\\[^\\]*?(?:\\|$)|#.*/ ,
 greedy:true},
                 'def': {
                     pattern: /^(\s*)(DEF:.*)/m,
@@ -2636,6 +5773,12 @@ while (forwardIndex <= backwardIndex && tempForwardIndex <= tempBackwardIndex) {
 
         // Overwrite the original element's content with the updated temporary element's content
         result_element.innerHTML = tempElement.innerHTML;
+        try { if (window.__TextHL) window.__TextHL.reapply(); } catch (e) {}
+        try {
+          if (window.inputText && inputText.expanded && Array.isArray(window.__currentPeripheryNodeLabels) && window.__currentPeripheryNodeLabels.length && typeof window.highlightPeripheryInText==='function') {
+                    window.highlightPeripheryInText(window.__currentPeripheryNodeLabels);
+                  }
+        } catch (e) {}
 
         // Update old text tracking
         inputText.dataset.oldText = inputText.value;
@@ -2901,6 +6044,295 @@ if (hasTokenWordsAfterLastBr) {
         }
 
         textarea.addEventListener('input', onMyInput);
+
+
+        // --- Editor undo/redo history (covers programmatic edits + manual typing) ---
+// Programmatic edits should call cpSetEditorText(newText) so they participate in this history.
+(function () {
+    const ta = textarea; // #inputText
+    const MAX_HISTORY = 6000;
+
+    // In this editor, vertical scrolling happens on the editor container (#edc),
+    // and horizontal scrolling happens on the horizontal scroller (#hrs).
+    const vScroller = document.getElementById('edc') || ta.closest('.editor_container') || document.scrollingElement;
+    const hScroller = document.getElementById('hrs') || ta.closest('.hor_scroll') || vScroller;
+
+    function clamp(n, lo, hi) { return Math.min(hi, Math.max(lo, n)); }
+
+    function snap() {
+        return {
+            value: ta.value,
+            start: (ta.selectionStart ?? 0),
+            end: (ta.selectionEnd ?? 0),
+            vScrollTop: (vScroller && typeof vScroller.scrollTop === 'number') ? vScroller.scrollTop : 0,
+                    hScrollLeft: (hScroller && typeof hScroller.scrollLeft === 'number') ? hScroller.scrollLeft : 0,
+        };
+    }
+
+    function sameSnap(a, b) {
+        return !!a && !!b &&
+            a.value === b.value &&
+            (a.start ?? 0) === (b.start ?? 0) &&
+            (a.end ?? 0) === (b.end ?? 0) &&
+            (a.vScrollTop ?? 0) === (b.vScrollTop ?? 0) &&
+            (a.hScrollLeft ?? 0) === (b.hScrollLeft ?? 0);
+    }
+
+    // Keep a hidden "mirror" div to measure caret position including wrapping.
+    // This is used to scroll the textarea so the caret is visible after undo/redo/programmatic edits.
+    let __cpCaretMirror = null;
+    function getCaretMirror() {
+        if (__cpCaretMirror) return __cpCaretMirror;
+        const d = document.createElement('div');
+        d.setAttribute('aria-hidden', 'true');
+        d.style.position = 'absolute';
+        d.style.visibility = 'hidden';
+        d.style.pointerEvents = 'none';
+        d.style.top = '-99999px';
+        d.style.left = '0';
+        d.style.zIndex = '-1';
+        d.style.whiteSpace = 'pre-wrap';
+        d.style.wordWrap = 'break-word';
+        d.style.overflowWrap = 'break-word';
+        document.body.appendChild(d);
+        __cpCaretMirror = d;
+        return d;
+    }
+
+    function scrollCaretIntoView(textareaEl) {
+        try {
+            // If element isn't in DOM or has no size, bail.
+            if (!textareaEl || !textareaEl.ownerDocument || textareaEl.clientHeight <= 0) return;
+
+            const pos = (textareaEl.selectionEnd ?? textareaEl.selectionStart ?? 0);
+            const value = textareaEl.value ?? '';
+
+            const style = window.getComputedStyle(textareaEl);
+            const mirror = getCaretMirror();
+
+            // Copy key layout-affecting styles.
+            const props = [
+                'boxSizing',
+                'fontFamily', 'fontSize', 'fontWeight', 'fontStyle',
+                'letterSpacing', 'textTransform', 'wordSpacing', 'textIndent',
+                'lineHeight',
+                        'tabSize',
+                'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft',
+                'borderTopWidth', 'borderRightWidth', 'borderBottomWidth', 'borderLeftWidth',
+            ];
+            for (const p of props) {
+                mirror.style[p] = style[p];
+            }
+
+            // Match the editor: this textarea is rendered over a <pre> (#highlighting), so we treat it as no-wrap.
+            // This makes offsetTop/Left line up with what you see on screen (newlines only; horizontal scroll for long lines).
+            mirror.style.whiteSpace = 'pre';
+            mirror.style.wordWrap = 'normal';
+            mirror.style.overflowWrap = 'normal';
+            mirror.style.width = 'auto';
+
+            // Fill mirror content with text up to caret, then a marker, then remainder.
+            mirror.innerHTML = '';
+            mirror.appendChild(document.createTextNode(value.substring(0, pos)));
+            const marker = document.createElement('span');
+            // zero-width marker; add a fallback char if needed
+            marker.textContent = '\u200b';
+            mirror.appendChild(marker);
+            mirror.appendChild(document.createTextNode(value.substring(pos)));
+
+            const caretTop = marker.offsetTop;
+            const caretLeft = marker.offsetLeft;
+
+            const lineH = parseFloat(style.lineHeight) || parseFloat(style.fontSize) || 16;
+            const marginY = lineH * 2;
+
+            // Compute caret position in the *scroll containers'* coordinate systems.
+            const taRect = textareaEl.getBoundingClientRect();
+
+            if (vScroller && typeof vScroller.scrollTop === 'number') {
+                const vRect = vScroller.getBoundingClientRect();
+                const baseY = (taRect.top - vRect.top) + vScroller.scrollTop;
+                const caretY = baseY + caretTop;
+
+                const viewTop = vScroller.scrollTop;
+                const viewBottom = viewTop + vScroller.clientHeight;
+
+                // Only adjust if caret is outside visible region (with margins).
+                if (caretY < viewTop + marginY) {
+                    vScroller.scrollTop = Math.max(0, caretY - marginY);
+                } else if (caretY + lineH > viewBottom - marginY) {
+                    vScroller.scrollTop = Math.max(0, caretY + lineH + marginY - vScroller.clientHeight);
+                }
+            }
+
+            // Horizontal scrolling happens on #hrs (or closest .hor_scroll)
+            if (hScroller && typeof hScroller.scrollLeft === 'number') {
+                const hRect = hScroller.getBoundingClientRect();
+                const baseX = (taRect.left - hRect.left) + hScroller.scrollLeft;
+                const caretX = baseX + caretLeft;
+
+                const viewLeft = hScroller.scrollLeft;
+                const viewRight = viewLeft + hScroller.clientWidth;
+                const marginX = 20;
+
+                if (caretX < viewLeft + marginX) {
+                    hScroller.scrollLeft = Math.max(0, caretX - marginX);
+                } else if (caretX > viewRight - marginX) {
+                    hScroller.scrollLeft = Math.max(0, caretX - hScroller.clientWidth + marginX);
+                }
+            }
+        } catch (e) {
+            // silent: scrolling is best-effort; never break editing
+        }
+    }
+
+    class CPEditorHistory {
+        constructor() {
+            this.stack = [];
+            this.index = -1;
+            this.isApplying = false;
+
+            // Seed with the current state.
+            this._push(snap(), { force: true });
+
+            // IMPORTANT: this listener is attached *after* onMyInput, so we record the post-normalized state.
+            ta.addEventListener('input', (e) => this._onInput(e));
+            ta.addEventListener('keydown', (e) => this._onKeydown(e), true);
+        }
+
+        _truncateRedo() {
+            if (this.index < this.stack.length - 1) {
+                this.stack.length = this.index + 1;
+            }
+        }
+
+        _cap() {
+            if (this.stack.length <= MAX_HISTORY) return;
+            const overflow = this.stack.length - MAX_HISTORY;
+            this.stack.splice(0, overflow);
+            this.index = Math.max(0, this.index - overflow);
+        }
+
+        _syncIfExternalChange() {
+            if (this.index < 0) return;
+            const cur = this.stack[this.index]?.value;
+            if (cur !== ta.value) {
+                this._truncateRedo();
+                this._push(snap(), { force: true });
+            }
+        }
+
+        _push(s, { force = false } = {}) {
+            // Avoid creating "no-op undo" steps.
+            const cur = (this.index >= 0) ? this.stack[this.index] : null;
+            if (!force && cur && sameSnap(cur, s)) return;
+
+            this._truncateRedo();
+            this.stack.push(s);
+            this.index = this.stack.length - 1;
+            this._cap();
+        }
+
+        _postUpdate() {
+            try { update(ta.value); } catch (e) {}
+            try { onMyInput(); } catch (e) {}
+            try { sync_scroll(ta); } catch (e) {}
+        }
+
+        _onInput(e) {
+            if (this.isApplying) return;
+            // Letter-by-letter history: record every post-normalized input state.
+            this._push(snap());
+        }
+
+        apply(newValue, { preserveSelection = true, postUpdate = true } = {}) {
+            if (newValue == null) newValue = '';
+            newValue = String(newValue);
+
+            this._syncIfExternalChange();
+            if (ta.value === newValue) return;
+
+            const prevSel = { start: (ta.selectionStart ?? 0), end: (ta.selectionEnd ?? 0) };
+            const prevScroll = { top: (vScroller && typeof vScroller.scrollTop==='number') ? vScroller.scrollTop : 0,
+                                left: (hScroller && typeof hScroller.scrollLeft==='number') ? hScroller.scrollLeft : 0 };
+
+            this._truncateRedo();
+            this.isApplying = true;
+            ta.value = newValue;
+
+            const start = preserveSelection ? clamp(prevSel.start, 0, newValue.length) : newValue.length;
+            const end = preserveSelection ? clamp(prevSel.end, 0, newValue.length) : newValue.length;
+            try { ta.setSelectionRange(start, end); } catch (e) {}
+
+            // Keep prior scroll unless caret goes out of view.
+            if (vScroller && typeof vScroller.scrollTop === 'number') vScroller.scrollTop = prevScroll.top;
+            if (hScroller && typeof hScroller.scrollLeft === 'number') hScroller.scrollLeft = prevScroll.left;
+            scrollCaretIntoView(ta);
+
+            this.isApplying = false;
+            this._push(snap(), { force: true });
+
+            if (postUpdate) this._postUpdate();
+        }
+
+        _restore(s) {
+            this.isApplying = true;
+            ta.value = s.value;
+
+            const start = clamp((s.start ?? 0), 0, ta.value.length);
+            const end = clamp((s.end ?? 0), 0, ta.value.length);
+            try { ta.setSelectionRange(start, end); } catch (e) {}
+
+            // Restore scroll, then ensure caret is visible.
+            if (vScroller && typeof vScroller.scrollTop === 'number' && typeof s.vScrollTop === 'number') vScroller.scrollTop = s.vScrollTop;
+            if (hScroller && typeof hScroller.scrollLeft === 'number' && typeof s.hScrollLeft === 'number') hScroller.scrollLeft = s.hScrollLeft;
+            scrollCaretIntoView(ta);
+            try { ta.focus(); } catch (e) {}
+
+            this.isApplying = false;
+            this._postUpdate();
+        }
+
+        undo() {
+            this._syncIfExternalChange();
+            if (this.index <= 0) return;
+            this.index -= 1;
+            this._restore(this.stack[this.index]);
+        }
+
+        redo() {
+            this._syncIfExternalChange();
+            if (this.index >= this.stack.length - 1) return;
+            this.index += 1;
+            this._restore(this.stack[this.index]);
+        }
+
+        _onKeydown(e) {
+            const mod = e.ctrlKey || e.metaKey;
+            if (!mod) return;
+            const key = (e.key || '').toLowerCase();
+
+            const isUndo = (key === 'z' && !e.shiftKey);
+            const isRedo = (key === 'y') || (key === 'z' && e.shiftKey);
+
+            if (!isUndo && !isRedo) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (isUndo) this.undo();
+            else this.redo();
+        }
+    }
+
+    window.__CP_EDITOR_HISTORY = new CPEditorHistory();
+
+    // If something tried to set the editor value before the textarea existed, apply it now.
+    if (typeof window.__CP_PENDING_EDITOR_TEXT === 'string') {
+        window.__CP_EDITOR_HISTORY.apply(window.__CP_PENDING_EDITOR_TEXT, { preserveSelection: false, postUpdate: true });
+        delete window.__CP_PENDING_EDITOR_TEXT;
+    }
+})();
     </script>
 
 
@@ -2966,7 +6398,12 @@ if (hasTokenWordsAfterLastBr) {
             font-weight: 540;
             color: rgb(111, 59, 174);
         }
-        .token.dot2 {
+        
+        .token.indexarray {
+            font-weight:540;
+            color: rgb(130, 80, 180);
+        }
+.token.dot2 {
             font-weight:540;
             color: rgb(150, 50, 50);
         }
@@ -3346,7 +6783,10 @@ if (hasTokenWordsAfterLastBr) {
                 <td><code>TRANSFORM_OBJECT:</code>
                 <td>Special commands: Automatically generated by the "Object Transform" tool, which interactively allows the user to move and rotate objects. </td>
             </tr>
+            <tr><td><code>INDEX_ARRAY:</code></td><td>Special command: defines an index array that supplies counter values for an index variable used in stitch labels (for example <code>A[k]</code>). Typically generated by <em>Tools → Find Project Periphery</em> when “Save counter values as INDEX_ARRAY” is enabled. See the <strong>INDEX_ARRAY Command</strong> section in this manual.</td></tr>
+            <tr><td><code>SORT_LABEL:</code></td><td>Special command: defines an explicit processing order (permutation) for stitches that share the same label <em>without</em> adding a counter (e.g. <code>A</code>, <code>A[]</code>, <code>A[2,3]</code>). Recommended for periphery labeling when the periphery is a single run of adjacent stitches not necessarily sequentially crocheted (if not, an error is generated). See <strong>Labeled groups with SORT_LABEL</strong> in the Labels section of the Manual.</td></tr>
             <tr>
+				
                 <td><code>DOT:</code>
                 <td>Special commands: Any extra arguments to the physics engine. Some options that can be set here are: iterations, start, separate, inflate, learning_rate. Also, new nodes can be created and placed at particular 3D coordinates; and new connections between nodes can be specified here. See the DOT Command section in the Manual. </td>
             </tr>
@@ -3476,7 +6916,7 @@ if (hasTokenWordsAfterLastBr) {
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh58.js';
+        import Generate3DModel from './mesh59.js';
          //import  "./viz-standalone.js";
          const button = document.getElementById("3dbutton");
          //const textarea = document.getElementById('inputText');
@@ -3507,6 +6947,48 @@ if (hasTokenWordsAfterLastBr) {
          });
  
          async function show3DModel() {
+            // New 3D calculation => reset cached periphery graphs/settings for "Find project edges" dialog
+            (function resetPeripheryDialogStateForNew3DCalc() {
+                const st = window.__peripheryDialogState || (window.__peripheryDialogState = {});
+                st.sessionId = (st.sessionId || 0) + 1;
+                st.periphGraphsBaseAll = null;
+                st.periphGraphsExtras = null;
+                st.periphKmax = null;
+                st.periphOptsKey = null;
+                // reset dialog settings for the new 3D session
+                st.periphOpts = {
+                  leap_max: 0,
+                  include_bridge_edges_in_output: false,
+                  include_longest_cycle_subgraph: false,
+                  include_breaking_cycle_subgraph: false
+                };
+                st.kmax = 10;
+                st.N = 3;
+                st.selectedIndex = 0;
+                st.runToken = 0;
+                // Keep last dialog position so the window doesn't jump around
+                st.boxPos = st.boxPos || null;
+            })();
+
+            // New 3D calculation => clear periphery highlights in expanded text so it stays in sync with canvas.
+            try { if (window.__TextHL) window.__TextHL.clearSource('periphery'); } catch (e) {}
+            // Clear any active periphery highlight state from the previous project/session.
+            try { if (typeof window.clearPeripheryHighlightInScene === 'function') window.clearPeripheryHighlightInScene(); } catch (e) {}
+            try { window.__currentPeripheryNodeLabels = []; } catch (e) {}
+            try { window.__peripherySceneHighlightedNodeLabels = []; } catch (e) {}
+            try { window.__peripheryHighlightSessionId = null; } catch (e) {}
+            // Also clear legacy periphery styling if present.
+            try {
+              const hl = document.getElementById('highlighting');
+              if (hl) {
+                const spans = hl.querySelectorAll('span.hl-periphery');
+                spans.forEach(sp => {
+                  if (sp && sp.style) sp.style.backgroundColor = '';
+                  if (sp && sp.classList) sp.classList.remove('hl-periphery');
+                });
+              }
+            } catch (e) {}
+
             let result_element = document.querySelector("#highlighting");
             if (result_element.querySelectorAll(".token.number").length>0){
                 
@@ -3521,7 +7003,12 @@ if (hasTokenWordsAfterLastBr) {
             }else{
                 textarea['expanded']=true;
                 assignIdsAndHover(result_element,1);
-                
+                try { if (window.__TextHL) window.__TextHL.reapply(); } catch (e) {}
+                try {
+                  if (window.inputText && inputText.expanded && Array.isArray(window.__currentPeripheryNodeLabels) && window.__currentPeripheryNodeLabels.length && typeof window.highlightPeripheryInText==='function') {
+                    window.highlightPeripheryInText(window.__currentPeripheryNodeLabels);
+                  }
+                } catch (e) {}
             }
              var loadingIcon = document.getElementById('loading-icon');
              loadingIcon.style.display = 'block';
@@ -3548,7 +7035,7 @@ if (hasTokenWordsAfterLastBr) {
                  json0 = jsonOld;
              }
  
-             var dot_simple;
+             //var dot_simple;
              setTimeout(function() {
                  [json0,dot_simple] = processTextSafe(inputText.value, json0);
              }, 0);
@@ -3580,13 +7067,30 @@ if (hasTokenWordsAfterLastBr) {
                      } finally {
                          loadingIcon.style.display = 'none';
                      }
+                     if (json0 === undefined || json0 === null) { return; }
                      //          console.log(json0)
  
                      // Hide the loading icon once the code has finished running
  
                      DEBUG += '=======JSON0:=======\n' + JSON.stringify(json0) + '\n'
  
-                     var a = Generate3DModel(json0, renderer, scene, scene1, backgroundColor,c_was_pressed,factor_radius,requestedInfo)
+var a;
+try {
+  a = Generate3DModel(json0, renderer, scene, scene1, backgroundColor, c_was_pressed, factor_radius, requestedInfo);
+} catch (err) {
+  console.error("Generate3DModel threw:", err);
+  loadingIcon.style.display = 'none';
+  return;
+}
+
+if (!Array.isArray(a) || a.length < 14) {
+  console.error("Generate3DModel returned invalid value:", a);
+  loadingIcon.style.display = 'none';
+  return;
+}
+
+
+
                      renderer = a[0];
                      scene = a[1];
                      onMouseDown = a[2];
@@ -3710,7 +7214,7 @@ if (hasTokenWordsAfterLastBr) {
                     break;
             }
         }
-        textarea.value = ''
+        cpSetEditorText('', { preserveSelection: false });
         onMyInput()
     </script>
 
@@ -3752,6 +7256,252 @@ if (hasTokenWordsAfterLastBr) {
 }
 
     </script>
+
+
+<!-- CrochetPARADE Tip Banner: START -->
+<style id="cp-tip-banner-style">
+/* Tip banner styles */
+#cp-tip-banner {
+  box-sizing: border-box;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 99999;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px;
+  background: linear-gradient(90deg, #fbce1a 0%, #f7a400 60%);
+  color: #111;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.15);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+/* Left text column */
+#cp-tip-banner .cp-text {
+  flex: 1 1 60%;
+  min-width: 200px;
+  line-height: 1.35;
+  font-size: 1.25rem;   /* +30% increase for body text */
+  font-weight: 600;     /* stronger but not shouting */
+}
+
+#cp-tip-banner .cp-text b {
+  display: block;
+  font-size: 1.5rem;
+  margin-bottom: 6px;
+  font-weight: 800;
+}
+
+/* Buttons column */
+#cp-tip-banner .cp-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-left: 12px;
+}
+
+/* Primary CTA */
+.cp-tip-cta {
+  background: #111;
+  color: #fff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+/* Close button */
+#cp-tip-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  padding: 6px 8px;
+  cursor: pointer;
+  color: rgba(0,0,0,0.7);
+  border-radius: 6px;
+}
+
+#cp-tip-close:focus {
+  outline: 3px solid rgba(0,0,0,0.12);
+}
+
+/* Responsive */
+@media (max-device-width: 720px) {
+    #cp-tip-banner {
+        font-size: 180% !important;
+    padding: 14px 12px;
+    gap: 8px;
+  }
+  #cp-tip-banner .cp-text {
+    flex-basis: 100%;
+    font-size: 2.0rem  !important;
+    font-weight: 700;
+  }
+  #cp-tip-banner .cp-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .cp-tip-cta {
+    width: auto;
+    padding: 10px 12px;
+  }
+}
+#cp-tip-progress {
+  margin-top: 4px;
+  font-size: 0.9em;
+}
+
+.cp-tip-bar {
+  position: relative;
+  margin-top: 6px;
+  width: 100%;
+  max-width: 260px;
+  height: 8px;
+  background-color: rgba(255, 255, 255, 0.35);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.cp-tip-bar-fill {
+  height: 100%;
+  width: 0%;
+  background-color: #2ecc71;
+  transition: width 0.4s ease-out;
+}
+
+</style>
+<div id="cp-tip-banner" role="region" aria-label="Support CrochetPARADE" data-cp-version="3">
+  <div class="cp-text">
+    <b>Help keep CrochetPARADE alive</b>
+    <div id="cp-tip-message">
+      If you find CrochetPARADE useful, please consider a tip. It will support hosting, SSL, and ongoing maintenance to keep the site free for everyone.
+    </div>
+    <div id="cp-tip-progress" aria-live="polite">
+      Tips since Jan 1, 2025:
+      <span id="cp-tip-amount">$0.00</span>
+      of
+      <span id="cp-tip-goal">$100.00</span>
+    </div>
+    <div class="cp-tip-bar" aria-hidden="true">
+      <div class="cp-tip-bar-fill" id="cp-tip-bar-fill"></div>
+    </div>
+  </div>
+  <div class="cp-actions">
+    <a class="cp-tip-cta" id="cp-tip-cta-link"
+       href="https://donate.stripe.com/eVa6pK4XQ5Qg6vmbII"
+       target="_blank" rel="noopener noreferrer">Support</a>
+    <button id="cp-tip-close" aria-label="Dismiss tip banner">✕</button>
+  </div>
+</div>
+
+<script id="cp-tip-banner-script">
+(function() {
+  try {
+    var banner = document.getElementById('cp-tip-banner');
+    var closeBtn = document.getElementById('cp-tip-close');
+    var storageKey = 'cp_tip_banner_dismissed_v3';
+
+    var GOAL_DOLLARS = 100;
+    var amountEl = document.getElementById('cp-tip-amount');
+    var goalEl = document.getElementById('cp-tip-goal');
+    var barFillEl = document.getElementById('cp-tip-bar-fill');
+
+    // Set the goal amount
+    if (goalEl) {
+      goalEl.textContent = '$' + GOAL_DOLLARS.toFixed(2);
+    }
+
+    // Manually set the total amount of tips since Jan 1, 2025
+    var totalReceived = 65; // This is the amount in dollars
+
+    if (amountEl) {
+      amountEl.textContent = '$' + totalReceived.toFixed(2);
+    }
+
+    if (barFillEl) {
+      var pct = GOAL_DOLLARS > 0 ? (totalReceived / GOAL_DOLLARS) * 100 : 0;
+      if (pct > 100) pct = 100;  // Limit to 100% max
+      if (pct < 0) pct = 0;      // Prevent negative values
+      barFillEl.style.width = pct.toFixed(1) + '%';
+    }
+
+    function hideBanner() {
+      if (!banner) return;
+      banner.style.display = 'none';
+      try { document.body.style.paddingTop = ''; } catch(e) {}
+      document.body.classList.remove('cp-tip-banner-visible');
+    }
+
+    function showBanner() {
+      if (!banner) return;
+      banner.style.display = 'flex';
+      setTimeout(function(){
+        try {
+          var rect = banner.getBoundingClientRect();
+          if (rect && rect.height) {
+            document.body.style.paddingTop = Math.ceil(rect.height) + 'px';
+          }
+        } catch(e) {}
+      }, 50);
+      document.body.classList.add('cp-tip-banner-visible');
+    }
+
+    // Check for banner dismissal state
+    var dismissed = (function() {
+      try {
+        var raw = localStorage.getItem(storageKey);
+        if (!raw) return null;
+        var v = JSON.parse(raw);
+        if (!v || !v.t) return null;
+        return v;
+      } catch(e) { return null; }
+    })();
+
+    var now = Date.now();
+    var HALF_DAY = 1000 * 60 * 60 * 12;
+
+    if (dismissed && (now - dismissed.t < HALF_DAY)) {
+      hideBanner();
+    } else {
+      showBanner();
+    }
+
+    closeBtn && closeBtn.addEventListener('click', function() {
+      try {
+        localStorage.setItem(storageKey, JSON.stringify({ t: Date.now() }));
+      } catch(e) {}
+      hideBanner();
+    });
+
+    // Hide the banner when pressing Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        try {
+          localStorage.setItem(storageKey, JSON.stringify({ t: Date.now() }));
+        } catch(e) {}
+        hideBanner();
+      }
+    });
+
+  } catch(err) {
+    if (console && console.error) {
+      console.error('cp-tip-banner:', err);
+    }
+  }
+})();
+</script>
+
+<!-- CrochetPARADE Tip Banner: END -->
 </body>
 
 </html>

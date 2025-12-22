@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
 
+<html lang="" xml:lang="" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <meta charset="utf-8" />
-    <meta name="generator" content="pandoc" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-    <title>CrochetPARADE Manual</title>
-    <style>
+<meta charset="utf-8"/>
+<meta content="pandoc" name="generator"/>
+<meta content="width=device-width, initial-scale=1.0, user-scalable=yes" name="viewport"/>
+<title>CrochetPARADE Manual</title>
+<style>
         html {
             color: #1a1a1a;
             background-color: #fdfdfd;
@@ -229,181 +229,173 @@
             vertical-align: middle;
         }
     </style>
-    <!--[if lt IE 9]>
+<!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
 </head>
-
 <body>
-    <h1 id="manual-for-crochetparade-the-crochet-pattern-renderer-analyzer-and-debugger">Manual
+<h1 id="manual-for-crochetparade-the-crochet-pattern-renderer-analyzer-and-debugger">Manual
         for CrochetPARADE (the Crochet PAttern Renderer, Analyzer and
         DEbugger)</h1>
-    <p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/">
-        <span property="dct:title">The CrochetPARADE manual</span> by <span property="cc:attributionName">Svetlin Tassev</span> is licensed under
-        <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC
+<p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/">
+<span property="dct:title">The CrochetPARADE manual</span> by <span property="cc:attributionName">Svetlin Tassev</span> is licensed under
+        <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" rel="license noopener noreferrer" style="display:inline-block;" target="_blank">CC
             BY-NC-SA
-            4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a>
-    </p>
-    <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: June 20, 2025.</p>
-    <h1 id="introduction">Introduction</h1>
-    <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
+            4.0<img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"/><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"/><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"/><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"/></a>
+</p>
+<p>This manual covers both the platform as well as the CrochetPARADE
+        grammar. NOTE: This manual is work in progress. Last updated: December 22, 2025.</p>
+<h1 id="introduction">Introduction</h1>
+<p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
         3D crochet patterns.</p>
-    <h3 id="overview">OVERVIEW</h3>
-    <p>CrochetPARADE uses a custom language grammar that allows users to
+<h3 id="overview">OVERVIEW</h3>
+<p>CrochetPARADE uses a custom language grammar that allows users to
         define stitches and stitch patterns. The CrochetPARADE grammar aims to
         ensure accuracy and precision in the crochet pattern instructions,
         avoiding the ambiguities encountered with instructions in plain English.
         The code parses and checks any user provided pattern for correctness and
         then creates a virtual model of the project, which is then rendered in
         3D.</p>
-    <p>After rendering a pattern, users can review (‘debug’) the final
+<p>After rendering a pattern, users can review (‘debug’) the final
         project’s shape and make adjustments. The platform identifies overly
         loose or tight stitches, enabling users to replace them with more
         suitable ones before crocheting, thus reducing the need for
         blocking.</p>
-    <p> CrochetPARADE's export feature allows users to export an automatically generated crochet chart of their project using standard crochet symbols. One can also export an SVG image that
+<p> CrochetPARADE's export feature allows users to export an automatically generated crochet chart of their project using standard crochet symbols. One can also export an SVG image that
         shows stitch connections and identifies stitches by their type, row number, and position within a row.
         The SVG pattern shows the same information as standard crochet diagrams and can be used as an alternative guide when crocheting.
         Users can also export projects to 3D files that can be imported in
         <a href="https://www.blender.org">Blender</a> for further manipulation and visualization.</p>
-    <p>CrochetPARADE includes interactive features such as the ability to
+<p>CrochetPARADE includes interactive features such as the ability to
         rotate, zoom, and pan the 3D view, as well as animating the pattern
         creation process, which can help in visualizing how stitches attach to
         each other. Additional features include highlighting and hiding selected
         stitches, and changing yarn thickness and color. Users can access stitch
         information by hovering over stitches in the 3D view. CrochetPARADE also allows moving and rotating disjoint objects (as in limbs of amigurumi patterns) in order to place them in their correct locations imitating sewing them together. </p>
-    <p>CrochetPARADE performs all calculations locally on your device,
+<p>CrochetPARADE performs all calculations locally on your device,
         ensuring that no data is collected to a central server or transmitted
         over the internet. As a side effect, the platform can be sluggish on old
         hardware. Models of patterns involving (tens of) thousands of stitches
         can take minutes or more to calculate.</p>
-    <p>CrochetPARADE comes with a set of examples including crochet swatches, crocheting in the round, Irish crochet, amigurumis, filet crochet, edgings, mosaic crochet, and others. CrochetPARADE also includes a generator for crochet patterns for arbitrary axially/cylindrically symmetric single-crocheted shapes. It
+<p>CrochetPARADE comes with a set of examples including crochet swatches, crocheting in the round, Irish crochet, amigurumis, filet crochet, edgings, mosaic crochet, and others. CrochetPARADE also includes a generator for crochet patterns for arbitrary axially/cylindrically symmetric single-crocheted shapes. It
         can be used for creating patterns for amigurumi bodies, as well as for hats, buffs, etc. It includes a generator for crochet spheres as well.
     </p>
-    <h3 id="goals-and-possible-applications">GOALS AND POSSIBLE
+<h3 id="goals-and-possible-applications">GOALS AND POSSIBLE
         APPLICATIONS</h3>
-    <ul>
-        <li>
-            <p>The main goal of CrochetPARADE is to facilitate crochet project
+<ul>
+<li>
+<p>The main goal of CrochetPARADE is to facilitate crochet project
                 design and execution.</p>
-        </li>
-        <li>
-            <p>Patterns created with CrochetPARADE can be easily shared,
+</li>
+<li>
+<p>Patterns created with CrochetPARADE can be easily shared,
                 ensuring they are free from ambiguities or typographic mistakes.
                 Creators can simply copy and paste the pattern text to share it, and
                 others can use the CrochetPARADE platform to render the shared text into
                 a model of the pattern exactly as intended by the pattern
                 author.</p>
-        </li>
-        <li>
-            <p>CrochetPARADE can be used in education to teach crocheting but
+</li>
+<li>
+<p>CrochetPARADE can be used in education to teach crocheting but
                 also programming skills, since the CrochetPARADE grammar follows rules
                 similar to those of real programming languages.</p>
-        </li>
-        <li>
-            <p>The virtual models created by CrochetPARADE can be imported in 3D
+</li>
+<li>
+<p>The virtual models created by CrochetPARADE can be imported in 3D
                 modelling and CGI software. Picture an animated movie where characters
                 wear crochet hats and sweaters that match real-world crochet
                 projects.</p>
-        </li>
-        <li>
-            <p>It is probably inevitable that the grammar along with the
+</li>
+<li>
+<p>It is probably inevitable that the grammar along with the
                 renderer can allow AI to learn how to write correct crochet instructions
                 of complicated patterns (beyond simple amigurumi) based on general
                 project descriptions.</p>
-        </li>
-    </ul>
-    <h3 id="license-and-copyright">LICENSE AND COPYRIGHT</h3>
-    <ul>
-        <li>The website and all of its computational components are free and
+</li>
+</ul>
+<h3 id="license-and-copyright">LICENSE AND COPYRIGHT</h3>
+<ul>
+<li>The website and all of its computational components are free and
             open source and are released under the
             <a href="https://www.gnu.org/licenses/gpl-3.0.en.html#license-text">GPLv3
                 license</a>.</li>
-        <li>The showcase patterns are either in the public domain (as specified
+<li>The showcase patterns are either in the public domain (as specified
             in the pattern description) or are created by the author and are
             released in the public domain.</li>
-        <li>This user manual which includes a description of the CrochetPARADE
+<li>This user manual which includes a description of the CrochetPARADE
             grammar is released under the
             <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">Creative
                 Commons BY-NC-SA</a> license. The grammar itself cannot be copyrighted
             and, as any language, is in the public domain.
         </li>
-        </li>
-    </ul>
-    <h3 id="acknowledgements">ACKNOWLEDGEMENTS</h3>
 
-    <p>CrochetPARADE uses the following libraries: <a href="https://svgjs.dev/">SVG.js</a>,
+</ul>
+<h3 id="acknowledgements">ACKNOWLEDGEMENTS</h3>
+<p>CrochetPARADE uses the following libraries: <a href="https://svgjs.dev/">SVG.js</a>,
         <a href="https://threejs.org/">three.js</a> and <a href="https://prismjs.com">PrismJS</a>.</p>
-    <h1 id="keyboard-shortcuts">Keyboard shortcuts</h1>
-    <h2 id="general-shortcuts.">General shortcuts.</h2>
-    <ul>
-        <li>ctrl+l: Toggle layouts.</li>
-    </ul>
-    <h2 id="shortcuts-in-the-text-input-area.">Shortcuts in the text input
+<h1 id="keyboard-shortcuts">Keyboard shortcuts</h1>
+<h2 id="general-shortcuts.">General shortcuts.</h2>
+<ul>
+<li>ctrl+l: Toggle layouts.</li>
+</ul>
+<h2 id="shortcuts-in-the-text-input-area.">Shortcuts in the text input
         area.</h2>
-    <ul>
-        <li>shift+Enter: Calculate positions of all stitches.</li>
-        <li>ctrl+Enter (experimental!): Keep positions of already placed
+<ul>
+<li>shift+Enter: Calculate positions of all stitches.</li>
+<li>ctrl+Enter (experimental!): Keep positions of already placed
             stitches. Then calculate positions of newly added stitches since last
             calculation. Speeds up calculation, but results will be poorer than
             rerunning the whole calculation by pressing on “Calculate…” button or
             pressing shift+Enter.</li>
-        <li>ctrl+r (experimental!): Same as the previous one, but recalculates
+<li>ctrl+r (experimental!): Same as the previous one, but recalculates
             only the positions calculated last time the calculation was run. So, it undoes the
             last calculation and restarts the calculation with the new stitches
             only. Speeds up code, but will lead to poorer results than rerunning the
             whole calculation again.</li>
-            <li><kbd>left ctrl+left click</kbd>: If the instructions were
+<li><kbd>left ctrl+left click</kbd>: If the instructions were
                 expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then ctrl+click in the text input on a stitch highlights the selected stitch in the editor and in the 3d canvas simultaneously, removing previous highlights.
             </li>
-            <li><kbd>left ctrl+left alt+left click</kbd>: If the instructions were
+<li><kbd>left ctrl+left alt+left click</kbd>: If the instructions were
                 expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then ctrl+click in the text input on a stitch highlights the selected stitch in the editor and in the 3d canvas simultaneously. Unlike ctrl+click, this shortcut does not remove previous highlights.
             </li>
-            <li><kbd>left alt+left click</kbd>: Clears previous highlights in the editor and 3d canvas.
-    </ul>
-    <h2 id="shortcuts-in-3d-view.-to-activate-click-on-the-3d-canvas-first.">Shortcuts
+<li><kbd>left alt+left click</kbd>: Clears previous highlights in the editor and 3d canvas.
+    </li></ul>
+<h2 id="shortcuts-in-3d-view.-to-activate-click-on-the-3d-canvas-first.">Shortcuts
         in 3D view. To activate, click on the 3D canvas first.</h2>
-    <ul>
-        <li>left click and drag: Rotate view.</li>
-        <li>scroll wheel: Zoom.</li>
-        <li>(right click and drag) or (shift and left click and drag): Pan
+<ul>
+<li>left click and drag: Rotate view.</li>
+<li>scroll wheel: Zoom.</li>
+<li>(right click and drag) or (shift and left click and drag): Pan
             view.</li>
-        <li>a: Show stitches one by one.</li>
-        <li>ctrl+a: Hide stitches one by one.</li>
-        <li>c: Show project colors. Gray is default if no colors are
+<li>a: Show stitches one by one.</li>
+<li>ctrl+a: Hide stitches one by one.</li>
+<li>c: Show project colors. Gray is default if no colors are
             specified.</li>
-        <li>esc: Reset visibility and colors of stitches.</li>
-        <li>ctrl+esc: Hide all but the first stitch.</li>
-        <li>ctrl+f: Highlight row (by entering: row number) or stitch (by entering: row number, stitch number; for example, "2,4"). Leaving the row number blank (as in ",N") will highlight the N-th stitch of every row. For example, if you enter ",0" that will highlight the beginning of each row.</li>
-        <li>ctrl+d: Highlight stitch or group of stitches with a specific label. One can also select a collection of labels if any. As an example, a collection of labels may be called 'c[ , ]' and if selected, it will highlight all stitches having labels such as 'c[0,1]', 'c[1,2]', etc. with a whitespace being a placeholder.</li>
-        <li>ctrl+h: Hide after row or stitch.</li>
-        <li>ctrl +/-: increase/decrease radii of spheres and cylinders. Affects
+<li>esc: Reset visibility and colors of stitches.</li>
+<li>ctrl+esc: Hide all but the first stitch.</li>
+<li>ctrl+f: Highlight row (by entering: row number) or stitch (by entering: row number, stitch number; for example, "2,4"). Leaving the row number blank (as in ",N") will highlight the N-th stitch of every row. For example, if you enter ",0" that will highlight the beginning of each row.</li>
+<li>ctrl+d: Highlight stitch or group of stitches with a specific label. One can also select a collection of labels if any. As an example, a collection of labels may be called 'c[ , ]' and if selected, it will highlight all stitches having labels such as 'c[0,1]', 'c[1,2]', etc. with a whitespace being a placeholder.</li>
+<li>ctrl+h: Hide after row or stitch.</li>
+<li>ctrl +/-: increase/decrease radii of spheres and cylinders. Affects
             exported GLTF file as well.</li>
-        <li>i: Toggle visibility of stitch information box.</li>
-        <li><kbd>shift+left click</kbd>: Toggle persistence of stitch information box.</li>
-                    <li><kbd>left ctrl+left click</kbd>: If the instructions were
+<li>i: Toggle visibility of stitch information box.</li>
+<li><kbd>shift+left click</kbd>: Toggle persistence of stitch information box.</li>
+<li><kbd>left ctrl+left click</kbd>: If the instructions were
                         expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then ctrl+click in the 3D canvas on a stitch highlights the selected stitch in the editor and in the 3d canvas simultaneously, removing previous highlights.
                     </li>
-                    <li><kbd>left ctrl+left alt+left click</kbd>: If the instructions were
+<li><kbd>left ctrl+left alt+left click</kbd>: If the instructions were
                         expanded by running "Expand instructions" from the Tools menu with "Run this dialog twice in a row?" selected, then ctrl+click in the 3D canvas on a stitch highlights the selected stitch in the editor and in the 3d canvas simultaneously. Unlike ctrl+click, this shortcut does not remove previous highlights.
                     </li>
-                    <li><kbd>left alt+left click</kbd>: Clears previous highlights in the editor and 3d canvas.
-        <li>p: Write crochet chart to SVG file. For 2D projects, it shows a face-on view.
+<li><kbd>left alt+left click</kbd>: Clears previous highlights in the editor and 3D canvas. When the Custom Periphery editor (Tools → Find Project Periphery) is open, Alt+Click on the 3D canvas appends the clicked edge to the custom-periphery editor.</li><li>p: Write crochet chart to SVG file. For 2D projects, it shows a face-on view.
             For 3D projects, it shows an orthographic projection from the current
-            view.</li>
-        <li>r: Rotate view automatically.</li>
-        <li><kbd>o</kbd>: Rotate view a tiny amount and save crochet chart SVG corresponding to that view (only for 3D models!). Repeatedly pressing <kbd>o</kbd> leads to saving multiple charts for different views while model is rotating. Useful for creating videos of rotating 3D crochet charts. Resolution is specified only the first time key is pressed.
-        </li>
-        <li>s: Highlight over/under-stretched stitches. Blue for stitches that
+            view.</li><li>r: Rotate view automatically.</li><li><kbd>o</kbd>: Rotate view a tiny amount and save crochet chart SVG corresponding to that view (only for 3D models!). Repeatedly pressing <kbd>o</kbd> leads to saving multiple charts for different views while model is rotating. Useful for creating videos of rotating 3D crochet charts. Resolution is specified only the first time key is pressed.
+        </li><li>s: Highlight over/under-stretched stitches. Blue for stitches that
             are too loose, and red for stitches that are too stretched (by more than
             about 15%) relative to their baseline height. The rest are shown in
-            gray.</li>
-        <li>v: Toggle visibility of arrowheads.</li>
-    </ul>
-    <h1 id="the-3d-visualization-canvas">The 3D visualization canvas</h1>
-    <p>The 3D view shows how stitches are connected between each other. Each
+            gray.</li><li>v: Toggle visibility of arrowheads.</li></ul>
+<h1 id="the-3d-visualization-canvas">The 3D visualization canvas</h1>
+<p>The 3D view shows how stitches are connected between each other. Each
         sphere represents the top “V” of a crochet stitch. Stitches in
         crocheting are worked sequentially often forming rows or rounds (or can
         be forming more general patterns). In the default view, the overall
@@ -414,7 +406,7 @@
         with. So for example in <code>dc,sc,dc</code>, the single crochet stitch
         will connect with a blue connections to the <code>dc</code> stitches,
         and with a red connection to the stitch in which it is worked.</p>
-    <p>Information about stitches is shown when hovering over a stitch. It
+<p>Information about stitches is shown when hovering over a stitch. It
         shows stitch row and number with row followed by <code>|</code> and the
         stitch number in the whole project in parenthesis, for example
         <code>(4,23|410)</code>. <strong>Note that counting of rows and stitch
@@ -429,244 +421,363 @@
         input instructions. <strong><code>C2:</code></strong> shows the “second
         level of context” which shows the context of the stitch within the
         instructions after evaluation of any variables (see below).</p>
-    <p>See the keyboard shortcuts for further information.</p>
-    <h1 id="saveexport-options">Save/Export options</h1>
-    <p>The project can be exported in different formats:</p>
-    <ul>
-        <li>
-            <p>Plain text, which is suitable for sharing. Note that every line
+<p>See the keyboard shortcuts for further information.</p>
+<h1 id="tools">Tools</h1><h2 id="tools-find-project-periphery">Tools → Find Project Periphery</h2><p><strong>Find Project Periphery</strong> attempts to identify and order the stitches that lie on the outer boundary (“periphery” or border) of your current project. This is useful for borders/edgings, joining panels, attaching motifs, finishing rounds, and picking up stitches along the side of rows.</p><p>In many projects (crocheted rows with turns, crochet lace, motifs), the stitches that are consecutive <em>along the boundary</em> are not consecutive in the order you crocheted them or wrote them in the pattern text. This tool builds one or more <em>periphery graphs</em> and provides an ordering that follows the edge, so you can work and label the boundary as a clean sequence. The tool only uses information about how the stitches are connected, and does not use a particular embedding, i.e. it does not matter what your rendered model looks like (which can change depending on the physics parameters used, such as number of iterations, initial start/seed value, etc) and whether you calculated it in 2D or 3D.</p><h3 id="periphery-what-you-see">What you get</h3><ul>
+<li><strong>Periphery candidates</strong> (multiple, when the boundary is ambiguous). Each is shown as “Periphery #… — X edges, Y nodes”.</li>
+<li><strong>Highlighting</strong> of the chosen periphery stitches in the 3D canvas, and (when instructions are expanded) in the text editor as well.</li>
+<li>Optional <strong>labeling</strong> of the periphery stitches in periphery order (see below).</li>
+</ul><h3 id="periphery-workflow">Typical workflow</h3><ol>
+<li>Render / calculate your project as usual.</li>
+<li>Run <strong>Tools → Find Project Periphery</strong> and choose a periphery from the selector.</li>
+<li>(Recommended) Run <strong>Tools → Expand instructions</strong> with “Run this dialog twice in a row?” so CrochetPARADE can map each stitch in the 3D canvas to a specific stitch in the text editor (needed for text highlighting of the border and for inserting labels on individual stitches).</li>
+<li>Use the tool’s <strong>Apply label to periphery stitches</strong> section to add labels in boundary order. A useful hint: you can use different labels for different parts of the border (say RightEdge, LeftEdge, etc) of the project. To mark only the right edge for example, open the Custom periphery editor (click on Edit edges in Find project periphery), and erase the edges that don't belong to the right edge. When deleting an edge, the highlighting of that edge in the 3D canvas is removed, so in that way you can vizually figure out which edges to keep.</li>
+<li>If needed, run <strong>Tools → Simplify instructions</strong> after labeling. If you used <code>INDEX_ARRAY:</code> or <code>SORT_LABEL:</code> (below), simplification can stay efficient because the periphery indexing is stored separately from the stitches.</li>
+</ol><h3 id="periphery-dialog-options">Dialog options</h3><h4 id="periphery-kmax">Kmax</h4><p>Controls how far the periphery detector searches for alternative routes between the endpoints of an edge when deciding how “peripheral” that edge is. Larger values can help on complex meshes, but may be slower.</p><h4 id="periphery-advanced-settings">Advanced settings</h4><ul>
+<li><strong>Max hops</strong>: if &gt; 0, the tool may connect separate periphery components by adding shortest connecting paths (in the original stitch graph) up to this length.</li>
+<li><strong>Include bridge edges in output</strong>: when hops are used, controls whether those “bridge” edges are included in the periphery output (and thus in highlighting/export).</li>
+<li><strong>Include longest-cycle subgraph</strong>: appends an extra result containing the longest simple cycle found in the largest periphery component.</li>
+<li><strong>Include breaking-cycle subgraph</strong>: appends an extra result containing a shortest cycle whose removal turns the largest periphery component into a forest (disjoint trees / isolated nodes).</li>
+</ul><h3 id="periphery-labeling">Apply label to periphery stitches</h3><p>This section applies a label template to the periphery stitches in <strong>periphery order</strong> (consecutive around the edge). Examples of templates: <code>A</code>, <code>B[k++]</code>, <code>C[m]</code>, <code>D[a,b++]</code>.</p><ul>
+<li><strong>Evaluate counter</strong>: if the template contains <code>++</code> or <code>--</code>, enables counter evaluation while labeling (following periphery order).</li>
+<li><strong>Start</strong>: the initial counter value used when evaluating a counter.</li>
+<li><strong>Reverse order</strong>: (shown next to the enabled option) labels the periphery in the opposite traversal direction.</li>
+<li><strong>Save counter values as INDEX_ARRAY</strong>: when the counter is of the form <code>Label[counter]</code>, this stores the enumerated counter values into an <code>INDEX_ARRAY:</code> line, keeping the periphery indexing separate from the stitches. This is the recommended way to label the border, as it is especially helpful if you plan to re-run <strong>Simplify instructions</strong> after expanding.</li><li><strong>Save stitch order as SORT_LABEL</strong>: when your label template has no counter (e.g. <code>A</code>, <code>B[]</code>, <code>C[0]</code>, <code>D[1,2]</code>), saves the periphery traversal order into a <code>SORT_LABEL:</code> line while keeping the label itself simple. Using <code>SORT_LABEL:</code> for plain labels (labels without counters) is recommended.</li><li>If more than one counter is present, for example the label you input is of the form <code>D[a,b++]</code>, you are offered a choice which counter to use.</li>
+</ul><h3 id="periphery-custom-editor">Custom Periphery editor</h3><p>If the automatic periphery is not the one you want (e.g., motifs with holes, lace, complex joins), you can define or tweak a periphery manually:</p><ul>
+<li>Enter <strong>one edge per line</strong> in the form <code>stitch1 -- stitch2</code>. Stitch names are suggested by an autocomplete prompt based on the edges present in the project.</li>
+<li>Save the custom periphery; it appears in the periphery selector as a “Custom …” entry. When you save the custom periphery, the code makes a reasonable attempt to sort the stitches in adjacency order, so the order in which you input the edges in the editor is not important.</li>
+<li><strong>Alt+Click on the 3D canvas</strong> (while the custom editor is open) can append the clicked edge to the custom-periphery editor, allowing quick interactive construction.</li>
+</ul>
+<h2 id="tools-expand-instructions">Tools → Expand instructions</h2>
+<p><strong>Objective.</strong> CrochetPARADE patterns are often written in a compact, “program-like” style (multipliers, bracketed blocks, user-defined stitches, and label counters). That is great for authoring, but it can be hard to change instructions at the individual stitch level, and it can be hard for other tools (such as periphery labeling) to operate at the level of individual stitches. <strong>Expand instructions</strong> converts compact instructions into an expanded form by writing out repeated blocks and substituting definitions when possible.</p>
+<p><strong>Warning:</strong> this tool overwrites the text in the editor. Save your work first.</p>
+
+<h3 id="expand-what-it-does">What it does</h3>
+<ul>
+  <li>Expands expressions such as <code>3*[sc,dc]</code> into <code>[sc,dc],[sc,dc],[sc,dc]</code>.</li>
+  <li>When possible, substitutes newly defined stitches into their expanded form.</li>
+  <li>Optionally evaluates index counters in labels (see options below).</li>
+  <li>If run “twice”, it can fully expand shorthand such as <code>4sc</code> by first rewriting it into <code>4*sc</code> and then writing it out as <code>sc,sc,sc,sc</code>. Running twice also enables stitch indexing in the editor view (so stitch numbers appear on hover), which is useful for modifying individual stitches and for tools that need per-stitch access. Moreover, once the text is expanded, one can ctrl+click on individual stitches in the editor, and they will be highlighted in the 3D canvas (and vice versa), which allows for per-stitch editing of a crochet project.</li>
+</ul>
+
+<h3 id="expand-options">Dialog options</h3>
+<ul>
+  <li><strong>Substitute index counters after expansion?</strong> If checked, index variables will be evaluated. For example, <code>$k=0$, sc.L[k++], sc.L[k]</code> will be written out as <code>sc.L[0], sc.L[1]</code>.</li>
+  <li><strong>Run this dialog twice in a row?</strong> If checked, the expansion is applied twice in one go. This is the recommended mode when you want stitches indexed in the editor, stitch numbers on hover, and cross-highlighting between text and canvas to work reliably.</li>
+</ul>
+<p>Because expansion is a “destructive” operation, the dialog requires answering a simple arithmetic question before enabling <strong>OK</strong>.</p>
+
+<h3 id="expand-when-to-use">When to use it</h3>
+<ul>
+  <li>When editing a pattern at the individual stitch level.</li>
+  <li>When debugging a pattern and you want to see exactly what a multiplier or a definition expands to.</li>
+  <li>Before using <strong>Find Project Periphery</strong> labeling (the periphery tool expects expanded text when inserting labels onto individual stitches).</li>
+</ul>
+
+<h2 id="tools-simplify-instructions">Tools → Simplify instructions</h2>
+<p><strong>Objective.</strong> Expansion is great for debugging and for per-stitch tools, but expanded instructions can become long and repetitive. <strong>Simplify instructions</strong> attempts to compress repeated structures back into a shorter form (for example by factoring out repeated bracket blocks). This tool is <strong>EXPERIMENTAL</strong>.</p>
+<p><strong>Warning:</strong> this tool overwrites the text in the editor and may break your instructions. Save your work first.</p>
+
+<h3 id="simplify-what-it-does">What it does</h3>
+<ul>
+  <li>Replaces repeated blocks such as <code>[sc,dc],[sc,dc],[sc,dc]</code> with a compact form such as <code>3[sc,dc]</code>.</li>
+  <li>Optionally tries to recognize “numerical indexing” in labels and replace it with index counters (so labels become compact and programmable again).</li>
+</ul>
+
+<h3 id="simplify-options">Dialog options</h3>
+<ul>
+  <li><strong>Expand before simplification?</strong> If checked, CrochetPARADE will run an expansion pass first (useful when the current text still contains shorthand that would otherwise block simplification).</li>
+  <li><strong>Attempt to simplify numerical indexing of labels and create index counters?</strong> If checked, the tool will try to replace sequences such as <code>ch.A[0], ch.A[1], ch.A[2], ch.A[3]</code> with a counter-style form (for example using a variable and <code>++</code>). This is particularly useful when you want to get back to a compact, programmable label form that is more succinct.</li>
+</ul>
+<p>As with expansion, the dialog uses a simple arithmetic question to reduce accidental use.</p>
+
+<h3 id="simplify-typical-workflow">Typical workflow</h3>
+<ol>
+  <li>Run <strong>Tools → Expand instructions</strong> (often in “run twice” mode) to make per-stitch operations possible.</li>
+  <li>Do your per-stitch edits (for example: change individual stitches; add/remove stitches; color individual stitches; label periphery stitches; insert labels; etc.).</li>
+  <li>Run <strong>Tools → Simplify instructions</strong> to compress the result again for readability and sharing.</li>
+</ol>
+
+<h2 id="tools-object-transform">Tools → Object Transform</h2>
+<p><strong>Objective.</strong> Some patterns create multiple <em>disjoint</em> crochet objects (for example: amigurumi limbs, appliqués, or motifs meant to be sewn on later). <strong>Object Transform</strong> provides an interactive way to translate and rotate those objects in the 3D view, so you can preview positioning and assembly without changing the crochet structure.</p>
+
+<h3 id="object-transform-what-it-does">What it does</h3>
+<ul>
+  <li>Opens a floating (draggable) control panel for transforming objects.</li>
+  <li>Lets you choose an <strong>Object</strong> number and adjust its translation and rotation.</li>
+  <li>Reads and writes transformations to your instructions via the special command <code>TRANSFORM_OBJECT:</code> (see the language reference).</li>
+</ul>
+
+<h3 id="object-transform-controls">Controls and options</h3>
+<ul>
+  <li><strong>Object</strong>: select which disjoint object to edit.</li>
+  <li><strong>Translation</strong>: adjust <code>x</code> and <code>y</code> using the translation canvas; adjust <code>z</code> with the vertical slider or number input. Use <strong>Reset Translation</strong> to return to zero. <strong>Reset Min/Max</strong> resets the scaling of the control canvas.</li>
+  <li><strong>Rotation</strong>: adjust two angles on the rotation canvas (alpha/beta) and use the gamma slider for the third angle. Use <strong>Reset Rotation</strong> to return to zero rotation.</li>
+  <li><strong>Guiding plane</strong> and <strong>Guiding rotation axes</strong>: toggles for drawing visual guides while transforming.</li>
+  <li><strong>Rotation order</strong>: choose the Euler rotation order (XYZ, YZX, ZXY, XZY, YXZ, ZYX). Switching between rotation orders allows one to avoid gimbal lock.</li>
+  <li><strong>Read from instructions</strong>: loads existing <code>TRANSFORM_OBJECT:</code> lines for the chosen object.</li>
+  <li><strong>Write to instructions</strong>: writes the current transform back into the editor as a <code>TRANSFORM_OBJECT:</code> line.</li>
+</ul>
+<p><strong>Note:</strong> object transforms do not change stitch connectivity. They only affect how disjoint parts are positioned in the 3D view and in exported 3D models.</p>
+
+<h2 id="pattern-generators">Pattern generators</h2>
+<p>CrochetPARADE includes a few pattern generators that are accessed from the <strong>Write your own instructions</strong> drop-down menu. These are not “Tools” menu items, but they behave like tools: they open a dialog, generate instructions, and overwrite the editor text with the generated pattern.</p>
+
+<h3 id="generate-a-sphere">Generate a sphere</h3>
+<p><strong>Objective.</strong> Quickly generate a single-crocheted sphere (useful for amigurumi heads and bodies or test swatches in the round).</p>
+<ul>
+  <li><strong>Circumference (in stitches)</strong>: sets the approximate equatorial circumference. The dialog accepts values between 7 and 1200.</li>
+  <li><strong>Scatter increases and decreases</strong>: distributes increases/decreases to reduce symmetric “bulges”, especially near the poles.</li>
+  <li>The generated pattern uses <strong>continuous rounds</strong>.</li>
+</ul>
+
+<h3 id="generate-an-axially-symmetric-shape">Generate an axially symmetric shape</h3>
+<p><strong>Objective.</strong> Generate patterns for arbitrary axially (cylindrically) symmetric shapes made in single crochet (for example: amigurumi bodies, hats, buffs, tubes, and other “lathe-like” forms). You define a profile curve, and CrochetPARADE generates a stitch-count schedule that follows it.</p>
+<ul>
+  <li>The generator opens an interactive editor where you can drag control points of the profile curve (and add / delete points via a context menu).</li>
+  <li><strong>Scatter increases and decreases</strong>: reduces distortions by distributing shaping more evenly.</li>
+  <li><strong>Number of stitches between green grid lines</strong>: controls the “scale” of stitch density along the profile.</li>
+  <li><strong>X-axis range</strong> and <strong>Y-axis range</strong>: set the working area of the curve editor (useful for tall or wide shapes).</li>
+  <li><strong>Adjust number of stitches in the round</strong> (thickness curve): optionally enables a secondary editor that lets you tweak stitch counts at different locations, allowing extra fabric to be added that may help with intended shape recovery, say after stuffing a closed amigurumi model.</li>
+  <li><strong>Export / Import</strong>: saves and loads the curve definition as a JSON file, so you can reuse a shape later or share the shape design separately from the crochet instructions.</li>
+</ul>
+
+<h1 id="saveexport-options">Save/Export options</h1>
+<p>The project can be exported in different formats:</p>
+<ul>
+<li>
+<p>Plain text, which is suitable for sharing. Note that every line
                 (indicating a new row/round) will be preceded by <code>¶</code> in order
                 to ensure that spurious new lines introduced by sharing the instructions
                 over text-platforms will not count. If such a text is pasted back into
                 the platform, those extra <code>¶</code> symbols will automatically be
                 deleted. The plain text also carries version information on top, which
                 would ensure backward compatibility if the language evolves.</p>
-        </li>
-        <li>
-            <p>Print highlighted instructions in the way one sees them in the
+</li>
+<li>
+<p>Print highlighted instructions in the way one sees them in the
                 input field. Intended new lines are preceded by <code>¶</code> similar
                 to above. Unintended new lines created by line-wrapping are
                 not.</p>
-        </li>
-        <li>
-            <p>Save the project's nodes and edges to a DOT-like file. Node coordinates (if precalculated) are included
+</li>
+<li>
+<p>Save the project's nodes and edges to a DOT-like file. Node coordinates (if precalculated) are included
                 as a tuple after the node name. Edge lengths are included as a float after each edge.
                 Note that positions of stitches will be included if the model was calculated already.
                 Also, note that the file is not fully
                 compatible with Graphviz.
             </p>
-        </li>
-        <li>
-            <p>Export 3D GLTF model. The model that is exported can be previewed
+</li>
+<li>
+<p>Export 3D GLTF model. The model that is exported can be previewed
                 by pressing <code>c</code> once the 3D canvas has been selected. This
                 file can be imported in Blender. Once the model is imported, the
                 stitches can be combined into one object. Then one can add hairs to the
                 cylinders representing the yarn, add textures, as well as physics such
                 as gravity, cloth properties, etc.</p>
-        </li>
-        <li>
-            <p>Exporting to SVG creates 3 SVG files: 1) SVG image containing the crochet pattern using standard crochet symbols (this is work in progress); 2) SVG image showing the current view (in 3D) or the face-on
+</li>
+<li>
+<p>Exporting to SVG creates 3 SVG files: 1) SVG image containing the crochet pattern using standard crochet symbols -- yarn colors are optionally included; 2) SVG image showing the current view (in 3D) or the face-on
                 view (in 2D) of the project. That SVG shows stitch connections and
                 identifies stitches by their type, row number, and position within a
                 row. The SVG pattern shows the same information as standard crochet
-                diagrams and can be used as a guide when crocheting. 3) Both diagrams overlaid on top of each other.</p>
-        </li>
-        <li>
-            <p>Save debug info. This can be helpful when debugging the code. A
+                diagrams and can be used as a guide when crocheting. 3) Both diagrams overlaid on top of each other. The SVG crochet diagrams can be exported in orthographic or perspective projection as viewed in the 3D canvas.</p>
+</li>
+<li>
+<p>Save debug info. This can be helpful when debugging the code. A
                 json0 format of the project (an output similar to that of Graphviz) is saved in the
                 debug info and can be used in other visualization software.</p>
-        </li>
-    </ul>
-    <h1 id="the-crochetparade-language">The CrochetPARADE language</h1>
-    <p>Below is the description of the CrochetPARADE language used to enter
+</li>
+</ul>
+<h1 id="the-crochetparade-language">The CrochetPARADE language</h1>
+<p>Below is the description of the CrochetPARADE language used to enter
         crochet patterns on the platform.</p>
-    <h2 id="basics">Basics</h2>
-    <table border="1" cellpadding="5" cellspacing="0">
-        <tr>
-            <th>Stitch Name/Basic Command</th>
-            <th>Description</th>
-        </tr>
-        <tr>
-            <td><code>ch</code></td>
-            <td>Chain stitch, the foundation for many crochet projects</td>
-        </tr>
-        <tr>
-            <td><code>ss</code></td>
-            <td>Slip stitch, used to join rounds or move across stitches without adding height</td>
-        </tr>
-        <tr>
-            <td><code>sc</code></td>
-            <td>Single crochet, a basic stitch that creates a tight, sturdy fabric</td>
-        </tr>
-        <tr>
-            <td><code>hdc</code></td>
-            <td>Half double crochet, taller than a single crochet but shorter than a double crochet</td>
-        </tr>
-        <tr>
-            <td><code>dc</code></td>
-            <td>Double crochet, a tall stitch that creates an open, airy fabric</td>
-        </tr>
-        <tr>
-            <td><code>tr</code></td>
-            <td>Treble crochet, a very tall stitch that creates an even more open fabric</td>
-        </tr>
-        <tr>
-            <td><code>dtr</code></td>
-            <td>Double treble crochet, an extra tall stitch for very open, lacy patterns</td>
-        </tr>
-        <tr>
-            <td><code>trtr</code></td>
-            <td>Triple treble crochet, an extremely tall stitch for creating dramatic height</td>
-        </tr>
-        <tr>
-            <td><code>rsc</code></td>
-            <td>Reverse single crochet, also known as crab stitch, creates a decorative edging</td>
-        </tr>
-        <tr>
-            <td><code>bp...</code> (e.g., <code>bpsc</code>, <code>bphdc</code>, <code>bpdc</code>, <code>bptr</code>)</td>
-            <td>Back post stitches, worked behind the post of the stitch below for texture</td>
-        </tr>
-        <tr>
-            <td><code>fp...</code> (e.g., <code>fpsc</code>, <code>fphdc</code>, <code>fpdc</code>, <code>fptr</code>)</td>
-            <td>Front post stitches, worked around the post of the stitch below for texture</td>
-        </tr>
-        <tr>
-            <td><code>...fl</code> (e.g., <code>scfl</code>, <code>ssfl</code>, <code>dcfl</code>, <code>hdcfl</code>, <code>trfl</code>, <code>dtrfl</code>, <code>trtrfl</code>)</td>
-            <td>Stitches worked in front loop only, creating a horizontal ridge on the back of the work</td>
-        </tr>
-        <tr>
-            <td><code>...bl</code> (e.g., <code>scbl</code>, <code>ssbl</code>, <code>dcbl</code>, <code>hdcbl</code>, <code>trbl</code>, <code>dtrbl</code>, <code>trtrbl</code>)</td>
-            <td>Stitches worked in back loop only, creating a horizontal ridge on the front of the work</td>
-        </tr>
-        <tr>
-            <td><code>hdcNpuff</code> (<code>hdc3puff</code>, <code>hdc4puff</code>, <code>hdc5puff</code>)</td>
-            <td>Half double crochet puff stitch made with N loops, where N is typically 3, 4, or 5</td>
-        </tr>
-        <tr>
-            <td><code>dcNbobble</code> (<code>dc3bobble</code>, <code>dc4bobble</code>, <code>dc5bobble</code>)</td>
-            <td>Double crochet bobble stitch made with N stitches, where N is typically 3, 4, or 5</td>
-        </tr>
-        <tr>
-            <td><code>tr4bobble</code></td>
-            <td>Treble crochet bobble stitch made with 4 stitches</td>
-        </tr>
-        <tr>
-            <td><code>dcNpc</code> (<code>dc3pc</code>, <code>dc4pc</code>, <code>dc5pc</code>)</td>
-            <td>N-double crochet popcorn stitch, where N is typically 3, 4, or 5</td>
-        </tr>
-        <tr>
-            <td><code>picot3</code></td>
-            <td>A decorative loop made with 3 chain stitches and a slip stitch</td>
-        </tr>
-        <tr>
-            <td><code>longsc</code>, <code>longdc</code>, <code>longtr</code></td>
-            <td>Long sc/dc/tr, worked into a stitch in a previous row for added height</td>
-        </tr>
-        <tr>
-            <td><code>ring</code></td>
-            <td>A magic ring, forming a circular/point-like foundation for crochet projects</td>
-        </tr>
-        <tr>
-            <td><code>stitch_nameNinc</code>, <code>stitch_nameNtog</code></td>
-            <td>CrochetPARADE can handle automatically stitch increases and decreases with <code>stitch_nameNinc</code> and <code>stitch_nameNtog</code>, respectively. Here <code>N</code> is an integer denoting the number of stitches of the increase or decrease. For example: <code>sc2inc</code> corresponds to two single-crochet stitches worked into the same stitch; and <code>sc2tog</code> implies that one is doing a decrease by combining two single-crochet stitches.</td>
-        </tr>
-        <tr>
-            <td><code>sk</code></td>
-            <td>Skip stitch, used to create spaces or shape in the pattern</td>
-        </tr>
-        <tr>
-            <td><code>tie_up</code></td>
-            <td>Special command: ties up stitches -- used to secure yarn end at end of project.</td>
-        </tr>
-        <tr>
-            <td><code>start_at</code></td>
-            <td> Special command: creates a hidden stitch used to mark the starting point of a round or row. This marks starting with a new piece of yarn at a specified location in the project. Needs to be followed by a location, e.g. <code>start_at@[-1,0]</code></td>
-        </tr>
-        <tr>
-            <td><code>start_anew</code></td>
-            <td>Special command: creates a hidden stitch indicating the beginning of a new section or pattern of a disjoint piece.</td>
-        </tr>
-        <tr>
-            <td><code>start_a_new_chain</code></td>
-            <td>Special command: Begins a new chain of stitches, often used to start a new row or section of a disjoint piece.</td>
-        </tr>
-        <tr>
-            <td><code>turn</code></td>
-            <td>Special command: <code>turn</code> for turning the work at the end of a row or round. (See "Direction of sequential stitch attachment." for more details.)</td>
-        </tr>
-
-        <tr>
-            <td><code>...</code></td>
-            <td>Special command: Ellipsis (<code>...</code>) in the beginning of a new line indicates the previous line is continued on the current line.</td>
-        </tr>
-        <tr>
-            <td><code>&lt;</code><br><code>&gt;</code></td>
-            <td>Special commands: These indicate a repetition starts/ends at that symbol. Example: 3*[sc,&lt;,ch,&gt;,dc] translates to [ch,dc],[sc,ch,dc],[sc,ch]</td>
-        </tr>
-        <tr>
-            <td><code>.</code><br><code>@</code><br><code>~^!</code></td>
-            <td>Special commands: Indicate a labeled stitch, attachment to a label/stitch, and modifiers, respectively. Example: sc.A,dc@A (see "Attachment to a label" in the Manual) </td>
-        </tr>
-        <tr>
-            <td><code>#comment</code><br><code>\comment\</code></td>
-            <td>Special commands: Allows inserting comments. The pound symbol indicates a comment that extends to the end of the line. Comments enclosed between backslashes can span multiple lines. </td>
-        </tr>
-        <tr>
-            <td><code>COLOR:</code><br><code>BACKGROUND:</code>
-            <td>Special commands: COLOR indicates the color of the yarn that follows, while BACKGROUND - the color of the background of the 3D rendering. See the Manual for allowed colors.</td>
-        </tr>
-        <tr>
-            <td><code>TRANSFORM_OBJECT:</code>
-            <td>Special commands: Automatically generated by the "Object Transform" tool, which interactively allows the user to move and rotate objects. </td>
-        </tr>
-        <tr>
-            <td><code>DOT:</code>
-            <td>Special commands: Any extra arguments to the physics engine. Some options that can be set here are: iterations, start, separate, inflate, learning_rate. Also, new nodes can be created and placed at particular 3D coordinates; and new connections between nodes can be specified here. See the DOT Command section in the Manual. </td>
-        </tr>
-    </table>
-    <p>Stitches are defined using common names <code>ch</code> for a chain,
+<h2 id="basics">Basics</h2>
+<table border="1" cellpadding="5" cellspacing="0">
+<tr>
+<th>Stitch Name/Basic Command</th>
+<th>Description</th>
+</tr>
+<tr>
+<td><code>ch</code></td>
+<td>Chain stitch, the foundation for many crochet projects</td>
+</tr>
+<tr>
+<td><code>ss</code></td>
+<td>Slip stitch, used to join rounds or move across stitches without adding height</td>
+</tr>
+<tr>
+<td><code>sc</code></td>
+<td>Single crochet, a basic stitch that creates a tight, sturdy fabric</td>
+</tr>
+<tr>
+<td><code>hdc</code></td>
+<td>Half double crochet, taller than a single crochet but shorter than a double crochet</td>
+</tr>
+<tr>
+<td><code>dc</code></td>
+<td>Double crochet, a tall stitch that creates an open, airy fabric</td>
+</tr>
+<tr>
+<td><code>tr</code></td>
+<td>Treble crochet, a very tall stitch that creates an even more open fabric</td>
+</tr>
+<tr>
+<td><code>dtr</code></td>
+<td>Double treble crochet, an extra tall stitch for very open, lacy patterns</td>
+</tr>
+<tr>
+<td><code>trtr</code></td>
+<td>Triple treble crochet, an extremely tall stitch for creating dramatic height</td>
+</tr>
+<tr>
+<td><code>rsc</code></td>
+<td>Reverse single crochet, also known as crab stitch, creates a decorative edging</td>
+</tr>
+<tr>
+<td><code>bp...</code> (e.g., <code>bpsc</code>, <code>bphdc</code>, <code>bpdc</code>, <code>bptr</code>)</td>
+<td>Back post stitches, worked behind the post of the stitch below for texture</td>
+</tr>
+<tr>
+<td><code>fp...</code> (e.g., <code>fpsc</code>, <code>fphdc</code>, <code>fpdc</code>, <code>fptr</code>)</td>
+<td>Front post stitches, worked around the post of the stitch below for texture</td>
+</tr>
+<tr>
+<td><code>...fl</code> (e.g., <code>scfl</code>, <code>ssfl</code>, <code>dcfl</code>, <code>hdcfl</code>, <code>trfl</code>, <code>dtrfl</code>, <code>trtrfl</code>)</td>
+<td>Stitches worked in front loop only, creating a horizontal ridge on the back of the work</td>
+</tr>
+<tr>
+<td><code>...bl</code> (e.g., <code>scbl</code>, <code>ssbl</code>, <code>dcbl</code>, <code>hdcbl</code>, <code>trbl</code>, <code>dtrbl</code>, <code>trtrbl</code>)</td>
+<td>Stitches worked in back loop only, creating a horizontal ridge on the front of the work</td>
+</tr>
+<tr>
+<td><code>hdcNpuff</code> (<code>hdc3puff</code>, <code>hdc4puff</code>, <code>hdc5puff</code>)</td>
+<td>Half double crochet puff stitch made with N loops, where N is typically 3, 4, or 5</td>
+</tr>
+<tr>
+<td><code>dcNbobble</code> (<code>dc3bobble</code>, <code>dc4bobble</code>, <code>dc5bobble</code>)</td>
+<td>Double crochet bobble stitch made with N stitches, where N is typically 3, 4, or 5</td>
+</tr>
+<tr>
+<td><code>tr4bobble</code></td>
+<td>Treble crochet bobble stitch made with 4 stitches</td>
+</tr>
+<tr>
+<td><code>dcNpc</code> (<code>dc3pc</code>, <code>dc4pc</code>, <code>dc5pc</code>)</td>
+<td>N-double crochet popcorn stitch, where N is typically 3, 4, or 5</td>
+</tr>
+<tr>
+<td><code>picot3</code></td>
+<td>A decorative loop made with 3 chain stitches and a slip stitch</td>
+</tr>
+<tr>
+<td><code>longsc</code>, <code>longdc</code>, <code>longtr</code></td>
+<td>Long sc/dc/tr, worked into a stitch in a previous row for added height</td>
+</tr>
+<tr>
+<td><code>ring</code></td>
+<td>A magic ring, forming a circular/point-like foundation for crochet projects</td>
+</tr>
+<tr>
+<td><code>stitch_nameNinc</code>, <code>stitch_nameNtog</code></td>
+<td>CrochetPARADE can handle automatically stitch increases and decreases with <code>stitch_nameNinc</code> and <code>stitch_nameNtog</code>, respectively. Here <code>N</code> is an integer denoting the number of stitches of the increase or decrease. For example: <code>sc2inc</code> corresponds to two single-crochet stitches worked into the same stitch; and <code>sc2tog</code> implies that one is doing a decrease by combining two single-crochet stitches.</td>
+</tr>
+<tr>
+<td><code>sk</code></td>
+<td>Skip stitch, used to create spaces or shape in the pattern</td>
+</tr>
+<tr>
+<td><code>tie_up</code></td>
+<td>Special command: ties up stitches -- used to secure yarn end at end of project.</td>
+</tr>
+<tr>
+<td><code>start_at</code></td>
+<td> Special command: creates a hidden stitch used to mark the starting point of a round or row. This marks starting with a new piece of yarn at a specified location in the project. Needs to be followed by a location, e.g. <code>start_at@[-1,0]</code></td>
+</tr>
+<tr>
+<td><code>start_anew</code></td>
+<td>Special command: creates a hidden stitch indicating the beginning of a new section or pattern of a disjoint piece.</td>
+</tr>
+<tr>
+<td><code>start_a_new_chain</code></td>
+<td>Special command: Begins a new chain of stitches, often used to start a new row or section of a disjoint piece.</td>
+</tr>
+<tr>
+<td><code>turn</code></td>
+<td>Special command: <code>turn</code> for turning the work at the end of a row or round. (See "Direction of sequential stitch attachment." for more details.)</td>
+</tr>
+<tr>
+<td><code>...</code></td>
+<td>Special command: Ellipsis (<code>...</code>) in the beginning of a new line indicates the previous line is continued on the current line.</td>
+</tr>
+<tr>
+<td><code>&lt;</code><br/><code>&gt;</code></td>
+<td>Special commands: These indicate a repetition starts/ends at that symbol. Example: 3*[sc,&lt;,ch,&gt;,dc] translates to [ch,dc],[sc,ch,dc],[sc,ch]</td>
+</tr>
+<tr>
+<td><code>.</code><br/><code>@</code><br/><code>~^!</code></td>
+<td>Special commands: Indicate a labeled stitch, attachment to a label/stitch, and modifiers, respectively. Example: sc.A,dc@A (see "Attachment to a label" in the Manual) </td>
+</tr>
+<tr>
+<td><code>#comment</code><br/><code>\comment\</code></td>
+<td>Special commands: Allows inserting comments. The pound symbol indicates a comment that extends to the end of the line. Comments enclosed between backslashes can span multiple lines. </td>
+</tr>
+<tr>
+<td><code>COLOR:</code><br/><code>BACKGROUND:</code>
+<td>Special commands: COLOR indicates the color of the yarn that follows, while BACKGROUND - the color of the background of the 3D rendering. See the Manual for allowed colors.</td>
+</td></tr>
+<tr>
+<td><code>TRANSFORM_OBJECT:</code>
+<td>Special commands: Automatically generated by the "Object Transform" tool, which interactively allows the user to move and rotate objects. </td>
+</td></tr><tr><td><code>INDEX_ARRAY:</code></td><td>Special command: defines an index array that supplies counter values for an index variable used in stitch labels (for example <code>A[k]</code>). Typically generated by <em>Tools → Find Project Periphery</em> when “Save counter values as INDEX_ARRAY” is enabled. See the <strong>INDEX_ARRAY Command</strong> section in this manual.</td></tr>
+<tr><td><code>SORT_LABEL:</code></td><td>Special command: defines an explicit processing order (permutation) for stitches that share the same label <em>without</em> adding a counter (e.g. <code>A</code>, <code>A[]</code>, <code>A[2,3]</code>). Recommended for periphery labeling when the periphery is a single run of adjacent stitches not necessarily sequentially crocheted (if not, an error is generated). See <a href="#labeled-groups-with-sort_label"><strong>Labeled groups with SORT_LABEL</strong></a> in the Labels section.</td></tr>
+<tr>
+<td><code>DOT:</code>
+<td>Special commands: Any extra arguments to the physics engine. Some options that can be set here are: iterations, start, separate, inflate, learning_rate. Also, new nodes can be created and placed at particular 3D coordinates; and new connections between nodes can be specified here. See the DOT Command section in the Manual. </td>
+</td></tr>
+</table>
+<p>Stitches are defined using common names <code>ch</code> for a chain,
         <code>sc</code> for single crochet,
         <code>ss</code> for slip-stitch, <code>dc</code> for double crochet,
         etc. CrochetPARADE comes with built in set of some common stitches (see table above).
         Stitches can also be defined using methods described further below in
         this chapter.</p>
-    <p>Two special "stitches" are: <code>sk</code> for skip a stitch, and <code>turn</code> for turning the work. (See
+<p>Two special "stitches" are: <code>sk</code> for skip a stitch, and <code>turn</code> for turning the work. (See
         "Direction of sequential stitch attachment." for more details.) Note that, <code>turn</code> can only
         appear as a last "stitch" in a row, and should be followed by a new line:
         <pre><code>10ch,turn
 sk,ch,9sc,turn
 sk,ch,9sc
 </code></pre>
-    </p>
-    <p>CrochetPARADE can handle automatically stitch increases and decreases with
+</p>
+<p>CrochetPARADE can handle automatically stitch increases and decreases with
         <code>stitch_nameNinc</code> and <code>stitch_nameNtog</code>, respectively. Here <code>N</code>
         is an integer denoting the number of stitches of the increase or decrease. For example: <code>sc2inc</code>
         corresponds to two single-crochet stitches worked into the same stitch; and <code>sc2tog</code> implies
         that one is doing a decrease by combining two single-crochet stitches.
     </p>
-    <p>Stitching in the front and back loops is done by adding 'fl' or 'bl' at the end of a stitch name, such as
+<p>Stitching in the front and back loops is done by adding 'fl' or 'bl' at the end of a stitch name, such as
         <code>scbl</code> (single crochet in the back loop), <code>dcfl</code> (double crochet in the front loop), etc. By default,
         only the basic stitches (ss, sc, hdc, dc, tr, dtr,trtr) are supported with the 'bl' and 'fl' options. They are rendered in 3D by slightly shifting them behind and in front of the project for 'bl' and 'fl', respectively.
         If you want to add the 'fl/bl' option to other stitches, then
         one should use a raw stitch definition (see "Raw stitch definitions and grammar"). When exporting a crochet chart to SVG, 'fl' and 'bl' stitches are rendered using their standard symbols.
     </p>
-    <p>Front post and back post stitches are named with 'fp' and 'bp' preceding the stitch name. So, 'fpdc' is a front post double crochet. The difference in rendering the stitches is only in their default length -- a 'fpdc' is slightly shorter than 'dc' as the stitch starts lower as it is attached to the post, not the top V of a stitch. When exporting a crochet chart to SVG, 'fp' and 'bp' stitches are rendered using their standard symbols.</p>
-    <p>Stitches can be repeated by multiplying them with an integer, say
+<p>Front post and back post stitches are named with 'fp' and 'bp' preceding the stitch name. So, 'fpdc' is a front post double crochet. The difference in rendering the stitches is only in their default length -- a 'fpdc' is slightly shorter than 'dc' as the stitch starts lower as it is attached to the post, not the top V of a stitch. When exporting a crochet chart to SVG, 'fp' and 'bp' stitches are rendered using their standard symbols.</p>
+<p>Stitches can be repeated by multiplying them with an integer, say
         <code>10*sc</code> or <code>10 sc</code> or <code>10sc</code> would
         imply 10 single crochet stitches.</p>
-    <p>Each new line is a new row/round. Rows with stitches are enumerated
+<p>Each new line is a new row/round. Rows with stitches are enumerated
         in the editor. The enumeration will be inaccurate if you are repeating
         rows by multiplying whole rows with an integer. One can repeat rows by
         adding an extra new line in the end, encompassing the whole expression
         in parenthesis or brackets, and then multiplying by a number. For
         example</p>
-    <pre><code>[10sc,turn
+<pre><code>[10sc,turn
 ]*3</code></pre>
-    <p>is parsed to:</p>
-    <pre><code>10sc,turn
+<p>is parsed to:</p>
+<pre><code>10sc,turn
 10sc,turn
 10sc,turn</code></pre>
-    <p>The last iteration can be ended prematurely by adding a
+<p>The last iteration can be ended prematurely by adding a
         <code>&gt;</code> as in: <code>[2sc,&gt;,dc]*3</code> is parsed to
         <code>2sc,dc,2sc,dc,2sc</code>. Similarly, the first iteration can start
         at a location marked with <code>&lt;</code>. Thus,
@@ -674,20 +785,20 @@ sk,ch,9sc
         <code>dc,2sc,dc,2sc,dc</code>. Note that <code>&gt;</code> and
         <code>&lt;</code> should be at the top level (meaning not nested within
         other parenthesis) of the iterated expression.</p>
-    <p>Rows/rounds that are too long can be wrapped by starting a new line
+<p>Rows/rounds that are too long can be wrapped by starting a new line
         with <code>...</code>. So:</p>
-    <pre><code>3dc
+<pre><code>3dc
 ... sc,turn</code></pre>
-    <p>will be evaluated to <code>3dc,sc,turn</code> as part of the same
+<p>will be evaluated to <code>3dc,sc,turn</code> as part of the same
         row/round.</p>
-    <p>Comments can be entered after <code>#</code> and end at a new line.
+<p>Comments can be entered after <code>#</code> and end at a new line.
         Multiline (and single-word/single-line) comments can be entered between
         two back slashes <code>\</code> . See the examples below.</p>
-    <p>One can change the color of the “yarn” by using
+<p>One can change the color of the “yarn” by using
         <code>COLOR: color of stitches to follow</code>. For more information,
         see the dedicated chapter on color. The background color can be changed
         by setting <code>BACKGROUND: color of background</code>, appearing alone on a new line.</p>
-    <pre><code>COLOR: rgb(126,8,80)
+<pre><code>COLOR: rgb(126,8,80)
 DOT: any extra arguments to the physics engine
 # This is a comment. # This is also a comment
 \this is a comment\ dc,dc, \this is also a comment\
@@ -698,21 +809,23 @@ dc
  \
 
 BACKGROUND: white</code></pre>
-    <h3 id="color">Color</h3>
-    <p>Setting the yarn or background color is done by writing:</p>
-    <pre><code>COLOR: color_name or hex color or rgb(r,g,b)</code></pre>
-    <pre><code>BACKGROUND: color_name or hex color or rgb(r,g,b)</code></pre>
-    <p>The supported colors are any of the ones listed <a href="https://en.wikipedia.org/wiki/X11_color_names#Color_name_chart">here</a>.
+<h3 id="color">Color</h3>
+<p>Setting the yarn or background color is done by writing:</p>
+<pre><code>COLOR: color_name or hex color or rgb(r,g,b)</code></pre>
+<pre><code>BACKGROUND: color_name or hex color or rgb(r,g,b)</code></pre>
+<p>The supported colors are any of the ones listed <a href="https://en.wikipedia.org/wiki/X11_color_names#Color_name_chart">here</a>.
         Hexadecimal color code is also supported. For more information, see the
         <a href="https://threejs.org/docs/#api/en/math/Color">three.js
             documentation</a>.</p>
-    <h3 id="dot-command">DOT Command</h3>
-    <p>One can add additional commands to the dot file by
+<h3 id="index_array-command">INDEX_ARRAY Command</h3><p><code>INDEX_ARRAY:</code> is a special command that defines an explicit list of integers for an index variable/a counter. This allows CrochetPARADE to assign index values to labels independently of crochet order. It is especially useful for edge/periphery labeling, where the boundary/labelling order is different from the stitch-creation order.</p><p><strong>Syntax:</strong> one definition per line:</p><pre><code>INDEX_ARRAY: k={4,3,1,2,0}</code></pre><p><strong>Meaning:</strong> whenever CrochetPARADE evaluates the index variable <code>k</code> inside label brackets (e.g. <code>sc.A[k]</code>), it will consume the next value from the array. If the array runs out of values, CrochetPARADE will report an error.</p><p><strong>Why this matters:</strong> you can keep many stitches labeled with the same symbolic form (for example <code>A[k]</code>) while storing the actual sequence of index values separately in <code>INDEX_ARRAY:</code>. This is important if you expand instructions witn <em>Tools → Expand instructions</em> to label individual stitches and then later want to run <em>Tools → Simplify instructions</em> again: the simplification pipeline can remain efficient because the periphery indexing is not “baked into” the stitch text.</p><p><strong>How to create it:</strong> the easiest way is to use <em>Tools → Find Project Periphery</em> and enable “Save counter values as INDEX_ARRAY” when applying labels to the periphery stitches. Advanced users may also write or edit <code>INDEX_ARRAY:</code> lines manually. For plain labels (labels without counters), you can store an ordering with <code>SORT_LABEL:</code> (below) without adding a counter.</p><p>When using <code>INDEX_ARRAY:</code>, the index can be used in labels in plain form (e.g. <code>A[k]</code>) or with an increment operater, e.g. <code>A[k++]</code> which means consume a value from the array, then skip the next value in the array (for future evaluations of <code>k</code>), or <code>A[++k]</code> (skip a value in the array, then consume the next one). Other arithmetic is not allowed. </p>
+</p><h3 id="sort_label-command">SORT_LABEL</h3>
+<p><code>SORT_LABEL:</code> is described in the <a href="#labeled-groups-with-sort_label">Labeled groups with SORT_LABEL</a> subsection in the Labels section. It lets you specify an explicit processing order for stitches that share a label without introducing a counter. Works only for a single run of adjacent stitches since they would share the same label!</p><h3 id="dot-command">DOT Command</h3>
+<p>One can add additional commands to the dot file by
         adding those after a <code>DOT:</code> at the beginning of the line:</p>
-    <pre><code>    # a (hidden) node:
-    DOT: &quot;3,27B&quot;
+<pre><code>    # a (hidden) node:
+    DOT: "3,27B"
     # creating a new connection outside of a stitch of length 9.0:
-    DOT: &quot;1,54&quot; -- &quot;1,44&quot; 9.0
+    DOT: "1,54" -- "1,44" 9.0
     # iterations (default: 500) until the code terminates the computation
     DOT: iterations=1000
     # seed for the random number generator (default: 0):
@@ -752,8 +865,7 @@ BACKGROUND: white</code></pre>
     # Default value: 0.1. 
     DOT: viscous_timestep=0.1 
 </code></pre>
-
-    <p>Locations of nodes as well as new hidden nodes outside of stitches can be specified as {x,y,z} (in units of a chain length) right after the node name. Below is an example</p>
+<p>Locations of nodes as well as new hidden nodes outside of stitches can be specified as {x,y,z} (in units of a chain length) right after the node name. Below is an example</p>
 <code>ring
 sc5inc
 2sc2inc,sc,2sc2inc
@@ -768,12 +880,11 @@ DOT: "new hidden node" -- "3,4|11" 0.5
 DOT: "new hidden node" -- "2,4|4" 0.5
 DOT: iterations=4000
     </code>
-    <p>In the code above, the stitches "1,0|1" and "4,3|19", which are present in the original pattern (one can see them by running the instructions without the DOT command), are placed
+<p>In the code above, the stitches "1,0|1" and "4,3|19", which are present in the original pattern (one can see them by running the instructions without the DOT command), are placed
         at particular 3D coordinates {0,0,0} and (1,0,0), respectively. Then a new hidden node is created, and the 3 stitches "0,0|0", "3,4|11" and "2,4|4" are placed equidistant from it (distance of 0.5 chain lengths apart). One can see all
 stitch/node names, locations as well as connections by selecting "Save file containing nodes and edges" from the Save/Export menu. The nodes and connections added by hand after the DOT command are appended at the end of the file.
     </p>
-
-    <h3 id="transform-object">TRANSFORM_OBJECT: command</h3>
+<h3 id="transform-object">TRANSFORM_OBJECT: command</h3>
 <p>
     Objects can be translated by {tx,ty,tz} units and rotated by the Euler angles {rx,ry,rz} (in radians) by specifying 
     <code>TRANSFORM_OBJECT:object_number,tx,ty,tz,rx,ry,rz</code>
@@ -781,11 +892,11 @@ stitch/node names, locations as well as connections by selecting "Save file cont
     In this context, an object is a separately crocheted pattern, not connected to other patterns. See the Amigurumi example.
 
 </p>
-    <h2 id="specifying-attachment-points">Specifying attachment points</h2>
-    <p>Stitches on a given row/round are automatically attached one-by-one
+<h2 id="specifying-attachment-points">Specifying attachment points</h2>
+<p>Stitches on a given row/round are automatically attached one-by-one
         to consecutive stitches in the previous row/round. If the work is turned
         at the end of a row, then that is taken into account automatically.</p>
-    <p>However, in crocheting often one needs to attach (“work”) new
+<p>However, in crocheting often one needs to attach (“work”) new
         stitches to non-consecutive previous stitches. To allow that, the code
         allows specifying attachment points after the <code>@</code> symbol,
         following a stitch in a pattern, e.g. <code>3sc,dc@[-1,3],dc</code>,
@@ -793,14 +904,43 @@ stitch/node names, locations as well as connections by selecting "Save file cont
         moved to the 4 stitch (stitch and row counting start from zero) of the
         previous row/round (specified with a negative index: <code>-1</code>).
         The next <code>dc</code> is worked in the stitch after that.</p>
-    <p>There are different ways of specifying stitch attachment points:</p>
-    <h3 id="direct-attachment-210">Direct Attachment: @[2,10]</h3>
-    <p>Direct attachment to a particular stitch coordinate specified as a
+        <div style="border: 1px solid #000; padding: 4px 8px; display: inline-block;">
+
+        <p><strong>Important:</strong> The first explicitly specified attachment point takes precedence. For example, in <code>(sc,dc@B,(tr@C)@D)@A</code>, sc attaches to A, dc to B, and tr to C. That is true even if multiple attachment heads are specified. For example in <code>(sc,dc@B,(tr@1C)@D)@A,hdc</code>, the tr attaches to C and that attachment updates only the @1 attachment head. Therefore, the hdc attaches to the stitch after B (the last update to attachment head 0, specified with @) in the default order of attachment. Labels such as @A, attachmend heads such as @1 and order of attachment are all defined in what follows.</p>
+        </div>
+<p>There are different ways of specifying stitch attachment points:</p>
+<h3 id="a-new-row">Beginning a new row/round: enter a new line (no explicit attachment point)</h3>
+<p>The very first attachment point is initialized at the first stitch by default. So, in <code>5ch,sc,dc</code>, the sc attaches to the first chain and the dc to the second chain (counting from 1).
+	</p>
+<p>
+	After a new line is entered in the text, the attachment sequence resets automatically, and the next stitch attaches to the first (or rather, 0th) stitch of the previous line if there is no turn on that previous line; or that next stitch attaches to the last stitch of that previous line if there is a turn command at the end of the previous line.
+Here is a contrived example:</p>
+<code>
+8ch,ch.A,ch
+9sc,turn
+sk,ss,8sc,ch,turn
+sk,hdc,sc@A,sc,dc
+2sk,2ch,tr
+</code>
+<p>
+Line 2: The first sc on the second line (counting from 1) attaches to the first chain of the first line. Then the next stitches attach in sequence along Line 1.
+</p>
+<p>
+Line 3: The ss on the third line attaches to the 8-th sc of the second line. The reason is attachment starts from the last stitch (because of the turn at the end of Line 2), but the last sc is skipped by the sk at the beginning of Line 3. The next stitches attach in reverse sequence to the stitches in Line 2 because of the turn command at the end of Line 2 (see the section Direction of sequential stitch attachment). In this example, the last of the 8sc steps past the beginning of Line 2 and therefore attaches to the last chain of Line 1, which is the previous stitch worked (i.e. next attachmetn point counting in reverse order).
+</p>
+<p>
+Line 4: There is a turn at the end of Line 3, so the attachment point resets to the last stitch of Line 3 after the new line. The hdc attaches to the last sc of the previous line (after the last chain has been skipped by sk). Then the sc@A attaches to the chain in Line 1 marked with ch.A (see the section on Simple labels below). The next sc on Line 4 attaches to the last chain of Line 1 (the direction of sequential attachment is forward as there are an even number of turns between Line 1 and Line 4). As we ran out of stitches on Line 1, the dc attaches to the first sc on Line 2 as that is the next stitch that was worked in the project (even though it was on the next row/round/line).
+</p>
+<p>
+Line 5: The attachment point resets because of the new line. There is no turn at the end of Line 4, so the next attachment point is the first stitch of Line 4. The 2sk means that the hdc and the sc@A are skipped in Line 4. Therefore, the tr attaches to the second sc (right before dc) on Line 4. The chains do not have attachment points so they do not increment the attachment location.
+</p>
+<h3 id="direct-attachment-210">Direct Attachment: @[2,10]</h3>
+<p>Direct attachment to a particular stitch coordinate specified as a
         pair of integers, e.g. <code>@[2,10]</code>. The first integer specifies
         the row/round number. The second integer specifies the stitch in that
         row. Counting of stitches/rows/rounds starts from 0, so in the example
         above, the attachment is at the 11-th stitch of the 3-rd row.</p>
-    <p>Negatives numbers imply counting from the end, starting with
+<p>Negatives numbers imply counting from the end, starting with
         <code>-1</code> meaning the last stitch/row/round; <code>-2</code> the
         last but one stitch/row/round, etc. Counting of rows/rounds starts at
         the beginning of the project. Counting of stitches starts at the first
@@ -808,28 +948,28 @@ stitch/node names, locations as well as connections by selecting "Save file cont
         stitch row and stitch position can be specified using the <code>%</code>
         symbol, so <code>@[%,%-3]</code> implies the current row, three stitches
         back before the currently worked stitch.</p>
-    <h3 id="attachment-with-stitch-type-counting-sc-13">Attachment with
+<h3 id="attachment-with-stitch-type-counting-sc-13">Attachment with
         stitch type counting @[sc:-1,3]</h3>
-    <p>Attachments with a stitch type before a colon specify that the
+<p>Attachments with a stitch type before a colon specify that the
         counting of stitches in a row is over stitches of that type. For
         example, <code>@[sc:-1,3]</code> specifies that the current stitch is
         worked in the 4th single crochet (sc) stitch of the previous row, as
         opposed to the 4th stitch in general. The direction of counting is <b>not</b> necessarily in the direction
         in which the stitches were written (compare with above), but in the crocheting direction.
         See the section "Direction of sequential stitch attachment".</p>
-    <h3 id="attachment-with-relative-position-1">Attachment with Relative
+<h3 id="attachment-with-relative-position-1">Attachment with Relative
         Position: @[@+1]</h3>
-    <p>The <strong>last</strong> attachment point is stored in the
+<p>The <strong>last</strong> attachment point is stored in the
         <code>@</code> symbol, which can be referenced in an attachment point.
         So, for example <code>dc,dc@[@]</code> implies that the second
         <code>dc</code> stitch should be worked in the same stitch as the
         previous <code>dc</code> stitch.</p>
-    <p>One can go up and down the row by adding integers to <code>@</code>.
+<p>One can go up and down the row by adding integers to <code>@</code>.
         So, <code>@[@+2]</code> means attach two stitches after the
         <strong>last</strong> attachment point. The direction is in the
         direction in which we are working (see the section "Direction of sequential stitch attachment")
         , so turns are taken into account.</p>
-    <p>One can also combine relative position identifier with a stitch type
+<p>One can also combine relative position identifier with a stitch type
         identifier. For instance, <code>@[sc:@+1]</code> means attach to the
         next <code>sc</code> stitch after the last attachment point. Note that
         <code>@[sc:@]</code> and <code>@[sc:@+1]</code> imply the same
@@ -838,12 +978,12 @@ stitch/node names, locations as well as connections by selecting "Save file cont
         <code>sc</code> stitch, then <code>@[sc:@]</code> refers to attaching to
         that same stitch, whereas <code>@[sc:@+1]</code> implies attaching to
         the next <code>sc</code> in the row.</p>
-    <p>Note that when multiple stitches are labeled this way as a group, e.g. <code>(sc,dc)@[@+1]</code> the label is first
+<p>Note that when multiple stitches are labeled this way as a group, e.g. <code>(sc,dc)@[@+1]</code> the label is first
         distributed before being evaluated. Thus, that example translates to <code>sc@[@+1],dc@[@+1]</code> which implies that the sc and dc are
         attached to two consecutive stitches, and not to one and the same stitch. </p>
-    <h3 id="attachment-to-a-label">Attachment to a label</h3>
-    <h4 id="simple-labels">Simple labels</h4>
-    <p>In crocheting, one often uses stitch markers to keep track of
+<h3 id="attachment-to-a-label">Attachment to a label</h3>
+<h4 id="simple-labels">Simple labels</h4>
+<p>In crocheting, one often uses stitch markers to keep track of
         particular stitch positions. Similarly, any stitch here can be labeled
         with a label following a <code>.</code>. For example, in
         <code>sc,sc.A,2ch</code> the second <code>sc</code> is labeled with a
@@ -851,17 +991,17 @@ stitch/node names, locations as well as connections by selecting "Save file cont
         distributive property. So, <code>(3ch.A,sc).B</code> implies that all
         chains have both labels <code>A</code> and <code>B</code>, whereas the
         <code>sc</code> stitch carries label <code>B</code> only.</p>
-    <p>One can then work a stitch in that label by attaching to
+<p>One can then work a stitch in that label by attaching to
         <code>A</code> by writing <code>sc,sc.A,2ch,ss@A</code>. When multiple
         similar labels need to be used, one can use labels that differ by
         internal labels that are integers, such as
         <code>sc,sc.A[0],sc,sc,sc.A[1]</code>. Here <code>A[0]</code> and
         <code>A[1]</code> are treated as different labels.</p>
-        <p>Note that a stitch can attach to one label only, inheriting the syntaxically closest attachment. For example, in <code>(sc@A)@B</code> the sc stitch attaches to <code>A</code>.
+<p>As mentioned earlier, a stitch can attach to one label only, inheriting the syntactically closest attachment. For example, in <code>(sc@A)@B</code> the sc stitch attaches to <code>A</code>.
              Attachment points also distribute. Thus, <code>(sc,dc,sc@A,sc)@B</code> is equivalent to <code>sc@B,dc@B,sc@A,sc@B</code>.  </p>
-    <h4 id="labeled-groups-of-stitches">Labeled groups of stitches</h4>
-    <h5 id="basics-1">Basics</h5>
-    <p>When multiple stitches carry the same label, we will call that a
+<h4 id="labeled-groups-of-stitches">Labeled groups of stitches</h4>
+<h5 id="basics-1">Basics</h5>
+<p>When multiple stitches carry the same label, we will call that a
         labeled group. One can attach to the whole group, or particular stitches
         in the group. For example <code>5ch.A</code>, the label <code>A</code>
         refers to the whole 5 chain group. One can envision attaching to the
@@ -872,26 +1012,41 @@ stitch/node names, locations as well as connections by selecting "Save file cont
         stitches in the labeled group, then hidden nodes will be created in
         between and the stitches will attach to those. The distribution of hidden nodes is uniform along the length of the labeled group with the assumption that all stitches
         in a labeled group have the same width (stitch height can vary).</p>
-    <h5 id="attaching-to-the-the-post-of-a-stitch-.a-.a1">Attaching to the
+<div style="border: 1px solid #000; padding: 4px 8px; display: inline-block;">
+
+<p><strong>Important:</strong> A labeled group (multiple stitches with the same label, e.g. <code>.A</code>) must be a run of adjacent stitches. It is an error to use the same label on non-adjacent/disjoint stitches. Use different labels in the latter case, or use indexed labels (labels with counters) to mark distinct groups, e.g. <code>.A[0]</code>, <code>.A[1]</code> (or <code>.A[k++]</code> with <code>$k=0$</code> and increments). Adjacency is checked on the stitch graph. “Adjacent” includes direct top–top connections within the same stitch, and direct bottom-top attachments; connections that pass through hidden nodes do not count. If you use <code>SORT_LABEL:</code>, this adjacency check is applied after sorting.</p>
+
+<p><strong>Important:</strong> After sorting, the stitches for that label must still be adjacent in the stitch graph. If they are not adjacent, the parser throws <code>Cannot use same labels over non-adjacent stitches</code>. “Adjacent” includes direct top–top connections within the same stitch, and direct bottom-top attachment. Connections that go through hidden nodes do not count as adjacent and will trigger an error.</p>
+<p><strong>Important:</strong> Stitches that attach to a labeled group must attach to stitches that are already defined (= already crocheted/worked) at that point in the instructions. In 
+practice, this means: attach into previous stitches/rows, not into stitches that appear later in the instructions text.</p>
+<p>Just for fun, here is an extremely contrived example which at first glance seems to violate both the adjacency and the future rules above and yet it does not:
+<code>
+9ch,(ch.B).A,ch,dc@A,tr.A@B,2hdc@A
+</code>
+Explanation: The labeled ch and the tr share the same label A and are adjacent (tr attaches to B, which is a label carried by ch; hence the two stitches share a bottom-top node connection). The labeled
+group A has two stitches: 1ch, 1tr. There are three stitches worked into A: 1dc, 2hdc. The code then figures out that the dc attaches to the first stitch in the labeled group (the chain), which is not a future stitch relative to the dc; the last hdc attaches to the tr (which is not a future stitch relative to the hdc's); and the first hdc attaches into an interpolated hidden stitch lying between the ch and the tr.
+	</p>
+</div>
+<h5 id="attaching-to-the-the-post-of-a-stitch-.a-.a1">Attaching to the
         the post of a stitch: .A^ .A^1</h5>
-    <p>To attach to the post of a stitch, follow the definition of the label
+<p>To attach to the post of a stitch, follow the definition of the label
         with a caret, <code>^</code>. An integer can follow <code>^</code> specifying
         which post of the stitch to attach to if more than one. For example:</p>
-    <pre><code>8*ch,turn
+<pre><code>8*ch,turn
 7*sc,dc.B^,turn
 5ch,4*sc@B</code></pre>
-    <p>Here is two example with two different posts as attachment
+<p>Here is two example with two different posts as attachment
         points:</p>
-    <pre><code>8ch,turn
+<pre><code>8ch,turn
 6sc,dc2tog.B^0,turn
 5ch,4*sc@B</code></pre>
-    <p>which can be compared with:</p>
-    <pre><code>8ch,turn
+<p>which can be compared with:</p>
+<pre><code>8ch,turn
 6sc,dc2tog.B^1,turn
 5ch,4*sc@B</code></pre>
-    <h5 id="skipping-border-stitches-of-a-group-.a-.a0-.a1">Skipping border
+<h5 id="skipping-border-stitches-of-a-group-.a-.a0-.a1">Skipping border
         stitches of a group: .A! .A!0 .A!1</h5>
-    <p>If one wants to attach a set of stitches to a stitch group, then the
+<p>If one wants to attach a set of stitches to a stitch group, then the
         default is that the two border stitches (first and last) of the group
         are valid attachment points of the set. One may however, want to skip
         those, and instead attach in the spaces and stitches in between those
@@ -899,30 +1054,30 @@ stitch/node names, locations as well as connections by selecting "Save file cont
         <code>!</code> if one wants to skip both bordering stitches,
         <code>!0</code> if one wants to skip the beginning stitch, and
         <code>!1</code> if one wants to skip the last stitch.</p>
-    <p>Here is an example:</p>
-    <pre><code>10ch,turn
+<p>Here is an example:</p>
+<pre><code>10ch,turn
 sk,9sc,turn
 ch,2sc,4ch.A!,4sk,3sc,turn
 4ch,5sc@A,4ch,sc</code></pre>
-    <p>The 5 <code>sc</code> stitches will attach in the 4-chain space
+<p>The 5 <code>sc</code> stitches will attach in the 4-chain space
         labeled with <code>A</code>, avoiding the first and last
         <code>ch</code>. Render the same instruction set with
         <code>4ch.A</code>, <code>4ch.A!0</code>, <code>4ch.A!1</code> to see
         the difference. Note that the reference <code>@A</code> should not
         contain the <code>!</code> instruction.</p>
-    <p>One can combine the <code>!</code> modifier with the <code>^</code>
+<p>One can combine the <code>!</code> modifier with the <code>^</code>
         modifier:</p>
-    <pre><code>8*ch,turn
+<pre><code>8*ch,turn
 7*sc,dc.B^!,turn
 5ch,4*sc@B</code></pre>
-    <p>Here is a topology that is a bit more involved:</p>
-    <pre><code>9ch,turn
+<p>Here is a topology that is a bit more involved:</p>
+<pre><code>9ch,turn
 8sc,dc.A^,turn
 4ch,[sc,sc.B^!,sc]@A
 4ch,3sc@B</code></pre>
-    <h5 id="adding-edge-stitches-to-a-group-.a-.a0-.a1-.a-.a0">Adding edge
+<h5 id="adding-edge-stitches-to-a-group-.a-.a0-.a1-.a-.a0">Adding edge
         stitches to a group: .A+ .A+0 .A+1 .A+! .A+!0</h5>
-    <p>Let’s say, you’d like to attach stitches in a chain space. If you
+<p>Let’s say, you’d like to attach stitches in a chain space. If you
         want the stitches to fill in the space evenly up to the stitches
         bordering the chain space, you would have to add the stitches before
         and/or after the chain space to the labeled chain-space group. That can
@@ -930,39 +1085,39 @@ ch,2sc,4ch.A!,4sk,3sc,turn
         the chain-space label definition to add both bordering stitches, or
         <code>+0</code>/<code>+1</code> to add the previous/next
         borderingstitch.</p>
-    <p>Compare the following:</p>
-    <pre><code>8ch,turn
+<p>Compare the following:</p>
+<pre><code>8ch,turn
 2sc,3ch.C+,2sc,turn
 3ch,5sc@C,sc@[-1,0]</code></pre>
-    <p>with</p>
-    <pre><code>8ch,turn
+<p>with</p>
+<pre><code>8ch,turn
 2sc,3ch.C+!,2sc,turn 
 3ch,5sc@C,sc@[-1,0]</code></pre>
-    <p>and with</p>
-    <pre><code>8ch,turn
+<p>and with</p>
+<pre><code>8ch,turn
 2sc,3ch.C,2sc,turn
 3ch,5sc@C,sc@[-1,0]</code></pre>
-    <h5 id="reversing-the-order-of-attaching-a-set-of-stitches-to-a-group-of-stitches-a">Reversing
+<h5 id="reversing-the-order-of-attaching-a-set-of-stitches-to-a-group-of-stitches-a">Reversing
         the order of attaching a set of stitches to a group of stitches: <span class="citation" data-cites="A">@A</span>~</h5>
-    <p>When attaching a set of stitches to a group of stitches, the code is
+<p>When attaching a set of stitches to a group of stitches, the code is
         trying to do its best, to order the attachments in a way that is least
         disruptive (i.e. twisting) to the project, but sometimes it fails. For
         example, render the following:</p>
-    <pre><code>10ch,turn
+<pre><code>10ch,turn
 sk,8sc,sc.A!,turn
 4ch.A!,sk,9tr,turn
 1ch,sk,8sc,7sc@A</code></pre>
-    <p>If you want the 7 <code>sc</code> stitches attaching to the 4-chain
+<p>If you want the 7 <code>sc</code> stitches attaching to the 4-chain
         group be attached in reverse order, then append a tilde, <code>~</code>, to the
         end of the attachment label, as in:</p>
-    <pre><code>10ch,turn
+<pre><code>10ch,turn
 sk,8sc,sc.A!,turn
 4ch.A!,sk,9tr,turn
 1ch,sk,8sc,7sc@A~</code></pre>
-    <p>Compare with the result from running the previous set of
+<p>Compare with the result from running the previous set of
         instructions.</p>
-    <p>Note that the syntax of CrochetPARADE distributes labels over sets of stitches. So, <code>(3sc).A~</code> is the same as <code>sc.A~,sc.A~,sc.A~</code>. Thus, in the example below, the two sets of <code>(3sc).A~</code> are treated as one set of <code>(6sc).A~</code>. So, the code reverses all 6 stitches and then attaches them to the group A.</p>
-    <pre><code>9ch,turn
+<p>Note that the syntax of CrochetPARADE distributes labels over sets of stitches. So, <code>(3sc).A~</code> is the same as <code>sc.A~,sc.A~,sc.A~</code>. Thus, in the example below, the two sets of <code>(3sc).A~</code> are treated as one set of <code>(6sc).A~</code>. So, the code reverses all 6 stitches and then attaches them to the group A.</p>
+<pre><code>9ch,turn
 sk,(ch,5sc).A,3sc,turn
 sk,2sc,3sc@A~,3sc@A~
 </code></pre>
@@ -971,36 +1126,36 @@ sk,2sc,3sc@A~,3sc@A~
 sk,(ch,5sc).A,3sc,turn
 sk,2sc,6sc@A~
 </code></pre>
-    <p>If one wants to attach the first <code>3sc</code> in reverse and only then reverse the next <code>3sc</code> and attach those in turn, one must use stitch sets (see "Multiple
+<p>If one wants to attach the first <code>3sc</code> in reverse and only then reverse the next <code>3sc</code> and attach those in turn, one must use stitch sets (see "Multiple
         stitch sets attaching to a labeled group") as:</p>
-    <pre><code>9ch,turn
+<pre><code>9ch,turn
 sk,(ch,5sc).A[],3sc,turn
 sk,2sc,3sc@A[;0]~,3sc@A[;1]~
 </code></pre>
-    <p>If however, one mixes normal (forwards) and reverse (backwards) attachment as in:</p>
-    <pre><code>9ch,turn
+<p>If however, one mixes normal (forwards) and reverse (backwards) attachment as in:</p>
+<pre><code>9ch,turn
 sk,(ch,5sc).A,3sc,turn
 sk,2sc,3sc@A~,3sc@A
 </code></pre>
-    <p>Then the first <code>3sc</code> and the second <code>3sc</code> are now treated as separate sets. The code attaches the first 3 in reverse order, and then the next 3 in normal order. In other words, the above example is equivalent to:</p>
-    <pre><code>9ch,turn
+<p>Then the first <code>3sc</code> and the second <code>3sc</code> are now treated as separate sets. The code attaches the first 3 in reverse order, and then the next 3 in normal order. In other words, the above example is equivalent to:</p>
+<pre><code>9ch,turn
 sk,(ch,5sc).A[],3sc,turn
 sk,2sc,3sc@A[;0]~,3sc@A[;1]
 </code></pre>
-    <p>and similarly for any combination of forwards and backwards attachments. Therefore, the following two examples are equivalent:</p>
-    <pre><code>9ch,turn
+<p>and similarly for any combination of forwards and backwards attachments. Therefore, the following two examples are equivalent:</p>
+<pre><code>9ch,turn
 sk,(ch,5sc).A,3sc,turn
 sk,2sc,2sc@A~,2sc@A,2sc@A~
 </code></pre>
-    <p>is the same as</p>
-    <pre><code>9ch,turn
+<p>is the same as</p>
+<pre><code>9ch,turn
 sk,(ch,5sc).A[],3sc,turn
 sk,2sc,2sc@A[;0]~,2sc@A[;1],2sc@A[;2]~
 </code></pre>
-    <p>See the section "Direction of sequential stitch attachment" for the way the code chooses the default direction of attaching stitches.</p>
-    <h5 id="multiple-stitch-sets-attaching-to-a-labeled-group-a21">Multiple
+<p>See the section "Direction of sequential stitch attachment" for the way the code chooses the default direction of attaching stitches.</p>
+<h5 id="multiple-stitch-sets-attaching-to-a-labeled-group-a21">Multiple
         stitch sets attaching to a labeled group: <span class="citation" data-cites="A">@A</span>[2;1]</h5>
-    <p>If one needs to attach multiple sets of stitches into a labeled
+<p>If one needs to attach multiple sets of stitches into a labeled
         stitch group, then the order in which those sets are attached can be
         specified with a semi-colon as follows:
         <code>6dc.A[12],5ch,3sc@A[12;1],3sc@A[12;0]</code>. In this example, the
@@ -1012,28 +1167,41 @@ sk,2sc,2sc@A[;0]~,2sc@A[;1],2sc@A[;2]~
         as written, so in <code>6dc.A[12],5ch,3sc@A[12],3sc@A[12]</code>, the 6
         <code>sc</code> stitches attach consecutively in the 6 <code>dc</code>
         stitches.</p>
-    <p>Note that each set can be reversed if you append a <code>~</code> at
+<p>Note that each set can be reversed if you append a <code>~</code> at
         the end of the attachment label. Compare:</p>
-    <pre><code>10ch,turn
+<pre><code>10ch,turn
 sk,8sc,sc.A[]!,turn
 4ch.A[]!,sk,9tr,turn
 1ch,sk,8sc,3sc@A[;1]~,4sc@A[;0]</code></pre>
-    <p>with</p>
-    <pre><code>10ch,turn
+<p>with</p>
+<pre><code>10ch,turn
 sk,8sc,sc.A[]!,turn
 4ch.A[]!,sk,9tr,turn
 1ch,sk,8sc,3sc@A[;1],4sc@A[;0]</code></pre>
-    <h5 id="attaching-to-a-particular-stitch-in-a-labeled-group-a2">Attaching to
+<h5 id="attaching-to-a-particular-stitch-in-a-labeled-group-a2">Attaching to
         a particular stitch in a labeled group: <span class="citation" data-cites="A">@A</span>[][2]</h5>
-    <p>If one wants to attach to the <code>k</code>-th stitch carrying the
+<p>If one wants to attach to the <code>k</code>-th stitch carrying the
         same label, then same as above, one needs to have a label with square
         brackets, such as <code>A[0]</code> and the stitch position would follow
         in another set of square brackets: e.g. <code>@A[0][k]</code> attaches
         to the <code>k</code> stitch of the stitch group labeled
         <code>A[0]</code>. Counting is in the same direction as the default stitching direction (see "Direction of sequential stitch attachment" below).
     </p>
-    <h4 id="labels-with-counters-a-k-and-.ak">Labels with counters: <span class="citation" data-cites="A">@A [++k]</span> and .A[++k]</h4>
-    <p>Note that often, one needs to create multiple labels in an
+
+<h5 id="labeled-groups-with-sort_label">Labeled groups with SORT_LABEL</h4>
+<p>For plain labels (labels without counters such as <code>.A</code>, <code>.A[]</code>, <code>.A[2,3]</code>), you can control labeled-group ordering with <code>SORT_LABEL:</code> rather than adding a label counter. This is especially useful when the label is produced by the <strong>Tools → Find project periphery</strong> tool or any time you are labelling stitches that are adjacent (a requirement for any labeled group!) but NOT sorted by adjacency and need resorting.</p>
+<p><code>SORT_LABEL:</code> stores an explicit processing order for stitches that share the same label. The line has the form:</p>
+<pre><code>SORT_LABEL: A = {3,4,2,1,0}</code></pre>
+<p>This means: collect the labeled stitches in the order they appear in your instructions (in the order they are crocheted); i.e. <code>turn</code> instructions have no effect on order. Then re-order that list so the <code>3</code>rd stitch becomes 0-th, the <code>4</code>th becomes 1st, the <code>2</code>nd stays 2nd, etc. In other words the zeroth stitch worked into the group labelled by A will be worked into 3rd stitch of that group; the 1st stitch worked into A, will be worked into the 4th stitch the group labeled by A, and so on.  The array is interpreted as 0-based, although 1-based indexing (1..N) is also accepted and will be converted to 0-based. </p>
+<p>The label name can be <code>A</code>, <code>B[]</code>, <code>C[0]</code>, <code>D[1,2]</code>, etc. <code>SORT_LABEL:</code> is not specific to the Periphery tool (although that tool can generate it for stitches around the periphery of your project); you may write it manually for any label.</p>
+
+<p>If your label uses edge-piece syntax (e.g. <code>.A+1</code>), edge pieces are added <em>after</em> sorting when <code>SORT_LABEL:</code> is present. To avoid ambiguities, you should add labels to the edge nodes by hand.</p>
+<div style="border: 1px solid #000; padding: 4px 8px; display: inline-block;">
+
+<p><strong>Important (sorted labels only):</strong> When <code>SORT_LABEL:</code> is present, and a labeled stitch expands to multiple nodes (for example increases like <code>dc2inc</code>), the sorter will try both top-node orders (left-to-right and right-to-left) for that stitch before evaluating adjacency, so that adjacency can be preserved after sorting. No such internal re-ordering is attempted when <code>SORT_LABEL:</code> is not used for that labeled group.</p>
+</div>
+<h4 id="labels-with-counters-a-k-and-.ak">Labels with counters: <span class="citation" data-cites="A">@A [++k]</span> and .A[++k]</h4>
+<p>Note that often, one needs to create multiple labels in an
         algorithmic fashion. One can then use a counter (a variable initialized
         to an integer and then possibly incremented). One initializes the
         counter by placing the intializing expression between two <code>$</code>
@@ -1044,7 +1212,7 @@ sk,8sc,sc.A[]!,turn
         <code>$m=0$, sc.A[m],sc.A[m++],sc.A[m],sc.A[++m],sc.A[m],sc.A[prev m],sc.A[m]</code>
         is evaluated to
         <code>sc.A[0],sc.A[0],sc.A[1],sc.A[2],sc.A[2],sc.A[1],sc.A[1]</code>.</p>
-    <p>Note that when distributing labels with counters, the counter is
+<p>Note that when distributing labels with counters, the counter is
         evaluated first before distribution when the stitches are enclosed in
         parentheses/brackets, or when an integer precedes a SINGLE stitch (not enclosed in brackets) without the
         <code>*</code> symbol. So, <code>$k=0$,2sc.A[k++],(dc,dc).A[k]</code>
@@ -1056,9 +1224,9 @@ sk,8sc,sc.A[]!,turn
         <code>dc.A[1],dc.A[2],dc.A[3]</code>, whereas
         <code>$k=1$, 3dc.A[k++]</code> would evaluate the counter before
         distributing the label to give <code>dc.A[1],dc.A[1],dc.A[1]</code>. </p>
-        <p>Note that if there are brackets/parenthesis, then omitting the <code>*</code> operator changes nothing. So, <code>$c=0$,2[sc].A[c++]</code> is the same as <code>$c=0$,2*[sc].A[c++]</code> and evaluates to <code>[sc].A[0],[sc].A[1]</code>, and same for multiple stitches inside the brackets.
+<p>Note that if there are brackets/parenthesis, then omitting the <code>*</code> operator changes nothing. So, <code>$c=0$,2[sc].A[c++]</code> is the same as <code>$c=0$,2*[sc].A[c++]</code> and evaluates to <code>[sc].A[0],[sc].A[1]</code>, and same for multiple stitches inside the brackets.
     </p>
-    <p>Also note that definition substitution is done last after labels are evaluated. Therefore, the picot stitches below, <code>3p.A[k++]</code>, are treated similar to <code>3sc.A[k++]</code>, giving <code>p.A[0],p.A[0],p.A[0]</code>. Those 3p's are not equivalent to <code>3*p.A[k++]</code>, which in turn evaluates to <code>p.A[0],p.A[1],p.A[2]</code>. Here is the complete code:
+<p>Also note that definition substitution is done last after labels are evaluated. Therefore, the picot stitches below, <code>3p.A[k++]</code>, are treated similar to <code>3sc.A[k++]</code>, giving <code>p.A[0],p.A[0],p.A[0]</code>. Those 3p's are not equivalent to <code>3*p.A[k++]</code>, which in turn evaluates to <code>p.A[0],p.A[1],p.A[2]</code>. Here is the complete code:
 <code>
 DEF: p=3ch,ss@1[%,%-4]
 $k=0$,3p.A[k++]
@@ -1075,17 +1243,17 @@ DEF:p=3ch,ss@1[%,%-4]
 </code>
 as explained above.
     </p>
-    <p>Note that counter algebra is permitted in the indexing. So, for
+<p>Note that counter algebra is permitted in the indexing. So, for
         example <code>$k=3$,sc@A[(k++)%5]*5</code> would use the <a href="https://en.wikipedia.org/wiki/Modulo">mod operator</a>
-        <code>%</code>, and would be parsed to
+<code>%</code>, and would be parsed to
         <code>sc@A[3],sc@A[4],sc@A[0],sc@A[1],sc@A[2]</code>. This is especially
         useful when going in rounds, and the first label that you attach to is
         not of index <code>0</code>.</p>
-    <p>One can evaluate counters in indices by selecting "Expand instructions" and checking "Substitute index counters after expansion?"</p>
-    <p>CrochetPARADE also offers a "Simplify Instructions" and selecting "Attempt to simplify numerical indexing of labels and create index counters?" The code then tries to replace expressions such as replace expressions such as <code>ch.A[0],ch.A[1],ch.A[2],ch.A[3]</code> with <code>ch.A[$vara=0$vara],3*ch.A[++vara]</code></p>
-    <h3 id="multiple-attachment-heads-0-1-2">Multiple attachment heads:
+<p>One can evaluate counters in indices by selecting "Expand instructions" and checking "Substitute index counters after expansion?"</p>
+<p>CrochetPARADE also offers a "Simplify Instructions" and selecting "Attempt to simplify numerical indexing of labels and create index counters?" The code then tries to replace expressions such as replace expressions such as <code>ch.A[0],ch.A[1],ch.A[2],ch.A[3]</code> with <code>ch.A[$vara=0$vara],3*ch.A[++vara]</code></p>
+<h3 id="multiple-attachment-heads-0-1-2">Multiple attachment heads:
         <span class="citation" data-cites="0">@0</span> <span class="citation" data-cites="1">@1</span> <span class="citation" data-cites="2">@2</span></h3>
-    <p>Note that in crocheting we may be going back and forth between
+<p>Note that in crocheting we may be going back and forth between
         crocheting in different rows, or more generally in different locations
         in a project. Then to keep track of where we are in those different
         attachment locations, we can use different “attachment heads”, each one
@@ -1098,9 +1266,9 @@ as explained above.
         to the next stitch on the default head, so to <code>[-1,5]</code> (same
         as <code>tc@[@+1]</code>). We can use any of the labeling methods
         described above with any of the attachment heads.</p>
-    <h3 id="attachment-of-an-empty-stitch">Attachment of an empty
+<h3 id="attachment-of-an-empty-stitch">Attachment of an empty
         stitch</h3>
-    <p>One can reset the attachment point anywhere in a row by using an
+<p>One can reset the attachment point anywhere in a row by using an
         empty stitch. For example, <code>sc,dc,@[@-1],tr</code> is equivalent to
         <code>sc,dc,tr@[@]</code>, both forcing the <code>tr</code> and
         <code>dc</code> stitches to attach to the same point. The logic is that
@@ -1108,11 +1276,8 @@ as explained above.
         attachment of <code>sc</code> by the operator <code>@[@-1]</code>, so
         the next stitch <code>tr</code> attaches to the attachment point of
         <code>dc</code>.</p>
-
-
-    <h2 id="defining-new-stitches.">Direction of sequential stitch attachment.</h2>
-
-    <p>If no attachment point is specified, the code tries to infer the next attachment point of the next stitch you are working into your project.
+<h2 id="defining-new-stitches.">Direction of sequential stitch attachment.</h2>
+<p>If no attachment point is specified, the code tries to infer the next attachment point of the next stitch you are working into your project.
         It does that by checking how many <code>turn</code> directives are at the end of the rows
         between the row (let's call it A for reference) of the attachment
         point of the previous stitch and the current row. If that number is even, then the next stitch would by default attach
@@ -1127,54 +1292,84 @@ as explained above.
         is done: 1. If multiple sets of stitches attach to the same labeled group, sort them according to the order specified after <code>;</code>
         (as in stitches attached to <code>,A[0;0]</code> come before <code>A[0;1]</code>); and 2. Reverse the order of
         any set that has a modifier <code>~</code> after the attachment label (e.g. <code>@A~</code>). </p>
-    <p>A stitch following a stitch (or a set of stitches) attached to a labeled group of stitches, attaches to the stitch following the whole group. Therefore in both examples below, the tr stitch attaches to the dc, even when the 4sc are attaching to A in reverse order (as indicated by the tilde):</p>
-    <code>6ch,turn
+        <div style="border: 1px solid #000; padding: 4px 8px; display: inline-block;">
+
+<p><b>Note:</b> A <code>turn</code> directive <em>inside</em> a bracketed stitch set that attaches to a labeled group (e.g. <code>[7dc,turn 6dc]@A</code>) does not split the attachment into multiple stitch sets and therefore does not affect the attachment direction mid-stream. The attachment direction is chosen once for the stitch set (after sorting by <code>;</code> and applying any <code>~</code> reversals). If you need different directions or ordering across multiple attaching segments, use stitch sets with <code>A[]</code> and <code>@A[;i]</code>, and use <code>~</code> to reverse a particular set.</p>
+<p>For example, the following two instruction blocks  are parsed identically (the internal <code>turn</code> inside the <code>@A</code> block does not affect the attachment direction):</p>
+<pre><code>[9ch,turn
+sk,8sc].A,ch,turn
+sk,8sc,turn
+[7dc,turn
+6dc]@A
+</code></pre>
+<p>and</p>
+<pre><code>[9ch,turn
+sk,8sc].A,ch,turn
+sk,8sc,turn
+[7dc,
+6dc]@A
+</code></pre>
+</div>
+<p>To control ordering/direction across segments, use <code>@A[;0]</code>, <code>@A[;1]</code>, etc., and append <code>~</code> to reverse a specific segment.</p>
+
+<p>A stitch following a stitch (or a set of stitches) attached to a labeled group of stitches, attaches to the stitch following the whole group. Therefore in both examples below, the tr stitch attaches to the dc, even when the 4sc are attaching to A in reverse order (as indicated by the tilde):</p>
+<code>6ch,turn
         sk,2ch,dc,2sk,(3ch).A,2sc,turn
         sk,ch,sc,4sc@A,tr</code>
-    <p>and </p>
-    <code>6ch,turn
+<p>and </p>
+<code>6ch,turn
         sk,2ch,dc,2sk,(3ch).A,2sc,turn
         sk,ch,sc,4sc@A~,tr</code>
-    <p>And in the example below, both tr are attaching to the same dc, as the attachment point is moved back to the last stitch of A by the @A's right before each tr:</p>
-    <code>6ch,turn
+<p>And in the example below, both tr are attaching to the same dc, as the attachment point is moved back to the last stitch of A by the @A's right before each tr:</p>
+<code>6ch,turn
         sk,2ch,dc,2sk,(3ch).A,2sc,turn
         sk,ch,sc,2sc@A,tr,2sc@A,tr,sc</code>
-    <p>
+<p>
         If working stitches in the post of a stitch using a caret (for example .A^), then the default direction of crocheting is from the attachment point
         of the stitch to the top of the stitch, unless there is an odd number of <code>turn</code> directives between
         the row of the top
         of that stitch and the <b>first</b> stitch of the set of stitches that are
         worked into the post (after the same sorting has been done as in the previous paragraph).
     </p>
-    <p><b>NOTE:</b> When attaching to stitches, the stitches that are enumerated correspond to all <b>top nodes</b> (see "raw stitch definitions" below)
+    <div style="border: 1px solid #000; padding: 4px 8px; display: inline-block;">
+
+<p><b>Note:</b> When attaching to stitches, the stitches that are enumerated correspond to all <b>top nodes</b> (see "raw stitch definitions" below)
         present in the stitches. That means that a stitch (say <code>sc2inc</code>, which is 2 sc in the same stitch)
         with two top nodes, will have each of those top nodes enumerated with sequential numbers in the row/round that is being worked. Stitches without top
         nodes (e.g. internally a skip, <code>sk</code>, is treated like a stitch without a top node) are not enumerated and therefore one cannot attach a stitch to them.
     </p>
-
-
-    <h2 id="defining-new-stitches.">Defining new stitches.</h2>
-    <p>New stitches are defined using <code>DEF: definition</code>, which should be placed alone on a new line.</p>
-    <h3 id="creating-an-alias">Creating an alias</h3>
-    <p>If you are using a sequence of stitches over and over again, you may
+    </div>
+<h2 id="defining-new-stitches.">Defining new stitches.</h2>
+<p>New stitches are defined using <code>DEF: definition</code>, which should be placed alone on a new line.</p>
+<h3 id="creating-an-alias">Creating an alias</h3>
+<p>If you are using a sequence of stitches over and over again, you may
         want to create an alias for them. The syntax for that is:</p>
-    <pre><code>DEF: new_stitch_sequence_alias=stitch1,stitch2,...
+<pre><code>DEF: new_stitch_sequence_alias=stitch1,stitch2,...
 #Example:
 DEF: p=3ch,ss@5[%,-4] 
 # Used an arbitrary attachment head 5 (@5), different from the default.
 # A similar stitch alias is used in the Flower example.</code></pre>
-    <p>One can use an alias in a pattern in the same way one uses any
+<p>One can use an alias in a pattern in the same way one uses any
         stitch, with one notable exception: An alias will increase the stitch
         count in a row not by 1 but by however many stitches are in the
         sequence. The way an alias is handled is by a simple string
         substitution, so the calculated result will not reference the name of
         the alias in any way.</p>
-    <p>The stitch alias <code>p</code> in the example above is a picot-3
+<p>The stitch alias <code>p</code> in the example above is a picot-3
         stitch: ch 3,then slip stitch into the stitch preceding the picot
         stitch.</p>
-    <h3 id="copying-a-stitch-with-modifications.">Copying a stitch (with
+<p>An alias substitution is done before counter evaluation. Therefore in the following example:</p>
+<code>
+$k=0$
+DEF: scA=sc@A[k]
+5ch,ch.A[0],ch.A[1],ch,turn
+$k=1$,sk,3ch,scA
+</code>
+<p>the stitch <code>scA</code> is replaced first by the literal <code>sc@A[k]</code> and only then <code>k</code> is evaluated as 1 (because of the preceding <code>$k=1$</code>), resulting in <code>sc@A[1]</code>. Therefore, the <code>sc</code> attaches to the second labeled chain (<code>ch.A[1]</code>) and the first <code>$k=0$</code> has no effect.
+</p>
+<h3 id="copying-a-stitch-with-modifications.">Copying a stitch (with
         modifications).</h3>
-    <p>Let us say a pattern requires you to use the reverse single crochet
+<p>Let us say a pattern requires you to use the reverse single crochet
         stitch (rsc). That stitch has roughly the same overall geometry (height
         and width) and topology (connectedness) as the single crochet stitch, so
         you can simply use the sc stitch. However, let us say you would like to
@@ -1183,31 +1378,31 @@ DEF: p=3ch,ss@5[%,-4]
         project. If you would like that name to show up in the rendered project
         as well, then you can <code>Copy()</code> the stitch:
         <code>DEF: new_stitch=Copy(old_stitch_name) # Example: DEF: scbl = Copy(sc) # This stitch is used in the Baby Bootie example.</code></p>
-    <p>If you would like to adjust the height of the newly created or a
+<p>If you would like to adjust the height of the newly created or a
         pre-existing stitch, you could do:
         <code>DEF: new_stitch=Copy(old_stitch_name,new_height) # Example: DEF: dc=Copy(dc,3) # This stitch modification is used in the Blanket example.</code></p>
-    <p>The example above overwrites the <code>dc</code> stitch with a new
+<p>The example above overwrites the <code>dc</code> stitch with a new
         height of 3 units.</p>
-    <p>You can also change the width of a stitch:
+<p>You can also change the width of a stitch:
         <code>DEF: new_stitch=Copy(old_stitch_name, new_height, new_width) # Example: DEF: narrow_sc=Copy(sc,1,0.8) # Note: You have to specify the height if you are specifying # the width, as those are positional arguments.</code></p>
-    <h3 id="raw-stitch-definitions-and-grammar.">Raw stitch definitions and
+<h3 id="raw-stitch-definitions-and-grammar.">Raw stitch definitions and
         grammar.</h3>
-    <p>One can use “raw stitch” grammar to define new stitches in a concise
+<p>One can use “raw stitch” grammar to define new stitches in a concise
         manner. Internally, the code defines basic stitches using that shorthand
         notation. Stitches written that way are then translated to a JSON format
         internally. The grammar for defining a new stitch is as follows:</p>
-    <pre><code>DEF: new_stitch=&amp;comment^top_nodes:bottom_nodes~attachments:other_nodes:connections</code></pre>
-    <p>The terms “top nodes” and “bottom nodes” here refer to specific parts
+<pre><code>DEF: new_stitch=&amp;comment^top_nodes:bottom_nodes~attachments:other_nodes:connections</code></pre>
+<p>The terms “top nodes” and “bottom nodes” here refer to specific parts
         of a crochet stitch. The top node corresponds to the top of a crochet
         stitch, often identified by the ‘V’ shape formed at the top of the
         stitch. This is where the hook is inserted when working a traditional
         crochet stitch. The bottom node, on the other hand, refers to the
         attachment points of the crochet stitches, which are the top nodes of
         other stitches previously made.</p>
-    <p>Here is a breakdown of the different components of a new stitch
+<p>Here is a breakdown of the different components of a new stitch
         defined this way:</p>
-    <h4 id="comment">Comment</h4>
-    <p>The comment field is optional and is defined at the beginning of the
+<h4 id="comment">Comment</h4>
+<p>The comment field is optional and is defined at the beginning of the
         stitch definition, after the <code>&amp;</code> symbol and before the
         <code>^</code> symbol. They can be a brief description of the stitch,
         but are <strong>not</strong> used in the code. The comment cannot
@@ -1215,8 +1410,8 @@ DEF: p=3ch,ss@5[%,-4]
         stitch definition
         <code>&amp;a sc cluster of 3 stitches^A(sc):B~A-B:C;D;E;F;G;H:!-1-A;B-1/3-C;C-1/3-D;D-1/3-A;B-1/3-E;E-1/3-F;F-1/3-A;B-1/3-G;G-1/3-H;H-1/3-A</code>,
         the string <code>a sc cluster of 3 stitches</code> is a comment.</p>
-    <h4 id="top-nodes">Top Nodes</h4>
-    <p>Top nodes are defined after the <code>^</code> symbol and are
+<h4 id="top-nodes">Top Nodes</h4>
+<p>Top nodes are defined after the <code>^</code> symbol and are
         separated by semicolons. Each top node must have a stitch type specified
         in parentheses after the stitch name. For example, in the stitch
         definition
@@ -1224,8 +1419,8 @@ DEF: p=3ch,ss@5[%,-4]
         <code>A(sc)</code> is a top node where <code>A</code> is the stitch name
         and <code>sc</code> is the stitch type. The order in which the top nodes
         are written specifies the order in which they are chained together.</p>
-    <h4 id="bottom-nodes">Bottom Nodes</h4>
-    <p>Bottom nodes are defined after the first <code>:</code> symbol and
+<h4 id="bottom-nodes">Bottom Nodes</h4>
+<p>Bottom nodes are defined after the first <code>:</code> symbol and
         are separated by semicolons. Unlike top nodes, bottom nodes do not have
         stitch types specified in parentheses. Instead, they may have an
         optional number prefix that indicates the attachment depth. For example,
@@ -1235,19 +1430,19 @@ DEF: p=3ch,ss@5[%,-4]
         when no number is specified), where <code>C</code> has an attachment
         depth of 2, meaning Stitch A attaches to the attachment point of
         <code>C</code>, and not to <code>C</code> directly.</p>
-    <p>A bottom node followed by <code>[front]</code> or <code>[back]</code>
+<p>A bottom node followed by <code>[front]</code> or <code>[back]</code>
         specifies that the stitch is worked in the front/back loop/post. For example, the
         default definition of double crochet in the back loop is
-        <code>&dcbl^A(dcbl):B[back]~A-B::!-1-A;B-2-A</code>.
+        <code>&amp;dcbl^A(dcbl):B[back]~A-B::!-1-A;B-2-A</code>.
         The default amount of "sticking" distance in front/in the back is 0.2 times the chain length. You can change that by adding a number after front/back. So, for example the definition
         of front-post double crochet is:
-        <code>&fpdc^A(fpdc):B[front0.6]~A-B::!-1-A;B-1.5-A</code>
-    </p>
-    <p>The order in which the bottom nodes are written specifies the
+        <code>&amp;fpdc^A(fpdc):B[front0.6]~A-B::!-1-A;B-1.5-A</code>
+</p>
+<p>The order in which the bottom nodes are written specifies the
         attachment order of the current stitch to the top nodes of the previous
         stitches.</p>
-    <h4 id="attachments">Attachments</h4>
-    <p>Attachments are defined after the <code>~</code> symbol and are
+<h4 id="attachments">Attachments</h4>
+<p>Attachments are defined after the <code>~</code> symbol and are
         separated by semicolons. Each attachment is a pair of top and bottom
         node names separated by a <code>-</code>. The top node name must come
         first, followed by the bottom node name. For example, in the stitch
@@ -1256,8 +1451,8 @@ DEF: p=3ch,ss@5[%,-4]
         <code>A</code> is attached to bottom node <code>B</code>. This is only
         used for finding the attachment point of a stitch, which has an
         attachment depth greater than 1.</p>
-    <h4 id="other-nodes">Other Nodes</h4>
-    <p>Other nodes are defined after the second <code>:</code> symbol and
+<h4 id="other-nodes">Other Nodes</h4>
+<p>Other nodes are defined after the second <code>:</code> symbol and
         are separated by semicolons. Each other node must have a stitch type
         specified in parentheses after the stitch name. If no stitch type is
         specified, it defaults to <code>'hidden'</code>. For example, in the
@@ -1265,8 +1460,8 @@ DEF: p=3ch,ss@5[%,-4]
         <code>'&amp;a sc cluster of 3 stitches^A(sc):B~A-B:C;D;E;F;G;H:!-1-A;B-1/3-C;C-1/3-D;D-1/3-A;B-1/3-E;E-1/3-F;F-1/3-A;B-1/3-G;G-1/3-H;H-1/3-A'</code>,
         nodes <code>C</code> through <code>H</code> are all “other” nodes with
         type set to <code>hidden</code>.</p>
-    <h4 id="connections">Connections</h4>
-    <p>Connections are defined after the third <code>:</code> symbol and are
+<h4 id="connections">Connections</h4>
+<p>Connections are defined after the third <code>:</code> symbol and are
         separated by semicolons. Each connection is a pair of node names
         separated by a <code>-</code>, with a length value in between the
         hyphens. The first node (the tail of the connection) name must come
@@ -1278,72 +1473,70 @@ DEF: p=3ch,ss@5[%,-4]
         node <code>B</code> is connected to node <code>A</code> with a length of
         <code>0.4</code>. Note that node <code>!</code> represents the previous
         stitch, which the current stitch is connected to.</p>
-    <p>Connections can be hidden, by preceding a connection with a
+<p>Connections can be hidden, by preceding a connection with a
         <code>*</code>. For example, <code>*Z-3-F</code> is hidden, and is only
         rendered as thin gray threads.</p>
-    <p>If one wants to add a top node that is disjoint from the previous top
+<p>If one wants to add a top node that is disjoint from the previous top
         node, then one can use a length of <code>skip</code> for that
         connection. So, for example the internally defined “stitch”
         <code>start_anew</code> is defined as
         <code>&amp;start_anew^A(hidden):~::!-skip-A</code>. Thus, there is no
         connection between the next stitch and the previous stitch, similar to
         starting a new part of the project.</p>
-    <p><strong>Recommendations:</strong> If using "Transform objects" to move/rotate disjoint objects (as in the limbs of amigurumis), you want to make sure that object detection works properly. For that, ensure that the connections for stitches that are <strong>not</strong> supposed to lead to disconnecting one object from another (i.e. all stitches except "start_anew" or "start_a_new_chain") have all hidden and top nodes connected to previous nodes. Thus, in writing out the connections, make sure that there is at least one connection to each hidden/top node (call it "A") that runs towards that node (say "!-0.5-A"). Also, when writing out the connections, I recommend you list the "blue" (top-level) connections first. This ensures that node placement is correct when exporting crochet charts to SVG. All standard stitches follow these guidelines. </p>
-
-    <h2 id="limitations-pitfalls-and-workarounds">Limitations, pitfalls and
+<p><strong>Recommendations:</strong> If using "Transform objects" to move/rotate disjoint objects (as in the limbs of amigurumis), you want to make sure that object detection works properly. For that, ensure that the connections for stitches that are <strong>not</strong> supposed to lead to disconnecting one object from another (i.e. all stitches except "start_anew" or "start_a_new_chain") have all hidden and top nodes connected to previous nodes. Thus, in writing out the connections, make sure that there is at least one connection to each hidden/top node (call it "A") that runs towards that node (say "!-0.5-A"). Also, when writing out the connections, I recommend you list the "blue" (top-level) connections first. This ensures that node placement is correct when exporting crochet charts to SVG. All standard stitches follow these guidelines. </p>
+<h2 id="limitations-pitfalls-and-workarounds">Limitations, pitfalls and
         workarounds</h2>
-    <h3 id="pitfalls">Pitfalls</h3>
-    <ul>
-        <li>
-            <p>Do not use variables with the same name as a stitch. (Would be
+<h3 id="pitfalls">Pitfalls</h3>
+<ul>
+<li>
+<p>Do not use variables with the same name as a stitch. (Would be
                 nice to fix this.)</p>
-        </li>
-        <li>
-            <p>Do not define stitches with the same name as variables. (Would be
+</li>
+<li>
+<p>Do not define stitches with the same name as variables. (Would be
                 nice to fix this.)</p>
-        </li>
-        <li>
-            <p>An attachment point using @ as a coordinate, e.g. @[@+1], cannot work
+</li>
+<li>
+<p>An attachment point using @ as a coordinate, e.g. @[@+1], cannot work
                 unless there was already at least one attached stitch on that row/round.
                 That assigns the value of "@" to which we add the 1 in this example. This is by design. </p>
-        </li>
-        <li>
-            <p>The <code>turn</code> directive, should always be the last in a row/round/line of the code. No stitches can follow
+</li>
+<li>
+<p>The <code>turn</code> directive, should always be the last in a row/round/line of the code. No stitches can follow
                 it, unless they are on a new line.</p>
-        </li>
-        <li>
-            <p>If your project looks inside-out, or equivalently it seems it is following left-hand crochet directions, then you should try using another start value (set <code>DOT: start=2</code> or if unsuccessful, try other values). The reason is that the physics engine does not know which side you intend to be inside and which the outside. So, it picks at random. That is why paying around with the initial random seed by setting a start value will help resolve this.</p>
-        </li>
-    </ul>
-    <h3 id="limitations">Limitations</h3>
-    <ul>
-        <li>
-            <p>Crocheting in the front and back loops is supported by adding 'bl' or 'fl' after standard crochet symbols such as 'scbl', 'dcbl', etc. or by
+</li>
+<li>
+<p>If your project looks inside-out, or equivalently it seems it is following left-hand crochet directions, then you should try using another start value (set <code>DOT: start=2</code> or if unsuccessful, try other values). The reason is that the physics engine does not know which side you intend to be inside and which the outside. So, it picks at random. That is why playing around with the initial random seed by setting a start value will help resolve this.</p>
+</li>
+</ul>
+<h3 id="limitations">Limitations</h3>
+<ul>
+<li>
+<p>Crocheting in the front and back loops is supported by adding 'bl' or 'fl' after standard crochet symbols such as 'scbl', 'dcbl', etc. or by
                 using custom stitch definitions using the raw stitch grammar as explained previously.
                 However, the implementation is not perfect. Experiment with different starting seed values, e.g. <code>DOT: start=12 </code> if the stitches do not look quite right. </p>
-        </li>
-        <li>
-            <p>In most experiments I have run, the computation engine converges to
+</li>
+<li>
+<p>In most experiments I have run, the computation engine converges to
                 within 10% of the requested stitch lengths (even when it should get them
                 exact) when using the default settings. So, take any variations of that magnitude as spurious. That is
                 why only stitches over/under stretched by about 15% are shown when ‘s’
                 is pressed.</p>
-        </li>
-        <li>
-            <p>Any stitch information beyond stitch attachment (topology) and
+</li>
+<li>
+<p>Any stitch information beyond stitch attachment (topology) and
                 lengths should included as comments as it cannot be captured by the
                 platform.</p>
-        </li>
-        <li>
-            <p>The computational engine is not yet aware when stitches cross. So for
+</li>
+<li>
+<p>The computational engine is not yet aware when stitches cross. So for
                 example, when creating a 3D project for a flower with picots in a loop
                 in the center of the flower, the picots sometimes may be sticking in
                 front or behind the petals. The only workaround for now is to try a
                 different random seeds by setting <code>start</code> to some
                 random integer. For example:</p>
-            <pre><code>DOT: start=34254 </code></pre>
-        </li>
-    </ul>
+<pre><code>DOT: start=34254 </code></pre>
+</li>
+</ul>
 </body>
-
 </html>
