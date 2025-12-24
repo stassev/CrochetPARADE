@@ -109,8 +109,11 @@ function _tip_for_error_message(msg) {
             } catch (e) {}
             return 'Tip: You referenced a stitch/node id that does not exist. Check any @... attachments and any [index] expressions.';
         }
+        if (msg.includes('Missing stitch before')) {
+            return 'Tip: For N-tog/inc, include a stitch name before the count. Example: "sc7tog" or "dc2inc".';
+        }
         if (msg.includes('Stitch type not defined in Dictionary')) {
-            return 'Tip: Use a built-in stitch name or define it with DEF:. Example: "DEF: myst=..." then use "myst".';
+            return 'Tip: Use a built-in stitch name or define it with DEF:. Example: "DEF: mystitch=..." then use "mystitch".';
         }
         if (msg.includes('variable name matches stitch name') || msg.includes('conflicts with stitch name')) {
             return 'Tip: Rename either the variable or the stitch. Example: use "$x=..." instead of "$sc=...$".';
@@ -3044,13 +3047,26 @@ set_parse_ctx({ stage: 'parse_StitchCode', row: r && r['nrow'], node_contents: r
         var OrigStitchName = StitchName;
         var TogOrInc = StitchName.slice(-3);
         if (['inc', 'tog'].includes(TogOrInc)) {
-            let matches = StitchName.slice(0, -3).match(/\d+$/);
-            N_TogInc = parseInt(matches[0], 10);
-            if (!Number.isNaN(N_TogInc)) {
-                let matches1 = StitchName.slice(0, -3).match(/(.*?)(?=\d*$)/);
-                StitchName = matches1[0];
-            } else
+            // Allow forms like "sc2inc" / "sc3tog". If there is no numeric suffix
+            // (e.g. bare "inc"), treat it as a plain stitch name so we can raise a
+            // meaningful "not in Dictionary" error instead of crashing.
+            const base = StitchName.slice(0, -3);
+            let matches = base.match(/\d+$/);
+            if (matches) {
+                N_TogInc = parseInt(matches[0], 10);
+                if (!Number.isNaN(N_TogInc)) {
+                    let matches1 = base.match(/(.*?)(?=\d*$)/);
+                    StitchName = matches1 ? matches1[0] : base;
+                    if (!StitchName) {
+                        throw new Error('Missing stitch before ' + TogOrInc + '. Example: \"sc' + N_TogInc + TogOrInc + '\"');
+                    }
+                } else {
+                    N_TogInc = 1;
+                }
+            } else {
                 N_TogInc = 1;
+                StitchName = OrigStitchName;
+            }
         }
 
         if (!(StitchName in Dictionary))
@@ -3103,7 +3119,7 @@ set_parse_ctx({ stage: 'parse_StitchCode', row: r && r['nrow'], node_contents: r
         throw new Error('Bottom nodes cannot carry type defined in parenthesis: ' + bottom);
     while (match = regex.exec(bottom)) {
         if (k == 0) {
-            if (id_attach > 0) {
+            if (id_attach >= 0) {
                 try {
                     if (sum(turns.slice(find_stitch_by_id(Stitches, id_attach)[0].nrow)) % 2 == 1)
                         sign = -1;
@@ -3385,13 +3401,23 @@ set_parse_ctx({ stage: 'parse_definitions', pattern_snip: _truncate_for_ctx(text
                     var N_TogInc = 1;
                     var TogOrInc = name.slice(-3);
                     if (['inc', 'tog'].includes(TogOrInc)) {
-                        let matches = name.slice(0, -3).match(/\d+$/);
-                        N_TogInc = parseInt(matches[0], 10);
-                        if (!Number.isNaN(N_TogInc)) {
-                            let matches1 = name.slice(0, -3).match(/(.*?)(?=\d*$)/);
-                            name = matches1[0];
-                        } else
+                        const base = name.slice(0, -3);
+                        let matches = base.match(/\d+$/);
+                        if (matches) {
+                            N_TogInc = parseInt(matches[0], 10);
+                            if (!Number.isNaN(N_TogInc)) {
+                                let matches1 = base.match(/(.*?)(?=\d*$)/);
+                                name = matches1 ? matches1[0] : base;
+                                if (!name) {
+                                    throw new Error('Missing stitch before ' + TogOrInc + '. Example: \"sc' + N_TogInc + TogOrInc + '\"');
+                                }
+                            } else {
+                                N_TogInc = 1;
+                            }
+                        } else {
                             N_TogInc = 1;
+                            // leave `name` unchanged so we can throw a clean Dictionary error below
+                        }
                     }
 
                     if (!(name in Dictionary))

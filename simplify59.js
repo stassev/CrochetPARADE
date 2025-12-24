@@ -600,6 +600,161 @@ function groupRepeats(tokens) {
     return currentTokens;
 }
 
+// Extract standalone comment lines/blocks and strip *all* comments from the body.
+// Standalone comments are:
+//   - Lines that start with '#'
+//   - Blocks enclosed by backslashes (\ ... \) that start at the beginning of a line
+//     (after optional whitespace) and end at the end of a line (before optional whitespace).
+// Inline comments (e.g. "sc,dc #..." or "sc,dc \...\") are stripped entirely.
+function extract_standalone_comments_and_strip(text) {
+    text = String(text == null ? '' : text);
+    // Normalize CRLF -> LF for internal processing.
+    text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    let comments = [];
+    let body = '';
+
+    let i = 0;
+    let lineStart = 0;              // index into original text
+    let bodyLenAtLineStart = 0;     // index into `body`
+
+    let inSlash = false;
+    let slashCollect = false;
+    let slashLineStart = 0;
+
+    while (i < text.length) {
+        const ch = text[i];
+
+        if (inSlash) {
+            if (ch === '\\') {
+                // Closing delimiter.
+                inSlash = false;
+
+                const end = i;
+                let eol = text.indexOf('\n', end + 1);
+                if (eol === -1) eol = text.length;
+                const suffix = text.slice(end + 1, eol);
+
+                if (slashCollect && suffix.trim() === '') {
+                    // Standalone \...\ block -> collect and remove entire line (including newline).
+                    let chunk = text.slice(slashLineStart, eol).replace(/\s+$/g, '');
+                    if (chunk !== '') comments.push(chunk);
+
+                    // Skip to after the newline.
+                    i = eol;
+                    if (i < text.length && text[i] === '\n') i++;
+                    lineStart = i;
+                    bodyLenAtLineStart = body.length;
+                    continue;
+                }
+            }
+            // Strip everything inside a \...\ comment, including newlines.
+            i++;
+            continue;
+        }
+
+        // Not in a \...\ comment.
+        if (ch === '\\') {
+            // Opening delimiter.
+            const prefix = text.slice(lineStart, i);
+            slashCollect = (prefix.trim() === '');
+            slashLineStart = lineStart;
+            if (slashCollect) {
+                // Remove leading whitespace already copied to body on this line.
+                body = body.slice(0, bodyLenAtLineStart);
+            }
+            inSlash = true;
+            i++;
+            continue;
+        }
+
+        if (ch === '#') {
+            const prefix = text.slice(lineStart, i);
+            let eol = text.indexOf('\n', i);
+            if (eol === -1) eol = text.length;
+
+            if (prefix.trim() === '') {
+                // Standalone # comment line -> collect and remove entire line (including newline).
+                body = body.slice(0, bodyLenAtLineStart);
+                let chunk = text.slice(lineStart, eol).replace(/\s+$/g, '');
+                if (chunk !== '') comments.push(chunk);
+                i = eol;
+                if (i < text.length && text[i] === '\n') i++;
+                lineStart = i;
+                bodyLenAtLineStart = body.length;
+                continue;
+            }
+
+            // Inline # comment -> strip to end-of-line (but keep the newline).
+            i = eol;
+            continue;
+        }
+
+        // Normal character.
+        body += ch;
+        if (ch === '\n') {
+            lineStart = i + 1;
+            bodyLenAtLineStart = body.length;
+        }
+        i++;
+    }
+
+    // Unterminated \... comment: parse treats it as comment-to-EOF.
+    if (inSlash && slashCollect) {
+        body = body.slice(0, bodyLenAtLineStart);
+        let chunk = text.slice(slashLineStart).replace(/\s+$/g, '');
+        if (chunk !== '') comments.push(chunk);
+    }
+
+    // Build header, ensuring exactly one newline between header and body when both exist.
+    let header = comments.map(c => String(c).replace(/\n+$/g, '')).join('\n');
+    header = header.replace(/\n+$/g, '');
+    let strippedBody = body;
+    strippedBody = strippedBody.replace(/^\n+/g, '');
+    if (header.trim() !== '') header = header + '\n';
+    return { header: header, body: strippedBody };
+}
+
+// Extract directive lines that must not be simplified/whitespace-stripped.
+// These lines are removed from the body and returned as a header block. Each directive
+// line is trimmed only at the ends, preserving internal whitespace.
+//
+// Directives include:
+//   DOT:
+//   INDEX_ARRAY:
+//   SORT_LABEL:
+//   TRANSFORM_OBJECT:
+//   BACKGROUND:
+function extract_dot_lines(text) {
+    text = String(text == null ? '' : text);
+    // Normalize CRLF -> LF for internal processing.
+    text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    const dots = [];
+    const kept = [];
+
+    const DIRECTIVES = ['DOT:', 'INDEX_ARRAY:', 'SORT_LABEL:', 'TRANSFORM_OBJECT:', 'BACKGROUND:'];
+
+    for (const line of text.split('\n')) {
+        const ls = line.trimStart();
+        if (DIRECTIVES.some(p => ls.startsWith(p))) {
+            const trimmed = line.trim(); // trim only ends; keep internal whitespace
+            if (trimmed !== '') dots.push(trimmed);
+        } else {
+            kept.push(line);
+        }
+    }
+
+    // Build header, ensuring exactly one newline between header and body when both exist.
+    let header = dots.join('\n');
+    header = header.replace(/\n+$/g, '');
+    let body = kept.join('\n');
+    body = body.replace(/^\n+/g, '');
+    if (header.trim() !== '') header = header + '\n';
+    return { header: header, body: body };
+}
+
+
 function cleanString(input) {
     if (typeof input !== "string") {
         throw new Error("Input must be a string");
@@ -610,6 +765,14 @@ function cleanString(input) {
 
     // Step 2: Remove trailing and leading white spaces (but keep new lines intact)
     result = result.replace(/[ \t]+/g, "");
+
+    // Step 2.5: Ensure DOT directives start on their own line.
+    // Simplification can accidentally leave a comma immediately before 'DOT:' (e.g., '],DOT:start=5'),
+    // which breaks parsing because DOT directives must be on their own line.
+    result = result.replace(/,DOT:/g, "\nDOT:");
+    // Also guard against the rare case where 'DOT:' is stuck to the end of a token without a newline.
+    //result = result.replace(/(^|[^\n])DOT:/g, (m, p1) => (p1 ? (p1 + "\nDOT:") : "DOT:"));
+
 
     // Step 3: Replace repeated commas with a single comma
     result = result.replace(/,+/g, ",");
@@ -783,13 +946,22 @@ function collectExpression() {
     function proceedWithExpansion() {
         var inputText = document.getElementById("inputText");
         var inputhtml = document.getElementById("highlighting");
+        // Preserve standalone comment lines/blocks by moving them to the top,
+        // strip *all* inline comments, then pull out DOT: lines (preserving their internal whitespace)
+        // and move them to the top (after comments).
+        const extracted = extract_standalone_comments_and_strip(inputText.value);
+        const commentHeader = extracted.header;
+        const extractedDots = extract_dot_lines(extracted.body);
+        const dotHeader = extractedDots.header;
+        let workText = extractedDots.body;
+
         if (expandExpr) {
-            inputText.value = cleanString(evaluate_indices_and_stop(inputText.value, false));
+            inputText.value = cleanString(evaluate_indices_and_stop(workText, false));
             console.log(inputText.value);
             inputText.value = cleanString(evaluate_indices_and_stop(inputText.value, false));
             console.log(inputText.value);
         } else
-            inputText.value = cleanString(inputText.value);
+            inputText.value = cleanString(workText);
        
         update(inputText.value);
         onMyInput();
@@ -845,7 +1017,7 @@ function collectExpression() {
 
         //inputText.value =         removeUnnecessaryBrackets(tokens).map(token => token[1]).join('');
 
-        inputText.value = cleanString(tokens.map(token => token[1]).join(''));
+        inputText.value = commentHeader + dotHeader + cleanString(tokens.map(token => token[1]).join(''));
         inputText['expanded']=false;
         
         update(inputText.value);
