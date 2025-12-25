@@ -796,6 +796,11 @@ function cleanString(input) {
     patternsToRemoveComma.forEach(pattern => {
         result = result.replace(pattern, match => match.replace(",", "")).replace(/\n+/g, "\n");;
     });
+    
+    // Step 5: Ensure newline at the end
+    if (!result.endsWith("\n")) {
+        result += "\n";
+    }
 
     return result;
 }
