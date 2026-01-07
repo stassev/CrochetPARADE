@@ -24,10 +24,12 @@ function enclosePattern(input) {
     // Replace matches with the same text enclosed in parentheses
     const result = input.replace(regex, "($1)");
 
-    return result;
+        if (result === -1) return arr.length;
+        return result;
 }
 
 var EXTRA_DOTS = '';
+var ATTACH_SET_UID = 0; // unique id per syntactic @-construct (prevents merging separate label-attach sets)
 var backgroundColor = '';
 
 // =============================================================================
@@ -1875,31 +1877,28 @@ set_parse_ctx({ stage: 'find_stitchID_by_pos', row: row, at_expr: 'pos=' + Strin
         ids.reverse();
 
     function findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(arr, N, direction) {
+        // Lower-bound insertion index in the crocheting-direction ordering.
+        // If no element qualifies, return arr.length (so the caller will error instead of wrapping).
         if (direction < 0) {
             arr = arr.map(s => -s);
-            //arr.reverse() already reversed
+            // arr.reverse() already reversed ids for direction==-1
             N = -N;
         }
         let low = 0;
         let high = arr.length - 1;
-        let result = -1;
+        let result = arr.length;
 
         while (low <= high) {
             let mid = Math.floor((low + high) / 2);
-
-            if (arr[mid] === N) {
-                return mid; // N is found in the array
-            } else if (arr[mid] < N) {
+            if (arr[mid] < N) {
                 low = mid + 1;
             } else {
-                result = mid; // Update the result to the current index
+                result = mid;
                 high = mid - 1;
             }
         }
-
         return result;
     }
-
     //console.log(ids, pos, ids[pos], relative_id, findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(ids, relative_id, direction), direction)
     if (relative_id != -1)
         pos = pos + findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(ids, relative_id, direction);
@@ -2420,20 +2419,72 @@ function find_and_fix_references_in_repeated_labels(Stitches, turns) {
                     REV[label1] = {};
                 }
                 if (!(num in REV[label1])) {
-                    REV[label1][num] = {
-                        0: rev
-                    };
-                    var currentKey = 0;
-                } else {
-                    const keys = Object.keys(REV[label1][num]).map(Number);
-                    const largestKey = Math.max(...keys);
-                    if (REV[label1][num][largestKey] !== rev) {
+                    REV[label1][num] = {};
+                }
+                // Segmentation of repeated-label attachments:
+                // - Within one syntactic @-construct, all inherited label-attaching stitches share attach_set_uid.
+                //   They must be treated as one segment even if non-attaching stitches (e.g. ch, sc@[@]) appear between them.
+                // - However, consecutive syntactic @-constructs that attach to the same label and direction should continue
+                //   the same segment (so "3sc@A~,3sc@A~" fills sequentially rather than restarting).
+                // We therefore:
+                //   * map attach_set_uid -> segment key (per label+num)
+                //   * but if the immediately previous stitch (si-1) attached to the same label+num+rev, we continue its segment.
+                if (!('setuid_map' in rep_labels[label1])) rep_labels[label1]['setuid_map'] = {};
+                if (!(String(num) in rep_labels[label1]['setuid_map'])) rep_labels[label1]['setuid_map'][String(num)] = {};
+                if (!('last_seen' in rep_labels[label1])) rep_labels[label1]['last_seen'] = {};
+                let last_seen = rep_labels[label1]['last_seen'][String(num)] || null;
+
+                let set_uid = (s.attach_set_uid !== undefined && s.attach_set_uid !== null) ? s.attach_set_uid : null;
+
+                var currentKey;
+
+                // Continue segment across consecutive label-attaching stitches (even if they come from a new syntactic @-construct)
+                if (last_seen && (last_seen.si === si - 1) && (last_seen.rev === rev)) {
+                    currentKey = last_seen.key;
+                } else if (set_uid !== null) {
+                    // Use (or allocate) a stable segment key for this syntactic @-construct.
+                    let map = rep_labels[label1]['setuid_map'][String(num)];
+                    if (String(set_uid) in map) {
+                        currentKey = map[String(set_uid)];
+                    } else {
+                        const keys = Object.keys(REV[label1][num]).map(Number);
+                        const largestKey = (keys.length > 0) ? Math.max(...keys) : -1;
                         currentKey = largestKey + 1;
-                        REV[label1][num][currentKey] = rev;
+                        map[String(set_uid)] = currentKey;
+                    }
+                } else {
+                    // Fallback to legacy segmentation (by rev direction only)
+                    const keys = Object.keys(REV[label1][num]).map(Number);
+                    const largestKey = (keys.length > 0) ? Math.max(...keys) : -1;
+                    if (largestKey < 0) {
+                        currentKey = 0;
+                    } else if (REV[label1][num][largestKey] !== rev) {
+                        currentKey = largestKey + 1;
                     } else {
                         currentKey = largestKey;
                     }
                 }
+
+                // Ensure REV is consistent for this segment
+                if (!(currentKey in REV[label1][num])) {
+                    REV[label1][num][currentKey] = rev;
+                } else if (REV[label1][num][currentKey] !== rev) {
+                    throw new Error('Cannot use a mix of forwards and backwards attachments for the same segment key. If you insist on doing that, then attach using [;0],[;1] etc. Label: ' + label1);
+                }
+
+                // If we have a syntactic UID, bind it to the chosen segment key so later stitches in the same construct
+                // (after gaps) continue the same segment.
+                if (set_uid !== null) {
+                    let map = rep_labels[label1]['setuid_map'][String(num)];
+                    if (!(String(set_uid) in map)) {
+                        map[String(set_uid)] = currentKey;
+                    } else if (map[String(set_uid)] !== currentKey) {
+                        throw new Error('attach_set_uid mapped to multiple segment keys for label ' + label1);
+                    }
+                }
+
+                // Update last_seen for adjacency continuation
+                rep_labels[label1]['last_seen'][String(num)] = { si: si, key: currentKey, rev: rev };
 
                 if (!('attached' in rep_labels[label1])) {
                     rep_labels[label1]['attached'] = {};
@@ -2796,11 +2847,620 @@ Stitches[r].connections['*' + b + '_split_0_--' + b] = d * (isp - i0);
     return Stitches;
 }
 
+
+function recompute_implicit_stitches_between_repeated_label_segments(Stitches, turns) {
+set_parse_ctx({ stage: 'recompute_implicit_stitches_between_repeated_label_segments' });
+
+    // Some patterns place plain (implicit-attachment) stitches between two segments that both attach to the
+    // same label, e.g. "(...)@F, sc, sc@[@], ...@F". In that case, users often expect the plain stitch
+    // immediately after the first label segment to attach to the *next* top node after where that label
+    // segment last attached (not to the "return-to-origin" point after the detour).
+    //
+    // We apply this ONLY when:
+    //  - the stitch has implicit attachment (at_expr == '')
+    //  - it is immediately preceded (in the same row) by a label-attaching stitch
+    //  - there exists a *later* label-attaching stitch in the same row with the SAME label + rev flag
+    //
+    // This preserves the manual's "detour returns to origin" behavior when there is no later same-label segment.
+
+    function _row_of_id(n) {
+        try { return find_stitch_by_id(Stitches, n)[0].nrow; } catch (e) { return null; }
+    }
+
+    function _direction_for_row(rowIndex) {
+        if (rowIndex === null || rowIndex === undefined) return 1;
+        try { return (sum(turns.slice(rowIndex)) % 2 == 1) ? -1 : 1; } catch (e) { return 1; }
+    }
+
+    function _find_interpolation_base_node(s) {
+        try {
+            if (!s || !s.otherNodes || !s.bottomNodes || !s.connections) return null;
+            for (let base of Object.keys(s.otherNodes)) {
+                let b0 = base + '_split_0_';
+                let b1 = base + '_split_1_';
+                if (!(b0 in s.bottomNodes) || !(b1 in s.bottomNodes)) continue;
+                let k0 = '*' + b0 + '--' + base;
+                let k1 = '*' + b1 + '--' + base;
+                if (!(k0 in s.connections) || !(k1 in s.connections)) continue;
+                return base;
+            }
+        } catch (e) {}
+        return null;
+    }
+
+    function _rewrite_and_sync(st, new_first) {
+        try {
+            if (!st || !Array.isArray(st.id_attach) || st.id_attach.length === 0) return;
+            let old0 = st.id_attach[0];
+
+            if (st.id_attach.length === 1) {
+                st.id_attach[0] = new_first;
+            } else if (typeof old0 === 'number' && typeof new_first === 'number') {
+                let d = new_first - old0;
+                for (let i = 0; i < st.id_attach.length; i++) {
+                    if (typeof st.id_attach[i] === 'number') st.id_attach[i] += d;
+                }
+            } else {
+                st.id_attach[0] = new_first;
+            }
+
+                        st._attach_rewritten = true;
+
+// Sync bottom node ids to id_attach (renderer uses bottomNodes[*].id)
+            if (Array.isArray(st.bottomNodesNames) && st.bottomNodes) {
+                for (let i = 0; i < st.bottomNodesNames.length && i < st.id_attach.length; i++) {
+                    let nm = st.bottomNodesNames[i];
+                    if (nm in st.bottomNodes) st.bottomNodes[nm].id = st.id_attach[i];
+                }
+            }
+        } catch (e) {}
+    }
+
+    // Build per-row stitch index lists.
+    let rowToIdx = {};
+    for (let i = 0; i < Stitches.length; i++) {
+        let s = Stitches[i];
+        if (!s) continue;
+        let r = s.nrow;
+        if (r === null || r === undefined) continue;
+        if (!(r in rowToIdx)) rowToIdx[r] = [];
+        rowToIdx[r].push(i);
+    }
+
+    for (let rStr of Object.keys(rowToIdx)) {
+        let idxs = rowToIdx[rStr];
+        if (!Array.isArray(idxs) || idxs.length < 3) continue;
+
+        // Precompute next label-attaching stitch index within this row for each position.
+        let nextLabelPos = Array(idxs.length).fill(null);
+        let nextPos = null;
+        for (let p = idxs.length - 1; p >= 0; p--) {
+            let s = Stitches[idxs[p]];
+            if (s && s.attach_ref) nextPos = p;
+            nextLabelPos[p] = nextPos;
+        }
+
+        for (let p = 1; p < idxs.length; p++) {
+            let st = Stitches[idxs[p]];
+            if (!st) continue;
+
+            // implicit attachment?
+            let expr = null;
+            try {
+                let at_map = st.at_expr || {};
+                let k = Object.keys(at_map)[0];
+                if (k === undefined) k = '0';
+                expr = at_map[k];
+            } catch (e) { expr = null; }
+            if (expr !== '') continue;
+
+            // must be immediately preceded by a label-attaching stitch
+            let prevSt = Stitches[idxs[p - 1]];
+            if (!(prevSt && prevSt.attach_ref)) continue;
+
+            // must have a later label-attaching stitch with the same label+rev
+            let q = nextLabelPos[p];
+            if (q === null || q === undefined) continue;
+            if (q <= p) continue;
+            let nextSt = Stitches[idxs[q]];
+            if (!(nextSt && nextSt.attach_ref)) continue;
+
+            if (prevSt.attach_ref !== nextSt.attach_ref) continue;
+            let pr = !!prevSt.attach_rev;
+            let nr = !!nextSt.attach_rev;
+            if (pr !== nr) continue;
+
+            // Compute the "next top node after where prevSt attached".
+            let anchor = null;
+            try {
+                if (Array.isArray(prevSt.id_attach) && prevSt.id_attach.length > 0) {
+                    anchor = last_element(prevSt.id_attach);
+                }
+            } catch (e) { anchor = null; }
+            if (typeof anchor !== 'number') continue;
+
+            let ar = _row_of_id(anchor);
+            let dir = _direction_for_row(ar);
+
+            let base = _find_interpolation_base_node(prevSt);
+            let new_first = null;
+            if (base) {
+                try {
+                    let p0 = prevSt.bottomNodes[base + '_split_0_'].id;
+                    let p1 = prevSt.bottomNodes[base + '_split_1_'].id;
+                    if (typeof p0 === 'number' && typeof p1 === 'number') {
+                        // "next after interpolation in direction" is the endpoint in that direction
+                        new_first = (dir === 1) ? Math.max(p0, p1) : Math.min(p0, p1);
+                    }
+                } catch (e) { new_first = null; }
+            }
+            if (new_first === null) {
+                // plain top-node attachment: move to the next node in direction
+                new_first = anchor + dir;
+            }
+
+            _rewrite_and_sync(st, new_first);
+        }
+    }
+
+    return Stitches;
+}
+
+
+function recompute_relative_and_sequential_attachments_after_label_fix(Stitches, turns) {
+set_parse_ctx({ stage: 'recompute_relative_and_sequential_attachments_after_label_fix' });
+
+    // After label-reference rewriting, some stitches that used relative attachments (e.g. @[@])
+    // may need to be recomputed so they can reference the final attachment target
+    // (including interpolation vertices like $p0--p1:...).
+
+    let head = {};      // key -> target (number|string)
+    let head_row = {};
+    let head_stitch = {}; // key -> last stitch object for exact-copy relative attachments (@[@])  // key -> attachment-row index
+    let row_has_label = {};
+    for (let _s of Stitches) {
+        try {
+            if (_s && _s.attach_ref) {
+                row_has_label[_s.nrow] = true;
+            }
+        } catch (e) {}
+    }
+
+    let prev_stitch = null;
+
+    let prev_row = null;
+
+    // cache numeric id -> row lookup
+    let row_cache = {};
+
+    function _row_of_numeric_id(n) {
+        if (n in row_cache) return row_cache[n];
+        try {
+            let st = find_stitch_by_id(Stitches, n)[0];
+            let r = st ? st.nrow : null;
+            row_cache[n] = r;
+            return r;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function _row_of_target(tgt) {
+        if (tgt === null || tgt === undefined) return null;
+        if (typeof tgt === 'number') return _row_of_numeric_id(tgt);
+        let ids = _extractNumericIdsFromAttachId(tgt);
+        if (ids.length > 0) return _row_of_numeric_id(ids[0]);
+        return null;
+    }
+
+    function _direction_for_row(rowIndex) {
+        if (rowIndex === null || rowIndex === undefined) return 1;
+        try {
+            return (sum(turns.slice(rowIndex)) % 2 == 1) ? -1 : 1;
+        } catch (e) {
+            return 1;
+        }
+    }
+
+    function _advance_from_target(tgt, delta, dir) {
+        if (delta === 0) return tgt;
+
+        if (typeof tgt === 'number') {
+            return tgt + delta * dir;
+        }
+
+        // For interpolation targets "$p0--p1:..." treat the interpolation as lying
+        // between p0 and p1 in the encoded order. Moving forward (delta>0) steps to p1 (dir=1)
+        // or p0 (dir=-1). Moving backward (delta<0) steps to p0 (dir=1) or p1 (dir=-1).
+        let ids = _extractNumericIdsFromAttachId(tgt);
+        if (ids.length >= 2) {
+            let p0 = ids[0], p1 = ids[1];
+
+            if (delta > 0) {
+                let first = (dir === 1) ? p1 : p0;
+                return first + (delta - 1) * dir;
+            } else { // delta < 0
+                let first = (dir === 1) ? p0 : p1;
+                return first + (delta + 1) * dir;
+            }
+        }
+
+        // For post targets '^<id>-<node>' try to resolve interpolation endpoints from the referenced stitch.
+        // This lets sequential attachments advance correctly from an interpolation vertex that was re-used via '^...'.
+        if (typeof tgt === 'string' && tgt.trim().startsWith('^')) {
+            let s = tgt.trim();
+            let m = s.match(/^\^(\d+)\s*-\s*([A-Za-z0-9_]+)/);
+            if (m) {
+                let tid = parseInt(m[1], 10);
+                let node = m[2];
+                try {
+                    let ref = find_stitch_by_id(Stitches, tid)[0];
+                    let b0 = node + '_split_0_';
+                    let b1 = node + '_split_1_';
+                    if (ref && ref.bottomNodes && (b0 in ref.bottomNodes) && (b1 in ref.bottomNodes)) {
+                        let p0 = ref.bottomNodes[b0].id;
+                        let p1 = ref.bottomNodes[b1].id;
+                        if (typeof p0 === 'number' && typeof p1 === 'number') {
+                            let lo = Math.min(p0, p1);
+                            let hi = Math.max(p0, p1);
+
+                            if (delta > 0) {
+                                let first = (dir === 1) ? hi : lo;
+                                return first + (delta - 1) * dir;
+                            } else if (delta < 0) {
+                                let first = (dir === 1) ? lo : hi;
+                                return first + ((-delta) - 1) * (-dir);
+                            } else {
+                                return tgt; // exact stay on the interpolation vertex
+                            }
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            // Fallback: treat as anchored to the referenced stitch top-id.
+            let ids1 = _extractNumericIdsFromAttachId(tgt);
+            if (ids1.length === 1) {
+                return ids1[0] + delta * dir;
+            }
+        }
+
+        // Unknown target type: cannot advance
+        return tgt;
+    }
+
+    function _parse_relative_expr(expr) {
+    if (typeof expr !== 'string') return null;
+    let s = expr.trim();
+    if (!(s.startsWith('[') && s.endsWith(']'))) return null;
+    s = s.slice(1, -1).trim();
+
+    // Support optional stitch-name/type prefix like "sc:" or "dc:".
+    let type = '';
+    if (s.includes(':')) {
+        type = s.split(':')[0].trim();
+        s = s.split(':', 2)[1].trim();
+    }
+
+    const regex = /@(\d*)/;
+    let m = s.match(regex);
+    if (!m) return null;
+
+    let key = (m[1] === '') ? '0' : m[1];
+
+    // Evaluate delta by replacing the @anchor token with 0 (same approach as update_attachment_points).
+    let deltaExpr = s.replace(regex, '0');
+    let delta;
+    try {
+        delta = evaluateExpression(deltaExpr);
+    } catch (e) {
+        delta = parseInt(deltaExpr, 10);
+    }
+    if (!Number.isInteger(delta)) return null;
+
+    return { key: key, delta: delta, type: type };
+}
+
+
+    function _find_interpolation_base_node(s) {
+        // If s contains a label-distribution-created interpolation attachment,
+        // return its base node name (e.g. 'B' for B_split_0_/B_split_1_ + hidden B).
+        try {
+            if (!s || !s.otherNodes || !s.bottomNodes || !s.connections) return null;
+            for (let base of Object.keys(s.otherNodes)) {
+                let b0 = base + '_split_0_';
+                let b1 = base + '_split_1_';
+                if (!(b0 in s.bottomNodes) || !(b1 in s.bottomNodes)) continue;
+                let k0 = '*' + b0 + '--' + base;
+                let k1 = '*' + b1 + '--' + base;
+                if (!(k0 in s.connections) || !(k1 in s.connections)) continue;
+                return base;
+            }
+        } catch (e) {}
+        return null;
+    }
+
+
+    function _sync_bottom_nodes_to_id_attach(st) {
+        // Keep bottom node ids consistent with id_attach after we rewrite attachments.
+        // Geometry/rendering uses bottomNodes[*].id, not just id_attach.
+        try {
+            if (!st) return;
+            if (!Array.isArray(st.id_attach)) return;
+            if (!Array.isArray(st.bottomNodesNames)) return;
+            if (!st.bottomNodes) return;
+            for (let ii = 0; ii < st.bottomNodesNames.length && ii < st.id_attach.length; ii++) {
+                const nm = st.bottomNodesNames[ii];
+                if (nm in st.bottomNodes) {
+                    st.bottomNodes[nm].id = st.id_attach[ii];
+                }
+            }
+        } catch (e) {}
+    }
+
+    function _rewrite_id_attach(st, new_first) {
+        if (!st || !Array.isArray(st.id_attach) || st.id_attach.length === 0) return;
+
+        // Mark that this stitch's attachment was (re)computed in the post-pass. This is important so
+        // subsequent relative attachments (e.g. repeated sc@[@]) can be recomputed too when they
+        // transitively depend on a label-distribution-modified anchor.
+        try { st._attach_rewritten = true; } catch (e) {}
+
+        if (st.id_attach.length === 1) {
+            st.id_attach[0] = new_first;
+            return;
+        }
+
+        let old0 = st.id_attach[0];
+        if (typeof old0 === 'number' && typeof new_first === 'number') {
+            let d = new_first - old0;
+            for (let i = 0; i < st.id_attach.length; i++) {
+                if (typeof st.id_attach[i] === 'number')
+                    st.id_attach[i] += d;
+            }
+            return;
+        }
+
+        // Fallback: update only the first attachment (best effort)
+        st.id_attach[0] = new_first;
+    
+        try { st._attach_rewritten = true; } catch(e) {}
+}
+
+    for (let si = 0; si < Stitches.length; si++) {
+        let st = Stitches[si];
+        if (!st) continue;
+
+        // Reset head on row transitions to the row-start convention used by parse_StitchCodeList.
+        if (prev_row === null || st.nrow !== prev_row) {
+            let r = st.nrow;
+            if (r !== null && r !== undefined && r >= 1) {
+                let baseRow = r - 1;
+                let turnsPrev = (baseRow >= 0 && baseRow < turns.length) ? turns[baseRow] : 0;
+                let tmp = count_stitches_in_row(Stitches, baseRow);
+                let first = tmp[1], last = tmp[2];
+
+                let keysToReset = new Set(Object.keys(head).concat(['0']));
+                for (let k of keysToReset) {
+                    if (first !== -1 && last !== -1) {
+                        if (turnsPrev === 0) head[k] = first - 1;
+                        else head[k] = last + 1;
+                        head_row[k] = baseRow;
+                    }
+                }
+            }
+            prev_row = st.nrow;
+        }
+
+        let at_map = st.at_expr || { 0: null };
+        let keys = Object.keys(at_map);
+        if (keys.length === 0) keys = ['0'];
+        let k = keys[0];
+        let expr = at_map[k];
+
+        let dir = _direction_for_row(head_row[k]);
+
+        let rel = _parse_relative_expr(expr);
+        if (rel !== null && row_has_label[st.nrow]) {
+            // Recompute only when the @-anchor is likely to have changed due to label distribution
+            // or an earlier post-pass rewrite (e.g. implicit stitches between repeated label segments).
+            let _anchorSt = head_stitch[rel.key];
+            if (!(_anchorSt && (_anchorSt.attach_ref || _anchorSt._attach_rewritten))) {
+                // Skip: trust the first-pass resolution.
+            } else {
+            let anchorKey = rel.key;
+            let anchor = head[anchorKey];
+
+            if (anchor !== undefined && anchor !== null) {
+                // Direction should follow the target row's attachment direction (same as update_attachment_points)
+                let x = _row_of_target(anchor);
+                let direction = 1;
+                if (x !== null && x !== undefined) {
+                    try {
+                        if (sum(turns.slice(x)) % 2 == 1)
+                            direction = -1;
+                    } catch (e) {}
+                }
+
+                                let new_first;
+                let did_clone = false;
+
+                // Helper: resolve interpolation post-ref '^<topId>-<baseName>' to numeric endpoints.
+                function _interp_endpoints_from_postref(ref, direction) {
+                    try {
+                        if (typeof ref !== 'string') return null;
+                        if (!ref.trim().startsWith('^')) return null;
+                        let ids = _extractNumericIdsFromAttachId(ref);
+                        if (ids.length < 1) return null;
+                        let tid = ids[0];
+                        let base = ref.trim().slice(1).split('-', 2)[1];
+                        if (!base) return null;
+                        let src = find_stitch_by_id(Stitches, tid)[0];
+                        if (!src || !src.bottomNodes) return null;
+                        let b0 = base + '_split_0_';
+                        let b1 = base + '_split_1_';
+                        if (!(b0 in src.bottomNodes) || !(b1 in src.bottomNodes)) return null;
+                        let e0 = src.bottomNodes[b0].id;
+                        let e1 = src.bottomNodes[b1].id;
+                        if (typeof e0 !== 'number' || typeof e1 !== 'number') return null;
+                        let lo = Math.min(e0, e1);
+                        let hi = Math.max(e0, e1);
+                        let after = (direction === 1) ? hi : lo;
+                        let before = (direction === 1) ? lo : hi;
+                        return { before: before, after: after, base: base, tid: tid };
+                    } catch (e) {}
+                    return null;
+                }
+
+                if (rel.delta === 0 && (rel.type || '') === '') {
+                    // Exact copy: MUST preserve interpolation attachments created during label distribution.
+                    let src = head_stitch[anchorKey];
+                    if (src) {
+                        let base = _find_interpolation_base_node(src);
+                        if (base) {
+                            let tid = _minTopIdOfStitch(src);
+                            if (typeof tid === 'number' && Number.isFinite(tid)) {
+                                let ref = '^' + String(tid) + '-' + base;
+
+                                // Only rewrite the current stitch in the simple single-bottom-node case.
+                                let ok_simple = Array.isArray(st.bottomNodesNames) && st.bottomNodesNames.length <= 2;
+
+                                if (ok_simple) {
+                                    try {
+                                        let depth = 1;
+                                        let b0 = base + '_split_0_';
+                                        if (src.bottomNodes && (b0 in src.bottomNodes) && src.bottomNodes[b0] &&
+                                            (src.bottomNodes[b0].attachment_depth !== undefined)) {
+                                            depth = src.bottomNodes[b0].attachment_depth;
+                                        }
+
+                                        // Normalize to a single bottom node named `base` that attaches to the shared vertex.
+                                        st.id_attach = [ref];
+                                        st.bottomNodesNames = [base];
+                                        st.bottomNodes = {};
+                                        st.bottomNodes[base] = { attachment_depth: depth, id: ref };
+
+                                        // Ensure top nodes attach to this bottom node name.
+                                        if (st.topNodes) {
+                                            for (let tn of Object.keys(st.topNodes)) {
+                                                st.topNodes[tn].attach = base;
+                                            }
+                                        }
+
+                                        // Remove any locally-created interpolation scaffolding (split nodes + hidden base).
+                                        if (st.otherNodes && (base in st.otherNodes) && st.otherNodes[base] &&
+                                            st.otherNodes[base].type === 'hidden') {
+                                            delete st.otherNodes[base];
+                                        }
+                                        if (!st.connections) st.connections = {};
+                                        for (let ck of Object.keys(st.connections)) {
+                                            if (ck.includes(base + '_split_0_') || ck.includes(base + '_split_1_') ||
+                                                (ck.startsWith('*') && ck.includes('--' + base))) {
+                                                delete st.connections[ck];
+                                            }
+                                        }
+                                        if (st.topNodesNames && st.topNodesNames.length > 0) {
+                                            let tname = st.topNodesNames[0];
+                                            let edge = base + '--' + tname;
+                                            if (!(edge in st.connections)) st.connections[edge] = 1;
+                                        }
+
+                                        did_clone = true;
+                                        new_first = ref;
+                                        try { st._attach_rewritten = true; } catch (e) {}
+                                    } catch (e) {}
+                                }
+                            }
+                        }
+                    }
+                    if (!did_clone) {
+                        new_first = anchor;
+                    }
+                } else {
+                    // General relative offset (including non-zero deltas and stitch-type searches).
+                    let anchor_for_pos = anchor;
+                    let pos_for_pos = rel.delta;
+                    let useType = rel.type || '';
+
+                    let interp = _interp_endpoints_from_postref(anchor, direction);
+                    if (interp) {
+                        if (rel.delta > 0) {
+                            anchor_for_pos = interp.after;
+                            pos_for_pos = rel.delta - 1;
+                        } else if (rel.delta < 0) {
+                            anchor_for_pos = interp.before;
+                            pos_for_pos = rel.delta + 1;
+                        } else { // delta == 0
+                            anchor_for_pos = interp.after;
+                            pos_for_pos = 0;
+                        }
+                    }
+
+                    if (typeof anchor_for_pos === 'number' && x !== null && x !== undefined) {
+                        if (useType !== '') {
+                            // Two-step semantics for @[TYPE:@+k] during post-label recomputation:
+                            // 1) move k stitches from @ in overall stitch-space,
+                            // 2) then find the first TYPE stitch at or after that position.
+                            let candidate = find_stitchID_by_pos(Stitches, x, pos_for_pos, anchor_for_pos, direction, '');
+                            new_first = find_stitchID_by_pos(Stitches, x, 0, candidate, direction, useType);
+                        } else {
+                            new_first = find_stitchID_by_pos(Stitches, x, pos_for_pos, anchor_for_pos, direction, '');
+                        }
+                    } else {
+                        // Fallback: numeric advancement only (type-filtering requires a numeric anchor + row).
+                        new_first = _advance_from_target(anchor_for_pos, pos_for_pos, direction);
+                        if (useType !== '') {
+                            throw new Error('Stitch-type filtered relative attachment cannot be resolved without a numeric anchor (wanted type ' + useType + ').');
+                        }
+                    }
+                }
+if (!did_clone) {
+                    _rewrite_id_attach(st, new_first);
+                    _sync_bottom_nodes_to_id_attach(st);
+                }
+            }
+            }
+        }
+
+        else if (expr === '' && (typeof head[k] === 'string')) {
+            // Implicit sequential attachment needs a post-pass fix when the head is an interpolation target
+            // (e.g. $p0--p1:...) introduced by label distribution.
+            // Do NOT override the special rule for stitches that immediately follow a label-attaching stitch.
+            if (!(prev_stitch && prev_stitch.attach_ref)) {
+                let anchor = head[k];
+                let x = _row_of_target(anchor);
+                let direction = 1;
+                if (x !== null && x !== undefined) {
+                    try {
+                        if (sum(turns.slice(x)) % 2 == 1)
+                            direction = -1;
+                    } catch (e) {}
+                }
+                let new_first = _advance_from_target(anchor, 1, direction);
+                _rewrite_id_attach(st, new_first);
+                _sync_bottom_nodes_to_id_attach(st);
+            }
+        }
+
+        // Update head for this key using the (possibly updated) last attachment point of the stitch.
+        if (Array.isArray(st.id_attach) && st.id_attach.length > 0) {
+            head[k] = last_element(st.id_attach);
+            head_stitch[k] = st;
+            let rr = _row_of_target(head[k]);
+            if (rr !== null && rr !== undefined) head_row[k] = rr;
+        }
+        prev_stitch = st;
+    }
+
+    return Stitches;
+}
+
+
 function evaluateExpression(expression) {
     return Function(`'use strict'; return ${expression}`)();
 }
 
-function update_attachment_points(Stitches, node, attach, turns, attach_row) {
+function update_attachment_points(Stitches, node, attach, turns, attach_row, defer_rel=false) {
 set_parse_ctx({ stage: 'update_attachment_points', row: node && node['nrow'], node_contents: node && node['contents'], at_expr: _truncate_for_ctx(node && node['at'], 220) });
 
     //console.log(attach, node)
@@ -2930,13 +3590,37 @@ set_parse_ctx({ stage: 'update_attachment_points', row: node && node['nrow'], no
             direction = -1;
 
 
-        if ((atTrue) || count_by_stitch_name !== '')
-            attach[key] = find_stitchID_by_pos(Stitches, x, y, relative_id, direction, count_by_stitch_name);
-        else
-            attach[key] = find_stitchID_by_pos(Stitches, x, y, relative_id, 1, count_by_stitch_name);
+        try {
+            if ((count_by_stitch_name !== '') && (atTrue)) {
+                // Relative counting by stitch type (e.g. @[sc:@+6]) counts k in terms of TYPE stitches,
+                // in the crocheting direction, starting from the insertion point of "@" within the TYPE list.
+                attach[key] = find_stitchID_by_pos(Stitches, x, y, relative_id, direction, count_by_stitch_name);
+            } else if ((atTrue) || count_by_stitch_name !== '') {
+                // Absolute counting by stitch type (e.g. @[sc:-1,3]) or relative counting without stitch-type filter.
+                attach[key] = find_stitchID_by_pos(Stitches, x, y, relative_id, direction, count_by_stitch_name);
+            } else {
+                // Absolute counting without stitch-type filter counts in the written direction (no turn effect).
+                attach[key] = find_stitchID_by_pos(Stitches, x, y, relative_id, 1, count_by_stitch_name);
+            }
+        } catch (e) {
+            if (defer_rel && atTrue) {
+                // Defer resolution (common inside @label groups); post-pass will recompute using final distributed anchors.
+                attach[key] = relative_id;
+            } else {
+                throw e;
+            }
+        }
         return attach;
     }
     attach[key] = find_label(Stitches, at);
+    // record whether this label attachment is reverse (~)
+    try { attach[key].attach_rev = (typeof at === 'string' && at.trim().endsWith('~')); } catch (e) {}
+    // propagate syntactic attach-set UID so repeated-label segmentation can respect it
+    try {
+        if (node && node.at_uid && (String(key) in node.at_uid)) {
+            attach[key].attach_set_uid = node.at_uid[key];
+        }
+    } catch (e) {}
     attach_row[key] = find_stitch_by_id(Stitches, attach[key].attach_id)[0].nrow;
     if (sum(turns.slice(attach_row[key])) % 2 == 1)
         attach[key]['attach_id'] = attach[key].attach_id - attach[key].n + 1;
@@ -2976,11 +3660,72 @@ set_parse_ctx({ stage: 'parse_StitchCodeList' });
                     attach_row[k] = Nrows - 1;
                 }
         }
+        // Track whether each attachment head has seen at least one *attached* stitch in this row.
+        // Used to enforce the manual rule that @[@...] cannot be used until at least one stitch has attached on this row/round.
+        var row_attached = {};
+        for (let _k of Object.keys(attach)) { row_attached[_k] = false; }
+
+        // Detect whether this row contains label-based attachments (e.g. ...@F).
+        // If so, resolving [@...] / @[type:@+k] immediately can be wrong because label distribution happens later.
+        // In that case we allow deferring some relative-attachment resolution to a post-pass.
+        var row_has_label_attach = false;
+        try {
+            for (var _n of row) {
+                let _keys = Object.keys(_n['at'] || {});
+                if (_keys.length === 0) continue;
+                let _kk = _keys[0];
+                let _aa = _n['at'][_kk];
+                if (typeof _aa !== 'string') continue;
+                let _t = _aa.trim();
+                if (_t === '') continue;
+                if (_t.startsWith('[') && _t.endsWith(']')) continue;
+                if (/^[A-Za-z][A-Za-z0-9_]*~*$/.test(_t)) { row_has_label_attach = true; break; }
+            }
+        } catch (e) {}
+
         var k = 0;
         var Stitch;
         for (var node of row) {
 
-            attach = update_attachment_points(Stitches, node, attach, turns, attach_row); //attach now holds the first attachment point of the current node.;;
+
+// Enforce: cannot use "@" as a coordinate anchor in [@...] unless at least one stitch has already attached
+// on this row/round for the referenced attachment head.
+try {
+    for (let _ak of Object.keys(node['at'] || {})) {
+        let _expr = node['at'][_ak];
+        if (typeof _expr === 'string') {
+            let _t = _expr.trim();
+            if (_t.startsWith('[') && _t.endsWith(']') && _t.includes('@')) {
+                const _re = /@(\d*)/;
+                let _m = _t.match(_re);
+                if (_m) {
+                    let _key = (_m[1] === '') ? '0' : _m[1];
+                    if (!(_key in row_attached)) row_attached[_key] = false;
+                    if (!row_attached[_key]) {
+                        let _a = attach[_key];
+                        if ((_a !== null) && (typeof _a === 'object') && ('attach_id' in _a)) _a = _a['attach_id'];
+                        throw new Error('Cannot use "@" as a coordinate anchor in attachment ' + _t + '. There must already be at least one attached stitch on the target row/round for "@" to refer to. (Current anchor id: ' + String(_a) + ')');
+                    }
+                }
+            }
+        }
+    }
+} catch (e) { throw e; }
+
+            attach = update_attachment_points(Stitches, node, attach, turns, attach_row, row_has_label_attach);
+            // Head-move directives (empty contents) count as initializing the attachment head for @[@...] usage,
+            // as long as the directive itself does not depend on "@".
+            try {
+                var _k0 = Object.keys(node['at'] || {})[0];
+                var _expr0 = (_k0 !== undefined) ? node['at'][_k0] : null;
+                if (node['contents'] === '' && typeof _expr0 === 'string') {
+                    let _t0 = _expr0.trim();
+                    if (!(_t0.startsWith('[') && _t0.endsWith(']') && _t0.includes('@'))) {
+                        row_attached[String(_k0)] = true;
+                    }
+                }
+            } catch (e) {}
+ //attach now holds the first attachment point of the current node.;;
             //            console.log(node, JSON.stringify(attach), Stitches)
 
             var key = Object.keys(node['at'])[0];
@@ -3001,6 +3746,16 @@ set_parse_ctx({ stage: 'parse_StitchCodeList' });
                 if (Stitch.id.length > 0)
                     id = last_element(Stitch.id);
                 Stitches.push(Stitch);
+
+// Mark this attachment head as having seen an attached stitch on this row.
+try {
+    if (!(['ch', 'turn'].includes(Stitch.contents))) {
+        if (Array.isArray(Stitch.id_attach) && Stitch.id_attach.length > 0) {
+            row_attached[String(key)] = true;
+        }
+    }
+} catch (e) {}
+
                 try { set_parse_ctx({ current_stitch_name: Stitch && Stitch.type, current_stitch_id: Stitch && Stitch.id }); } catch (e) {}
             } else {
                 if (attach[key]['attach_id'])
@@ -3022,8 +3777,17 @@ set_parse_ctx({ stage: 'parse_StitchCodeList' });
 
     Stitches = find_and_fix_references_in_repeated_labels(Stitches, turns);
     DEBUG += '=======After fixing the references to repeated labels:=======\n' + JSON.stringify(Stitches) + '\n';
-    for (var i = 0; i < Stitches.length; i++)
+
+    Stitches = recompute_implicit_stitches_between_repeated_label_segments(Stitches, turns);
+    DEBUG += '=======After recomputing implicit stitches between repeated label segments:=======\n' + JSON.stringify(Stitches) + '\n';
+
+    Stitches = recompute_relative_and_sequential_attachments_after_label_fix(Stitches, turns);
+    DEBUG += '=======After recomputing relative/sequential attachments post-label-fix:=======\n' + JSON.stringify(Stitches) + '\n';
+    for (var i = 0; i < Stitches.length; i++) {
+        // internal post-pass bookkeeping flags should not leak into the public stitch objects
+        try { delete Stitches[i]._attach_rewritten; } catch (e) {}
         Stitches[i]['uid'] = i;
+    }
     return Stitches;
 }
 
@@ -3032,10 +3796,14 @@ set_parse_ctx({ stage: 'parse_StitchCode', row: r && r['nrow'], node_contents: r
 
     var stitch;
     var attach_ref = null;
+    var attach_set_uid = null;
+    var attach_rev = null;
     //console.log(id_attach)
 
     if ((id_attach != '') && (!Number.isInteger(id_attach)) && ('attach_id' in id_attach) && (!(['ch', 'turn'].includes(r['contents'])))) {
         attach_ref = id_attach['attach_ref'];
+        attach_set_uid = id_attach['attach_set_uid'];
+        attach_rev = id_attach['attach_rev'];
         id_attach = id_attach['attach_id'];
     }
     var sign = 1;
@@ -3286,6 +4054,10 @@ set_parse_ctx({ stage: 'parse_StitchCode', row: r && r['nrow'], node_contents: r
         connections: connections,
         label: [...label],
         attach_ref: attach_ref,
+        attach_set_uid: attach_set_uid,
+        attach_rev: attach_rev,
+        at_expr: r['at'],
+        at_uid: r['at_uid'],
         context: r['context'],
         low_level_type: stitch,
         nrow: r['nrow'],
@@ -4429,12 +5201,14 @@ set_parse_ctx({ stage: 'parse_text_instruction_to_structure', statement: _trunca
         str = {
             contents: str,
             at: {},
+            at_uid: {},
             dot: [],
             index: [0, str.length],
             nrow: 0,
             color: getColorByIndex(0, COLOR)
         };
     }
+    if (!('at_uid' in str)) str.at_uid = {};
     var out = [];
     var i_start = str.index[0];
     var i_start_AT = str.index[0];
@@ -4504,22 +5278,26 @@ set_parse_ctx({ stage: 'parse_text_instruction_to_structure', statement: _trunca
             }
             var at0 = at;
             var dot0 = dot;
+            var at_uid = {};
             if (at === '') {
                 at = str.at;
-                if (Object.keys(at).length == 0)
-                    at = {
-                        0: ''
-                    };
+                at_uid = (str.at_uid || {});
+                if (Object.keys(at).length == 0) {
+                    at = { 0: '' };
+                    at_uid = { 0: null };
+                }
             } else {
                 var num = parseInt(at, 10);
-                if (Number.isNaN(num))
-                    at = {
-                        0: at
-                    };
-                else {
+                if (Number.isNaN(num)) {
+                    at = { 0: at };
+                    at_uid = { 0: ATTACH_SET_UID++ };
+                } else {
                     var at1 = {};
+                    var au1 = {};
                     at1[num] = at.replace(/^\d+\s*/, '').trim();
+                    au1[num] = ATTACH_SET_UID++;
                     at = at1;
+                    at_uid = au1;
                 }
             }
 
@@ -4540,6 +5318,7 @@ set_parse_ctx({ stage: 'parse_text_instruction_to_structure', statement: _trunca
                 let out1 = parse_text_instruction_to_structure({
                     contents: main.slice(1, -1),
                     at: at,
+                    at_uid: at_uid,
                     dot: tmpDot,
                     nrow: Nrows,
                     index: [i_start + 1, str.index[0] + i]
@@ -4580,6 +5359,7 @@ set_parse_ctx({ stage: 'parse_text_instruction_to_structure', statement: _trunca
                     let out1 = {
                         contents: main,
                         at: at,
+                        at_uid: at_uid,
                         dot: tmpDot,
                         nrow: Nrows,
                         index: [i_start, str.index[0] + i + 1],
@@ -4724,6 +5504,7 @@ set_parse_ctx({ stage: 'parse_original_text_to_list_of_structures', pattern_snip
     text = evaluate_indices(text);
     DEBUG += '=======After evaluating indices:=======\n' + text + '\n';
     III = 0;
+    ATTACH_SET_UID = 0;
     var LIST = parse_text_instruction_to_structure(text).flat(Infinity);
     DEBUG += '=======After parsing to structure:=======\n' + JSON.stringify(LIST) + '\n';
     var node = [];

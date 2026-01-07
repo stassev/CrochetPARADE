@@ -244,7 +244,7 @@
             4.0<img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"/><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"/><img src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"/><img src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" style="height:22px!important;margin-left:3px;vertical-align:text-bottom;"/></a>
 </p>
 <p>This manual covers both the platform as well as the CrochetPARADE
-        grammar. NOTE: This manual is work in progress. Last updated: December 22, 2025.</p>
+        grammar. NOTE: This manual is work in progress. Last updated: January 7, 2026.</p>
 <h1 id="introduction">Introduction</h1>
 <p>CrochetPARADE (Crochet PAttern Renderer, Analyzer, and DEbugger) is a
         platform that allows users to create, visualize, and analyze both 2D and
@@ -971,16 +971,31 @@ Line 5: The attachment point resets because of the new line. There is no turn at
         , so turns are taken into account.</p>
 <p>One can also combine relative position identifier with a stitch type
         identifier. For instance, <code>@[sc:@+1]</code> means attach to the
-        next <code>sc</code> stitch after the last attachment point. Note that
-        <code>@[sc:@]</code> and <code>@[sc:@+1]</code> imply the same
-        attachment point (the next <code>sc</code>) if the last attachment was
-        <strong>not</strong> at a <code>sc</code> stitch. If it were at a
-        <code>sc</code> stitch, then <code>@[sc:@]</code> refers to attaching to
-        that same stitch, whereas <code>@[sc:@+1]</code> implies attaching to
-        the next <code>sc</code> in the row.</p>
-<p>Note that when multiple stitches are labeled this way as a group, e.g. <code>(sc,dc)@[@+1]</code> the label is first
-        distributed before being evaluated. Thus, that example translates to <code>sc@[@+1],dc@[@+1]</code> which implies that the sc and dc are
-        attached to two consecutive stitches, and not to one and the same stitch. </p>
+        next <code>sc</code> stitch after the last attachment point. In general, an attachment expression of the form @[TYPE:@+k] is evaluated in two steps:
+</p><p>
+1) First compute the base position by moving k stitches from "@" in the crocheting direction
+   (the same direction as sequential attachment; turns are taken into account). This yields
+   an intermediate stitch position "@+k" that is defined in terms of all stitches in the row,
+   regardless of their type.
+</p></p>
+2) Then, starting at that intermediate position, search forward in the crocheting direction
+   for the first stitch whose type matches TYPE. Attach into that stitch.
+</p></p>
+If no stitch of the requested TYPE is found at "@+k" or later in the crocheting direction,
+the parser must emit an error.
+</p></p>
+Notes:
+</p></p>
+- @[sc:@] attaches to the nearest sc stitch at or after "@". If "@" is already on an sc stitch,
+  it attaches there. Otherwise it attaches to the next sc stitch.
+  </p></p>
+- @[sc:@+1] first moves one stitch from "@", then searches for the first sc at or after that
+  new position. If "@" was not on an sc stitch, @[sc:@] and @[sc:@+1] resolve to
+  the same next sc stitch.
+  </p></p>
+- In a labeled group such as (sc,dc)@[@+1], the label is distributed first and then each
+  attachment is evaluated separately, so sc@[@+1],dc@[@+1] attach to consecutive stitches,
+  not to the same stitch. </p>
 <h3 id="attachment-to-a-label">Attachment to a label</h3>
 <h4 id="simple-labels">Simple labels</h4>
 <p>In crocheting, one often uses stitch markers to keep track of
