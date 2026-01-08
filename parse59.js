@@ -3322,52 +3322,101 @@ set_parse_ctx({ stage: 'recompute_relative_and_sequential_attachments_after_labe
                             if (typeof tid === 'number' && Number.isFinite(tid)) {
                                 let ref = '^' + String(tid) + '-' + base;
 
-                                // Only rewrite the current stitch in the simple single-bottom-node case.
-                                let ok_simple = Array.isArray(st.bottomNodesNames) && st.bottomNodesNames.length <= 2;
+                                // For @[@] we must preserve interpolation attachments created during label distribution.
+                                // If the anchor stitch uses an interpolation vertex (hidden base node with split endpoints),
+                                // then the *same* interpolation vertex must be reused.
+                                //
+                                // - For single-attachment stitches we can normalize the stitch to a single bottom node
+                                //   named `base` that attaches to the shared vertex (legacy behavior).
+                                // - For multi-attachment stitches (e.g. sc3tog) we reuse the interpolation vertex only
+                                //   for the FIRST attachment point and keep the remaining attachment points unchanged.
+                                const is_multi_attach = Array.isArray(st.id_attach) && st.id_attach.length > 1;
 
-                                if (ok_simple) {
+                                if (!is_multi_attach) {
+                                    // Only rewrite the current stitch in the simple single-bottom-node case.
+                                    let ok_simple = Array.isArray(st.bottomNodesNames) && st.bottomNodesNames.length <= 2;
+
+                                    if (ok_simple) {
+                                        try {
+                                            let depth = 1;
+                                            let b0 = base + '_split_0_';
+                                            if (src.bottomNodes && (b0 in src.bottomNodes) && src.bottomNodes[b0] &&
+                                                (src.bottomNodes[b0].attachment_depth !== undefined)) {
+                                                depth = src.bottomNodes[b0].attachment_depth;
+                                            }
+
+                                            // Normalize to a single bottom node named `base` that attaches to the shared vertex.
+                                            st.id_attach = [ref];
+                                            st.bottomNodesNames = [base];
+                                            st.bottomNodes = {};
+                                            st.bottomNodes[base] = { attachment_depth: depth, id: ref };
+
+                                            // Ensure top nodes attach to this bottom node name.
+                                            if (st.topNodes) {
+                                                for (let tn of Object.keys(st.topNodes)) {
+                                                    st.topNodes[tn].attach = base;
+                                                }
+                                            }
+
+                                            // Remove any locally-created interpolation scaffolding (split nodes + hidden base).
+                                            if (st.otherNodes && (base in st.otherNodes) && st.otherNodes[base] &&
+                                                st.otherNodes[base].type === 'hidden') {
+                                                delete st.otherNodes[base];
+                                            }
+                                            if (!st.connections) st.connections = {};
+                                            for (let ck of Object.keys(st.connections)) {
+                                                if (ck.includes(base + '_split_0_') || ck.includes(base + '_split_1_') ||
+                                                    (ck.startsWith('*') && ck.includes('--' + base))) {
+                                                    delete st.connections[ck];
+                                                }
+                                            }
+                                            if (st.topNodesNames && st.topNodesNames.length > 0) {
+                                                let tname = st.topNodesNames[0];
+                                                let edge = base + '--' + tname;
+                                                if (!(edge in st.connections)) st.connections[edge] = 1;
+                                            }
+
+                                            did_clone = true;
+                                            new_first = ref;
+                                            try { st._attach_rewritten = true; } catch (e) {}
+                                        } catch (e) {}
+                                    }
+                                } else {
+                                    // Multi-attachment stitch: reuse the interpolation vertex only for the first attach point.
+                                    // For the remaining attachment points we must *not* skip a stitch: if the first attach is an
+                                    // interpolation vertex between two top nodes, then the next attachment point should be the
+                                    // top node in the crocheting direction to which the interpolation vertex attaches.
                                     try {
-                                        let depth = 1;
-                                        let b0 = base + '_split_0_';
-                                        if (src.bottomNodes && (b0 in src.bottomNodes) && src.bottomNodes[b0] &&
-                                            (src.bottomNodes[b0].attachment_depth !== undefined)) {
-                                            depth = src.bottomNodes[b0].attachment_depth;
-                                        }
+                                        if (Array.isArray(st.id_attach) && st.id_attach.length > 1 &&
+                                            Array.isArray(st.bottomNodesNames) && st.bottomNodesNames.length > 0 &&
+                                            st.bottomNodes) {
 
-                                        // Normalize to a single bottom node named `base` that attaches to the shared vertex.
-                                        st.id_attach = [ref];
-                                        st.bottomNodesNames = [base];
-                                        st.bottomNodes = {};
-                                        st.bottomNodes[base] = { attachment_depth: depth, id: ref };
+                                            // Overwrite the FIRST attachment point to the exact interpolation vertex.
+                                            st.id_attach[0] = ref;
 
-                                        // Ensure top nodes attach to this bottom node name.
-                                        if (st.topNodes) {
-                                            for (let tn of Object.keys(st.topNodes)) {
-                                                st.topNodes[tn].attach = base;
+                                            // Recompute the remaining attachment points starting from the "after" endpoint of the
+                                            // interpolation vertex (in crocheting direction). This ensures multi-attachment stitches
+                                            // like sc3tog attach consecutively without skipping a stitch.
+                                            let ep = _interp_endpoints_from_postref(ref, direction);
+                                            if (ep && typeof ep.after === 'number') {
+                                                for (let ii = 1; ii < st.id_attach.length; ii++) {
+                                                    try {
+                                                        // ii=1 -> ep.after, ii=2 -> next stitch, etc.
+                                                        let tgt = find_stitchID_by_pos(Stitches, x, ii - 1, ep.after, direction, '');
+                                                        st.id_attach[ii] = tgt;
+                                                    } catch (e) {
+                                                        if (typeof st.id_attach[ii] === 'number')
+                                                            st.id_attach[ii] = ep.after + (ii - 1) * direction;
+                                                    }
+                                                }
                                             }
-                                        }
 
-                                        // Remove any locally-created interpolation scaffolding (split nodes + hidden base).
-                                        if (st.otherNodes && (base in st.otherNodes) && st.otherNodes[base] &&
-                                            st.otherNodes[base].type === 'hidden') {
-                                            delete st.otherNodes[base];
+                                            // Keep bottomNodes ids consistent.
+                                            _sync_bottom_nodes_to_id_attach(st);
+                                            did_clone = true;
+                                            new_first = ref;
+                                            try { st._attach_rewritten = true; } catch (e) {}
                                         }
-                                        if (!st.connections) st.connections = {};
-                                        for (let ck of Object.keys(st.connections)) {
-                                            if (ck.includes(base + '_split_0_') || ck.includes(base + '_split_1_') ||
-                                                (ck.startsWith('*') && ck.includes('--' + base))) {
-                                                delete st.connections[ck];
-                                            }
-                                        }
-                                        if (st.topNodesNames && st.topNodesNames.length > 0) {
-                                            let tname = st.topNodesNames[0];
-                                            let edge = base + '--' + tname;
-                                            if (!(edge in st.connections)) st.connections[edge] = 1;
-                                        }
-
-                                        did_clone = true;
-                                        new_first = ref;
-                                        try { st._attach_rewritten = true; } catch (e) {}
                                     } catch (e) {}
                                 }
                             }
