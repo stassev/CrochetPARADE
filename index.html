@@ -325,6 +325,7 @@
         .button,
         .button1,
         .button2,
+        .buttonRemesher,
         .label {
             flex: 1;
             align-self: stretch;
@@ -418,6 +419,34 @@
             background: linear-gradient(to right, #c31bc9, #e75fff);
             /* d86f00Remove default margin */
         }
+
+.buttonRemesher {
+    outline: none;
+    font-size: 14pt;
+    border: none;
+    color: #0a1a33; /* dark blue text for contrast */
+    padding: 6px 12px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 2px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    background: linear-gradient(45deg, #ffff00 0%, #00c8ff 100%);
+    box-shadow: 0 0 0 1px rgba(0, 200, 255, 0.7) inset, 3px 3px 8px rgba(255, 255, 0, 0.6);
+    transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.buttonRemesher:hover {
+    background: linear-gradient(45deg, #ffff33 0%, #66e1ff 40%, #b3f2ff 100%);
+    box-shadow: 0 0 14px 5px rgba(255, 255, 102, 0.95),
+                0 0 26px 8px rgba(102, 225, 255, 0.9),
+                inset 0 0 10px rgba(204, 255, 153, 0.8);
+    transform: scale(1.10) translateY(-1px);
+}
+
 
         .spacer {
             margin-right: 3px;
@@ -1057,8 +1086,9 @@
         <div class="title-author">
             <p class="title">CrochetPARADE: Crochet PAttern Renderer, Analyzer and DEbugger</p>
             <p class="author">Svetlin Tassev</p>
-            <p class="date"><span style="background-color: yellow;">Updated: Dec 22, 2025.</span>
- <a href="https://crochetparade.org/crochetforum/showthread.php?tid=57&pid=152"  target="_blank">Edge Work Made Simple: Periphery Finder + INDEX_ARRAY + SORT_LABEL</a>. See "Granny Square Stitching" demo as well as "Baby blanket with sc edge" demo.</p>
+            <p class="date"><span style="background-color: cyan;">Updated: Feb 13, 2026.</span>
+ <a href="https://crochetparade.org/crochetforum/showthread.php?tid=59"  target="_blank">CrochetPARADE Remesher: Turn a 3D Model Into Crochet Instructions
+</a>.</p>
         </div>
     </div>
     <div id="announcement" style="background-color:rgb(253, 79, 79);color:#ffffff; font-size: 14pt; position: relative;">
@@ -4797,6 +4827,7 @@ window.highlightPeripheryInText = function (nodeLabels) {
             </div>
         </div>
 
+        <button class="buttonRemesher" onclick="window.open('./remesher', '_blank')">Remesher</button>
         <button class="button2" onclick="window.open('https://crochetparade.org/crochetforum/', '_blank')">Forum</button>
         <button class="button1" onclick="window.open('https://donate.stripe.com/eVa6pK4XQ5Qg6vmbII', '_blank')">Leave a Tip</button>
 
@@ -7257,7 +7288,7 @@ if (!Array.isArray(a) || a.length < 14) {
 
     </script>
 
-
+<template data-disabled>
 <!-- CrochetPARADE Tip Banner: START -->
 <style id="cp-tip-banner-style">
 /* Tip banner styles */
@@ -7422,7 +7453,7 @@ if (!Array.isArray(a) || a.length < 14) {
     }
 
     // Manually set the total amount of tips since Jan 1, 2025
-    var totalReceived = 65; // This is the amount in dollars
+    var totalReceived = 95; // This is the amount in dollars
 
     if (amountEl) {
       amountEl.textContent = '$' + totalReceived.toFixed(2);
@@ -7500,7 +7531,7 @@ if (!Array.isArray(a) || a.length < 14) {
   }
 })();
 </script>
-
+</template>
 <!-- CrochetPARADE Tip Banner: END -->
 </body>
 
