@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2026-02-15" />
+  <title>Reconstructing Crochet Geometry from a DOT-Encoded Metric</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+  </style>
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Reconstructing Crochet Geometry from a DOT-Encoded
+Metric</h1>
+<p class="subtitle">Physics and mathematics of the
+<code>graph.cpp</code> layout algorithm</p>
+<p class="date">2026-02-15</p>
+</header>
+<h1 id="abstract">Abstract</h1>
+<p>CrochetPARADE represents a crochet pattern as a weighted graph whose
+nodes correspond to stitch-level material points and whose edge weights
+encode characteristic stitch-scale distances. From this discrete
+description, <code>graph.cpp</code> computes a 2D or 3D embedding
+intended to approximate the <em>rest geometry</em> of the crocheted
+object: a configuration in Euclidean space whose local distances match
+stitch sizes while remaining globally consistent and non-degenerate.
+Mathematically, the method constructs an intrinsic metric by completing
+the graph with shortest-path (geodesic) distances, then performs an
+annealed, weighted, all-pairs relaxation equivalent to gradient descent
+on a regularized pair potential with minima at prescribed squared
+distances. A final “viscous relaxation” stage integrates a damped spring
+network on graph edges to reduce residual local strain. In 3D, optional
+plane-normal constraints impose signed offsets between selected node
+pairs.</p>
+<p>This document explains <em>why</em> these ingredients produce
+plausible crochet geometry, and it presents the governing equations in a
+form suitable for physicists familiar with distance geometry, discrete
+elasticity, and dissipative dynamics.</p>
+<h1 id="introduction-crochet-as-a-discrete-metric-surface">1.
+Introduction: crochet as a discrete metric surface</h1>
+<p>A crocheted fabric can be idealized as a thin, flexible sheet
+assembled from stitches of characteristic size. The pattern specifies
+how stitches connect; stitch type and tension set approximate lengths of
+yarn segments and spacings between attachment points. In the limit of
+small stitches, one may view the fabric as a two-dimensional material
+manifold <span class="math inline">\(\mathcal{M}\)</span> endowed with
+an intrinsic metric <span class="math inline">\(g\)</span> that encodes
+local distances along the material. The observed 3D shape is then an
+<em>embedding</em> <span
+class="math inline">\(\mathbf{X}:\mathcal{M}\to\mathbb{R}^3\)</span>
+whose induced metric <span class="math inline">\(\mathbf{X}^\ast
+\delta\)</span> approximately matches <span
+class="math inline">\(g\)</span>, up to elastic strain and bending.</p>
+<p><code>graph.cpp</code> implements a discrete counterpart of this
+idea:</p>
+<ol type="1">
+<li>The DOT file describes a weighted graph <span
+class="math inline">\(G=(V,E)\)</span> with edge lengths that
+approximate stitch-scale distances.</li>
+<li>Shortest-path distances on <span class="math inline">\(G\)</span>
+serve as a proxy for intrinsic (material/geodesic) distances between
+non-neighboring nodes.</li>
+<li>An embedding <span
+class="math inline">\(\mathbf{x}_i\in\mathbb{R}^d\)</span> (<span
+class="math inline">\(d=2\)</span> or <span
+class="math inline">\(3\)</span>) is found by iteratively reducing a
+distance-mismatch functional.</li>
+<li>A dissipative, edge-spring relaxation step further enforces local
+lengths.</li>
+</ol>
+<p>This pipeline corresponds to reconstructing an <em>unfolded,
+non-collapsed</em> rest shape consistent with the intrinsic metric
+implied by the pattern, rather than an arbitrary crumpled configuration
+that could also satisfy local constraints.</p>
+<h1 id="discrete-geometric-model-and-intrinsic-distances">2. Discrete
+geometric model and intrinsic distances</h1>
+<h2 id="graph-as-a-discrete-material-complex">2.1 Graph as a discrete
+material complex</h2>
+<p>Let <span class="math inline">\(V=\{1,\dots,N\}\)</span> be the set
+of nodes. Each edge <span class="math inline">\((i,j)\in E\)</span>
+carries a positive length <span class="math inline">\(\ell_{ij}\)</span>
+(symmetric), interpreted as a stitch-scale target separation between the
+corresponding material points.</p>
+<p>This is the discrete analog of specifying local distances (or metric
+elements). Edges encode <em>strong</em>, local constraints: adjacent
+stitch points should lie approximately <span
+class="math inline">\(\ell_{ij}\)</span> apart in the embedding.</p>
+<h2 id="completing-the-metric-with-shortest-path-distances">2.2
+Completing the metric with shortest-path distances</h2>
+<p>To obtain intrinsic distances between non-neighbor nodes, define the
+graph shortest-path (geodesic) distance:</p>
+<p><span class="math display">\[
+D_{ij} \;=\; \min_{\pi:i\to j} \sum_{(a,b)\in\pi} \ell_{ab}.
+\]</span></p>
+<p><code>graph.cpp</code> computes <span
+class="math inline">\(D_{ij}\)</span> by running Dijkstra’s algorithm
+from every source node (with one important convention: direct edge pairs
+retain their given <span class="math inline">\(\ell_{ij}\)</span> even
+if an alternate path could be shorter).</p>
+<p><strong>Physical rationale.</strong> In a thin fabric, distances
+<em>along the material</em> are approximated by sums of local
+stitch-scale segments. Shortest paths on the stitch connectivity graph
+thus approximate discrete geodesics. These intrinsic distances are not
+directly the 3D chord lengths; instead, they quantify how far apart
+points are <em>in the pattern/material coordinates</em>.</p>
+<h2 id="disconnected-components-and-the-necessity-of-a-gauge-choice">2.3
+Disconnected components and the necessity of a gauge choice</h2>
+<p>If <span class="math inline">\(G\)</span> has multiple connected
+components, the intrinsic distance between components is undefined
+(<span class="math inline">\(D_{ij}=\infty\)</span>). The embedding
+problem is then underconstrained: components can be placed arbitrarily
+far apart or on top of each other. The implementation resolves this by
+assigning a finite proxy distance of order <span class="math display">\[
+D_{\text{sep}} \sim D_{\max}\,s,
+\]</span> where <span class="math inline">\(D_{\max}\)</span> is the
+largest finite intrinsic distance within any component and <span
+class="math inline">\(s&gt;0\)</span> is a user-controlled separation
+factor. This is a pragmatic gauge choice: it prevents different crochet
+pieces from collapsing into one another in the embedding.</p>
+<h1
+id="from-intrinsic-distances-to-an-embedding-an-optimization-view">3.
+From intrinsic distances to an embedding: an optimization view</h1>
+<p>We seek positions <span
+class="math inline">\(\mathbf{x}_i\in\mathbb{R}^d\)</span> such
+that:</p>
+<ul>
+<li>for edges <span class="math inline">\((i,j)\in E\)</span>: <span
+class="math inline">\(\|\mathbf{x}_i-\mathbf{x}_j\|\approx
+\ell_{ij}\)</span>,</li>
+<li>for many non-edge pairs: <span
+class="math inline">\(\|\mathbf{x}_i-\mathbf{x}_j\|\)</span> should not
+be <em>pathologically smaller</em> than <span
+class="math inline">\(D_{ij}\)</span>, which would indicate global
+collapse or self-interpenetration.</li>
+</ul>
+<p>This is a form of <strong>distance geometry</strong> /
+<strong>multidimensional scaling (MDS)</strong> with nonuniform weights
+and a physically motivated annealing schedule.</p>
+<p>Because the prescribed intrinsic distances generally cannot be
+realized exactly in <span class="math inline">\(\mathbb{R}^3\)</span>
+without strain (and are certainly overdetermined if enforced for all
+pairs), the algorithm does not enforce strict isometry. Instead, it
+iteratively reduces a weighted mismatch functional that balances:</p>
+<ul>
+<li><em>local fidelity</em> (edge lengths), and</li>
+<li><em>global coherence / self-avoidance proxy</em> (selected non-edge
+distances).</li>
+</ul>
+<h1 id="pair-potential-and-its-gradient-the-core-relaxation-equation">4.
+Pair potential and its gradient: the core relaxation equation</h1>
+<h2 id="targets-expressed-as-squared-distances">4.1 Targets expressed as
+squared distances</h2>
+<p>For any constrained pair <span class="math inline">\((i,j)\)</span>,
+define the target squared distance <span class="math display">\[
+L_{ij} \;=\; D_{ij}^2
+\]</span> (with <span class="math inline">\(D_{ij}=\ell_{ij}\)</span> on
+edges by convention).</p>
+<p>Let the current squared Euclidean separation be <span
+class="math display">\[
+r_{ij}^2 \;=\; \|\mathbf{x}_i-\mathbf{x}_j\|^2.
+\]</span></p>
+<p>The algorithm’s fundamental interaction drives <span
+class="math inline">\(r_{ij}^2\)</span> toward <span
+class="math inline">\(L_{ij}\)</span>.</p>
+<h2 id="regularized-potential-with-a-minimum-at-r_ij2l_ij">4.2
+Regularized potential with a minimum at <span
+class="math inline">\(r_{ij}^2=L_{ij}\)</span></h2>
+<p>Introduce a small constant <span class="math inline">\(\varepsilon =
+10^{-3}\)</span> (as used by the implementation). Define the pair
+potential</p>
+<p><span class="math display">\[
+U_{ij}(r_{ij}^2)
+=
+\frac{1}{4}\Bigl[
+r_{ij}^2 \;-\; (L_{ij}+\varepsilon)\,\ln(r_{ij}^2+\varepsilon)
+\Bigr].
+\tag{1}
+\]</span></p>
+<p>This potential is constructed so that its derivative with respect to
+<span class="math inline">\(r^2\)</span> is</p>
+<p><span class="math display">\[
+\frac{\partial U_{ij}}{\partial (r_{ij}^2)}
+=
+\frac{1}{4}\,\frac{r_{ij}^2 - L_{ij}}{r_{ij}^2+\varepsilon}.
+\tag{2}
+\]</span></p>
+<p>Using <span
+class="math inline">\(\nabla_{\mathbf{x}_i}(r_{ij}^2)=2(\mathbf{x}_i-\mathbf{x}_j)\)</span>,
+the spatial gradient is</p>
+<p><span class="math display">\[
+\nabla_{\mathbf{x}_i} U_{ij}
+=
+\frac{1}{2}\,\frac{r_{ij}^2 -
+L_{ij}}{r_{ij}^2+\varepsilon}\,(\mathbf{x}_i-\mathbf{x}_j).
+\tag{3}
+\]</span></p>
+<p>Equation (3) is exactly the per-pair contribution to the <em>energy
+gradient</em> assembled in the main relaxation stage (up to
+pair-dependent weights discussed next).</p>
+<h3 id="why-this-force">Why this force?</h3>
+<p>The gradient of the potential in equation (3) above is the force we
+apply on nodes during the main relaxation stage. We do not use Hooke’s
+law on purpose, so that the repulsion when <span
+class="math inline">\(r_{ij}\to 0\)</span> blows up (but see “No
+singularity at coincidence” below) leading to rapid inflation of the
+model and preventing recollapse more aggressively than Hooke’s law would
+(Hooke’s law would result in a force term which does not blow up at
+<span class="math inline">\(r_{ij}\to 0\)</span>).</p>
+<ul>
+<li><strong>Correct fixed point.</strong> The gradient contribution
+vanishes at <span class="math inline">\(r_{ij}^2=L_{ij}\)</span>, so
+each pair has the desired equilibrium separation.</li>
+<li><strong>No singularity at coincidence.</strong> As <span
+class="math inline">\(r_{ij}\to 0\)</span>, the prefactor scales like
+<span class="math inline">\(\sim ( -L_{ij})/(2\varepsilon)\)</span> but
+multiplies <span class="math inline">\((\mathbf{x}_i-\mathbf{x}_j)\to
+0\)</span>, avoiding numerical blow-up.</li>
+<li><strong>Quadratic confinement at large separations.</strong> For
+<span class="math inline">\(r_{ij}^2\gg L_{ij}\)</span>, the gradient
+approaches <span class="math inline">\(\approx
+\tfrac{1}{2}(\mathbf{x}_i-\mathbf{x}_j)\)</span>, i.e. a linear
+restoring term that prevents runaway drift.</li>
+</ul>
+<p>Near the minimum <span class="math inline">\(r_{ij}^2\approx
+L_{ij}\)</span>, a Taylor expansion of (1) yields</p>
+<p><span class="math display">\[
+U_{ij}(r_{ij}^2) \;\approx\; \text{const} \;+\;
+\frac{(r_{ij}^2-L_{ij})^2}{8(L_{ij}+\varepsilon)}.
+\tag{4}
+\]</span></p>
+<p>Thus, locally the method behaves like a weighted least-squares fit in
+squared distances, with natural down-weighting of large target
+distances.</p>
+<h2 id="annealed-weighting-of-non-edge-interactions-inflation">4.3
+Annealed weighting of non-edge interactions (“inflation”)</h2>
+<p>The algorithm does <strong>not</strong> treat all pairs equally. Edge
+pairs act as strong local constraints; non-edge pairs act as a
+<em>global-shape regularizer</em> that is gradually reduced (“annealed”)
+over iterations.</p>
+<p>Let the main relaxation run for <span
+class="math inline">\(T\)</span> steps, and define normalized iteration
+time <span class="math display">\[
+p \;=\; \frac{t}{T}, \qquad t=0,1,\dots,T-1.
+\tag{5}
+\]</span></p>
+<p>Define a monotone decreasing envelope <span class="math display">\[
+g(p) \;=\; \sqrt{1-p} + 10^{-3}.
+\tag{6}
+\]</span></p>
+<p>Non-edge pair gradients are multiplied by an additional factor <span
+class="math inline">\(k_{ij}(p)\)</span>, while edge gradients are
+not:</p>
+<p><span class="math display">\[
+\nabla_{\mathbf{x}_i} U_{ij} \;\mapsto\;
+\begin{cases}
+\nabla_{\mathbf{x}_i} U_{ij}, &amp; (i,j)\in E,\\[4pt]
+k_{ij}(p)\,\nabla_{\mathbf{x}_i} U_{ij}, &amp; (i,j)\notin E.
+\end{cases}
+\tag{7}
+\]</span></p>
+<p>Two weighting modes are used:</p>
+<h3 id="mode-a-baseline-no-distance-exponent-inflation">Mode A: baseline
+(no distance-exponent inflation)</h3>
+<p><span class="math display">\[
+k_{ij}(p) \;=\; \frac{g(p)}{L_{ij}+\varepsilon}.
+\tag{8}
+\]</span></p>
+<p>For large intrinsic distances <span
+class="math inline">\(D_{ij}\)</span>, this behaves like <span
+class="math inline">\(k_{ij}\sim g(p)/D_{ij}^2\)</span>, a familiar
+MDS-style weighting that emphasizes relative accuracy for nearer pairs
+while preventing far-pair terms from dominating.</p>
+<h3 id="mode-b-exponentiated-user-controlled-localization">Mode B:
+exponentiated (user-controlled) localization</h3>
+<p>Introduce a parameter <span
+class="math inline">\(\alpha&gt;0\)</span> (“inflate” in the DOT
+command) and define <span class="math display">\[
+\beta(p) \;=\; p^{\alpha} + 1,
+\qquad \beta(p)\in[1,2].
+\tag{9}
+\]</span></p>
+<p>Then <span class="math display">\[
+k_{ij}(p) \;=\; \frac{g(p)}{L_{ij}^{\beta(p)}+\varepsilon}.
+\tag{10}
+\]</span></p>
+<p>Since <span class="math inline">\(L_{ij}=D_{ij}^2\)</span>, this
+interpolates between a <span class="math inline">\(D^{-2}\)</span>
+weighting early (<span class="math inline">\(\beta\approx 1\)</span>)
+and a <span class="math inline">\(D^{-4}\)</span> weighting late (<span
+class="math inline">\(\beta\approx 2\)</span>), increasingly localizing
+the influence of non-edge constraints as convergence proceeds.</p>
+<h3 id="physical-rationale-of-annealing">Physical rationale of
+annealing</h3>
+<p>Non-edge terms act like an <em>effective pressure / self-avoidance
+surrogate</em>: they discourage distant-in-the-pattern points from
+occupying nearly the same Euclidean location, which would correspond to
+a globally collapsed or heavily self-intersecting sheet. Turning these
+interactions on strongly at early times helps the configuration expand
+into a coherent global shape. Gradually reducing them allows the final
+state to be governed primarily by local stitch constraints, analogous to
+annealing or simulated “deflation” after an initial inflation that
+resolves gross entanglements.</p>
+<h2 id="locality-control-via-an-intrinsic-cutoff">4.4 Locality control
+via an intrinsic cutoff</h2>
+<p>The algorithm also applies an intrinsic-distance cutoff <span
+class="math inline">\(R\)</span> (repulsion radius): only pairs with
+<span class="math display">\[
+D_{ij} &lt; R
+\tag{11}
+\]</span> participate in the pair interactions at all. This makes the
+non-edge regularizer local in intrinsic space and reduces computational
+cost. Physically, it reflects the idea that only material points within
+a certain neighborhood should directly repel/regularize each other,
+while points far apart on the fabric may approach in 3D if the object
+legitimately folds or contacts itself (though note: the method does not
+implement hard collision constraints).</p>
+<h1
+id="main-embedding-dynamics-gradient-descent-with-boundary-conditions">5.
+Main embedding dynamics: gradient descent with boundary conditions</h1>
+<h2 id="dissipative-update-rule">5.1 Dissipative update rule</h2>
+<p>Let <span class="math inline">\(\eta&gt;0\)</span> be the step size
+(learning rate). The core relaxation step is a first-order dissipative
+dynamics:</p>
+<p><span class="math display">\[
+\mathbf{x}_i \leftarrow \mathbf{x}_i \;-\; \eta\,\mathbf{G}_i,
+\tag{12}
+\]</span> where <span class="math inline">\(\mathbf{G}_i\)</span> is the
+weighted sum of pair gradients (3)–(7) over all participating pairs,
+i.e. <span class="math inline">\(\mathbf{G}_i = \nabla_{\mathbf{x}_i}
+E\)</span> for an objective <span class="math inline">\(E\)</span> such
+as (13).</p>
+<p>Although <span class="math inline">\(\eta\)</span> plays the role of
+a “time step” in the update, the main stage is <strong>not</strong>
+Newtonian inertial dynamics: there is no persistent velocity state,
+hence no momentum variable to integrate. Instead, (12) is an
+explicit-Euler step for the <em>gradient flow</em> <span
+class="math display">\[
+\frac{d\mathbf{x}_i}{d\tau} = -\mathbf{G}_i,
+\tag{12a}
+\]</span> in an algorithmic (pseudo-)time <span
+class="math inline">\(\tau\)</span>. If one wishes to attach physical
+language, define an effective force <span
+class="math inline">\(\mathbf{F}_i = -\nabla_{\mathbf{x}_i} E =
+-\mathbf{G}_i\)</span> and a mobility <span
+class="math inline">\(\mu\)</span> so that <span
+class="math inline">\(\eta = \mu\,\Delta\tau\)</span>; then (12) is
+simply overdamped motion <span class="math inline">\(\dot{\mathbf{x}}_i
+= \mu\,\mathbf{F}_i\)</span>.</p>
+<p>Here <span class="math inline">\(\mu\)</span> is the
+<em>mobility</em> (inverse drag) relating force to velocity. A standard
+derivation starts from Newton’s law with linear friction, <span
+class="math display">\[
+m\ddot{\mathbf{x}}_i = \mathbf{F}_i(\mathbf{x}) -
+\gamma\,\dot{\mathbf{x}}_i,
+\tag{12b}
+\]</span> where <span class="math inline">\(m\)</span> is an effective
+mass and <span class="math inline">\(\gamma&gt;0\)</span> a drag
+coefficient. In the <strong>overdamped limit</strong> (e.g. when the
+relaxation timescale of the velocity <span
+class="math inline">\(m/\gamma\)</span> is much shorter than the
+timescale on which <span class="math inline">\(\mathbf{x}\)</span>
+changes), one neglects inertia, <span
+class="math inline">\(m\ddot{\mathbf{x}}_i \approx 0\)</span>, giving
+<span class="math display">\[
+\dot{\mathbf{x}}_i \approx \frac{1}{\gamma}\,\mathbf{F}_i \equiv
+\mu\,\mathbf{F}_i.
+\tag{12c}
+\]</span> Thus, what “happened” to <span
+class="math inline">\(\ddot{\mathbf{x}}\)</span> is that it has been
+eliminated by a controlled reduction to first-order dynamics. The main
+stage in <code>graph.cpp</code> implements this reduced, first-order
+evolution directly by <em>not</em> storing a velocity state;
+consequently, the per-iteration accumulator <span
+class="math inline">\(\mathbf{G}_i\)</span> is best viewed as an energy
+gradient (a descent direction), not a momentum. (A true second-order,
+velocity-carrying relaxation appears only in the separate viscous
+post-processing stage in Section 6.3.)</p>
+<p>This is mathematically analogous to overdamped motion in the
+time-dependent energy landscape <span class="math display">\[
+E(p,\{\mathbf{x}\}) = \sum_{(i,j)\in E} U_{ij}(r_{ij}^2)
++ \sum_{\substack{(i,j)\notin E\\ D_{ij}&lt;R}}
+k_{ij}(p)\,U_{ij}(r_{ij}^2),
+\tag{13}
+\]</span> with the caveat that the weights depend on iteration time
+<span class="math inline">\(p\)</span>, so the “energy” itself is slowly
+deformed during the run.</p>
+<h2 id="fixed-nodes-as-dirichlet-constraints-anchors">5.2 Fixed nodes as
+Dirichlet constraints (anchors)</h2>
+<p>The DOT file may specify explicit coordinates for some nodes. These
+serve as <em>anchors</em> that remove rigid-body gauge freedoms
+(translation/rotation) and impose boundary conditions. During the main
+relaxation, anchored nodes are not moved, but they still exert
+interactions on free nodes, acting as an immobile scaffold. This is the
+discrete analog of clamping boundary points in an elastic sheet.</p>
+<p>The code also supports treating specified coordinates as an initial
+guess rather than a hard constraint (a “soft start” mode), which is
+useful when an approximate prior embedding is known but should not
+overconstrain the solution.</p>
+<h2 id="distributed-reaction-offset-rigid-translation-mode">5.3
+Distributed reaction offset (rigid-translation mode)</h2>
+<p>When anchors are present, the implementation additionally applies a
+uniform offset to all <em>free</em> nodes derived from the net
+interaction on the anchored set. Let <span
+class="math inline">\(\mathcal{S}\subset V\)</span> denote the anchored
+nodes and <span
+class="math inline">\(\mathcal{F}=V\setminus\mathcal{S}\)</span> the
+free nodes. After assembling the per-node descent directions <span
+class="math inline">\(\mathbf{G}_i\)</span> from pair interactions, the
+code forms <span class="math display">\[
+\mathbf{A} \;=\; \frac{1}{|\mathcal{F}|}\sum_{j\in\mathcal{S}}
+\mathbf{G}_j,
+\tag{13a}
+\]</span> and updates free nodes as <span class="math display">\[
+\mathbf{x}_i \leftarrow \mathbf{x}_i \;-\; \eta\,\mathbf{G}_i \;+\;
+\eta\,\mathbf{A},
+\qquad i\in\mathcal{F}.
+\tag{13b}
+\]</span></p>
+<p>Because the pair interactions are assembled antisymmetrically (each
+pair contributes equal and opposite terms to its endpoints), one has
+<span class="math inline">\(\sum_{i\in V}\mathbf{G}_i\approx 0\)</span>,
+hence <span class="math display">\[
+\sum_{j\in\mathcal{S}} \mathbf{G}_j \;\approx\; -\sum_{i\in\mathcal{F}}
+\mathbf{G}_i,
+\tag{13c}
+\]</span> so <span class="math inline">\(\mathbf{A}\)</span> is
+(approximately) the negative mean descent direction on the free set. The
+term <span class="math inline">\(\eta\,\mathbf{A}\)</span> is a pure
+rigid translation of the free-node subset (it does not change free–free
+separations) and can be interpreted as distributing the net reaction at
+the pinned nodes across all free degrees of freedom. Numerically, this
+acts like an explicit update of the translation mode of the free
+subsystem, i.e. a simple preconditioning/acceleration of global drift of
+the free configuration relative to the anchors.</p>
+<h2 id="stability-control-by-step-size-reduction">5.4 Stability control
+by step-size reduction</h2>
+<p>If numerical instability is detected (coordinate blow-up or NaNs),
+the algorithm restarts with a reduced step size <span
+class="math inline">\(\eta \leftarrow \eta/3\)</span>. This is a coarse
+but effective stability mechanism for nonlinear, all-pairs
+relaxation.</p>
+<h1
+id="post-processing-viscous-relaxation-as-a-damped-spring-network">6.
+Post-processing: viscous relaxation as a damped spring network</h1>
+<p>After the main embedding, <code>graph.cpp</code> optionally performs
+a “viscous relaxation” stage meant to correct residual local
+strain—particularly relevant when strong non-edge inflation terms have
+been used.</p>
+<h2 id="rescaling-to-the-correct-global-length-scale">6.1 Rescaling to
+the correct global length scale</h2>
+<p>Before the viscous step, free-node coordinates are uniformly rescaled
+to match the mean edge-length scale. Let <span class="math display">\[
+\bar{r} = \sum_{(i,j)\in E} \|\mathbf{x}_i-\mathbf{x}_j\|,
+\qquad
+\bar{\ell} = \sum_{(i,j)\in E} \ell_{ij}.
+\tag{14}
+\]</span> Then the scale factor <span class="math display">\[
+s = \frac{\bar{\ell}}{\bar{r}}
+\tag{15}
+\]</span> is applied to all free coordinates <span
+class="math inline">\(\mathbf{x}_i \leftarrow s\,\mathbf{x}_i\)</span>.
+Anchored nodes are not rescaled.</p>
+<p><strong>Rationale.</strong> All-pairs objectives can converge to a
+configuration with small global scale bias. Rescaling removes this bias
+using the most physically trusted measurements: immediate neighbor
+stitch lengths.</p>
+<h2 id="edge-spring-energy-and-forces">6.2 Edge-spring energy and
+forces</h2>
+<p>Define the classical edge-spring energy <span class="math display">\[
+E_{\text{edge}}(\{\mathbf{x}\}) = \frac{1}{2}\sum_{(i,j)\in
+E}\bigl(\|\mathbf{x}_i-\mathbf{x}_j\|-\ell_{ij}\bigr)^2.
+\tag{16}
+\]</span></p>
+<p>For an edge <span class="math inline">\((i,j)\)</span>, let <span
+class="math inline">\(\mathbf{r}_{ij}=\mathbf{x}_i-\mathbf{x}_j\)</span>
+and <span class="math inline">\(r_{ij}=\|\mathbf{r}_{ij}\|\)</span>. The
+force on node <span class="math inline">\(i\)</span> from this edge is
+<span class="math display">\[
+\mathbf{f}_{i\leftarrow j}
+=
+-\frac{\partial}{\partial \mathbf{x}_i}\,\frac{1}{2}(r_{ij}-\ell_{ij})^2
+=
+-(r_{ij}-\ell_{ij})\,\frac{\mathbf{r}_{ij}}{r_{ij}},
+\qquad (r_{ij}&gt;0).
+\tag{17}
+\]</span> which is exactly Hooke’s law. Note here we no longer need to
+enforce rapid model inflation (as done in the main relaxation loop, see
+Section 4.2), so our force model differs from the main relaxation loop
+in Section 4.2, which ensures the model is already inflated. Summing
+over incident edges gives <span
+class="math inline">\(\mathbf{f}_i\)</span>. Anchored nodes are excluded
+from updates (effectively infinite mass / clamped boundary).</p>
+<h2 id="damped-second-order-dynamics-and-its-discretization">6.3 Damped
+second-order dynamics and its discretization</h2>
+<p>The viscous stage introduces an auxiliary velocity-like state <span
+class="math inline">\(\mathbf{v}_i\)</span> and integrates <span
+class="math display">\[
+\dot{\mathbf{x}}_i = \mathbf{v}_i,
+\qquad
+\dot{\mathbf{v}}_i = \mathbf{f}_i - \gamma \mathbf{v}_i,
+\tag{18}
+\]</span> with damping <span class="math inline">\(\gamma&gt;0\)</span>.
+The integration uses a Kick–Drift–Kick structure (a velocity-Verlet
+variant) with an <em>implicit</em> treatment of damping. For a time step
+<span class="math inline">\(\Delta t\)</span>, each kick updates
+(componentwise)</p>
+<p><span class="math display">\[
+\mathbf{v}_i \leftarrow \frac{\Delta t\,\mathbf{f}_i +
+2\,\mathbf{v}_i}{2 + \Delta t\,\gamma},
+\tag{19}
+\]</span> followed by a drift <span class="math display">\[
+\mathbf{x}_i \leftarrow \mathbf{x}_i + \Delta t\,\mathbf{v}_i.
+\tag{20}
+\]</span></p>
+<p>Equation (19) is equivalent to an implicit half-step for the linear
+drag term, improving stability at large <span
+class="math inline">\(\gamma\)</span> without requiring extremely small
+<span class="math inline">\(\Delta t\)</span>.</p>
+<p><strong>Physical interpretation.</strong> This stage is a literal
+damped relaxation of an elastic spring network whose rest lengths are
+the stitch-scale constraints. It acts to minimize <span
+class="math inline">\(E_{\text{edge}}\)</span> while dissipating kinetic
+energy, i.e. it converges toward a local mechanical equilibrium of the
+edge constraints.</p>
+<h1 id="d-only-plane-normal-offset-constraints">7. 3D-only plane-normal
+offset constraints</h1>
+<p>In 3D, an optional constraint type specifies four nodes <span
+class="math inline">\((a,b,c,d)\)</span> and a scalar <span
+class="math inline">\(\nu\)</span>. The algorithm computes the unit
+normal to the plane through three of the points (constructed from
+vectors <span class="math inline">\(\mathbf{x}_c-\mathbf{x}_a\)</span>
+and <span class="math inline">\(\mathbf{x}_b-\mathbf{x}_c\)</span>):</p>
+<p><span class="math display">\[
+\mathbf{n} =
+\frac{(\mathbf{x}_c-\mathbf{x}_a)\times(\mathbf{x}_b-\mathbf{x}_c)}{\|(\mathbf{x}_c-\mathbf{x}_a)\times(\mathbf{x}_b-\mathbf{x}_c)\|
++ 10^{-7}}.
+\tag{21}
+\]</span></p>
+<p>It then repositions <span class="math inline">\(\mathbf{x}_c\)</span>
+and <span class="math inline">\(\mathbf{x}_d\)</span> along <span
+class="math inline">\(\mathbf{n}\)</span> so that they become separated
+by <span class="math inline">\(\nu\)</span> in the normal direction
+while keeping their midpoint approximately unchanged:</p>
+<p><span class="math display">\[
+\mathbf{x}_d \leftarrow \frac{\mathbf{x}_c+\mathbf{x}_d}{2} +
+\frac{\nu}{2}\mathbf{n},
+\qquad
+\mathbf{x}_c \leftarrow \mathbf{x}_d - \nu \mathbf{n}.
+\tag{22}
+\]</span></p>
+<p><strong>Interpretation.</strong> This operation enforces a signed
+local thickness / layering relation relative to a triangle-defined
+normal direction. It is not derived from the distance-matching energy;
+rather, it is a direct geometric projection step applied after each
+relaxation iteration, thereby biasing the embedding toward a particular
+3D folding/side choice. In crochet terms, this is done for stitches
+crocheted in the front/back loops to displace the vertical bar of the
+stitch a bit to the front/back of the plane of the fabric (defined by
+the plane given by a,b,c).</p>
+<h1 id="discussion-why-this-reconstructs-plausible-crochet-shapes">8.
+Discussion: why this reconstructs plausible crochet shapes</h1>
+<h2 id="intrinsic-metric-as-the-primary-driver-of-curvature">8.1
+Intrinsic metric as the primary driver of curvature</h2>
+<p>For thin sheets, curvature is largely determined by the intrinsic
+metric (Gauss’ theorem). Crochet patterns that increase or decrease
+stitch counts effectively prescribe an intrinsic metric with positive or
+negative Gaussian curvature. By encoding stitch-scale distances and
+propagating them via shortest paths, the DOT graph provides a discrete
+metric specification; the embedding then searches for an extrinsic
+realization that minimizes metric distortion.</p>
+<p>The main relaxation stage can be viewed as minimizing a discrete
+“strain” functional that penalizes mismatch between embedded squared
+distances and target squared intrinsic distances (with strong emphasis
+on near neighbors and progressively weaker emphasis on far pairs). This
+is analogous to minimizing stretching energy in shell theory; bending is
+not explicitly modeled, so the algorithm tends to prefer unfolded
+configurations unless constrained otherwise.</p>
+<h2 id="why-include-non-edge-pairs-at-all">8.2 Why include non-edge
+pairs at all?</h2>
+<p>If one enforces only edge lengths, the graph is typically flexible:
+many embeddings satisfy local constraints, including collapsed, tangled,
+or self-intersecting ones. Non-edge constraints—based on intrinsic
+distances—act as a regularizer selecting an embedding that is globally
+consistent with the material metric and discourages
+distant-in-the-pattern points from becoming arbitrarily close in
+Euclidean space.</p>
+<p>This is especially important for crochet because the pattern is often
+topologically a sheet (or a branched sheet) where purely local
+constraints do not prevent fold-overs. The non-edge terms serve as a
+computationally cheap proxy for self-avoidance and for the tendency of a
+blocked or stuffed crochet object to occupy volume.</p>
+<h2 id="why-anneal-and-localize-those-non-edge-terms">8.3 Why anneal and
+localize those non-edge terms?</h2>
+<p>Using all-pairs intrinsic distances as hard constraints would
+overconstrain the system and could force unrealistic “fully inflated”
+embeddings (since geodesic distances are generally larger than Euclidean
+chord lengths on a curved surface). The schedule <span
+class="math inline">\(g(p)\)</span> and the distance-dependent weights
+ensure that:</p>
+<ul>
+<li>early iterations resolve global placement and avoid collapse,</li>
+<li>late iterations are dominated by edge constraints, allowing the
+final configuration to be a locally faithful stitch network rather than
+a rigid all-pairs distance fit.</li>
+</ul>
+<p>The optional exponentiation <span
+class="math inline">\(\beta(p)\)</span> further concentrates the
+influence of non-edge terms into progressively more local neighborhoods,
+consistent with the idea that local metric fidelity matters most, while
+far-pair constraints should be treated softly.</p>
+<h2 id="what-true-shape-can-and-cannot-mean-here">8.4 What “true shape”
+can and cannot mean here</h2>
+<p>Given only a discrete metric (stitch sizes and connectivity), the
+extrinsic embedding is not unique: many 3D shapes can share similar
+intrinsic distances (isometric embeddings) and real crochet exhibits
+elasticity, thickness, contact/friction, and gravity.
+<code>graph.cpp</code> therefore reconstructs a <em>plausible rest
+geometry</em> under simplifying assumptions:</p>
+<ul>
+<li>local distances are approximately prescribed by stitch sizes,</li>
+<li>the object is not arbitrarily crumpled,</li>
+<li>nonlocal self-contact is discouraged heuristically (not enforced as
+hard collision),</li>
+<li>additional user anchors and optional normal-offset constraints can
+select among multiple feasible embeddings.</li>
+</ul>
+<p>Within these assumptions, the algorithm is a physically reasonable
+compromise between discrete metric realization (stretching minimization)
+and numerical tractability.</p>
+<h1 id="practical-notes-pandoc-ready">9. Practical notes
+(Pandoc-ready)</h1>
+<p>This file is written in Pandoc Markdown with LaTeX math. To
+compile:</p>
+<ul>
+<li>PDF:
+<code>pandoc docs/node_layout_documentation_v2.md --pdf-engine=xelatex -o docs/node_layout_documentation_v2.pdf</code></li>
+<li>HTML (MathJax):
+<code>pandoc docs/node_layout_documentation_v2.md -s --mathjax -o docs/node_layout_documentation_v2.html</code></li>
+</ul>
+</body>
+</html>

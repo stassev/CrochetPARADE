@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2026-02-15" />
+  <title>Periphery Extraction in CrochetPARADE (periphery.cpp)</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Periphery Extraction in CrochetPARADE
+(<code>periphery.cpp</code>)</h1>
+<p class="subtitle">A code-derived, equation-faithful technical
+description (Pandoc/LaTeX-ready Markdown)</p>
+<p class="date">2026-02-15</p>
+</header>
+<h1 id="abstract">Abstract</h1>
+<p><code>periphery.cpp</code> implements a deterministic
+graph-processing pipeline that extracts one or more “periphery”
+subgraphs from an undirected DOT edge list. The core classifier is
+<em>per-edge path enumeration</em>: for each undirected edge <span
+class="math inline">\(\{u,v\}\)</span>, the code enumerates simple <span
+class="math inline">\(u\!\to\!v\)</span> paths up to a user-supplied
+maximum length <span class="math inline">\(K_{\max}\)</span>, applies an
+internal-node blocking rule grouped by path length, and produces an
+integer “feasible path count” (forced to be at least <span
+class="math inline">\(1\)</span>). Edges whose final count equals <span
+class="math inline">\(1\)</span> are designated periphery edges.
+Optionally, a bounded-hop “leap” procedure adds bridge edges along
+shortest paths between disconnected periphery components. Finally, each
+resulting component is deterministically <em>ordered</em> (as a directed
+edge traversal) using special-cased rules for paths and simple cycles
+and a trunk-based procedure for general graphs, and the result is
+returned as JSON.</p>
+<p>This document describes what the code <em>actually computes</em>,
+preserving constants and branch logic exactly, and intentionally
+avoiding semantic assumptions based on identifier names.</p>
+<h1 id="public-api-cancellation-and-return-format">1. Public API,
+cancellation, and return format</h1>
+<h2 id="exported-functions">1.1 Exported functions</h2>
+<p>The exported C ABI entry points are:</p>
+<ul>
+<li><code>extern "C" const char* find_periphery(const char* dot_simple, int Kmax, int N, const char* opts_json)</code></li>
+<li><code>extern "C" void cancel_periphery()</code></li>
+</ul>
+<p>Cancellation is cooperative: many loops call
+<code>CHECK_CANCEL()</code>, which throws an internal exception if a
+global atomic flag has been set. The top-level function catches this and
+returns a malloc-allocated string equal to:</p>
+<p><code>__CANCELLED__</code>.</p>
+<p>Any other failure is caught and returns:</p>
+<p><code>[]</code>.</p>
+<p>The returned <code>const char*</code> is always malloc-allocated (via
+<code>std::malloc</code>) and must be freed by the caller (in the
+Emscripten/JS usage described in the file header, via
+<code>Module._free</code>).</p>
+<h2 id="input-dot-subset">1.2 Input: DOT subset</h2>
+<p>The parser extracts undirected edges using logic equivalent to the
+JavaScript regex <code>/"([^"]+)"\s*--\s*"([^"]+)"/g</code>.</p>
+<p>Operationally, it scans for a quote-delimited label <span
+class="math inline">\(a\)</span>, then requires <strong>only
+whitespace</strong> until the literal <code>--</code>, then <strong>only
+whitespace</strong> until another quote-delimited label <span
+class="math inline">\(b\)</span>. Anything else is skipped.</p>
+<p>No other DOT syntax (attributes, node statements, etc.) is
+interpreted by this file.</p>
+<h2 id="output-json-schema">1.3 Output JSON schema</h2>
+<p>The function returns a JSON array of graph objects:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;nodes&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;label0&quot;</span><span class="ot">,</span> <span class="st">&quot;label1&quot;</span><span class="ot">,</span> <span class="st">&quot;...&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;edges&quot;</span><span class="fu">:</span> <span class="ot">[[</span><span class="st">&quot;labelA&quot;</span><span class="ot">,</span><span class="st">&quot;labelB&quot;</span><span class="ot">],</span> <span class="ot">[</span><span class="st">&quot;labelC&quot;</span><span class="ot">,</span><span class="st">&quot;labelD&quot;</span><span class="ot">],</span> <span class="st">&quot;...&quot;</span><span class="ot">]</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="er">...</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<p>Each edge is emitted as an <strong>ordered pair</strong> (a directed
+traversal edge) even though all internal computations treat the
+underlying graph as undirected.</p>
+<h1 id="determinism-insertion-ordered-sets-and-adjacency">2.
+Determinism: insertion-ordered sets and adjacency</h1>
+<p>Much of the file exists to preserve JavaScript-like <em>insertion
+order</em> determinism.</p>
+<h2 id="orderedset">2.1 OrderedSet</h2>
+<p><code>OrderedSet&lt;T&gt;</code> stores:</p>
+<ul>
+<li>a <code>vector&lt;T&gt; items</code> in insertion order, and</li>
+<li>a hash set for membership.</li>
+</ul>
+<p>Insertions that already exist do not change the order.</p>
+<h2 id="edge-keys-and-ordered-adjacency">2.2 Edge keys and ordered
+adjacency</h2>
+<p>Undirected edges are normalized into a string key:</p>
+<p><span class="math display">\[
+\operatorname{EdgeKey}(u,v)=
+\begin{cases}
+\text{string}(u)\,\Vert\,\texttt{&quot;,&quot;}\,\Vert\,\text{string}(v),
+&amp; u&lt;v,\\[4pt]
+\text{string}(v)\,\Vert\,\texttt{&quot;,&quot;}\,\Vert\,\text{string}(u),
+&amp; v\le u.
+\end{cases}
+\]</span></p>
+<p>An <code>OrderedAdj</code> is built by scanning an
+<code>OrderedSet</code> of edge keys <em>in order</em> and appending
+neighbors in that same scan order. This creates per-node neighbor lists
+whose iteration order is input-deterministic.</p>
+<h1 id="stage-a-parse-edges-and-build-the-base-graph">3. Stage A: parse
+edges and build the base graph</h1>
+<h2 id="parse-quoted-edge-endpoints">3.1 Parse quoted edge
+endpoints</h2>
+<p>From <code>dot_simple</code>, the code builds an ordered list of
+string pairs <span class="math inline">\((a_j,b_j)\)</span> in
+first-seen order.</p>
+<h2 id="map-labels-to-integer-vertex-ids">3.2 Map labels to integer
+vertex IDs</h2>
+<p>Each distinct label is assigned a 1-based integer ID on first
+encounter:</p>
+<p><span class="math display">\[
+\text{getId}(\text{label}) =
+\begin{cases}
+\text{existing id}, &amp; \text{if label seen before},\\
+1 + |\text{id2label}|, &amp; \text{otherwise}.
+\end{cases}
+\]</span></p>
+<p>This induces a fixed mapping between labels and IDs for the rest of
+the run.</p>
+<h2 id="unique-undirected-edges-first-seen-order">3.3 Unique undirected
+edges (first-seen order)</h2>
+<p>Edges are deduplicated by <span
+class="math inline">\(\operatorname{EdgeKey}\)</span> in
+<strong>first-seen order</strong>. Let the resulting ordered list of
+unique undirected edges be:</p>
+<p><span class="math display">\[
+(\{u_0,v_0\}, \{u_1,v_1\}, \ldots, \{u_{M-1},v_{M-1}\}).
+\]</span></p>
+<p>This same ordering is used later for per-edge classification
+outputs.</p>
+<p>An undirected adjacency structure is built simultaneously; neighbor
+iteration preserves the insertion order of first-seen unique edges.</p>
+<h1 id="stage-b-canonical-labels-string-pattern-integer-extraction">4.
+Stage B: “canonical” labels (string pattern + integer extraction)</h1>
+<p>The code marks certain labels as “canonical” by a pure string test
+equivalent to <code>^\\d+,\\d+\\|\\d+$</code>
+(i.e. <code>/^\\d+,\\d+\\|\\d+$/</code> in JS string-escaped form, or
+<code>/^\\d+,\\d+\\|\\d+$/</code> as typed if you literally include
+backslashes in the regex).</p>
+<p>That is: digits, then comma, then digits, then <code>|</code>, then
+digits, with no extra characters.</p>
+<p>For such a label, an integer <span class="math inline">\(k\)</span>
+is extracted by parsing the substring after the final <code>|</code>
+with <code>atoi</code>. For non-matching labels, the stored <span
+class="math inline">\(k\)</span> is set to a sentinel value <span
+class="math inline">\(\texttt{INT\_MIN}\)</span>.</p>
+<p>These two precomputed arrays (a boolean canonical flag and an
+integer-or-sentinel <span class="math inline">\(k\)</span>) are used
+<em>only</em> for deterministic ordering/orientation rules later; they
+do not affect the periphery-edge classifier itself except through one
+internal-node range reduction routine (§5.2).</p>
+<h1
+id="stage-c-per-edge-feasible-path-counting-the-periphery-classifier">5.
+Stage C: per-edge feasible-path counting (the periphery classifier)</h1>
+<p>For each unique undirected edge <span
+class="math inline">\(\{u,v\}\)</span> in the first-seen order, the code
+computes an integer <span class="math inline">\(c(\{u,v\})\)</span> as
+follows.</p>
+<h2 id="enumerate-simple-utov-paths-up-to-k_max">5.1 Enumerate simple
+<span class="math inline">\(u\!\to\!v\)</span> paths up to <span
+class="math inline">\(K_{\max}\)</span></h2>
+<p>The code performs a depth-first search that builds a current path
+vector <span class="math inline">\(p=[p_0,p_1,\ldots,p_m]\)</span>
+with:</p>
+<p><span class="math display">\[
+p_0=u,\qquad p_m=\text{current node}.
+\]</span></p>
+<p>It defines the current path length in <strong>edges</strong> as:</p>
+<p><span class="math display">\[
+\ell(p) = |p| - 1.
+\]</span></p>
+<p>The DFS pruning and acceptance are exactly:</p>
+<ul>
+<li>if <span class="math inline">\(\ell(p) &gt; K_{\max}\)</span>,
+return (stop exploring this branch);</li>
+<li>if the current node equals <span class="math inline">\(v\)</span>
+<strong>and</strong> <span class="math inline">\(\ell(p)\ge 2\)</span>,
+record the current node list <span class="math inline">\(p\)</span> as a
+result and return.</li>
+</ul>
+<p>Visited-node state enforces simplicity (no repeated vertices).</p>
+<p>The resulting set of recorded paths is then redundantly filtered to
+keep only those with <span class="math inline">\(\ell(p)\ge 2\)</span>
+(this filter is logically unnecessary given the DFS acceptance rule, but
+is present in the code).</p>
+<p>Finally, the remaining paths are sorted by <span
+class="math inline">\(\ell(p)\)</span> ascending.</p>
+<h2 id="reduced-internal-node-range-for-a-path">5.2 Reduced
+internal-node range for a path</h2>
+<p>Each path <span
+class="math inline">\(p=[p_0,p_1,\ldots,p_{L-1}]\)</span> (with <span
+class="math inline">\(L=|p|\)</span>) is assigned an index range <span
+class="math inline">\([s,e]\)</span> (inclusive) intended to select a
+subset of interior nodes for later blocking/marking.</p>
+<p>The routine starts with:</p>
+<p><span class="math display">\[
+s \leftarrow 1,\qquad e \leftarrow L-2.
+\]</span></p>
+<p>If the first node <span class="math inline">\(p_0\)</span> is
+<strong>not</strong> canonical, it scans forward:</p>
+<ul>
+<li>find the first index <span
+class="math inline">\(j\in\{1,\ldots,e\}\)</span> such that <span
+class="math inline">\(p_j\)</span> is canonical;</li>
+<li>if found, set <span class="math inline">\(s \leftarrow
+j+1\)</span>;</li>
+<li>if not found, set <span class="math inline">\(s \leftarrow
+e+1\)</span> (forcing an empty range).</li>
+</ul>
+<p>If the last node <span class="math inline">\(p_{L-1}\)</span> is
+<strong>not</strong> canonical, it scans backward with a lower
+bound:</p>
+<p><span class="math display">\[
+\text{lowerBound} \leftarrow \max(1,s),
+\]</span></p>
+<p>then:</p>
+<ul>
+<li>find the first index <span
+class="math inline">\(j\in\{L-2,\ldots,\text{lowerBound}\}\)</span>
+(descending) such that <span class="math inline">\(p_j\)</span> is
+canonical;</li>
+<li>if found, set <span class="math inline">\(e \leftarrow
+j-1\)</span>;</li>
+<li>if not found, set <span class="math inline">\(e \leftarrow
+s-1\)</span> (forcing an empty range).</li>
+</ul>
+<p>The selected indices for this path are then:</p>
+<p><span class="math display">\[
+k \in \{s,s+1,\ldots,e\},
+\]</span> which is empty whenever <span
+class="math inline">\(s&gt;e\)</span>.</p>
+<p><strong>Interpretation in CrochetPARADE’s stitch model.</strong> In
+CrochetPARADE’s <em>raw stitch definitions</em>, not all graph nodes
+represent the same kind of stitch vertex: some correspond to the
+top/bottom nodes of a stitch (the “V” points), while others are
+auxiliary nodes internal to a stitch. The trimming described above can
+be understood as a way to ensure that, when an endpoint of the <span
+class="math inline">\(u\!\to\!v\)</span> path is not one of the
+top/bottom (“V”) nodes, the interior-node set used for blocking/marking
+starts <em>after</em> the first encountered top/bottom node. In effect,
+the code tries to make the endpoints of the “relevant” interior range
+correspond to stitch top/bottom nodes rather than internal stitch
+nodes.</p>
+<h2
+id="group-by-length-test-blocked-then-mark-cumulatively.-optional-stl-3d-model-export.">5.3
+Group by length, test “blocked”, then mark cumulatively. Optional STL 3D
+Model export.</h2>
+<p>Let the sorted path list be <span
+class="math inline">\(\{p^{(0)},\ldots,p^{(m-1)}\}\)</span>, with
+lengths <span class="math inline">\(\ell_i=\ell(p^{(i)})\)</span> and
+reduced index ranges <span class="math inline">\([s_i,e_i]\)</span>.</p>
+<p>The code groups paths by identical length <span
+class="math inline">\(\ell\)</span> (preserving the within-length order
+induced by the earlier sort), then processes lengths in increasing
+order.</p>
+<p>It maintains an array <code>cumulative[node]</code> of bytes
+initialized to zero:</p>
+<p><span class="math display">\[
+\text{cumulative}[x] \leftarrow 0 \quad \forall x.
+\]</span></p>
+<p>For each processed length value <span
+class="math inline">\(\ell\)</span> (in ascending order):</p>
+<ol type="1">
+<li><strong>Blocking test (in order).</strong> For each path index <span
+class="math inline">\(i\)</span> in this length group, it sets a boolean
+<code>blocked</code> to true iff any selected internal node has already
+been cumulatively marked:</li>
+</ol>
+<p><span class="math display">\[
+\text{blocked}(i) =
+\begin{cases}
+\text{true}, &amp; \exists\,k\in[s_i,e_i]\text{ such that
+}\text{cumulative}[p^{(i)}_k]=1,\\
+\text{false}, &amp; \text{otherwise}.
+\end{cases}
+\]</span></p>
+<p>If <code>blocked</code> is false, it increments an integer
+accumulator <code>acceptedCount</code> by 1:</p>
+<p><span class="math display">\[
+\text{acceptedCount} \leftarrow \text{acceptedCount} + 1.
+\]</span></p>
+<ol start="2" type="1">
+<li><strong>Marking step (for all paths of this length).</strong> After
+testing all paths of this length, it marks all selected internal nodes
+of <strong>every</strong> path in the length group:</li>
+</ol>
+<p><span class="math display">\[
+\text{cumulative}[p^{(i)}_k] \leftarrow 1 \quad \forall i\text{ in
+group},\;\forall k\in[s_i,e_i].
+\]</span></p>
+<p>Crucially, because marking happens <em>after</em> the blocking tests
+for the entire length group, paths of the <strong>same</strong> length
+do not block each other; only shorter-length groups can block
+longer-length groups.</p>
+<p><strong>Optional 3D Model output to STL file</strong></p>
+<p>After completion of the above steps, the code optionally collects all
+<em>non-blocked</em> u-v paths (treating each as a cycle after
+implicitly re-adding u-v edge), dedupes them, triangulates each cycle
+(ear clipping with a “maximize minimum angle” ear score), enforces
+consistent winding, and returns an ASCII STL string in the JSON result
+when export_stl: true. Additionally, the code detects disconnected
+“objects” using the base graph edges (not the cycle edges): nodes
+connected via any base edge belong to the same object. Each object gets
+a deterministic ID. On the html side, each object in the STL file is
+translated and rotated using any TRANSFORM_OBJECT instructions
+present.</p>
+<h2 id="per-edge-count-with-a-forced-minimum">5.4 Per-edge count with a
+forced minimum</h2>
+<p>After all length groups are processed for the edge <span
+class="math inline">\(\{u,v\}\)</span>, the code assigns:</p>
+<p><span class="math display">\[
+f \leftarrow \text{acceptedCount}.
+\]</span></p>
+<p>Then it enforces:</p>
+<p><span class="math display">\[
+\text{if } f = 0 \text{ then } f \leftarrow 1,
+\]</span></p>
+<p>and stores the resulting integer <span
+class="math inline">\(c(\{u,v\}) \equiv f\)</span>. The stored value can
+be <span class="math inline">\(1\)</span> either because <span
+class="math inline">\(\text{acceptedCount}=1\)</span> already, or
+because <span class="math inline">\(\text{acceptedCount}=0\)</span> and
+the forced-minimum rule applied. There is <strong>no</strong> guarantee
+that a nonzero <span class="math inline">\(\text{acceptedCount}\)</span>
+is <span class="math inline">\(\ge 2\)</span>; it can be exactly <span
+class="math inline">\(1\)</span>.</p>
+<p><strong>Code consequence.</strong> Because the first processed length
+group sees <span class="math inline">\(\text{cumulative}\equiv
+0\)</span>, no path of the shortest length can be “blocked”. Therefore,
+<span class="math inline">\(\text{acceptedCount}=0\)</span> occurs only
+when <em>no</em> eligible <span class="math inline">\(u\!\to\!v\)</span>
+path was enumerated at all (i.e. the filtered path list is empty).</p>
+<p><strong>Crochet interpretation (raw stitch definitions).</strong> In
+CrochetPARADE’s stitch-level graphs, the two most common meanings of
+these two cases are: 1. <span
+class="math inline">\(\text{acceptedCount}=0\)</span>: there is no
+alternate <span class="math inline">\(u\!\to\!v\)</span> route of length
+<span class="math inline">\(\ge 2\)</span> within the cutoff, so the
+edge behaves like a <em>bridge</em> in the local graph geometry. In
+crochet terms, this is consistent with a chain/strand “sticking out” of
+the main fabric: the only connection between the dangling chain and the
+project is through the <span class="math inline">\(u\!-\!v\)</span>
+link, so there is no local cycle that closes around it. 2. <span
+class="math inline">\(\text{acceptedCount}=1\)</span>: exactly one
+alternate route exists within the cutoff, so closing that route with the
+direct <span class="math inline">\(u\!-\!v\)</span> edge yields a single
+locally supported cycle. In crochet terms, this matches a boundary edge
+adjacent to a stitch mesh on one side (one locally supported cycle
+family) and “outside” on the other.</p>
+<h2 id="periphery-edge-selection-rule">5.5 Periphery-edge selection
+rule</h2>
+<p>An edge is classified as a periphery edge iff its stored count equals
+1:</p>
+<p><span class="math display">\[
+\{u,v\}\in E_{\text{periph}} \iff c(\{u,v\}) = 1.
+\]</span></p>
+<p>The periphery-vertex set is then constructed by inserting the
+endpoints of periphery edges in the sequence:</p>
+<p><span class="math display">\[
+u_0,v_0,u_1,v_1,\ldots
+\]</span> (for the ordered periphery-edge list).</p>
+<p>If no periphery vertices exist, the function returns the JSON string
+<code>[]</code> immediately.</p>
+<h1 id="stage-d-periphery-components-and-optional-leap-bridging">6.
+Stage D: periphery components and optional “leap bridging”</h1>
+<h2 id="connected-components-in-the-periphery-only-subgraph">6.1
+Connected components in the periphery-only subgraph</h2>
+<p>Using only periphery edges, the code computes connected components
+(BFS) and assigns each periphery vertex an integer component ID in
+discovery order. The component count is the number of BFS launches
+required to visit all periphery vertices, using the periphery-vertex
+insertion order as the outer loop order.</p>
+<h2 id="augmented-adjacency">6.2 Augmented adjacency</h2>
+<p>An <code>OrderedAdj</code> called here the <em>augmented
+adjacency</em> is initialized with all periphery edges. A second set of
+edges (“bridge edges”) may be added next.</p>
+<h2 id="options-leap_max-exact-parsing-and-clamping">6.3 Options:
+<code>leap_max</code> (exact parsing and clamping)</h2>
+<p>The option <code>leap_max</code> is parsed from
+<code>opts_json</code> (a flat JSON object string) with JS-like
+truncation semantics:</p>
+<ol type="1">
+<li>Interpret a missing key (or <code>null</code>) as <span
+class="math inline">\(0\)</span>.</li>
+<li>Parse a numeric token with <code>strtod</code>; if parsing fails,
+use <span class="math inline">\(0\)</span>.</li>
+<li>Apply truncation toward zero:</li>
+</ol>
+<p><span class="math display">\[
+\ell_{\text{tr}} \leftarrow \operatorname{trunc}(\ell_{\text{raw}}).
+\]</span></p>
+<ol start="4" type="1">
+<li>Clamp:</li>
+</ol>
+<p><span class="math display">\[
+\text{if } \ell_{\text{tr}} &lt; 0 \text{ then } \ell_{\text{tr}}
+\leftarrow 0,\qquad
+\text{if } \ell_{\text{tr}} &gt; 8 \text{ then } \ell_{\text{tr}}
+\leftarrow 8.
+\]</span></p>
+<p>The resulting integer <span
+class="math inline">\(\ell_{\text{tr}}\in\{0,1,\ldots,8\}\)</span> is
+used as the hop limit for leap bridging.</p>
+<p>All other boolean options are parsed with the strict rule:</p>
+<p><span class="math display">\[
+\text{option} \leftarrow (\text{token is exactly the literal }
+\texttt{true}).
+\]</span></p>
+<h2 id="leap-bridging-algorithm-only-if-ell_texttrge-1">6.4 Leap
+bridging algorithm (only if <span
+class="math inline">\(\ell_{\text{tr}}\ge 1\)</span>)</h2>
+<p>Leap bridging runs in two phases and operates on the
+<strong>full</strong> base graph adjacency (not just the periphery
+edges).</p>
+<h3 id="phase-1-best-distances-between-periphery-components">Phase 1:
+best distances between periphery components</h3>
+<p>For each periphery vertex <span class="math inline">\(s\)</span>, the
+code runs a BFS in the base graph, storing an integer hop distance
+<code>dist</code> initialized by:</p>
+<p><span class="math display">\[
+\text{dist}[x]\leftarrow -1,\qquad \text{dist}[s]\leftarrow 0.
+\]</span></p>
+<p>During BFS expansion, it stops expanding a node <span
+class="math inline">\(x\)</span> when:</p>
+<p><span class="math display">\[
+\text{dist}[x] \ge \ell_{\text{tr}}.
+\]</span></p>
+<p>Whenever BFS first reaches a periphery vertex <span
+class="math inline">\(t\)</span> in a different periphery component, it
+updates a map keyed by unordered component pairs:</p>
+<p><span class="math display">\[
+\text{bestDist}[\{C(s),C(t)\}] \leftarrow
+\min\Big(\text{bestDist}[\{C(s),C(t)\}],\; \text{dist}[t]\Big),
+\]</span> where <span class="math inline">\(C(\cdot)\)</span> is the
+periphery-only component ID.</p>
+<h3
+id="phase-2-collect-union-of-edges-on-all-shortest-paths-that-realize-the-best-pairwise-distance">Phase
+2: collect union of edges on all shortest paths that realize the best
+pairwise distance</h3>
+<p>For each periphery vertex <span class="math inline">\(s\)</span>, the
+code runs another depth-limited BFS that tracks <em>all parents</em>
+achieving the same shortest distance. Concretely, when exploring an edge
+<span class="math inline">\((\text{cur},\text{nb})\)</span>, it
+computes:</p>
+<p><span class="math display">\[
+\text{nd} = \text{dist}[\text{cur}] + 1.
+\]</span></p>
+<p>Then it applies:</p>
+<ul>
+<li>if <code>dist[nb] == -1</code>: set <code>dist[nb] = nd</code> and
+set <code>parents[nb] = {cur}</code>;</li>
+<li>else if <code>dist[nb] == nd</code>: insert <code>cur</code> into
+<code>parents[nb]</code>;</li>
+<li>else: do nothing.</li>
+</ul>
+<p>When a periphery vertex <span class="math inline">\(t\)</span> in a
+different periphery component is reached, the code checks whether this
+shortest distance equals the precomputed best distance for that
+component pair, and is within <span
+class="math inline">\([1,\ell_{\text{tr}}]\)</span>. If so, it performs
+a backtrace over the parent DAG from <span
+class="math inline">\(t\)</span> to <span
+class="math inline">\(s\)</span>, inserting every encountered undirected
+edge <span class="math inline">\(\{p,x\}\)</span> into the bridge-edge
+set <strong>unless</strong> that edge is already a periphery edge.</p>
+<p>Bridge edges are added to the augmented adjacency in the insertion
+order they are first discovered by this procedure.</p>
+<h1
+id="stage-e-final-connected-components-and-deterministic-ordering-for-output">7.
+Stage E: final connected components and deterministic ordering for
+output</h1>
+<h2 id="final-components-over-augmented-adjacency">7.1 Final components
+over augmented adjacency</h2>
+<p>The code computes connected components (BFS) over the augmented
+adjacency. For each component, it records:</p>
+<ul>
+<li>its node set (in insertion order),</li>
+<li>the subset of traversed edges that are periphery edges,</li>
+<li>the subset of traversed edges that are bridge edges.</li>
+</ul>
+<p>Any component that contains <strong>no</strong> periphery vertex is
+discarded.</p>
+<h2 id="component-traversal-edges-vs.-output-edges">7.2 Component
+traversal edges vs. output edges</h2>
+<p>For each remaining component:</p>
+<ul>
+<li>The traversal edge set used for ordering is always:</li>
+</ul>
+<p><span class="math display">\[
+E_{\text{trav}} = E_{\text{periph}} \cup E_{\text{bridge}}.
+\]</span></p>
+<ul>
+<li>The output edge set is:</li>
+</ul>
+<p><span class="math display">\[
+E_{\text{out}} =
+\begin{cases}
+E_{\text{periph}} \cup E_{\text{bridge}}, &amp; \ell_{\text{tr}}\ge 1
+\text{ and include\_bridge\_edges\_in\_output is true},\\
+E_{\text{periph}}, &amp; \text{otherwise}.
+\end{cases}
+\]</span></p>
+<p>Ordering is computed on <span
+class="math inline">\(E_{\text{trav}}\)</span>, then the directed
+traversal edges are filtered to <span
+class="math inline">\(E_{\text{out}}\)</span> while preserving traversal
+order.</p>
+<h2 id="ordering-primitive-path-vs.-simple-cycle-vs.-complex">7.3
+Ordering primitive: path vs. simple cycle vs. complex</h2>
+<p>Let a component’s incident vertex set be the endpoints of edges in
+<span class="math inline">\(E_{\text{trav}}\)</span>. The code
+classifies the induced subgraph by counts and degrees:</p>
+<ul>
+<li>It computes node count <span class="math inline">\(n_V\)</span>,
+edge count <span class="math inline">\(n_E\)</span>, max degree <span
+class="math inline">\(\Delta\)</span>, and whether all degrees equal
+2.</li>
+<li>It sets:</li>
+</ul>
+<p><span class="math display">\[
+\text{isPath} \leftarrow (n_E = n_V - 1)\ \wedge\ (\Delta \le 2),
+\]</span> <span class="math display">\[
+\text{isSimpleCycle} \leftarrow (n_E = n_V)\ \wedge\ (\forall
+v:\deg(v)=2)\ \wedge\ (n_V\ge 3).
+\]</span></p>
+<p>If <code>isPath</code>, it runs a dedicated path traversal with an
+endpoint choice heuristic based on canonical-<span
+class="math inline">\(k\)</span> and label lexicographic order.</p>
+<p>If <code>isSimpleCycle</code>, it runs a dedicated cycle
+traversal:</p>
+<ul>
+<li>start node = canonical node with largest <span
+class="math inline">\(k\)</span>, else lexicographically smallest
+label;</li>
+<li>choose one of the two cycle directions by minimizing <span
+class="math inline">\(|k_{\text{next}}-k_{\text{start}}|\)</span> when
+available, else by lexicographic label sequence tie-break.</li>
+</ul>
+<p>Otherwise, it treats the component as “complex” and uses one of two
+routines:</p>
+<ul>
+<li>if node count <span class="math inline">\(\ge 1200\)</span>
+<strong>or</strong> edge count <span class="math inline">\(\ge
+2400\)</span>: use a single-pass, <span
+class="math inline">\(O(E)\)</span> large-component ordering (trunk path
++ deterministic DFS walk);</li>
+<li>else: use an iterative trunk-selection procedure that repeatedly
+extracts either a longest cycle or a diameter path from the current
+remaining-edge subgraph, emitting those trunk edges and removing them,
+with an iteration cap and a fallback to the large-component routine if
+the cap is exceeded.</li>
+</ul>
+<h2 id="sorting-components-and-n-slicing">7.4 Sorting components and
+N-slicing</h2>
+<p>After all components are built, they are sorted by:</p>
+<ol type="1">
+<li>output edge count (descending),</li>
+<li>output node count (descending),</li>
+<li>node label array lexicographic order (ascending).</li>
+</ol>
+<p>Then the integer parameter <span class="math inline">\(N\)</span> is
+applied:</p>
+<p><span class="math display">\[
+\text{if } N &lt; 0 \text{ then } N \leftarrow 0,\qquad
+\text{baseCount} \leftarrow \min(N,\ |\text{components}|).
+\]</span></p>
+<p>Only the first <code>baseCount</code> components are included in the
+base output array (before optional extras are appended).</p>
+<h1 id="optional-extras-longest-cycle-and-breaking-cycle-subgraphs">8.
+Optional extras: longest cycle and “breaking” cycle subgraphs</h1>
+<p>If either extra is requested and there is at least one base
+component, the code selects a single “largest” base component using:</p>
+<ol type="1">
+<li>node count (descending),</li>
+<li>edge count (descending),</li>
+<li>node label array lexicographic order (ascending).</li>
+</ol>
+<p>On that component’s traversal subgraph, it optionally appends up to
+two additional output graphs:</p>
+<h2 id="longest-cycle-subgraph">8.1 Longest-cycle subgraph</h2>
+<p>It searches for a longest simple cycle (with safety guardrails on
+very large graphs). Among equal-length cycles, it chooses the
+lexicographically smallest canonicalized label sequence, where
+canonicalization means:</p>
+<ul>
+<li>consider all rotations of the label sequence,</li>
+<li>also consider the reversed sequence,</li>
+<li>choose the lexicographically smallest among these candidates.</li>
+</ul>
+<p>The chosen cycle is then ordered with the same simple-cycle ordering
+routine used for regular components, and emitted as an extra graph.</p>
+<h2 id="breaking-cycle-subgraph">8.2 “Breaking” cycle subgraph</h2>
+<p>It searches for the <strong>shortest</strong> simple cycle whose
+removal makes the traversal subgraph a forest (acyclic). The acyclicity
+test is implemented by a disjoint-set union (DSU) scan over all edges
+except those in the candidate cycle, returning “forest” iff no union
+operation encounters an already-connected pair.</p>
+<p>Among equal-length breaking cycles, it applies the same canonicalized
+label-sequence tie-break as above.</p>
+<p>The chosen cycle is then ordered and emitted as an extra graph.</p>
+<h1 id="summary-of-tunable-parameters">9. Summary of tunable
+parameters</h1>
+<ul>
+<li><span class="math inline">\(K_{\max}\)</span>: limits the DFS
+enumeration of simple <span class="math inline">\(u\!\to\!v\)</span>
+paths used by the per-edge classifier.</li>
+<li><span class="math inline">\(N\)</span>: limits how many periphery
+components are returned in the base list (extras may still be
+appended).</li>
+<li><code>leap_max</code> (clamped to <span
+class="math inline">\(0\ldots 8\)</span>): hop limit for optional
+periphery-component bridging over the full base graph.</li>
+<li><code>include_bridge_edges_in_output</code>: whether to include
+bridge edges in the emitted <code>edges</code> array (bridges still
+influence ordering even if not emitted).</li>
+<li><code>include_longest_cycle_subgraph</code>: append a longest-cycle
+graph from the largest component.</li>
+<li><code>include_breaking_cycle_subgraph</code>: append a shortest
+“breaking cycle” graph from the largest component.</li>
+</ul>
+</body>
+</html>

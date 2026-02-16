@@ -37,7 +37,10 @@ async function expandCompactResult(res) {
   const graphs = Array.isArray(res.graphs) ? res.graphs : null;
   if (!labels || !graphs) return [];
 
+  const stl = (typeof res.stl === 'string') ? res.stl : null;
+
   const out = new Array(graphs.length);
+  if (stl !== null) out.stl = stl;
   // Expand in chunks to avoid blocking the UI on very large outputs.
   const CHUNK = 25;
   for (let i = 0; i < graphs.length; i++) {
