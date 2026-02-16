@@ -28,11 +28,13 @@
 
 #include <algorithm>
 #include <atomic>
+#include <array>
 #include <cctype>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <iomanip>
 #include <functional>
 #include <limits>
 #include <sstream>
@@ -219,6 +221,99 @@ static std::vector<std::pair<std::string, std::string>> parseDotStringEdges(cons
 
   if (prog) prog->finish();
   return edges;
+}
+
+static int parseDotLeadingDimension(const std::string& s) {
+  // dot_simple starts with a line containing DIM (e.g. "3\n").
+  size_t nl = s.find('\n');
+  std::string first = (nl == std::string::npos) ? s : s.substr(0, nl);
+  // trim
+  size_t a = 0;
+  while (a < first.size() && std::isspace((unsigned char)first[a])) a++;
+  size_t b = first.size();
+  while (b > a && std::isspace((unsigned char)first[b - 1])) b--;
+  if (b <= a) return 0;
+  return std::atoi(first.substr(a, b - a).c_str());
+}
+
+struct PosTable {
+  int dim = 0;
+  std::vector<std::array<double,3>> xyz; // 1..n (index 0 unused)
+  std::vector<uint8_t> has;             // 1..n
+};
+
+static PosTable parseDotStringNodePositions(const std::string& s, const VertexMap& vm, int dim) {
+  PosTable t;
+  t.dim = dim;
+  t.xyz.resize((size_t)vm.size() + 1, {0.0, 0.0, 0.0});
+  t.has.assign((size_t)vm.size() + 1, 0);
+
+  auto parseCoords = [&](const std::string& inside, std::array<double,3>& out)->bool{
+    const char* p = inside.c_str();
+    char* endp = nullptr;
+
+    // x
+    while (*p && std::isspace((unsigned char)*p)) p++;
+    double x = std::strtod(p, &endp);
+    if (endp == p) return false;
+    p = endp;
+    while (*p && (std::isspace((unsigned char)*p) || *p == ',')) p++;
+
+    // y
+    double y = std::strtod(p, &endp);
+    if (endp == p) return false;
+    p = endp;
+    while (*p && (std::isspace((unsigned char)*p) || *p == ',')) p++;
+
+    // z (optional; default 0)
+    double z = 0.0;
+    if (*p) {
+      z = std::strtod(p, &endp);
+      if (endp == p) z = 0.0;
+    }
+
+    out = {x, y, (dim == 3 ? z : 0.0)};
+    return true;
+  };
+
+  // Scan for:  "label"  {x,y,z}
+  size_t pos = 0;
+  const size_t n = s.size();
+  while (pos < n) {
+    CHECK_CANCEL();
+    size_t q1 = s.find('"', pos);
+    if (q1 == std::string::npos) break;
+    size_t q2 = s.find('"', q1 + 1);
+    if (q2 == std::string::npos) break;
+
+    std::string lab = s.substr(q1 + 1, q2 - (q1 + 1));
+
+    size_t i = q2 + 1;
+    while (i < n && std::isspace((unsigned char)s[i])) i++;
+
+    if (i < n && s[i] == '{') {
+      size_t j = s.find('}', i + 1);
+      if (j == std::string::npos) break;
+      std::string inside = s.substr(i + 1, j - (i + 1));
+
+      auto it = vm.label2id.find(lab);
+      if (it != vm.label2id.end()) {
+        int id = it->second;
+        std::array<double,3> xyz;
+        if (parseCoords(inside, xyz)) {
+          t.xyz[(size_t)id] = xyz;
+          t.has[(size_t)id] = 1;
+        }
+      }
+
+      pos = j + 1;
+      continue;
+    }
+
+    pos = q2 + 1;
+  }
+
+  return t;
 }
 
 
@@ -415,6 +510,7 @@ struct Options {
   bool include_bridge_edges_in_output = false;
   bool include_longest_cycle_subgraph = false;
   bool include_breaking_cycle_subgraph = false;
+  bool export_stl = false;
 };
 
 static inline bool is_json_delim(char c) {
@@ -489,6 +585,7 @@ static Options parseOptions(const char* opts_json_cstr) {
   o.include_bridge_edges_in_output = parseStrictTrue("include_bridge_edges_in_output");
   o.include_longest_cycle_subgraph = parseStrictTrue("include_longest_cycle_subgraph");
   o.include_breaking_cycle_subgraph = parseStrictTrue("include_breaking_cycle_subgraph");
+  o.export_stl = parseStrictTrue("export_stl");
 
   return o;
 }
@@ -1071,6 +1168,492 @@ static std::vector<std::string> canonicalizeCycleByLabels(const std::vector<int>
     }
   }
   return best;
+}
+
+// ---------- Cycle canonicalization by vertex ids (rotation + reversal invariant) ----------
+static int boothMinRotationIndex(const std::vector<int>& s) {
+  const int n = (int)s.size();
+  if (n <= 1) return 0;
+  int i = 0, j = 1, k = 0;
+  while (i < n && j < n && k < n) {
+    int a = s[(i + k) % n];
+    int b = s[(j + k) % n];
+    if (a == b) { k++; continue; }
+    if (a > b) {
+      i = i + k + 1;
+      if (i == j) i++;
+    } else {
+      j = j + k + 1;
+      if (i == j) j++;
+    }
+    k = 0;
+  }
+  return std::min(i, j) % n;
+}
+
+static std::vector<int> minimalRotation(const std::vector<int>& s) {
+  const int n = (int)s.size();
+  std::vector<int> out;
+  out.reserve((size_t)n);
+  const int start = boothMinRotationIndex(s);
+  for (int k = 0; k < n; k++) out.push_back(s[(start + k) % n]);
+  return out;
+}
+
+static std::vector<int> canonicalizeCycleByIds(const std::vector<int>& cycleNodes) {
+  if (cycleNodes.size() <= 1) return cycleNodes;
+  std::vector<int> fwd = minimalRotation(cycleNodes);
+  std::vector<int> rev = cycleNodes;
+  std::reverse(rev.begin(), rev.end());
+  rev = minimalRotation(rev);
+  return (compareArraysLex(fwd, rev) <= 0) ? fwd : rev;
+}
+
+static std::string cycleKeyFromIds(const std::vector<int>& cyc) {
+  std::ostringstream oss;
+  for (size_t i = 0; i < cyc.size(); i++) {
+    if (i) oss << ",";
+    oss << cyc[i];
+  }
+  return oss.str();
+}
+
+// ---------- Mesh/STL helpers ----------
+struct Vec2 { double x, y; };
+struct Vec3 { double x, y, z; };
+
+static inline Vec3 v3_add(Vec3 a, Vec3 b) { return {a.x + b.x, a.y + b.y, a.z + b.z}; }
+static inline Vec3 v3_sub(Vec3 a, Vec3 b) { return {a.x - b.x, a.y - b.y, a.z - b.z}; }
+static inline Vec3 v3_mul(Vec3 a, double s) { return {a.x * s, a.y * s, a.z * s}; }
+static inline double v3_dot(Vec3 a, Vec3 b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
+static inline Vec3 v3_cross(Vec3 a, Vec3 b) {
+  return {a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x};
+}
+static inline double v3_norm(Vec3 a) { return std::sqrt(v3_dot(a,a)); }
+static inline Vec3 v3_normalize(Vec3 a) {
+  double n = v3_norm(a);
+  if (n <= 0.0) return {0.0, 0.0, 0.0};
+  return {a.x/n, a.y/n, a.z/n};
+}
+
+static inline Vec2 v2_sub(Vec2 a, Vec2 b) { return {a.x - b.x, a.y - b.y}; }
+static inline double v2_cross(Vec2 a, Vec2 b) { return a.x*b.y - a.y*b.x; }
+
+static double polygonSignedArea2(const std::vector<Vec2>& poly) {
+  if (poly.size() < 3) return 0.0;
+  double a = 0.0;
+  for (size_t i = 0; i < poly.size(); i++) {
+    const Vec2& p = poly[i];
+    const Vec2& q = poly[(i + 1) % poly.size()];
+    a += p.x*q.y - q.x*p.y;
+  }
+  return 0.5 * a;
+}
+
+static Vec3 newellNormal(const std::vector<Vec3>& poly) {
+  Vec3 n{0.0, 0.0, 0.0};
+  const size_t L = poly.size();
+  if (L < 3) return n;
+  for (size_t i = 0; i < L; i++) {
+    const Vec3& p = poly[i];
+    const Vec3& q = poly[(i + 1) % L];
+    n.x += (p.y - q.y) * (p.z + q.z);
+    n.y += (p.z - q.z) * (p.x + q.x);
+    n.z += (p.x - q.x) * (p.y + q.y);
+  }
+  return n;
+}
+
+static Vec3 centroidMean(const std::vector<Vec3>& poly) {
+  Vec3 c{0.0, 0.0, 0.0};
+  if (poly.empty()) return c;
+  for (const auto& p : poly) c = v3_add(c, p);
+  return v3_mul(c, 1.0 / (double)poly.size());
+}
+
+static bool pointInTri2(Vec2 p, Vec2 a, Vec2 b, Vec2 c, double sign) {
+  // sign = +1 for CCW, -1 for CW.
+  const double eps = 1e-12;
+  double c1 = v2_cross(v2_sub(b, a), v2_sub(p, a)) * sign;
+  double c2 = v2_cross(v2_sub(c, b), v2_sub(p, b)) * sign;
+  double c3 = v2_cross(v2_sub(a, c), v2_sub(p, c)) * sign;
+  return (c1 >= -eps) && (c2 >= -eps) && (c3 >= -eps);
+}
+
+static double triMinAngle2(Vec2 a, Vec2 b, Vec2 c) {
+  auto dist2 = [&](Vec2 p, Vec2 q)->double{
+    double dx = p.x - q.x;
+    double dy = p.y - q.y;
+    return dx*dx + dy*dy;
+  };
+  double ab2 = dist2(a,b), bc2 = dist2(b,c), ca2 = dist2(c,a);
+  double ab = std::sqrt(ab2), bc = std::sqrt(bc2), ca = std::sqrt(ca2);
+  const double eps = 1e-15;
+  if (ab <= eps || bc <= eps || ca <= eps) return 0.0;
+
+  auto angle = [&](double u, double v, double w)->double{
+    // angle opposite side w, adjacent u,v
+    double cosv = (u*u + v*v - w*w) / (2.0*u*v);
+    if (cosv < -1.0) cosv = -1.0;
+    if (cosv >  1.0) cosv =  1.0;
+    return std::acos(cosv);
+  };
+
+  double A = angle(ab, ca, bc);
+  double B = angle(ab, bc, ca);
+  double C = angle(bc, ca, ab);
+  return std::min(A, std::min(B, C));
+}
+
+static std::vector<std::array<int,3>> triangulatePolygonEarClip(const std::vector<Vec2>& poly) {
+  std::vector<std::array<int,3>> tris;
+  const int n = (int)poly.size();
+  if (n < 3) return tris;
+  if (n == 3) { tris.push_back({0,1,2}); return tris; }
+
+  double area = polygonSignedArea2(poly);
+  double sign = (area >= 0.0) ? 1.0 : -1.0;
+
+  std::vector<int> idx;
+  idx.reserve((size_t)n);
+  for (int i = 0; i < n; i++) idx.push_back(i);
+
+  const int GUARD_MAX = 1000000;
+  int guard = 0;
+
+  while (idx.size() > 3 && guard++ < GUARD_MAX) {
+    CHECK_CANCEL();
+    bool found = false;
+    double bestScore = -1.0;
+    size_t bestPos = 0;
+
+    const size_t m = idx.size();
+    for (size_t pos = 0; pos < m; pos++) {
+      int iPrev = idx[(pos + m - 1) % m];
+      int iCur  = idx[pos];
+      int iNext = idx[(pos + 1) % m];
+
+      Vec2 a = poly[(size_t)iPrev];
+      Vec2 b = poly[(size_t)iCur];
+      Vec2 c = poly[(size_t)iNext];
+
+      // convex?
+      double cr = v2_cross(v2_sub(b, a), v2_sub(c, b)) * sign;
+      if (cr <= 1e-14) continue;
+
+      // empty ear?
+      bool anyInside = false;
+      for (size_t t = 0; t < m; t++) {
+        int j = idx[t];
+        if (j == iPrev || j == iCur || j == iNext) continue;
+        if (pointInTri2(poly[(size_t)j], a, b, c, sign)) { anyInside = true; break; }
+      }
+      if (anyInside) continue;
+
+      double score = triMinAngle2(a, b, c);
+      if (!found || score > bestScore) {
+        found = true;
+        bestScore = score;
+        bestPos = pos;
+      }
+    }
+
+    if (!found) {
+      // Fallback: fan triangulation (keeps winding but may create skinny triangles).
+      for (size_t k = 1; k + 1 < idx.size(); k++) {
+        tris.push_back({idx[0], idx[k], idx[k + 1]});
+      }
+      idx.clear();
+      break;
+    }
+
+    const size_t m2 = idx.size();
+    int iPrev = idx[(bestPos + m2 - 1) % m2];
+    int iCur  = idx[bestPos];
+    int iNext = idx[(bestPos + 1) % m2];
+    tris.push_back({iPrev, iCur, iNext});
+    idx.erase(idx.begin() + (std::ptrdiff_t)bestPos);
+  }
+
+  if (idx.size() == 3) tris.push_back({idx[0], idx[1], idx[2]});
+  return tris;
+}
+
+static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
+                                           const PosTable& pos,
+                                           const std::vector<std::pair<int,int>>& baseEdges,
+                                           const std::string& solidName) {
+  // Filter cycles that have coordinates for all nodes.
+  std::vector<std::vector<int>> kept;
+  kept.reserve(cycles.size());
+  for (auto& cyc : cycles) {
+    CHECK_CANCEL();
+    if (cyc.size() < 3) continue;
+    bool ok = true;
+    for (int id : cyc) {
+      if (id <= 0 || id >= (int)pos.has.size() || !pos.has[(size_t)id]) { ok = false; break; }
+    }
+    if (ok) kept.push_back(std::move(cyc));
+  }
+  cycles.clear();
+
+  if (kept.empty()) return std::string();
+
+  // Detect disconnected "objects" using the base graph edges (not the cycle edges): nodes connected via any base edge
+  // belong to the same object.
+  // We then emit each object as a separate `solid ... endsolid` block in a single STL file.
+  struct Dsu {
+    std::vector<int> p;
+    std::vector<uint8_t> r;
+    explicit Dsu(int n) : p((size_t)n + 1), r((size_t)n + 1, 0) {
+      for (int i = 0; i <= n; i++) p[(size_t)i] = i;
+    }
+    int find(int x) {
+      int y = x;
+      while (p[(size_t)y] != y) y = p[(size_t)y];
+      while (p[(size_t)x] != x) {
+        int nx = p[(size_t)x];
+        p[(size_t)x] = y;
+        x = nx;
+      }
+      return y;
+    }
+    void unite(int a, int b) {
+      int ra = find(a), rb = find(b);
+      if (ra == rb) return;
+      if (r[(size_t)ra] < r[(size_t)rb]) std::swap(ra, rb);
+      p[(size_t)rb] = ra;
+      if (r[(size_t)ra] == r[(size_t)rb]) r[(size_t)ra]++;
+    }
+  };
+
+  const int maxId = (int)pos.has.size() - 1;
+  Dsu dsu(std::max(0, maxId));
+
+  for (const auto& uv : baseEdges) {
+    CHECK_CANCEL();
+    int a = uv.first;
+    int b = uv.second;
+    if (a <= 0 || b <= 0 || a > maxId || b > maxId || a == b) continue;
+    dsu.unite(a, b);
+  }
+
+  // Deterministic object order: match the "component id" convention (smallest node id in the component).
+  const int INF = std::numeric_limits<int>::max();
+  std::vector<int> rootMin((size_t)std::max(0, maxId) + 1, INF);
+  for (int i = 1; i <= maxId; i++) {
+    CHECK_CANCEL();
+    int r = dsu.find(i);
+    if (r >= 0 && r <= maxId) rootMin[(size_t)r] = std::min(rootMin[(size_t)r], i);
+  }
+
+  std::unordered_map<int, int> root2obj;
+  root2obj.reserve(kept.size() * 2 + 8);
+
+  std::vector<std::vector<std::vector<int>>> objects;
+  std::vector<int> objKeyMinNode;
+  std::vector<int> objRoot;
+
+  for (auto& cyc : kept) {
+    CHECK_CANCEL();
+    int root = dsu.find(cyc[0]);
+    auto it = root2obj.find(root);
+    int oi;
+    if (it == root2obj.end()) {
+      oi = (int)objects.size();
+      root2obj.emplace(root, oi);
+      objects.emplace_back();
+      objRoot.push_back(root);
+      int key = (root >= 0 && root <= maxId) ? rootMin[(size_t)root] : INF;
+      if (key == INF) key = cyc[0];
+      objKeyMinNode.push_back(key);
+    } else {
+      oi = it->second;
+    }
+    objects[(size_t)oi].push_back(std::move(cyc));
+  }
+  kept.clear();
+
+  // Deterministic object order: sort by component min node id.
+  std::vector<int> order(objects.size());
+  for (int i = 0; i < (int)order.size(); i++) order[(size_t)i] = i;
+  std::sort(order.begin(), order.end(), [&](int a, int b) {
+    int ka = objKeyMinNode[(size_t)a];
+    int kb = objKeyMinNode[(size_t)b];
+    if (ka != kb) return ka < kb;
+    return objRoot[(size_t)a] < objRoot[(size_t)b];
+  });
+
+  auto key64 = [&](int a, int b)->uint64_t{
+    if (a > b) std::swap(a, b);
+    return (uint64_t)((uint64_t)(uint32_t)a << 32) | (uint64_t)(uint32_t)b;
+  };
+
+  auto orientCyclesInPlace = [&](std::vector<std::vector<int>>& cycs) {
+    if (cycs.empty()) return;
+
+    // Build adjacency constraints based on shared undirected edges (only where edge appears in exactly two cycles).
+    struct Occ { int c; int sign; };
+    std::unordered_map<uint64_t, std::vector<Occ>> edgeOcc;
+    edgeOcc.reserve(cycs.size() * 6 + 16);
+
+    for (int ci = 0; ci < (int)cycs.size(); ci++) {
+      CHECK_CANCEL();
+      const auto& cyc = cycs[(size_t)ci];
+      const int L = (int)cyc.size();
+      for (int i = 0; i < L; i++) {
+        int a = cyc[(size_t)i];
+        int b = cyc[(size_t)((i + 1) % L)];
+        uint64_t k = key64(a, b);
+        int sgn = (a < b) ? +1 : -1; // direction relative to (min,max)
+        edgeOcc[k].push_back(Occ{ci, sgn});
+      }
+    }
+
+    struct Neighbor { int j; int xorFlip; };
+    std::vector<std::vector<Neighbor>> adj((size_t)cycs.size());
+    for (auto& kv : edgeOcc) {
+      CHECK_CANCEL();
+      const auto& occ = kv.second;
+      if (occ.size() != 2) continue;
+      int c1 = occ[0].c, s1 = occ[0].sign;
+      int c2 = occ[1].c, s2 = occ[1].sign;
+      int xorFlip = (s1 == s2) ? 1 : 0;
+      adj[(size_t)c1].push_back(Neighbor{c2, xorFlip});
+      adj[(size_t)c2].push_back(Neighbor{c1, xorFlip});
+    }
+
+    // BFS parity assignment (0=keep, 1=reverse).
+    std::vector<int> parity((size_t)cycs.size(), -1);
+    std::vector<int> q;
+    q.reserve(cycs.size());
+    for (int s = 0; s < (int)cycs.size(); s++) {
+      CHECK_CANCEL();
+      if (parity[(size_t)s] != -1) continue;
+      parity[(size_t)s] = 0;
+      q.clear();
+      q.push_back(s);
+      size_t qi = 0;
+      while (qi < q.size()) {
+        CHECK_CANCEL();
+        int u = q[qi++];
+        for (const auto& nb : adj[(size_t)u]) {
+          int v = nb.j;
+          int want = parity[(size_t)u] ^ nb.xorFlip;
+          if (parity[(size_t)v] == -1) {
+            parity[(size_t)v] = want;
+            q.push_back(v);
+          }
+        }
+      }
+    }
+
+    for (size_t i = 0; i < cycs.size(); i++) {
+      CHECK_CANCEL();
+      if (parity[i] == 1) std::reverse(cycs[i].begin(), cycs[i].end());
+    }
+
+    // Global outward flip heuristic (per object): orient normals to point (mostly) away from the object's mean center.
+    Vec3 center{0.0, 0.0, 0.0};
+    long long centerCount = 0;
+    for (const auto& cyc : cycs) {
+      for (int id : cyc) {
+        const auto& a = pos.xyz[(size_t)id];
+        center = v3_add(center, Vec3{a[0], a[1], a[2]});
+        centerCount++;
+      }
+    }
+    if (centerCount > 0) center = v3_mul(center, 1.0 / (double)centerCount);
+
+    int outward = 0, inward = 0;
+    for (const auto& cyc : cycs) {
+      CHECK_CANCEL();
+      std::vector<Vec3> poly;
+      poly.reserve(cyc.size());
+      for (int id : cyc) {
+        const auto& a = pos.xyz[(size_t)id];
+        poly.push_back(Vec3{a[0], a[1], a[2]});
+      }
+      Vec3 n = newellNormal(poly);
+      Vec3 c = centroidMean(poly);
+      double s = v3_dot(n, v3_sub(c, center));
+      if (s >= 0.0) outward++; else inward++;
+    }
+    if (inward > outward) {
+      for (auto& cyc : cycs) std::reverse(cyc.begin(), cyc.end());
+    }
+  };
+
+  auto emitTrianglesForCycles = [&](std::ostringstream& out, const std::vector<std::vector<int>>& cycs) {
+    for (const auto& cyc : cycs) {
+      CHECK_CANCEL();
+      std::vector<Vec3> poly3;
+      poly3.reserve(cyc.size());
+      for (int id : cyc) {
+        const auto& a = pos.xyz[(size_t)id];
+        poly3.push_back(Vec3{a[0], a[1], a[2]});
+      }
+
+      Vec3 n = newellNormal(poly3);
+      double nn = v3_norm(n);
+      if (nn <= 1e-15) continue;
+      Vec3 nhat = v3_mul(n, 1.0 / nn);
+
+      // Build an orthonormal basis (u,v) in the polygon plane.
+      Vec3 ref = (std::fabs(nhat.z) < 0.9) ? Vec3{0.0, 0.0, 1.0} : Vec3{0.0, 1.0, 0.0};
+      Vec3 u = v3_cross(ref, nhat);
+      if (v3_norm(u) <= 1e-12) {
+        ref = Vec3{1.0, 0.0, 0.0};
+        u = v3_cross(ref, nhat);
+      }
+      u = v3_normalize(u);
+      Vec3 v = v3_cross(nhat, u);
+
+      std::vector<Vec2> poly2;
+      poly2.reserve(poly3.size());
+      for (const auto& p : poly3) poly2.push_back(Vec2{v3_dot(p, u), v3_dot(p, v)});
+
+      // Triangulate in 2D, then lift to 3D.
+      auto tris = triangulatePolygonEarClip(poly2);
+      for (const auto& tri : tris) {
+        CHECK_CANCEL();
+        Vec3 a = poly3[(size_t)tri[0]];
+        Vec3 b = poly3[(size_t)tri[1]];
+        Vec3 c = poly3[(size_t)tri[2]];
+        Vec3 tn = v3_cross(v3_sub(b, a), v3_sub(c, a));
+        double tnn = v3_norm(tn);
+        if (tnn <= 1e-18) continue;
+        tn = v3_mul(tn, 1.0 / tnn);
+
+        out << "facet normal " << tn.x << " " << tn.y << " " << tn.z << "\n";
+        out << "  outer loop\n";
+        out << "    vertex " << a.x << " " << a.y << " " << a.z << "\n";
+        out << "    vertex " << b.x << " " << b.y << " " << b.z << "\n";
+        out << "    vertex " << c.x << " " << c.y << " " << c.z << "\n";
+        out << "  endloop\n";
+        out << "endfacet\n";
+      }
+    }
+  };
+
+  std::ostringstream out;
+  out << std::setprecision(9);
+
+  int solidIdx = 0;
+  for (int oi : order) {
+    CHECK_CANCEL();
+    solidIdx++;
+    auto& cycs = objects[(size_t)oi];
+    orientCyclesInPlace(cycs);
+
+    std::ostringstream name;
+    name << solidName << "_obj" << solidIdx;
+    out << "solid " << name.str() << "\n";
+    emitTrianglesForCycles(out, cycs);
+    out << "endsolid " << name.str() << "\n";
+  }
+
+  return out.str();
 }
 
 template <typename OnCycleFn>
@@ -1913,6 +2496,7 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
 
     const std::string dot_simple = dot_simple_cstr ? std::string(dot_simple_cstr) : std::string();
     Options opts = parseOptions(opts_json_cstr);
+    const int dim = parseDotLeadingDimension(dot_simple);
 
     // Cycle enumeration limits (safety) - match JS
     const int CYCLE_ENUM_LIMIT_ORDERING = 20000;
@@ -1961,9 +2545,25 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
       if (ok) canonical_k[(size_t)i] = parseCanonicalK(lab);
     }
 
+    // Node coordinate table (only needed for STL export).
+    PosTable posTable;
+    if (opts.export_stl) {
+      posTable = parseDotStringNodePositions(dot_simple, vm, dim);
+    }
+
     // ---------- Per-edge feasible cycle counting ----------
     std::vector<int> cyclecount;
     cyclecount.reserve(unique_edge_pairs.size());
+
+    // Optional: collect the unblocked cycles (as canonicalized node sequences) for STL export.
+    std::vector<std::vector<int>> acceptedCycles;
+    std::unordered_set<std::string> acceptedCycleKeys;
+    bool collectCycles = opts.export_stl;
+    const size_t MAX_EXPORT_CYCLES = 200000;
+    if (collectCycles) {
+      acceptedCycles.reserve(std::min<size_t>(MAX_EXPORT_CYCLES, unique_edge_pairs.size() * 2 + 64));
+      acceptedCycleKeys.reserve(std::min<size_t>(MAX_EXPORT_CYCLES, unique_edge_pairs.size() * 2 + 64));
+    }
 
     ProgressLogger cycleProg("per-edge cycle checks", (int)unique_edge_pairs.size(), 1);
     int cycleDone = 0;
@@ -2039,7 +2639,20 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
               if (cumulative[(size_t)node]) { blocked = true; break; }
             }
           }
-          if (!blocked) acceptedCount++;
+          if (!blocked) {
+            acceptedCount++;
+            if (collectCycles && acceptedCycles.size() < MAX_EXPORT_CYCLES) {
+              std::vector<int> cyc = canonicalizeCycleByIds(p); // full path; reduction only affects blocking
+              std::string key = cycleKeyFromIds(cyc);
+              if (acceptedCycleKeys.insert(key).second) {
+                acceptedCycles.push_back(std::move(cyc));
+              }
+            } else if (collectCycles && acceptedCycles.size() >= MAX_EXPORT_CYCLES) {
+              // Stop collecting to avoid runaway memory use; periphery classification is unaffected.
+              collectCycles = false;
+              acceptedCycleKeys.clear();
+            }
+          }
         }
 
         // mark internal nodes for ALL paths of this length
@@ -2062,6 +2675,13 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
       cyclecount.push_back(feasibleCount);
     }
     cycleProg.finish();
+
+    // ---------- Optional STL export ----------
+    std::string stlText;
+    if (opts.export_stl) {
+      // NOTE: This uses accepted (non-blocked) u->v paths as polygonal cycles, then triangulates them.
+      stlText = buildAsciiStlFromCycles(std::move(acceptedCycles), posTable, unique_edge_pairs, "CrochetPARADE");
+    }
 
     // ---------- Collect periphery edges ----------
     std::vector<std::pair<int,int>> peripheryEdgesIds;
@@ -2087,55 +2707,66 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
       periphVertices.insert(uv.second);
     }
 
-    if (periphVertices.size() == 0) {
-      return dup_cstr("[]");
-    }
+    // ---------- Build output per component ----------
+    struct OutComponent {
+      std::vector<int> nodeIds;                 // 1-based ids (later encoded as 0-based indices into labels)
+      std::vector<std::pair<int,int>> edgeIds;  // directed edges in traversal order (1-based ids)
+      int edgeCount=0;
+      int nodeCount=0;
+      // internal for extras
+      OrderedSet<int> _nodeIds;
+      OrderedSet<std::string> _traversalEdgeKeys;
+    };
 
-    // ---------- Build initial periphery-only component IDs ----------
-    OrderedAdj periphOnlyAdj;
-    for (const auto& uv : peripheryEdgesIds) {
-      CHECK_CANCEL();
-      periphOnlyAdj.add(uv.first, uv.second);
-    }
+    std::vector<OutComponent> outComponents;
+    std::vector<OutComponent> extras;
 
-    std::unordered_map<int,int> compId;
-    compId.reserve(periphVertices.size() * 2 + 8);
-    std::unordered_set<int> visited;
-    visited.reserve(periphVertices.size() * 2 + 8);
-    int compCount = 0;
-
-    for (int start : periphVertices.items) {
-      CHECK_CANCEL();
-      if (visited.find(start) != visited.end()) continue;
-      std::vector<int> q;
-      q.reserve(periphVertices.size() + 8);
-      size_t qi = 0;
-      visited.insert(start);
-      q.push_back(start);
-      while (qi < q.size()) {
+    if (periphVertices.size() != 0) {
+      // ---------- Build initial periphery-only component IDs ----------
+      OrderedAdj periphOnlyAdj;
+      for (const auto& uv : peripheryEdgesIds) {
         CHECK_CANCEL();
-        int cur = q[qi++];
-        compId[cur] = compCount;
-        for (int nb : periphOnlyAdj.neighbors(cur)) {
-          CHECK_CANCEL();
-          if (visited.insert(nb).second) q.push_back(nb);
-        }
+        periphOnlyAdj.add(uv.first, uv.second);
       }
-      compCount++;
-    }
 
-    // ---------- Augmented adjacency for final CCs ----------
-    OrderedAdj augAdj;
-    for (const auto& uv : peripheryEdgesIds) {
-      CHECK_CANCEL();
-      augAdj.add(uv.first, uv.second);
-    }
+      std::unordered_map<int,int> compId;
+      compId.reserve(periphVertices.size() * 2 + 8);
+      std::unordered_set<int> visited;
+      visited.reserve(periphVertices.size() * 2 + 8);
+      int compCount = 0;
 
-    OrderedSet<std::string> bridgeEdgeSetOrdered;
-    std::unordered_set<std::string> bridgeEdgeSet;
+      for (int start : periphVertices.items) {
+        CHECK_CANCEL();
+        if (visited.find(start) != visited.end()) continue;
+        std::vector<int> q;
+        q.reserve(periphVertices.size() + 8);
+        size_t qi = 0;
+        visited.insert(start);
+        q.push_back(start);
+        while (qi < q.size()) {
+          CHECK_CANCEL();
+          int cur = q[qi++];
+          compId[cur] = compCount;
+          for (int nb : periphOnlyAdj.neighbors(cur)) {
+            CHECK_CANCEL();
+            if (visited.insert(nb).second) q.push_back(nb);
+          }
+        }
+        compCount++;
+      }
 
-    // ---------- Leap bridging ----------
-    if (opts.leap_max >= 1) {
+      // ---------- Augmented adjacency for final CCs ----------
+      OrderedAdj augAdj;
+      for (const auto& uv : peripheryEdgesIds) {
+        CHECK_CANCEL();
+        augAdj.add(uv.first, uv.second);
+      }
+
+      OrderedSet<std::string> bridgeEdgeSetOrdered;
+      std::unordered_set<std::string> bridgeEdgeSet;
+
+      // ---------- Leap bridging ----------
+      if (opts.leap_max >= 1) {
       auto pairKey = [](int c1, int c2)->std::string{
         if (c1 < c2) return std::to_string(c1) + "," + std::to_string(c2);
         return std::to_string(c2) + "," + std::to_string(c1);
@@ -2286,18 +2917,18 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
         int v = std::atoi(ek.c_str() + comma + 1);
         augAdj.add(u, v);
       }
-    }
+      }
 
-    // ---------- Final connected components over augmented adjacency ----------
-    std::unordered_set<int> visitedFinal;
-    visitedFinal.reserve(augAdj.keys.size() * 2 + 8);
+      // ---------- Final connected components over augmented adjacency ----------
+      std::unordered_set<int> visitedFinal;
+      visitedFinal.reserve(augAdj.keys.size() * 2 + 8);
 
-    struct Component {
-      OrderedSet<int> nodes;
-      OrderedSet<std::string> periphEdges;
-      OrderedSet<std::string> bridgeEdges;
-    };
-    std::vector<Component> components;
+      struct Component {
+        OrderedSet<int> nodes;
+        OrderedSet<std::string> periphEdges;
+        OrderedSet<std::string> bridgeEdges;
+      };
+      std::vector<Component> components;
 
     for (int start : augAdj.keys) {
       CHECK_CANCEL();
@@ -2337,19 +2968,6 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
 
       components.push_back(std::move(c));
     }
-
-    // ---------- Build output per component ----------
-    struct OutComponent {
-      std::vector<std::string> nodes;
-      std::vector<std::pair<std::string,std::string>> edges;
-      int edgeCount=0;
-      int nodeCount=0;
-      // internal for extras
-      OrderedSet<int> _nodeIds;
-      OrderedSet<std::string> _traversalEdgeKeys;
-    };
-
-    std::vector<OutComponent> outComponents;
 
     ProgressLogger orderProg("ordering components", (int)components.size(), 1);
     int orderDone = 0;
@@ -2411,15 +3029,10 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
       }
 
       OutComponent oc;
-      oc.nodeCount = (int)orderedNodeIds.size();
-      oc.nodes.reserve(orderedNodeIds.size());
-      for (int id : orderedNodeIds) oc.nodes.push_back(vm.labelOf(id));
-
-      oc.edges.reserve(filteredDirectedEdges.size());
-      for (const auto& uv : filteredDirectedEdges) {
-        oc.edges.emplace_back(vm.labelOf(uv.first), vm.labelOf(uv.second));
-      }
-      oc.edgeCount = (int)oc.edges.size();
+      oc.nodeIds = std::move(orderedNodeIds);
+      oc.edgeIds = std::move(filteredDirectedEdges);
+      oc.nodeCount = (int)oc.nodeIds.size();
+      oc.edgeCount = (int)oc.edgeIds.size();
       oc._nodeIds = c.nodes;
       oc._traversalEdgeKeys = traversalEdgeKeys;
 
@@ -2428,14 +3041,24 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
     }
     orderProg.finish();
 
-// sort components by edgeCount desc, nodeCount desc, then nodes lex (matches JS)
+    auto lexLessByLabel = [&](const std::vector<int>& a, const std::vector<int>& b)->bool{
+      const size_t nmin = std::min(a.size(), b.size());
+      for (size_t i = 0; i < nmin; i++) {
+        const std::string& al = vm.labelOf(a[i]);
+        const std::string& bl = vm.labelOf(b[i]);
+        if (al < bl) return true;
+        if (al > bl) return false;
+      }
+      return a.size() < b.size();
+    };
+
+    // sort components by edgeCount desc, nodeCount desc, then nodes lex (matches JS)
     std::sort(outComponents.begin(), outComponents.end(), [&](const OutComponent& A, const OutComponent& B){
       if (A.edgeCount != B.edgeCount) return A.edgeCount > B.edgeCount;
       if (A.nodeCount != B.nodeCount) return A.nodeCount > B.nodeCount;
-      return compareArraysLex(A.nodes, B.nodes) < 0;
+      return lexLessByLabel(A.nodeIds, B.nodeIds);
     });
     // ---------- Optional extras ----------
-    std::vector<OutComponent> extras;
 
     if ((opts.include_longest_cycle_subgraph || opts.include_breaking_cycle_subgraph) && !outComponents.empty()) {
       // choose largest periphery component by nodeCount, tie by edgeCount, then nodes lex
@@ -2446,15 +3069,14 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
         const auto& L = outComponents[largestIdx];
         if (c.nodeCount > L.nodeCount) largestIdx = i;
         else if (c.nodeCount == L.nodeCount) {
-          int aEdges = (int)c.edges.size();
-          int bEdges = (int)L.edges.size();
+          int aEdges = (int)c.edgeIds.size();
+          int bEdges = (int)L.edgeIds.size();
           if (aEdges > bEdges) largestIdx = i;
-          else if (aEdges == bEdges && compareArraysLex(c.nodes, L.nodes) < 0) largestIdx = i;
+          else if (aEdges == bEdges && lexLessByLabel(c.nodeIds, L.nodeIds)) largestIdx = i;
         }
       }
 
       const auto& largest = outComponents[largestIdx];
-      const OrderedSet<int>& nodesSet = largest._nodeIds;
       const OrderedSet<std::string>& edgeKeys = largest._traversalEdgeKeys;
 
       // incident nodes for cycle search: those in traversal edge set
@@ -2473,10 +3095,10 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
         if (longest.cycleNodes.size() >= 3) {
           Traversal ord = orderCycleOnGivenCycle(longest.cycleNodes, vm, is_canonical, canonical_k);
           OutComponent ex;
-          ex.nodes.reserve(ord.nodes.size());
-          for (int id : ord.nodes) ex.nodes.push_back(vm.labelOf(id));
-          ex.edges.reserve(ord.edges.size());
-          for (const auto& uv : ord.edges) ex.edges.emplace_back(vm.labelOf(uv.first), vm.labelOf(uv.second));
+          ex.nodeIds = ord.nodes;
+          ex.edgeIds = ord.edges;
+          ex.nodeCount = (int)ex.nodeIds.size();
+          ex.edgeCount = (int)ex.edgeIds.size();
           extras.push_back(std::move(ex));
         }
       }
@@ -2486,13 +3108,14 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
         if (breaking.cycleNodes.size() >= 3) {
           Traversal ord = orderCycleOnGivenCycle(breaking.cycleNodes, vm, is_canonical, canonical_k);
           OutComponent ex;
-          ex.nodes.reserve(ord.nodes.size());
-          for (int id : ord.nodes) ex.nodes.push_back(vm.labelOf(id));
-          ex.edges.reserve(ord.edges.size());
-          for (const auto& uv : ord.edges) ex.edges.emplace_back(vm.labelOf(uv.first), vm.labelOf(uv.second));
+          ex.nodeIds = ord.nodes;
+          ex.edgeIds = ord.edges;
+          ex.nodeCount = (int)ex.nodeIds.size();
+          ex.edgeCount = (int)ex.edgeIds.size();
           extras.push_back(std::move(ex));
         }
       }
+    }
     }
 
     // ---------- Return base.concat(extras) with N slicing ----------
@@ -2500,7 +3123,12 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
     int baseCount = std::min(N, (int)outComponents.size());
 
     std::ostringstream out;
-    out << "[";
+    out << "{\"labels\":[";
+    for (size_t i = 0; i < vm.id2label.size(); i++) {
+      if (i) out << ",";
+      out << "\"" << jsonEscape(vm.id2label[i]) << "\"";
+    }
+    out << "],\"graphs\":[";
     bool firstGraph = true;
 
     auto emitGraph = [&](const OutComponent& g) {
@@ -2508,14 +3136,14 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
       if (!firstGraph) out << ",";
       firstGraph = false;
       out << "{\"nodes\":[";
-      for (size_t i = 0; i < g.nodes.size(); i++) {
+      for (size_t i = 0; i < g.nodeIds.size(); i++) {
         if (i) out << ",";
-        out << "\"" << jsonEscape(g.nodes[i]) << "\"";
+        out << (g.nodeIds[i] - 1);
       }
       out << "],\"edges\":[";
-      for (size_t i = 0; i < g.edges.size(); i++) {
+      for (size_t i = 0; i < g.edgeIds.size(); i++) {
         if (i) out << ",";
-        out << "[\"" << jsonEscape(g.edges[i].first) << "\",\"" << jsonEscape(g.edges[i].second) << "\"]";
+        out << "[" << (g.edgeIds[i].first - 1) << "," << (g.edgeIds[i].second - 1) << "]";
       }
       out << "]}";
     };
@@ -2524,6 +3152,10 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
     for (const auto& g : extras) emitGraph(g);
 
     out << "]";
+    if (opts.export_stl) {
+      out << ",\"stl\":\"" << jsonEscape(stlText) << "\"";
+    }
+    out << "}";
     return dup_cstr(out.str());
   } catch (const CancelledException&) {
     return dup_cstr("__CANCELLED__");

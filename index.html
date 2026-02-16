@@ -1801,19 +1801,22 @@ function parseLatheUrl(url) {
         sessionId: 0,
 
         // Cached results for the current 3D session (reset when a new 3D calc starts)
-        periphGraphsBaseAll: null,   // all periphery components (NOT including extras)
-        periphGraphsExtras: null,    // optional extra graphs (longest-cycle / breaking-cycle)
-        customPeripheries: [],     // user-saved custom periphery graphs for this 3D session
-        customPeripheryCounter: 0, // incrementing label for Custom periphery 1,2,...
-        periphKmax: null,            // cache key #1
-        periphOptsKey: null,         // cache key #2 (advanced opts)
+	        periphGraphsBaseAll: null,   // all periphery components (NOT including extras)
+	        periphGraphsExtras: null,    // optional extra graphs (longest-cycle / breaking-cycle)
+	        periphLastStl: null,         // last STL string (only when export_stl is enabled)
+	        periphLastStlKey: null,      // cache key for periphLastStl (e.g. TRANSFORM_OBJECT lines)
+	        customPeripheries: [],     // user-saved custom periphery graphs for this 3D session
+	        customPeripheryCounter: 0, // incrementing label for Custom periphery 1,2,...
+	        periphKmax: null,            // cache key #1
+	        periphOptsKey: null,         // cache key #2 (advanced opts)
 
         // Advanced options (mirrors periphery.js opts)
         periphOpts: {
           leap_max: 0,
           include_bridge_edges_in_output: false,
           include_longest_cycle_subgraph: false,
-          include_breaking_cycle_subgraph: false
+          include_breaking_cycle_subgraph: false,
+          export_stl: false
         },
 
         // UI state
@@ -1840,10 +1843,12 @@ function parseLatheUrl(url) {
     if ((!('periphGraphsBaseAll' in st) || st.periphGraphsBaseAll == null) && Array.isArray(st.periphGraphsAll)) {
       st.periphGraphsBaseAll = st.periphGraphsAll;
     }
-    if (!('periphGraphsBaseAll' in st)) st.periphGraphsBaseAll = null;
-    if (!('periphGraphsExtras' in st)) st.periphGraphsExtras = null;
-                st.customPeripheries = [];
-                st.customPeripheryCounter = 0;
+	    if (!('periphGraphsBaseAll' in st)) st.periphGraphsBaseAll = null;
+	    if (!('periphGraphsExtras' in st)) st.periphGraphsExtras = null;
+	    if (!('periphLastStl' in st)) st.periphLastStl = null;
+	    if (!('periphLastStlKey' in st)) st.periphLastStlKey = null;
+	                st.customPeripheries = [];
+	                st.customPeripheryCounter = 0;
 
     if (typeof st.sessionId !== 'number') st.sessionId = 0;
     if (!('periphKmax' in st)) st.periphKmax = null;
@@ -1859,13 +1864,15 @@ function parseLatheUrl(url) {
         leap_max: 0,
         include_bridge_edges_in_output: false,
         include_longest_cycle_subgraph: false,
-        include_breaking_cycle_subgraph: false
+        include_breaking_cycle_subgraph: false,
+        export_stl: false
       };
     } else {
       if (typeof st.periphOpts.leap_max !== 'number') st.periphOpts.leap_max = 0;
       if (typeof st.periphOpts.include_bridge_edges_in_output !== 'boolean') st.periphOpts.include_bridge_edges_in_output = false;
       if (typeof st.periphOpts.include_longest_cycle_subgraph !== 'boolean') st.periphOpts.include_longest_cycle_subgraph = false;
       if (typeof st.periphOpts.include_breaking_cycle_subgraph !== 'boolean') st.periphOpts.include_breaking_cycle_subgraph = false;
+      if (typeof st.periphOpts.export_stl !== 'boolean') st.periphOpts.export_stl = false;
     }
 
     if (typeof st.kmax !== 'number') st.kmax = 10;
@@ -1894,18 +1901,27 @@ function parseLatheUrl(url) {
         display: inline-flex; align-items: center; justify-content: center;
         cursor: pointer;
       }
-      .periphHelpBtn:hover { background: #f0f0f0; }
-      .periphHelpPopup {
-        position: absolute; top: 22px; right: 0; z-index: 9999;
-        display: none; width: 380px;
-        padding: 8px; border: 1px solid #ccc; border-radius: 8px;
-        background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-        font-size: 12px; line-height: 1.25; color: #333;
-      }
+	      .periphHelpBtn:hover { background: #f0f0f0; }
+	      .periphHelpPopup {
+	        position: absolute; top: 22px; right: 0; z-index: 9999;
+	        display: none; width: 380px;
+	        padding: 8px; border: 1px solid #ccc; border-radius: 8px;
+	        background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+	        font-size: 12px; line-height: 1.25; color: #333;
+	      }
+	
+	      /* Help portal that can extend beyond the modal bounds (avoids overflow clipping). */
+	      .periphHelpPortal {
+	        position: fixed; z-index: 10002;
+	        display: none; width: 380px;
+	        padding: 8px; border: 1px solid #ccc; border-radius: 8px;
+	        background: #fff; box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+	        font-size: 12px; line-height: 1.25; color: #333;
+	      }
 
-    `;
-    document.head.appendChild(style);
-  }
+	    `;
+	    document.head.appendChild(style);
+	  }
 
   // ---------------- Dialog creation ----------------
 
@@ -1956,20 +1972,32 @@ function parseLatheUrl(url) {
         <div style="font-size:15px;font-weight:700">Find project periphery</div>
       </div>
 
-      <div style="margin-bottom:8px">
-        <div style="display:flex;align-items:center;gap:8px">
-        <label for="kmaxInput">Kmax</label>
-        <span class="periphHelpWrap">
-          <button type="button" class="periphHelpBtn" data-help="By limiting the search for alternative paths between an edge’s endpoints, Kmax controls how many cycles we can detect that include that edge. Edges with no alternate routes (within Kmax) look “more peripheral.”">?</button>
-          <div class="periphHelpPopup"></div>
-        </span>
-      </div>
-        <input id="kmaxInput" type="number" min="2" step="1" value="10"
-               style="width:100%;padding:6px;margin-top:4px"/>
-      </div>
-      <details id="periphAdvancedDetails"
-               style="margin-bottom:10px;border:1px solid #ddd;border-radius:8px;padding:8px;background:#fafafa">
-        <summary style="cursor:pointer;font-weight:600">Advanced settings</summary>
+	      <div style="margin-bottom:8px">
+	        <div style="display:flex;align-items:center;gap:8px">
+	        <label for="kmaxInput">Kmax</label>
+	        <span class="periphHelpWrap">
+	          <button type="button" class="periphHelpBtn" data-help="By limiting the search for alternative paths between an edge’s endpoints, Kmax controls how many cycles we can detect that include that edge. Edges with no alternate routes (within Kmax) look “more peripheral.”">?</button>
+	          <div class="periphHelpPopup"></div>
+	        </span>
+	      </div>
+	        <input id="kmaxInput" type="number" min="2" step="1" value="10"
+	               style="width:100%;padding:6px;margin-top:4px"/>
+	      </div>
+	
+	      <div style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+	        <div style="display:flex;align-items:center;gap:8px">
+	          <label for="periphAutoSaveStl" style="cursor:pointer">Save detected 3D model surface as STL file</label>
+	          <span class="periphHelpWrap">
+	            <button type="button" class="periphHelpBtn"
+	                    data-help="Builds a triangle mesh from the detected cycles (using the current 3D layout coordinates) and downloads it as an STL file after the periphery run completes.">?</button>
+	            <div class="periphHelpPopup"></div>
+	          </span>
+	        </div>
+	        <input id="periphAutoSaveStl" type="checkbox"/>
+	      </div>
+	      <details id="periphAdvancedDetails"
+	               style="margin-bottom:10px;border:1px solid #ddd;border-radius:8px;padding:8px;background:#fafafa">
+	        <summary style="cursor:pointer;font-weight:600">Advanced settings</summary>
 
         <div style="margin-top:8px;display:flex;flex-direction:column;gap:10px">
 
@@ -2022,8 +2050,8 @@ function parseLatheUrl(url) {
             <input id="periphIncludeBreakingCycle" type="checkbox"/>
           </div>
 
-        </div>
-      </details>
+	        </div>
+	      </details>
 
       <div id="periphStatus"
            style="display:none;align-items:center;gap:8px;margin-top:10px;color:#444;font-size:13px">
@@ -2133,6 +2161,7 @@ function parseLatheUrl(url) {
     const includeBridgeInput = modal.querySelector('#periphIncludeBridge');
     const includeLongestCycleInput = modal.querySelector('#periphIncludeLongestCycle');
     const includeBreakingCycleInput = modal.querySelector('#periphIncludeBreakingCycle');
+    const autoSaveStlInput = modal.querySelector('#periphAutoSaveStl');
     const msg = modal.querySelector('#periphMessage');
     const labelDetails = modal.querySelector('#periphLabelDetails');
     const labelInput = modal.querySelector('#periphApplyLabelInput');
@@ -3366,7 +3395,8 @@ function appendSortLabelLine(text, labelName, values) {
         leap_max: leap,
         include_bridge_edges_in_output: !!(includeBridgeInput && includeBridgeInput.checked),
         include_longest_cycle_subgraph: !!(includeLongestCycleInput && includeLongestCycleInput.checked),
-        include_breaking_cycle_subgraph: !!(includeBreakingCycleInput && includeBreakingCycleInput.checked)
+        include_breaking_cycle_subgraph: !!(includeBreakingCycleInput && includeBreakingCycleInput.checked),
+        export_stl: !!(autoSaveStlInput && autoSaveStlInput.checked)
       };
       return opts;
     }
@@ -3376,18 +3406,20 @@ function appendSortLabelLine(text, labelName, values) {
       try { return JSON.stringify(opts); } catch (e) { return String(opts); }
     }
 
-    function invalidatePeripheryCache(reason) {
-      const had = ((Array.isArray(state.periphGraphsBaseAll) && state.periphGraphsBaseAll.length) ||
-                   (Array.isArray(state.periphGraphsExtras) && state.periphGraphsExtras.length));
-      // Clear cached results so a re-run is required.
-      state.periphGraphsBaseAll = null;
-      state.periphGraphsExtras = null;
-      state.periphKmax = null;
-      state.selectedIndex = 0;
-      state.periphCacheInvalidatedMsg = reason || 'Settings changed — cached peripheries cleared. Click Re-run to compute again.';
-      try { renderResultsFromState(); } catch (e) {}
-      return had;
-    }
+	    function invalidatePeripheryCache(reason) {
+	      const had = ((Array.isArray(state.periphGraphsBaseAll) && state.periphGraphsBaseAll.length) ||
+	                   (Array.isArray(state.periphGraphsExtras) && state.periphGraphsExtras.length));
+	      // Clear cached results so a re-run is required.
+	      state.periphGraphsBaseAll = null;
+	      state.periphGraphsExtras = null;
+	      state.periphLastStl = null;
+	      state.periphLastStlKey = null;
+	      state.periphKmax = null;
+	      state.selectedIndex = 0;
+	      state.periphCacheInvalidatedMsg = reason || 'Settings changed — cached peripheries cleared. Click Re-run to compute again.';
+	      try { renderResultsFromState(); } catch (e) {}
+	      return had;
+	    }
 
     function persistPeriphOpts() {
       const opts = normalizePeriphOptsFromUI();
@@ -3407,29 +3439,63 @@ function appendSortLabelLine(text, labelName, values) {
     if (includeBridgeInput) includeBridgeInput.addEventListener('change', persistPeriphOpts);
     if (includeLongestCycleInput) includeLongestCycleInput.addEventListener('change', persistPeriphOpts);
     if (includeBreakingCycleInput) includeBreakingCycleInput.addEventListener('change', persistPeriphOpts);
+    if (autoSaveStlInput) autoSaveStlInput.addEventListener('change', persistPeriphOpts);
 
-    // Help popups (question-mark buttons)
-    function hideAllPeriphHelp() {
-      modal.querySelectorAll('.periphHelpPopup').forEach(p => { p.style.display = 'none'; p.textContent = ''; });
-    }
-    modal.querySelectorAll('.periphHelpBtn').forEach(btn => {
-      btn.addEventListener('click', (ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        const wrap = btn.closest('.periphHelpWrap');
-        if (!wrap) return;
-        const pop = wrap.querySelector('.periphHelpPopup');
-        if (!pop) return;
-        const help = btn.getAttribute('data-help') || '';
-        const isOpen = (pop.style.display === 'block');
-        hideAllPeriphHelp();
-        if (!isOpen) {
-          pop.textContent = help;
-          pop.style.display = 'block';
-        }
-      });
-    });
-    document.addEventListener('click', hideAllPeriphHelp);
+	    // Help popups (question-mark buttons)
+	    let helpPortal = document.getElementById('periphHelpPortal');
+	    if (!helpPortal) {
+	      helpPortal = document.createElement('div');
+	      helpPortal.id = 'periphHelpPortal';
+	      helpPortal.className = 'periphHelpPortal';
+	      document.body.appendChild(helpPortal);
+	    }
+	
+	    let helpPortalAnchor = null;
+	
+	    function hideAllPeriphHelp() {
+	      try {
+	        helpPortal.style.display = 'none';
+	        helpPortal.textContent = '';
+	        helpPortalAnchor = null;
+	      } catch (e) {}
+	      modal.querySelectorAll('.periphHelpPopup').forEach(p => { p.style.display = 'none'; p.textContent = ''; });
+	    }
+	    modal.querySelectorAll('.periphHelpBtn').forEach(btn => {
+	      btn.addEventListener('click', (ev) => {
+	        ev.preventDefault();
+	        ev.stopPropagation();
+	        const help = btn.getAttribute('data-help') || '';
+	        const isOpen = (helpPortalAnchor === btn && helpPortal.style.display === 'block');
+	        hideAllPeriphHelp();
+	        if (isOpen) return;
+	
+	        helpPortal.textContent = help;
+	        helpPortal.style.display = 'block';
+	        helpPortalAnchor = btn;
+	
+	        // Position portal near the button (clamped to viewport).
+	        const r = btn.getBoundingClientRect();
+	        const margin = 8;
+	        const desiredW = 380;
+	        let left = r.right - desiredW;
+	        if (!isFinite(left)) left = margin;
+	        left = Math.max(margin, Math.min(left, window.innerWidth - desiredW - margin));
+	
+	        // First try below; if it overflows, try above.
+	        let top = r.bottom + 6;
+	        helpPortal.style.left = left + 'px';
+	        helpPortal.style.top = top + 'px';
+	        const pr = helpPortal.getBoundingClientRect();
+	        if (top + pr.height > window.innerHeight - margin) {
+	          top = r.top - pr.height - 6;
+	          if (top < margin) top = margin;
+	          helpPortal.style.top = top + 'px';
+	        }
+	      });
+	    });
+	    document.addEventListener('click', hideAllPeriphHelp);
+	    modal.addEventListener('scroll', hideAllPeriphHelp, { passive: true });
+	    window.addEventListener('resize', hideAllPeriphHelp);
 
     let periphIsBusy = false;
 
@@ -3455,6 +3521,31 @@ function appendSortLabelLine(text, labelName, values) {
       if (includeBridgeInput) includeBridgeInput.disabled = isBusy;
       if (includeLongestCycleInput) includeLongestCycleInput.disabled = isBusy;
       if (includeBreakingCycleInput) includeBreakingCycleInput.disabled = isBusy;
+      if (autoSaveStlInput) autoSaveStlInput.disabled = isBusy;
+    }
+
+    function downloadTextFile(text, filename, mime) {
+      try {
+        const blob = new Blob([String(text ?? '')], { type: mime || 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = String(filename || 'export.txt');
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { try { URL.revokeObjectURL(url); } catch {} try { a.remove(); } catch {} }, 0);
+      } catch (e) {
+        console.error('Failed to download file:', e);
+      }
+    }
+
+    function defaultStlFilename() {
+      try {
+        const ts = new Date().toISOString().replace(/[:.]/g, '-');
+        return `crochetparade_model_${ts}.stl`;
+      } catch (e) {
+        return 'crochetparade_model.stl';
+      }
     }
 
     function renderResultsFromState() {
@@ -3465,6 +3556,7 @@ function appendSortLabelLine(text, labelName, values) {
       if (includeBridgeInput) includeBridgeInput.checked = !!(state.periphOpts && state.periphOpts.include_bridge_edges_in_output);
       if (includeLongestCycleInput) includeLongestCycleInput.checked = !!(state.periphOpts && state.periphOpts.include_longest_cycle_subgraph);
       if (includeBreakingCycleInput) includeBreakingCycleInput.checked = !!(state.periphOpts && state.periphOpts.include_breaking_cycle_subgraph);
+      if (autoSaveStlInput) autoSaveStlInput.checked = !!(state.periphOpts && state.periphOpts.export_stl);
 
       // Remove old periphery selector UI (if any)
       const oldRow = modal.querySelector('#peripherySelectRow');
@@ -4362,11 +4454,249 @@ async function _periphRunEditorPreview(reason, reqId) {
       const optsKeyForRun = state.periphOptsKey || periphOptsKey(optsForRun);
 
       // Read DOT string produced by current 3D calc
-      const dotData = window.dot_simple;
-      if (typeof dotData !== 'string' || dotData.trim().length === 0) {
+      const baseDotData = window.dot_simple;
+      if (typeof baseDotData !== 'string' || baseDotData.trim().length === 0) {
         msg.textContent = 'Please press “Calculate and show model” first, then run Find project periphery.';
         return;
       }
+
+	      // When exporting STL, we need node coordinates. The default dot_simple used for periphery
+	      // is generated *before* layout. Regenerate a dot_simple that includes current coordinates.
+	      let dotData = baseDotData;
+	      let stlKeyForRun = null;
+	      if (optsForRun && optsForRun.export_stl) {
+	        try {
+	          const inputEl = document.getElementById('inputText') || window.inputText;
+	          const text = inputEl ? String(inputEl.value ?? '') : '';
+	          const jsonForPos = (typeof window.json0 !== 'undefined') ? window.json0 : null;
+	          const dim = (typeof window.DIM === 'number') ? window.DIM : 3;
+	
+	          // Parse TRANSFORM_OBJECT lines (same numeric fields as the Object Transform tool writes).
+	          const floatRe = '[-+]?\\d*\\.?\\d+(?:[eE][-+]?\\d+)?';
+	          const txRe = new RegExp(
+	            '^\\s*TRANSFORM_OBJECT:\\s*(\\d+),(' + floatRe + '),(' + floatRe + '),(' + floatRe + '),(' + floatRe + '),(' + floatRe + '),(' + floatRe + ')\\s*$',
+	            'gm'
+	          );
+	          const transforms = [];
+	          let m;
+	          while ((m = txRe.exec(text)) !== null) {
+	            const objId = parseInt(m[1], 10);
+	            const vals = [m[2], m[3], m[4], m[5], m[6], m[7]].map(parseFloat);
+	            if (!isFinite(objId) || vals.some(v => !isFinite(v))) continue;
+	            transforms.push([objId, vals[0], vals[1], vals[2], vals[3], vals[4], vals[5]]);
+	          }
+	          transforms.sort((a, b) => a[0] - b[0]);
+	          try { stlKeyForRun = JSON.stringify(transforms); } catch (e) { stlKeyForRun = String(transforms.length); }
+	
+	          function parsePos3(pos) {
+	            if (pos == null) return null;
+	            if (Array.isArray(pos)) {
+	              const x = Number(pos[0]), y = Number(pos[1]), z = Number(pos[2] ?? 0);
+	              if (!isFinite(x) || !isFinite(y) || !isFinite(z)) return null;
+	              return [x, y, z];
+	            }
+	            const s = String(pos);
+	            const s0 = s.split('|')[0].trim();
+	            const parts = s0.split(',').map(Number);
+	            if (parts.length < 2) return null;
+	            const x = parts[0], y = parts[1], z = (parts.length >= 3 && isFinite(parts[2])) ? parts[2] : 0;
+	            if (!isFinite(x) || !isFinite(y) || !isFinite(z)) return null;
+	            return [x, y, z];
+	          }
+	
+	          function quatFromEulerXYZ(rx, ry, rz) {
+	            const hx = rx * 0.5, hy = ry * 0.5, hz = rz * 0.5;
+	            const c1 = Math.cos(hx), c2 = Math.cos(hy), c3 = Math.cos(hz);
+	            const s1 = Math.sin(hx), s2 = Math.sin(hy), s3 = Math.sin(hz);
+	            return {
+	              x: s1 * c2 * c3 + c1 * s2 * s3,
+	              y: c1 * s2 * c3 - s1 * c2 * s3,
+	              z: c1 * c2 * s3 + s1 * s2 * c3,
+	              w: c1 * c2 * c3 - s1 * s2 * s3,
+	            };
+	          }
+	
+	          function rotateVecByQuat(v, q) {
+	            // v' = v + w*t + cross(q.xyz, t), where t = 2*cross(q.xyz, v)
+	            const qx = q.x, qy = q.y, qz = q.z, qw = q.w;
+	            const vx = v[0], vy = v[1], vz = v[2];
+	
+	            const tx = 2 * (qy * vz - qz * vy);
+	            const ty = 2 * (qz * vx - qx * vz);
+	            const tz = 2 * (qx * vy - qy * vx);
+	
+	            const vpx = vx + qw * tx + (qy * tz - qz * ty);
+	            const vpy = vy + qw * ty + (qz * tx - qx * tz);
+	            const vpz = vz + qw * tz + (qx * ty - qy * tx);
+	            return [vpx, vpy, vpz];
+	          }
+	
+	          // Build per-node positions from json0 (physical coordinates from graph.cpp layout).
+	          let jsonForDot = jsonForPos || '';
+	          if (jsonForPos && typeof jsonForPos === 'object' && Array.isArray(jsonForPos.objects)) {
+	            const objs = jsonForPos.objects;
+	            const n = objs.length;
+	            const pos = new Array(n);
+	
+	            // Global mean + r2 (matches mesh59.js normalization; translation in TRANSFORM_OBJECT is expressed in units of r2).
+	            let xm = 0, ym = 0, zm = 0, tot = 0;
+	            for (let i = 0; i < n; i++) {
+	              const p = parsePos3(objs[i].pos);
+	              if (!p) continue;
+	              pos[i] = p;
+	              xm += p[0]; ym += p[1]; zm += p[2];
+	              tot++;
+	            }
+	            if (tot > 0) { xm /= tot; ym /= tot; zm /= tot; }
+	            let r2 = 0;
+	            for (let i = 0; i < n; i++) {
+	              const p = pos[i];
+	              if (!p) continue;
+	              const dx = p[0] - xm, dy = p[1] - ym, dz = p[2] - zm;
+	              r2 = Math.max(r2, dx * dx + dy * dy + dz * dz);
+	            }
+	            r2 = Math.sqrt(r2);
+	            if (!isFinite(r2) || r2 < 1e-12) r2 = 1;
+	
+	            // Component ids (object ids) match mesh59.js: scan nodes in order, DFS components in the undirected edge graph.
+	            const compId = new Array(n).fill(-1);
+	            const adj = Array.from({ length: n }, () => []);
+	            if (Array.isArray(jsonForPos.edges)) {
+	              for (const e of jsonForPos.edges) {
+	                const a = (e && typeof e.tail === 'number') ? e.tail | 0 : -1;
+	                const b = (e && typeof e.head === 'number') ? e.head | 0 : -1;
+	                if (a < 0 || b < 0 || a >= n || b >= n || a === b) continue;
+	                adj[a].push(b);
+	                adj[b].push(a);
+	              }
+	            }
+	            let compCount = 0;
+	            for (let i = 0; i < n; i++) {
+	              if (compId[i] !== -1) continue;
+	              const stack = [i];
+	              compId[i] = compCount;
+	              while (stack.length) {
+	                const v = stack.pop();
+	                const nbrs = adj[v];
+	                for (let k = 0; k < nbrs.length; k++) {
+	                  const nb = nbrs[k];
+	                  if (compId[nb] === -1) { compId[nb] = compCount; stack.push(nb); }
+	                }
+	              }
+	              compCount++;
+	            }
+	
+	            // Per-object COM for rotation pivot: match mesh59.js behavior (average over rendered node spheres + edge midpoints).
+	            const comSum = Array.from({ length: compCount }, () => [0, 0, 0]);
+	            const comW = new Array(compCount).fill(0);
+	
+	            function addWeighted(cid, p, w) {
+	              comSum[cid][0] += p[0] * w;
+	              comSum[cid][1] += p[1] * w;
+	              comSum[cid][2] += p[2] * w;
+	              comW[cid] += w;
+	            }
+	
+	            for (let i = 0; i < n; i++) {
+	              const p = pos[i];
+	              if (!p) continue;
+	              const lab = (objs[i] && typeof objs[i].label === 'string') ? objs[i].label : '';
+	              const isHidden = (lab.split('|')[0] === 'hidden');
+	              if (isHidden) continue; // node spheres are only created for non-hidden nodes
+	              const cid = compId[i];
+	              if (cid >= 0) addWeighted(cid, p, 1);
+	            }
+	
+	            if (Array.isArray(jsonForPos.edges)) {
+	              for (const e of jsonForPos.edges) {
+	                const a = (e && typeof e.tail === 'number') ? e.tail | 0 : -1;
+	                const b = (e && typeof e.head === 'number') ? e.head | 0 : -1;
+	                if (a < 0 || b < 0 || a >= n || b >= n || a === b) continue;
+	                const pa = pos[a], pb = pos[b];
+	                if (!pa || !pb) continue;
+	                const mid = [(pa[0] + pb[0]) * 0.5, (pa[1] + pb[1]) * 0.5, (pa[2] + pb[2]) * 0.5];
+	                const w = (e && e.color === 'gray') ? 1 : 3; // line+arrowhead+scene1 line all sit at midpoint
+	                const cid = compId[a];
+	                if (cid >= 0) addWeighted(cid, mid, w);
+	              }
+	            }
+	
+	            // Fallback: if an object had no visible nodes and no edges (rare), fall back to mean of all its nodes.
+	            for (let cid = 0; cid < compCount; cid++) {
+	              if (comW[cid] > 0) continue;
+	              for (let i = 0; i < n; i++) {
+	                if (compId[i] !== cid) continue;
+	                const p = pos[i];
+	                if (!p) continue;
+	                addWeighted(cid, p, 1);
+	              }
+	            }
+	
+	            const com = Array.from({ length: compCount }, () => [0, 0, 0]);
+	            for (let cid = 0; cid < compCount; cid++) {
+	              if (comW[cid] > 0) {
+	                com[cid][0] = comSum[cid][0] / comW[cid];
+	                com[cid][1] = comSum[cid][1] / comW[cid];
+	                com[cid][2] = comSum[cid][2] / comW[cid];
+	              }
+	            }
+	
+	            // Precompute transforms by object id.
+	            const tByObj = new Map();
+	            for (const row of transforms) {
+	              const objId = row[0] | 0;
+	              const tx = row[1], ty = row[2], tz = row[3];
+	              let rx = row[4], ry = row[5], rz = row[6];
+	              // In 2D mode we only keep rotation about Z and translation in XY.
+	              if (dim !== 3) { rx = 0; ry = 0; }
+	              const q = quatFromEulerXYZ(rx, ry, rz);
+	              const t = [tx * r2, ty * r2, (dim === 3 ? tz * r2 : 0)];
+	              tByObj.set(objId, { t, q });
+	            }
+	
+		            // Write transformed positions (physical coordinates) into a minimal json payload for export_to_dot.
+		            const objectsForDot = new Array(n);
+		            for (let i = 0; i < n; i++) {
+		              const o = objs[i];
+		              const name = o && typeof o.name === 'string' ? o.name : '';
+		              const p0 = pos[i];
+		              let p1 = p0;
+	              const cid = compId[i];
+	              const tr = tByObj.get(cid);
+	              if (p0 && tr && cid >= 0) {
+	                const c = com[cid];
+	                const rel = [p0[0] - c[0], p0[1] - c[1], p0[2] - c[2]];
+		                const rrel = rotateVecByQuat(rel, tr.q);
+		                p1 = [rrel[0] + c[0] + tr.t[0], rrel[1] + c[1] + tr.t[1], rrel[2] + c[2] + tr.t[2]];
+		              }
+		              const posStr = (p1 && isFinite(p1[0]) && isFinite(p1[1]) && isFinite(p1[2]))
+		                // Match the 3D view / GLTF export coordinate normalization (mesh59.js): subtract global mean and divide by r2.
+		                // Then match Blender’s GLTF import axis conversion (Y-up -> Z-up) so STL and GLTF overlap in Blender.
+		                ? (() => {
+		                  const xn = (p1[0] - xm) / r2;
+		                  const yn = (p1[1] - ym) / r2;
+		                  const zn = (p1[2] - zm) / r2;
+		                  const xb = xn;
+		                  const yb = (dim === 3) ? -zn : 0;
+		                  const zb = yn;
+		                  return `${xb},${yb},${zb}`;
+		                })()
+		                : String(o && o.pos != null ? o.pos : '');
+		              objectsForDot[i] = { name, pos: posStr };
+		            }
+		            jsonForDot = { objects: objectsForDot };
+		          }
+	
+	          const res = (typeof processTextSafe === 'function') ? processTextSafe(text, jsonForDot || '') : null;
+	          if (Array.isArray(res) && typeof res[1] === 'string' && res[1].trim()) {
+	            dotData = res[1];
+	          } else {
+	            console.warn('Save STL requested, but could not regenerate dot_simple with coordinates; proceeding with base dot_simple.');
+	          }
+	        } catch (e) {
+	          console.warn('Save STL: failed to regenerate dot_simple with coordinates; proceeding with base dot_simple.', e);
+	        }
+	      }
 
       const myToken = ++state.runToken;
       setBusy(true, 'Calculating periphery graphs (this can take a while)…');
@@ -4379,13 +4709,18 @@ async function _periphRunEditorPreview(reason, reqId) {
       try { window.__peripherySceneHighlightedNodeLabels = []; } catch (e) {}
       try { window.__peripheryHighlightSessionId = (window.__peripheryDialogState && typeof window.__peripheryDialogState.sessionId === 'number') ? window.__peripheryDialogState.sessionId : null; } catch (e) {}
 
-      try {
-        const cachedBase = Array.isArray(state.periphGraphsBaseAll) ? state.periphGraphsBaseAll : null;
-        if (cachedBase && cachedBase.length > 0 && state.periphKmax === kmaxVal && state.periphOptsKey === optsKeyForRun) {
-          setBusy(false);
-          modal.refreshPeripheryUI();
-          return;
-        }
+	      try {
+	        const cachedBase = Array.isArray(state.periphGraphsBaseAll) ? state.periphGraphsBaseAll : null;
+	        const stlCacheOk = (!optsForRun || !optsForRun.export_stl) ||
+	          (typeof state.periphLastStl === 'string' && state.periphLastStl.trim() && state.periphLastStlKey === stlKeyForRun);
+	        if (cachedBase && cachedBase.length > 0 && state.periphKmax === kmaxVal && state.periphOptsKey === optsKeyForRun && stlCacheOk) {
+	          setBusy(false);
+	          if (optsForRun && optsForRun.export_stl && typeof state.periphLastStl === 'string' && state.periphLastStl.trim() && state.periphLastStlKey === stlKeyForRun) {
+	            downloadTextFile(state.periphLastStl, defaultStlFilename(), 'model/stl');
+	          }
+	          modal.refreshPeripheryUI();
+	          return;
+	        }
 
         // Let the browser paint the spinner/status before heavy work begins.
         await new Promise(requestAnimationFrame);
@@ -4396,8 +4731,15 @@ async function _periphRunEditorPreview(reason, reqId) {
         // and then slices to N, so using a large N mostly affects the size of the returned list.
         const Nall = 100000;
 
-        const rawGraphs = await find_periphery(dotData, state.kmax, Nall, optsForRun);
-console.log(rawGraphs);
+	        const rawGraphs = await find_periphery(dotData, state.kmax, Nall, optsForRun);
+	        const stlText = (rawGraphs && typeof rawGraphs.stl === 'string') ? rawGraphs.stl : null;
+	        if (optsForRun && optsForRun.export_stl) {
+	          state.periphLastStl = (typeof stlText === 'string' && stlText.trim()) ? stlText : null;
+	          state.periphLastStlKey = stlKeyForRun;
+	        } else {
+	          state.periphLastStl = null;
+	          state.periphLastStlKey = null;
+	        }
         // Sanity-check + normalize output: keep only graphs with non-empty nodes+edges arrays.
         const cleaned = (Array.isArray(rawGraphs) ? rawGraphs : []).filter(g => {
           if (!g || typeof g !== 'object') return false;
@@ -4450,6 +4792,10 @@ console.log(rawGraphs);
 
         // Ignore if a newer run started
         if (state.runToken !== myToken) return;
+
+        if (optsForRun && optsForRun.export_stl && typeof state.periphLastStl === 'string' && state.periphLastStl.trim()) {
+          downloadTextFile(state.periphLastStl, defaultStlFilename(), 'model/stl');
+        }
 
         if (!Array.isArray(baseAll) || baseAll.length === 0) {
           // Keep extras if any, but typically if there are no base peripheries there's nothing useful to highlight.
@@ -4807,7 +5153,7 @@ window.highlightPeripheryInText = function (nodeLabels) {
                 <button class="button" id="latheButton" onclick="lathe()">Convert Crochet Lathe instructions to CrochetPARADE</button>
                 <button class="button" id="expandButton" onclick="expandExpression()">Expand instructions</button>
                 <button class="button" id="collectButton" onclick="collectExpression()">Simplify instructions</button>
-                <button class="button" id="findEdgesButton" onclick="window.showFindPeripheryDialog()">Find project periphery</button>
+                <button class="button" id="findEdgesButton" onclick="window.showFindPeripheryDialog()">Find project periphery/Save 3D Model to STL</button>
             </div>
         </div>
         <div class="dropdown">
@@ -4819,6 +5165,8 @@ window.highlightPeripheryInText = function (nodeLabels) {
 
 
                 <button class="button" onclick="window.open('./Manual.html', '_blank')">Manual</button>
+                <button class="button" onclick="window.open('./docs/periphery_documentation.html', '_blank')">Periphery finder documentation</button>
+                <button class="button" onclick="window.open('./docs/node_layout_documentation_v2.html', '_blank')">Physics engine documentation</button>
                 <button class="button" onclick="window.open('https://crochetparade.org/crochetforum/forumdisplay.php?fid=3', '_blank')">Ask a question</button>
                 <button class="button" onclick="window.open('https://codeberg.org/crochetparade/CrochetPARADE/issues', '_blank')">File a bug report</button>
 
@@ -6987,16 +7335,19 @@ if (hasTokenWordsAfterLastBr) {
                 st.periphKmax = null;
                 st.periphOptsKey = null;
                 // reset dialog settings for the new 3D session
-                st.periphOpts = {
-                  leap_max: 0,
-                  include_bridge_edges_in_output: false,
-                  include_longest_cycle_subgraph: false,
-                  include_breaking_cycle_subgraph: false
-                };
-                st.kmax = 10;
-                st.N = 3;
-                st.selectedIndex = 0;
-                st.runToken = 0;
+	                st.periphOpts = {
+	                  leap_max: 0,
+	                  include_bridge_edges_in_output: false,
+	                  include_longest_cycle_subgraph: false,
+	                  include_breaking_cycle_subgraph: false,
+	                  export_stl: false
+	                };
+	                st.periphLastStl = null;
+	                st.periphLastStlKey = null;
+	                st.kmax = 10;
+	                st.N = 3;
+	                st.selectedIndex = 0;
+	                st.runToken = 0;
                 // Keep last dialog position so the window doesn't jump around
                 st.boxPos = st.boxPos || null;
             })();

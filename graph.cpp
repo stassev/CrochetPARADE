@@ -568,7 +568,7 @@ extern "C" const char* performLayout(const char* jsInput) {
         }
     }
     
-    std::vector<int> ave_forces(3,0.0);
+    std::vector<double> ave_forces(3,0.0);
     double n_ave_F=0.0;
     double n_edges=0.0;
 
@@ -662,9 +662,16 @@ extern "C" const char* performLayout(const char* jsInput) {
                         n_ave_F++;
                     }
                 }
-                if (n_ave_F>0){
-                    for (int dim = 0; dim < numDimensions; ++dim) {
-                        ave_forces[dim]/=n_ave_F;
+                {
+                    const double n_free = double(graph.num_nodes) - n_ave_F;
+                    if ((n_ave_F > 0) && (n_free > 0)) {
+                        for (int dim = 0; dim < numDimensions; ++dim) {
+                            ave_forces[dim] /= n_free;
+                        }
+                    } else {
+                        for (int dim = 0; dim < numDimensions; ++dim) {
+                            ave_forces[dim] = 0.0;
+                        }
                     }
                 }
                 for (int i = 0; i < graph.num_nodes; ++i) {
@@ -790,9 +797,16 @@ if (viscousiterations>0){
                         n_ave_F++;
                     }
                 }
-                if (n_ave_F>0){
-                    for (int dim = 0; dim < numDimensions; ++dim) {
-                        ave_forces[dim]/=n_ave_F;
+                {
+                    const double n_free = double(graph.num_nodes) - n_ave_F;
+                    if ((n_ave_F > 0) && (n_free > 0)) {
+                        for (int dim = 0; dim < numDimensions; ++dim) {
+                            ave_forces[dim] /= n_free;
+                        }
+                    } else {
+                        for (int dim = 0; dim < numDimensions; ++dim) {
+                            ave_forces[dim] = 0.0;
+                        }
                     }
                 }
                 for (int i = 0; i < graph.num_nodes; ++i) {
