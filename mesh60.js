@@ -31,7 +31,7 @@ import {
     returnRotational,
     returnTranslation,
     setRotationAngles
-} from './transform_controls59.js';
+} from './transform_controls60.js';
 
 //import {
 //    SVGRenderer
