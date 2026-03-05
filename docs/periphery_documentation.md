@@ -6,7 +6,7 @@ date: 2026-02-15
 
 # Abstract
 
-`periphery.cpp` implements a deterministic graph-processing pipeline that extracts one or more “periphery” subgraphs from an undirected DOT edge list. The core classifier is *per-edge path enumeration*: for each undirected edge \(\{u,v\}\), the code enumerates simple \(u\!\to\!v\) paths up to a user-supplied maximum length \(K_{\max}\), applies an internal-node blocking rule grouped by path length, and produces an integer “feasible path count” (forced to be at least \(1\)). Edges whose final count equals \(1\) are designated periphery edges. Optionally, a bounded-hop “leap” procedure adds bridge edges along shortest paths between disconnected periphery components. Finally, each resulting component is deterministically *ordered* (as a directed edge traversal) using special-cased rules for paths and simple cycles and a trunk-based procedure for general graphs, and the result is returned as JSON.
+`periphery.cpp` implements a deterministic graph-processing pipeline that extracts one or more “periphery” subgraphs from an undirected DOT edge list. The core classifier is *per-edge path enumeration*: for each undirected edge \(\{u,v\}\), the code enumerates simple \(u\!\to\!v\) paths up to a user-supplied maximum length \(K_{\max}\), applies an internal-node blocking rule grouped by path length, and produces an integer “feasible path count” (forced to be at least \(1\)). Edges whose final count equals \(1\) are designated periphery edges. Optionally, a bounded-hop “leap” procedure adds bridge edges along shortest paths between disconnected periphery components. Finally, each resulting component is deterministically *ordered* (as a directed edge traversal) using special-cased rules for paths and simple cycles and a trunk-based procedure for general graphs, and the result is returned as JSON (optionally with STL/OBJ payloads for mesh export).
 
 This document describes what the code *actually computes*, preserving constants and branch logic exactly, and intentionally avoiding semantic assumptions based on identifier names.
 
@@ -39,19 +39,25 @@ No other DOT syntax (attributes, node statements, etc.) is interpreted by this f
 
 ## 1.3 Output JSON schema
 
-The function returns a JSON array of graph objects:
+On success, the function returns a JSON object:
 
 ```json
-[
-  {
-    "nodes": ["label0", "label1", "..."],
-    "edges": [["labelA","labelB"], ["labelC","labelD"], "..."]
-  },
-  ...
-]
+{
+  "labels": ["label0", "label1", "..."],
+  "graphs": [
+    {
+      "nodes": [0, 5, 2, "..."],
+      "edges": [[0,5], [5,2], "..."]
+    }
+  ],
+  "stl": "optional ASCII STL text (present only when export_stl: true)",
+  "obj": "optional OBJ text (present only when export_obj: true)"
+}
 ```
 
-Each edge is emitted as an **ordered pair** (a directed traversal edge) even though all internal computations treat the underlying graph as undirected.
+`labels` is a global label table. Each graph’s `nodes` and `edges` use **0-based indices** into `labels`. Each edge is emitted as an **ordered pair** (a directed traversal edge) even though all internal computations treat the underlying graph as undirected.
+
+If no periphery is found, `"graphs"` is an empty array (the object is still returned). Cancellation still returns `__CANCELLED__`, and failures still return `[]` as described above.
 
 # 2. Determinism: insertion-ordered sets and adjacency
 
@@ -226,9 +232,24 @@ If `blocked` is false, it increments an integer accumulator `acceptedCount` by 1
 
 Crucially, because marking happens *after* the blocking tests for the entire length group, paths of the **same** length do not block each other; only shorter-length groups can block longer-length groups.
 
-**Optional 3D Model output to STL file**
+**Optional 3D Model output (STL/OBJ)**
 
-After completion of the above steps, the code optionally collects all *non-blocked* u-v paths (treating each as a cycle after implicitly re-adding u-v edge), dedupes them, triangulates each cycle (ear clipping with a “maximize minimum angle” ear score), enforces consistent winding, and returns an ASCII STL string in the JSON result when export_stl: true. Additionally, the code detects disconnected "objects" using the base graph edges (not the cycle edges): nodes connected via any base edge belong to the same object. Each object gets a deterministic ID. On the html side, each object in the STL file is translated and rotated using any TRANSFORM_OBJECT instructions present.
+After completion of the above steps, the code optionally collects all *non-blocked* \(u\!\to\!v\) paths (treating each as a polygonal cycle after implicitly re-adding the base \(\{u,v\}\) edge), dedupes the cycles, groups them into disconnected "objects" using the base graph edges (not the cycle edges), and builds mesh output when `export_stl` and/or `export_obj` are enabled. The export payloads are returned as `"stl"` and/or `"obj"` string fields in the output JSON object.
+
+- **STL (`export_stl: true`)**: each object’s oriented cycles are triangulated (ear clipping with a “maximize minimum angle” ear score) and written as ASCII STL.
+- **OBJ (`export_obj: true`)**:
+  - if `stl_repair: false`, exports the oriented cycles as untriangulated polygon faces (n-gons) with duplicate n-gons removed (rotation + reversal invariant);
+  - if `stl_repair: true`, exports the same cleaned triangle mesh used for STL (triangle faces).
+
+If `stl_repair: true`, an additional cleanup pipeline is applied to the triangle mesh before writing STL/OBJ:
+
+- optional vertex welding within `stl_snap_eps` (0 disables),
+- greedy trimming of edges with 3+ incident faces so each edge has \(\le 2\) faces,
+- winding repair (dropping a small set of triangles if needed to make a consistent winding possible),
+- splitting of non-manifold vertices (separate triangle-fans meeting only at a point),
+- optional removal of tiny disconnected components with `stl_drop_component_area_frac` (0 disables).
+
+On the HTML side, each exported object is translated and rotated using any `TRANSFORM_OBJECT:` instructions present.
   
 ## 5.4 Per-edge count with a forced minimum
 
@@ -269,7 +290,7 @@ u_0,v_0,u_1,v_1,\ldots
 \]
 (for the ordered periphery-edge list).
 
-If no periphery vertices exist, the function returns the JSON string `[]` immediately.
+If no periphery vertices exist, the output `"graphs"` array is empty (the JSON object is still returned).
 
 # 6. Stage D: periphery components and optional “leap bridging”
 
@@ -307,6 +328,20 @@ All other boolean options are parsed with the strict rule:
 \[
 \text{option} \leftarrow (\text{token is exactly the literal } \texttt{true}).
 \]
+
+The boolean keys currently consumed by the code are:
+
+- `include_bridge_edges_in_output`
+- `include_longest_cycle_subgraph`
+- `include_breaking_cycle_subgraph`
+- `export_stl`
+- `export_obj`
+- `stl_repair`
+
+Two additional numeric options are parsed without truncation (using `strtod` with the rule “missing or `null` \(\Rightarrow\) default”, and “non-number \(\Rightarrow\) default”):
+
+- `stl_snap_eps`: accepted if finite and \(\ge 0\) (0 disables welding)
+- `stl_drop_component_area_frac`: accepted if finite and \(> 0\) (0 disables component dropping)
 
 ## 6.4 Leap bridging algorithm (only if \(\ell_{\text{tr}}\ge 1\))
 
