@@ -408,7 +408,7 @@ ch, sk, 41scbl, ss@[%,0]   # a row of back-loop single crochets (ribbing-like)
 
 ---
 
-### 3.5 Tools → Find project periphery/Save 3D Model to STL
+### 3.5 Tools → Find project periphery/Save 3D model
 
 **What it does**
 
@@ -421,7 +421,7 @@ ch, sk, 41scbl, ss@[%,0]   # a row of back-loop single crochets (ribbing-like)
 **How (typical workflow)**
 
 1. Render the model.
-2. Run **Tools → Find project periphery/Save 3D Model to STL**.
+2. Run **Tools → Find project periphery/Save 3D model**.
 3. Pick a periphery candidate in the selector.
 4. (Recommended) Run **Tools → Expand instructions** (twice) so text highlighting and label insertion are per-stitch.
 5. Use **Apply label to periphery stitches** to label the boundary in periphery order.
@@ -573,7 +573,7 @@ The shipped examples (see the **Examples** dropdown) demonstrate CrochetPARADE a
 **How**
 
 1. Render a 3D model (so node coordinates exist).
-2. Run **Tools → Find project periphery/Save 3D Model to STL**.
+2. Run **Tools → Find project periphery/Save 3D model**.
 3. Enable **Save detected 3D model surface as STL file**.
 4. Click **Re-run** (or run the periphery detection) to trigger the STL download.
 
@@ -719,7 +719,7 @@ Try a few seeds if needed.
 **How**
 
 1. In CrochetPARADE, render your pattern in 3D.
-2. Run **Tools → Find project periphery/Save 3D Model to STL** and enable STL export.
+2. Run **Tools → Find project periphery/Save 3D model** and enable STL export.
 3. Download the STL.
 4. Open Remesher, upload that STL.
 5. Choose a smaller `L` for “smaller stitches / higher resolution”, or larger `L` for “bigger stitches / lower resolution”.

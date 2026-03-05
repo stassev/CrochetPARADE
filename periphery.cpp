@@ -37,6 +37,7 @@
 #include <iomanip>
 #include <functional>
 #include <limits>
+#include <queue>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -511,6 +512,16 @@ struct Options {
   bool include_longest_cycle_subgraph = false;
   bool include_breaking_cycle_subgraph = false;
   bool export_stl = false;
+  bool export_obj = false;
+
+  // Mesh cleanup options (applied only when stl_repair is enabled; affects STL and OBJ exports).
+  bool stl_repair = false;
+  // Optional pre-pass: weld/snap vertices within eps before cleanup (0 disables).
+  // This modifies the output STL/OBJ geometry/topology only (does not affect periphery detection).
+  double stl_snap_eps = 0.0; // distance threshold (in the model's 3D coordinate units)
+  // Optional cleanup: drop disconnected triangle components whose area is tiny relative to the largest.
+  // 0 disables. Example: 0.001 drops components with <0.1% of largest component area.
+  double stl_drop_component_area_frac = 0.0;
 };
 
 static inline bool is_json_delim(char c) {
@@ -586,6 +597,28 @@ static Options parseOptions(const char* opts_json_cstr) {
   o.include_longest_cycle_subgraph = parseStrictTrue("include_longest_cycle_subgraph");
   o.include_breaking_cycle_subgraph = parseStrictTrue("include_breaking_cycle_subgraph");
   o.export_stl = parseStrictTrue("export_stl");
+  o.export_obj = parseStrictTrue("export_obj");
+  o.stl_repair = parseStrictTrue("stl_repair");
+
+  auto parseNumOr = [&](const std::string& key, double def)->double{
+    std::string t;
+    if (!extract_json_token(json, key, t)) return def;
+    if (t == "null") return def;
+    char* endp = nullptr;
+    double v = std::strtod(t.c_str(), &endp);
+    if (endp == t.c_str()) return def;
+    return v;
+  };
+
+  // STL cleanup options (numbers; parsed with JS-like "null => default" behavior).
+  {
+    double e = parseNumOr("stl_snap_eps", o.stl_snap_eps);
+    if (std::isfinite(e) && e >= 0.0) o.stl_snap_eps = e;
+  }
+  {
+    double f = parseNumOr("stl_drop_component_area_frac", o.stl_drop_component_area_frac);
+    if (std::isfinite(f) && f > 0.0) o.stl_drop_component_area_frac = f;
+  }
 
   return o;
 }
@@ -853,58 +886,6 @@ static ClassifyResult classifyGraph(const OrderedSet<int>& incidentNodesSet,
   r.isPath = (r.edgeCount == r.nodeCount - 1) && (maxDeg <= 2);
   r.isSimpleCycle = (r.edgeCount == r.nodeCount) && allDeg2 && (r.nodeCount >= 3);
   return r;
-}
-
-// ---------- BFS parents (with insertion-ordered dist map iteration) ----------
-struct BfsParentsResult {
-  std::unordered_map<int,int> dist;
-  std::unordered_map<int,int> parent; // start -> -1
-  std::vector<int> order; // discovery order for dist.entries() equivalence
-};
-
-static BfsParentsResult bfsParentsWithin(const OrderedAdj& adj, int start, const std::unordered_set<int>* allowedSet) {
-  BfsParentsResult r;
-  r.dist.reserve(adj.keyset.size() * 2 + 8);
-  r.parent.reserve(adj.keyset.size() * 2 + 8);
-  r.order.reserve(adj.keyset.size() + 8);
-
-  std::vector<int> q;
-  q.reserve(adj.keyset.size() + 8);
-  size_t qi = 0;
-
-  r.dist.emplace(start, 0);
-  r.parent.emplace(start, -1);
-  r.order.push_back(start);
-  q.push_back(start);
-
-  while (qi < q.size()) {
-    CHECK_CANCEL();
-    int u = q[qi++];
-    int du = r.dist[u];
-    for (int v : adj.neighbors(u)) {
-      if (allowedSet && allowedSet->find(v) == allowedSet->end()) continue;
-      if (r.dist.find(v) == r.dist.end()) {
-        r.dist.emplace(v, du + 1);
-        r.parent.emplace(v, u);
-        r.order.push_back(v);
-        q.push_back(v);
-      }
-    }
-  }
-  return r;
-}
-
-static std::vector<int> reconstructPath(const std::unordered_map<int,int>& parent, int end) {
-  std::vector<int> path;
-  int cur = end;
-  while (cur != -1) {
-    path.push_back(cur);
-    auto it = parent.find(cur);
-    if (it == parent.end()) break;
-    cur = it->second;
-  }
-  std::reverse(path.begin(), path.end());
-  return path;
 }
 
 struct DiamResult {
@@ -1382,7 +1363,10 @@ static std::vector<std::array<int,3>> triangulatePolygonEarClip(const std::vecto
 static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
                                            const PosTable& pos,
                                            const std::vector<std::pair<int,int>>& baseEdges,
-                                           const std::string& solidName) {
+                                           const std::string& solidName,
+                                           const Options& opts,
+                                           std::string* objOut) {
+  if (objOut) objOut->clear();
   // Filter cycles that have coordinates for all nodes.
   std::vector<std::vector<int>> kept;
   kept.reserve(cycles.size());
@@ -1489,6 +1473,21 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     return (uint64_t)((uint64_t)(uint32_t)a << 32) | (uint64_t)(uint32_t)b;
   };
 
+  struct TriKeyHash {
+    size_t operator()(const std::array<int,3>& t) const noexcept {
+      // 64-bit mixing over 3x 32-bit ints; collision risk is negligible for this use.
+      uint64_t h = 14695981039346656037ULL; // FNV offset basis
+      auto mix = [&](uint32_t x) {
+        h ^= (uint64_t)x;
+        h *= 1099511628211ULL; // FNV prime
+      };
+      mix((uint32_t)t[0]);
+      mix((uint32_t)t[1]);
+      mix((uint32_t)t[2]);
+      return (size_t)h;
+    }
+  };
+
   auto orientCyclesInPlace = [&](std::vector<std::vector<int>>& cycs) {
     if (cycs.empty()) return;
 
@@ -1584,7 +1583,8 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     }
   };
 
-  auto emitTrianglesForCycles = [&](std::ostringstream& out, const std::vector<std::vector<int>>& cycs) {
+  auto emitTrianglesForCyclesLegacy = [&](std::ostringstream& out, const std::vector<std::vector<int>>& cycs) {
+    // Legacy (main-branch) STL emission: triangulate and emit each accepted cycle independently.
     for (const auto& cyc : cycs) {
       CHECK_CANCEL();
       std::vector<Vec3> poly3;
@@ -1636,8 +1636,2073 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     }
   };
 
+  auto collectTrianglesForCycles = [&](const std::vector<std::vector<int>>& cycs,
+                                       std::unordered_set<std::array<int,3>, TriKeyHash>& seenTriKeys,
+                                       std::vector<std::array<int,3>>& outTris) {
+    for (const auto& cyc : cycs) {
+      CHECK_CANCEL();
+      std::vector<Vec3> poly3;
+      poly3.reserve(cyc.size());
+      for (int id : cyc) {
+        const auto& a = pos.xyz[(size_t)id];
+        poly3.push_back(Vec3{a[0], a[1], a[2]});
+      }
+
+      Vec3 n = newellNormal(poly3);
+      double nn = v3_norm(n);
+      if (nn <= 1e-15) continue;
+      Vec3 nhat = v3_mul(n, 1.0 / nn);
+
+      // Build an orthonormal basis (u,v) in the polygon plane.
+      Vec3 ref = (std::fabs(nhat.z) < 0.9) ? Vec3{0.0, 0.0, 1.0} : Vec3{0.0, 1.0, 0.0};
+      Vec3 u = v3_cross(ref, nhat);
+      if (v3_norm(u) <= 1e-12) {
+        ref = Vec3{1.0, 0.0, 0.0};
+        u = v3_cross(ref, nhat);
+      }
+      u = v3_normalize(u);
+      Vec3 v = v3_cross(nhat, u);
+
+      std::vector<Vec2> poly2;
+      poly2.reserve(poly3.size());
+      for (const auto& p : poly3) poly2.push_back(Vec2{v3_dot(p, u), v3_dot(p, v)});
+
+      // Triangulate in 2D, then lift to 3D.
+      auto tris = triangulatePolygonEarClip(poly2);
+      for (const auto& tri : tris) {
+        CHECK_CANCEL();
+        int ia = cyc[(size_t)tri[0]];
+        int ib = cyc[(size_t)tri[1]];
+        int ic = cyc[(size_t)tri[2]];
+        if (ia == ib || ib == ic || ic == ia) continue;
+
+        // De-duplicate triangles across all cycles in this object (orientation-independent).
+        int aId = ia, bId = ib, cId = ic;
+        if (aId > bId) std::swap(aId, bId);
+        if (bId > cId) std::swap(bId, cId);
+        if (aId > bId) std::swap(aId, bId);
+        std::array<int,3> triKey{aId, bId, cId};
+        if (!seenTriKeys.insert(triKey).second) continue;
+        outTris.push_back(std::array<int,3>{ia, ib, ic});
+      }
+    }
+  };
+
+  struct TriDsuParity {
+    std::vector<int> p;
+    std::vector<uint8_t> r;
+    std::vector<uint8_t> parity; // parity to parent (0=same,1=flip)
+    explicit TriDsuParity(int n) : p((size_t)n), r((size_t)n, 0), parity((size_t)n, 0) {
+      for (int i = 0; i < n; i++) p[(size_t)i] = i;
+    }
+    std::pair<int,int> find(int x) {
+      int root = x;
+      int parToRoot = 0;
+      while (p[(size_t)root] != root) {
+        parToRoot ^= (int)parity[(size_t)root];
+        root = p[(size_t)root];
+      }
+      // Path compression with parity fixup.
+      int cur = x;
+      int parFromX = 0;
+      while (p[(size_t)cur] != cur) {
+        int parent = p[(size_t)cur];
+        int pcur = (int)parity[(size_t)cur];
+        p[(size_t)cur] = root;
+        parity[(size_t)cur] = (uint8_t)(parToRoot ^ parFromX);
+        parFromX ^= pcur;
+        cur = parent;
+      }
+      return {root, parToRoot};
+    }
+    void unite(int a, int b, int w) {
+      auto fa = find(a);
+      auto fb = find(b);
+      int ra = fa.first, pa = fa.second;
+      int rb = fb.first, pb = fb.second;
+      if (ra == rb) return;
+      if (r[(size_t)ra] < r[(size_t)rb]) {
+        std::swap(ra, rb);
+        std::swap(pa, pb);
+      }
+      p[(size_t)rb] = ra;
+      parity[(size_t)rb] = (uint8_t)(pa ^ pb ^ w);
+      if (r[(size_t)ra] == r[(size_t)rb]) r[(size_t)ra]++;
+    }
+  };
+
+  auto orientTrianglesInPlace = [&](std::vector<std::array<int,3>>& tris) {
+    if (tris.empty()) return;
+
+    struct EdgeOcc2 {
+      int tri[2];
+      uint8_t sign[2]; // 0 = min->max, 1 = max->min
+      uint8_t count;
+      EdgeOcc2() : tri{-1,-1}, sign{0,0}, count(0) {}
+    };
+
+    std::unordered_map<uint64_t, EdgeOcc2> edgeOcc;
+    size_t want = tris.size() * 3 + 16;
+    edgeOcc.reserve(std::min<size_t>(want, (size_t)4000000));
+
+    auto addOcc = [&](uint64_t k, int ti, uint8_t sgn) {
+      auto it = edgeOcc.find(k);
+      if (it == edgeOcc.end()) {
+        EdgeOcc2 e;
+        e.tri[0] = ti;
+        e.sign[0] = sgn;
+        e.count = 1;
+        edgeOcc.emplace(k, e);
+        return;
+      }
+      EdgeOcc2& e = it->second;
+      if (e.count == 0) {
+        e.tri[0] = ti;
+        e.sign[0] = sgn;
+        e.count = 1;
+      } else if (e.count == 1) {
+        e.tri[1] = ti;
+        e.sign[1] = sgn;
+        e.count = 2;
+      } else {
+        // mark as non-manifold / ambiguous; ignore constraints for this edge later
+        e.count = 3;
+      }
+    };
+
+    for (int ti = 0; ti < (int)tris.size(); ti++) {
+      CHECK_CANCEL();
+      const auto& t = tris[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+      if (a == b || b == c || c == a) continue;
+
+      auto addEdge = [&](int u, int v) {
+        uint64_t k = key64(u, v);
+        uint8_t sgn = (u < v) ? (uint8_t)0 : (uint8_t)1;
+        addOcc(k, ti, sgn);
+      };
+      addEdge(a, b);
+      addEdge(b, c);
+      addEdge(c, a);
+    }
+
+    TriDsuParity dsu((int)tris.size());
+    for (const auto& kv : edgeOcc) {
+      CHECK_CANCEL();
+      const EdgeOcc2& e = kv.second;
+      if (e.count != 2) continue;
+      int t1 = e.tri[0], t2 = e.tri[1];
+      if (t1 < 0 || t2 < 0) continue;
+      int w = (e.sign[0] == e.sign[1]) ? 1 : 0; // same direction on shared edge => flip one triangle
+      dsu.unite(t1, t2, w);
+    }
+
+    for (int ti = 0; ti < (int)tris.size(); ti++) {
+      CHECK_CANCEL();
+      int par = dsu.find(ti).second;
+      if (par == 1) std::swap(tris[(size_t)ti][1], tris[(size_t)ti][2]);
+    }
+  };
+
+  // Optional per-object planar reference (set inside the object loop).
+  // For nearly-planar meshes (blankets), "outward" is degenerate; a best-fit plane normal provides a stable
+  // reference for consistent winding.
+  bool stlPlanarActive = false;
+  Vec3 stlPlaneN{0.0, 0.0, 1.0}; // unit
+
+  // Optional per-object vertex position overrides (used by vertex welding).
+  // When set, vpos(id) returns the overridden position (output STL only).
+  std::unordered_map<int, Vec3> stlVposOverrideMap;
+  const std::unordered_map<int, Vec3>* stlVposOverride = nullptr;
+
+  auto vpos = [&](int id)->Vec3 {
+    if (stlVposOverride) {
+      auto it = stlVposOverride->find(id);
+      if (it != stlVposOverride->end()) return it->second;
+    }
+    const auto& a = pos.xyz[(size_t)id];
+    return Vec3{a[0], a[1], a[2]};
+  };
+
+  // Extra vertex ids used by cleanup (e.g., splitting non-manifold vertices). Must be globally unique per export
+  // so OBJ vertex ids don't collide across objects.
+  int extraVertexNextId = maxId + 1;
+
+  auto alignTriangleComponentsToLargestInPlace = [&](std::vector<std::array<int,3>>& tris) {
+    // Ensure each disconnected triangle component has consistent orientation relative to the largest component.
+    //
+    // `orientTrianglesInPlace` orients triangles consistently *within* each connected component, but the global
+    // flip of each component is arbitrary. For nearly-planar, open meshes this can produce a patchwork of
+    // triangles facing opposite directions. Here we:
+    //   1) Build triangle adjacency via manifold edges (exactly 2 incident triangles).
+    //   2) Find the component with largest area, use its area-weighted normal sum as the reference.
+    //   3) Flip any other component whose normal sum points opposite.
+    if (tris.empty()) return;
+
+    struct EdgeOcc2 {
+      int tri[2];
+      uint8_t count;
+      EdgeOcc2() : tri{-1,-1}, count(0) {}
+    };
+
+    std::unordered_map<uint64_t, EdgeOcc2> edgeOcc;
+    size_t want = tris.size() * 3 + 16;
+    edgeOcc.reserve(std::min<size_t>(want, (size_t)4000000));
+
+    auto addOcc = [&](uint64_t k, int ti) {
+      auto it = edgeOcc.find(k);
+      if (it == edgeOcc.end()) {
+        EdgeOcc2 e;
+        e.tri[0] = ti;
+        e.count = 1;
+        edgeOcc.emplace(k, e);
+        return;
+      }
+      EdgeOcc2& e = it->second;
+      if (e.count == 0) {
+        e.tri[0] = ti;
+        e.count = 1;
+      } else if (e.count == 1) {
+        e.tri[1] = ti;
+        e.count = 2;
+      } else {
+        e.count = 3; // non-manifold/ambiguous
+      }
+    };
+
+    for (int ti = 0; ti < (int)tris.size(); ti++) {
+      CHECK_CANCEL();
+      const auto& t = tris[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+      if (a == b || b == c || c == a) continue;
+      addOcc(key64(a, b), ti);
+      addOcc(key64(b, c), ti);
+      addOcc(key64(c, a), ti);
+    }
+
+    // Build adjacency via manifold edges.
+    std::vector<std::vector<int>> adj(tris.size());
+    for (const auto& kv : edgeOcc) {
+      CHECK_CANCEL();
+      const EdgeOcc2& e = kv.second;
+      if (e.count != 2) continue;
+      int t1 = e.tri[0];
+      int t2 = e.tri[1];
+      if (t1 < 0 || t2 < 0 || t1 == t2) continue;
+      adj[(size_t)t1].push_back(t2);
+      adj[(size_t)t2].push_back(t1);
+    }
+
+    // Precompute per-triangle area and area-weighted normal sum (nn = cross(b-a, c-a)).
+    std::vector<Vec3> triNN(tris.size(), Vec3{0.0, 0.0, 0.0});
+    std::vector<double> triArea(tris.size(), 0.0);
+    for (size_t ti = 0; ti < tris.size(); ti++) {
+      CHECK_CANCEL();
+      const auto& t = tris[ti];
+      Vec3 a = vpos(t[0]);
+      Vec3 b = vpos(t[1]);
+      Vec3 c = vpos(t[2]);
+      Vec3 nn = v3_cross(v3_sub(b, a), v3_sub(c, a));
+      triNN[ti] = nn;
+      triArea[ti] = 0.5 * v3_norm(nn);
+    }
+
+    // Find components, track their total area and normal sum.
+    std::vector<int> comp((size_t)tris.size(), -1);
+    std::vector<std::vector<int>> comps;
+    std::vector<double> compArea;
+    std::vector<Vec3> compNsum;
+    comps.reserve(64);
+    compArea.reserve(64);
+    compNsum.reserve(64);
+
+    for (int s = 0; s < (int)tris.size(); s++) {
+      CHECK_CANCEL();
+      if (comp[(size_t)s] != -1) continue;
+      int ci = (int)comps.size();
+      comps.emplace_back();
+      compArea.push_back(0.0);
+      compNsum.push_back(Vec3{0.0, 0.0, 0.0});
+
+      std::vector<int> q;
+      q.push_back(s);
+      comp[(size_t)s] = ci;
+      size_t qi = 0;
+      while (qi < q.size()) {
+        CHECK_CANCEL();
+        int u = q[qi++];
+        comps[(size_t)ci].push_back(u);
+        compArea[(size_t)ci] += triArea[(size_t)u];
+        compNsum[(size_t)ci] = v3_add(compNsum[(size_t)ci], triNN[(size_t)u]);
+        for (int v : adj[(size_t)u]) {
+          if (comp[(size_t)v] == -1) {
+            comp[(size_t)v] = ci;
+            q.push_back(v);
+          }
+        }
+      }
+    }
+
+    if (comps.empty()) return;
+
+    if (stlPlanarActive) {
+      // Align each component to the best-fit plane normal (planar meshes have degenerate "outward").
+      for (int ci = 0; ci < (int)comps.size(); ci++) {
+        CHECK_CANCEL();
+        int forward = 0, backward = 0;
+        for (int ti : comps[(size_t)ci]) {
+          Vec3 nn = triNN[(size_t)ti];
+          if (v3_norm(nn) <= 1e-18) continue;
+          double s = v3_dot(nn, stlPlaneN);
+          if (s >= 0.0) forward++; else backward++;
+        }
+        if (backward > forward) {
+          for (int ti : comps[(size_t)ci]) {
+            std::swap(tris[(size_t)ti][1], tris[(size_t)ti][2]);
+          }
+        }
+      }
+      return;
+    }
+
+    // Reference: largest-area component.
+    int refCi = 0;
+    for (int ci = 1; ci < (int)comps.size(); ci++) {
+      if (compArea[(size_t)ci] > compArea[(size_t)refCi]) refCi = ci;
+    }
+    Vec3 refN = compNsum[(size_t)refCi];
+    double refLen = v3_norm(refN);
+    if (refLen <= 1e-18) return; // too degenerate; nothing reliable to align to
+    refN = v3_mul(refN, 1.0 / refLen);
+
+    for (int ci = 0; ci < (int)comps.size(); ci++) {
+      CHECK_CANCEL();
+      if (ci == refCi) continue;
+      Vec3 ns = compNsum[(size_t)ci];
+      if (v3_norm(ns) <= 1e-18) continue;
+      if (v3_dot(ns, refN) < 0.0) {
+        for (int ti : comps[(size_t)ci]) {
+          std::swap(tris[(size_t)ti][1], tris[(size_t)ti][2]);
+        }
+      }
+    }
+  };
+
+  auto orientOutwardHeuristicInPlace = [&](std::vector<std::array<int,3>>& tris) {
+    // Global outward flip heuristic (per object).
+    // For non-planar objects: orient normals to point (mostly) away from the object's mean center.
+    // For planar objects: orient normals to agree with the best-fit plane normal (front/back is otherwise degenerate).
+    if (tris.empty()) return;
+
+    if (stlPlanarActive) {
+      int forward = 0, backward = 0;
+      for (const auto& t : tris) {
+        CHECK_CANCEL();
+        Vec3 a = vpos(t[0]);
+        Vec3 b = vpos(t[1]);
+        Vec3 c = vpos(t[2]);
+        Vec3 n = v3_cross(v3_sub(b, a), v3_sub(c, a));
+        if (v3_norm(n) <= 1e-18) continue;
+        double s = v3_dot(n, stlPlaneN);
+        if (s >= 0.0) forward++; else backward++;
+      }
+      if (backward > forward) {
+        for (auto& t : tris) std::swap(t[1], t[2]);
+      }
+      return;
+    }
+
+    Vec3 center{0.0, 0.0, 0.0};
+    long long centerCount = 0;
+    for (const auto& t : tris) {
+      for (int id : t) {
+        center = v3_add(center, vpos(id));
+        centerCount++;
+      }
+    }
+    if (centerCount > 0) center = v3_mul(center, 1.0 / (double)centerCount);
+
+    int outward = 0, inward = 0;
+    for (const auto& t : tris) {
+      CHECK_CANCEL();
+      Vec3 a = vpos(t[0]);
+      Vec3 b = vpos(t[1]);
+      Vec3 c = vpos(t[2]);
+      Vec3 n = v3_cross(v3_sub(b, a), v3_sub(c, a));
+      if (v3_norm(n) <= 1e-18) continue;
+      Vec3 cc = v3_mul(v3_add(v3_add(a, b), c), 1.0 / 3.0);
+      double s = v3_dot(n, v3_sub(cc, center));
+      if (s >= 0.0) outward++; else inward++;
+    }
+    if (inward > outward) {
+      for (auto& t : tris) std::swap(t[1], t[2]);
+    }
+  };
+
+  struct StlCleanupRemKey {
+    int allEdgesNonManifold; // 1 if all 3 edges have 3+ incident faces (edgeCount > 2)
+    int createBoundary; // #edges that would become boundary (count==2)
+    int removeBoundary; // #edges that would stop being boundary (count==1)
+    double dBoundaryLen;
+    int nonManifoldTouch;
+    double area;
+    int ti;
+  };
+
+  auto stlCleanupRemKeyIsBetter = [&](const StlCleanupRemKey& A, const StlCleanupRemKey& B)->bool{
+    if (A.allEdgesNonManifold != B.allEdgesNonManifold) return A.allEdgesNonManifold > B.allEdgesNonManifold;
+    if (A.createBoundary != B.createBoundary) return A.createBoundary < B.createBoundary;
+    if (A.removeBoundary != B.removeBoundary) return A.removeBoundary > B.removeBoundary;
+    if (A.dBoundaryLen != B.dBoundaryLen) return A.dBoundaryLen < B.dBoundaryLen;
+    if (A.nonManifoldTouch != B.nonManifoldTouch) return A.nonManifoldTouch > B.nonManifoldTouch;
+    if (A.area != B.area) return A.area > B.area; // keep smaller triangles when ties exist
+    return A.ti < B.ti;
+  };
+
+  auto stlCleanupRemKeyEq = [&](const StlCleanupRemKey& A, const StlCleanupRemKey& B)->bool{
+    return A.allEdgesNonManifold == B.allEdgesNonManifold &&
+           A.createBoundary == B.createBoundary &&
+           A.removeBoundary == B.removeBoundary &&
+           A.dBoundaryLen == B.dBoundaryLen &&
+           A.nonManifoldTouch == B.nonManifoldTouch &&
+           A.area == B.area &&
+           A.ti == B.ti;
+  };
+
+  auto weldVerticesWithinEpsInPlace = [&](std::vector<std::array<int,3>>& tris,
+                                         double eps,
+                                         std::unordered_map<int, Vec3>& outOverride) {
+    // Vertex welding (heuristic):
+    // Weld vertices within `eps` (in 3D coordinate units), then update triangles accordingly.
+    // This can help the later non-manifold trimming remove duplicate sheets/cracks without introducing
+    // extra boundary where the two sides are already nearly coincident.
+    if (tris.empty()) return;
+    if (!(eps > 0.0)) return;
+
+    outOverride.clear();
+
+    // Gather unique vertex ids used by this object.
+    std::unordered_map<int,int> id2idx;
+    id2idx.reserve(std::min<size_t>(tris.size() * 2 + 16, (size_t)4000000));
+    std::vector<int> ids;
+    ids.reserve(std::min<size_t>(tris.size() * 2 + 16, (size_t)4000000));
+    std::vector<Vec3> p;
+    p.reserve(ids.capacity());
+
+    auto addId = [&](int id) {
+      if (id <= 0 || id > maxId) return;
+      auto it = id2idx.find(id);
+      if (it != id2idx.end()) return;
+      int idx = (int)ids.size();
+      id2idx.emplace(id, idx);
+      ids.push_back(id);
+      const auto& a = pos.xyz[(size_t)id];
+      p.push_back(Vec3{a[0], a[1], a[2]});
+    };
+
+    for (const auto& t : tris) {
+      CHECK_CANCEL();
+      addId(t[0]);
+      addId(t[1]);
+      addId(t[2]);
+    }
+    if (ids.empty()) return;
+
+    struct VtxDsu {
+      std::vector<int> parent;
+      std::vector<uint8_t> rank;
+      std::vector<int> minId;
+      explicit VtxDsu(int n, const std::vector<int>& ids) : parent((size_t)n), rank((size_t)n, 0), minId((size_t)n, 0) {
+        for (int i = 0; i < n; i++) {
+          parent[(size_t)i] = i;
+          minId[(size_t)i] = ids[(size_t)i];
+        }
+      }
+      int find(int x) {
+        int r = x;
+        while (parent[(size_t)r] != r) r = parent[(size_t)r];
+        int cur = x;
+        while (parent[(size_t)cur] != cur) {
+          int up = parent[(size_t)cur];
+          parent[(size_t)cur] = r;
+          cur = up;
+        }
+        return r;
+      }
+      void unite(int a, int b) {
+        int ra = find(a);
+        int rb = find(b);
+        if (ra == rb) return;
+        int ma = minId[(size_t)ra];
+        int mb = minId[(size_t)rb];
+        // Deterministic parent choice: prefer smaller minId, then smaller root index.
+        bool aFirst = (ma < mb) || (ma == mb && ra < rb);
+        int root = aFirst ? ra : rb;
+        int other = aFirst ? rb : ra;
+        parent[(size_t)other] = root;
+        if (rank[(size_t)ra] == rank[(size_t)rb]) rank[(size_t)root] += 1;
+        minId[(size_t)root] = std::min(ma, mb);
+      }
+    };
+
+    VtxDsu dsu((int)ids.size(), ids);
+
+    struct CellKey {
+      int64_t x, y, z;
+    };
+    struct CellKeyHash {
+      size_t operator()(const CellKey& k) const noexcept {
+        uint64_t h = 14695981039346656037ULL;
+        auto mix = [&](uint64_t x) {
+          h ^= x;
+          h *= 1099511628211ULL;
+        };
+        mix((uint64_t)k.x);
+        mix((uint64_t)k.y);
+        mix((uint64_t)k.z);
+        return (size_t)h;
+      }
+    };
+    struct CellKeyEq {
+      bool operator()(const CellKey& a, const CellKey& b) const noexcept {
+        return a.x == b.x && a.y == b.y && a.z == b.z;
+      }
+    };
+
+    const double inv = 1.0 / eps;
+    const double eps2 = eps * eps;
+    auto cellOf = [&](const Vec3& v)->CellKey {
+      return CellKey{
+        (int64_t)std::floor(v.x * inv),
+        (int64_t)std::floor(v.y * inv),
+        (int64_t)std::floor(v.z * inv)
+      };
+    };
+
+    std::unordered_map<CellKey, std::vector<int>, CellKeyHash, CellKeyEq> buckets;
+    buckets.reserve(std::min<size_t>(ids.size() * 2 + 16, (size_t)4000000));
+
+    for (int i = 0; i < (int)ids.size(); i++) {
+      CHECK_CANCEL();
+      CellKey c = cellOf(p[(size_t)i]);
+      for (int dx = -1; dx <= 1; dx++) {
+        for (int dy = -1; dy <= 1; dy++) {
+          for (int dz = -1; dz <= 1; dz++) {
+            CellKey n{c.x + dx, c.y + dy, c.z + dz};
+            auto it = buckets.find(n);
+            if (it == buckets.end()) continue;
+            const auto& vec = it->second;
+            for (int j : vec) {
+              CHECK_CANCEL();
+              Vec3 d = v3_sub(p[(size_t)i], p[(size_t)j]);
+              double d2 = d.x*d.x + d.y*d.y + d.z*d.z;
+              if (d2 <= eps2) dsu.unite(i, j);
+            }
+          }
+        }
+      }
+      buckets[c].push_back(i);
+    }
+
+    // Compute average position per component (stored under its representative vertex id = minId).
+    std::vector<double> sumX(ids.size(), 0.0), sumY(ids.size(), 0.0), sumZ(ids.size(), 0.0);
+    std::vector<int> cnt(ids.size(), 0);
+    for (int i = 0; i < (int)ids.size(); i++) {
+      CHECK_CANCEL();
+      int r = dsu.find(i);
+      sumX[(size_t)r] += p[(size_t)i].x;
+      sumY[(size_t)r] += p[(size_t)i].y;
+      sumZ[(size_t)r] += p[(size_t)i].z;
+      cnt[(size_t)r] += 1;
+    }
+
+    std::unordered_map<int,int> remap;
+    remap.reserve(std::min<size_t>(ids.size() * 2 + 16, (size_t)4000000));
+    for (int i = 0; i < (int)ids.size(); i++) {
+      CHECK_CANCEL();
+      int r = dsu.find(i);
+      int repId = dsu.minId[(size_t)r];
+      remap.emplace(ids[(size_t)i], repId);
+    }
+
+    for (size_t r = 0; r < ids.size(); r++) {
+      CHECK_CANCEL();
+      if (dsu.parent[r] != (int)r) continue;
+      int ccount = cnt[r];
+      if (ccount <= 0) continue;
+      int repId = dsu.minId[r];
+      outOverride[repId] = Vec3{sumX[r] / (double)ccount, sumY[r] / (double)ccount, sumZ[r] / (double)ccount};
+    }
+
+    // Update triangles to use welded ids.
+    for (auto& t : tris) {
+      CHECK_CANCEL();
+      auto it0 = remap.find(t[0]);
+      auto it1 = remap.find(t[1]);
+      auto it2 = remap.find(t[2]);
+      if (it0 != remap.end()) t[0] = it0->second;
+      if (it1 != remap.end()) t[1] = it1->second;
+      if (it2 != remap.end()) t[2] = it2->second;
+    }
+
+    auto getPos = [&](int id)->Vec3 {
+      auto it = outOverride.find(id);
+      if (it != outOverride.end()) return it->second;
+      const auto& a = pos.xyz[(size_t)id];
+      return Vec3{a[0], a[1], a[2]};
+    };
+
+    // Remove degenerates / zero-area triangles and re-deduplicate (welding can create dupes).
+    std::unordered_set<std::array<int,3>, TriKeyHash> seen;
+    if (!tris.empty()) {
+      seen.reserve(std::min<size_t>(tris.size() * 2 + 16, (size_t)2000000));
+    }
+    std::vector<std::array<int,3>> out;
+    out.reserve(tris.size());
+
+    for (const auto& t0 : tris) {
+      CHECK_CANCEL();
+      int a = t0[0], b = t0[1], c = t0[2];
+      if (a == b || b == c || c == a) continue;
+
+      Vec3 pa = getPos(a);
+      Vec3 pb = getPos(b);
+      Vec3 pc = getPos(c);
+      Vec3 nn = v3_cross(v3_sub(pb, pa), v3_sub(pc, pa));
+      double area = 0.5 * v3_norm(nn);
+      if (!(area > 1e-18)) continue;
+
+      int aId = a, bId = b, cId = c;
+      if (aId > bId) std::swap(aId, bId);
+      if (bId > cId) std::swap(bId, cId);
+      if (aId > bId) std::swap(aId, bId);
+      std::array<int,3> k{aId, bId, cId};
+      if (!seen.insert(k).second) continue;
+      out.push_back(std::array<int,3>{a, b, c});
+    }
+
+    tris.swap(out);
+  };
+
+  auto cleanupNonManifoldEdgesGreedyGlobalInPlace = [&](std::vector<std::array<int,3>>& tris) {
+    // STL cleanup (triangle soup):
+    //   - Remove degenerate triangles
+    //   - Trim triangles incident to edges that have 3+ incident faces until every edge has ≤2 faces.
+    //
+    // Algorithm: global greedy removal (priority queue of candidate triangles).
+    // Priority favors removing triangles that:
+    //   1) Touch only non-manifold edges (all 3 edges have 3+ incident faces)
+    //   2) Create the fewest new boundary edges (fewest holes)
+    //   3) Reduce boundary edges / shorten boundary length
+    //   4) Remove larger triangles first (so smaller triangles are kept when choices are otherwise equal)
+    if (tris.empty()) return;
+
+    std::vector<uint8_t> alive(tris.size(), 1);
+    std::vector<double> triArea(tris.size(), 0.0);
+
+    std::unordered_map<uint64_t, int> edgeCount;
+    size_t want = tris.size() * 3 + 16;
+    edgeCount.reserve(std::min<size_t>(want, (size_t)4000000));
+
+    auto addEdge = [&](int u, int v) {
+      if (u == v) return;
+      uint64_t k = key64(u, v);
+      auto it = edgeCount.find(k);
+      if (it == edgeCount.end()) edgeCount.emplace(k, 1);
+      else it->second += 1;
+    };
+
+    for (size_t ti = 0; ti < tris.size(); ti++) {
+      CHECK_CANCEL();
+      const auto& t = tris[ti];
+      int a = t[0], b = t[1], c = t[2];
+      if (a == b || b == c || c == a) { alive[ti] = 0; continue; }
+
+      Vec3 pa = vpos(a);
+      Vec3 pb = vpos(b);
+      Vec3 pc = vpos(c);
+      Vec3 nn = v3_cross(v3_sub(pb, pa), v3_sub(pc, pa));
+      double area = 0.5 * v3_norm(nn);
+      triArea[ti] = area;
+      if (!(area > 1e-18)) { alive[ti] = 0; continue; }
+
+      addEdge(a, b);
+      addEdge(b, c);
+      addEdge(c, a);
+    }
+
+    // Collect non-manifold edges (3+ incident triangles).
+    std::vector<uint64_t> nonManifoldEdges;
+    nonManifoldEdges.reserve(edgeCount.size() / 16 + 8);
+    int badEdgesRemaining = 0;
+    for (const auto& kv : edgeCount) {
+      CHECK_CANCEL();
+      if (kv.second > 2) {
+        nonManifoldEdges.push_back(kv.first);
+        badEdgesRemaining++;
+      }
+    }
+
+    auto filterAlive = [&]() {
+      size_t keepN = 0;
+      for (uint8_t f : alive) if (f) keepN++;
+      if (keepN == tris.size()) return;
+      std::vector<std::array<int,3>> kept;
+      kept.reserve(keepN);
+      for (size_t ti = 0; ti < tris.size(); ti++) {
+        CHECK_CANCEL();
+        if (alive[ti]) kept.push_back(tris[ti]);
+      }
+      tris.swap(kept);
+    };
+
+    // Always remove degenerates, even if there are no non-manifold edges.
+    if (badEdgesRemaining == 0) {
+      filterAlive();
+      return;
+    }
+
+    // Build incident triangle lists for non-manifold edges only (edge counts only decrease).
+    std::unordered_map<uint64_t, std::vector<int>> edgeToTris;
+    edgeToTris.reserve(std::min<size_t>(nonManifoldEdges.size() * 2 + 16, (size_t)4000000));
+    for (int ti = 0; ti < (int)tris.size(); ti++) {
+      CHECK_CANCEL();
+      if (!alive[(size_t)ti]) continue;
+      const auto& t = tris[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+
+      auto maybeAdd = [&](int u, int v) {
+        uint64_t k = key64(u, v);
+        auto it = edgeCount.find(k);
+        if (it == edgeCount.end()) return;
+        if (it->second <= 2) return;
+        edgeToTris[k].push_back(ti);
+      };
+      maybeAdd(a, b);
+      maybeAdd(b, c);
+      maybeAdd(c, a);
+    }
+
+    std::vector<uint8_t> touchesBad(tris.size(), 0);
+    for (const auto& kv : edgeToTris) {
+      CHECK_CANCEL();
+      for (int ti : kv.second) {
+        if (ti >= 0 && ti < (int)touchesBad.size()) touchesBad[(size_t)ti] = 1;
+      }
+    }
+
+    auto edgeLen = [&](int u, int v)->double {
+      Vec3 a = vpos(u);
+      Vec3 b = vpos(v);
+      return v3_norm(v3_sub(b, a));
+    };
+
+    auto makeKey = [&](int ti)->StlCleanupRemKey {
+      const auto& t = tris[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+      int create = 0;
+      int remove = 0;
+      double dlen = 0.0;
+      int nmTouch = 0;
+
+      auto evalEdge = [&](int u, int v) {
+        uint64_t k = key64(u, v);
+        int cnt = 0;
+        auto it = edgeCount.find(k);
+        if (it != edgeCount.end()) cnt = it->second;
+
+        if (cnt > 2) nmTouch++;
+        double len = edgeLen(u, v);
+        if (cnt == 2) { create++; dlen += len; }
+        else if (cnt == 1) { remove++; dlen -= len; }
+      };
+
+      evalEdge(a, b);
+      evalEdge(b, c);
+      evalEdge(c, a);
+
+      const int allNm = (nmTouch == 3) ? 1 : 0;
+      return StlCleanupRemKey{allNm, create, remove, dlen, nmTouch, triArea[(size_t)ti], ti};
+    };
+
+    struct RemEntry { StlCleanupRemKey key; };
+    struct RemEntryCmp {
+      decltype(stlCleanupRemKeyIsBetter)* better;
+      bool operator()(const RemEntry& x, const RemEntry& y) const {
+        return (*better)(y.key, x.key);
+      }
+    };
+
+    std::priority_queue<RemEntry, std::vector<RemEntry>, RemEntryCmp> pq{RemEntryCmp{&stlCleanupRemKeyIsBetter}};
+    for (int ti = 0; ti < (int)tris.size(); ti++) {
+      CHECK_CANCEL();
+      if (!alive[(size_t)ti]) continue;
+      if (!touchesBad[(size_t)ti]) continue;
+      pq.push(RemEntry{makeKey(ti)});
+    }
+
+    while (badEdgesRemaining > 0 && !pq.empty()) {
+      CHECK_CANCEL();
+      RemEntry ent = pq.top();
+      pq.pop();
+
+      int ti = ent.key.ti;
+      if (ti < 0 || ti >= (int)tris.size()) continue;
+      if (!alive[(size_t)ti]) continue;
+
+      StlCleanupRemKey now = makeKey(ti);
+      if (now.nonManifoldTouch <= 0) continue;
+      if (!stlCleanupRemKeyEq(now, ent.key)) {
+        pq.push(RemEntry{now});
+        continue;
+      }
+
+      alive[(size_t)ti] = 0;
+      const auto& t = tris[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+
+      auto dec = [&](int u, int v) {
+        uint64_t k = key64(u, v);
+        auto it = edgeCount.find(k);
+        if (it == edgeCount.end()) return;
+        int before = it->second;
+        it->second = before - 1;
+        if (before == 3) badEdgesRemaining--;
+      };
+      dec(a, b);
+      dec(b, c);
+      dec(c, a);
+    }
+
+    filterAlive();
+  };
+
+  auto repairNonOrientableWindingByDroppingTrianglesInPlace = [&](std::vector<std::array<int,3>>& tris) {
+    // After trimming non-manifold edges, the remaining mesh can still be non-orientable (i.e. no globally
+    // consistent winding exists) due to vertex welding / accidental identifications. This shows up as
+    // adjacent triangles that cannot be made to agree on shared-edge direction everywhere.
+    //
+    // We greedily drop triangles incident to parity-conflicting edges until the XOR-constraint system is
+    // satisfiable, so `orientTrianglesInPlace` can produce a fully consistent winding for all 2-face edges.
+    if (tris.empty()) return;
+
+    struct EdgeOcc2 {
+      int tri[2];
+      uint8_t sign[2]; // 0 = min->max, 1 = max->min (direction relative to undirected key)
+      uint8_t count;
+      EdgeOcc2() : tri{-1,-1}, sign{0,0}, count(0) {}
+    };
+
+    struct TriDsuParityCheck {
+      std::vector<int> p;
+      std::vector<uint8_t> r;
+      std::vector<uint8_t> parity; // parity to parent
+      explicit TriDsuParityCheck(int n) : p((size_t)n), r((size_t)n, 0), parity((size_t)n, 0) {
+        for (int i = 0; i < n; i++) p[(size_t)i] = i;
+      }
+      std::pair<int,int> find(int x) {
+        if (p[(size_t)x] == x) return {x, 0};
+        auto up = find(p[(size_t)x]);
+        parity[(size_t)x] ^= (uint8_t)up.second;
+        p[(size_t)x] = up.first;
+        return {p[(size_t)x], (int)parity[(size_t)x]};
+      }
+      // Enforce (flip[a] XOR flip[b]) == w. Returns false if this introduces a contradiction.
+      bool unite(int a, int b, int w) {
+        auto fa = find(a);
+        auto fb = find(b);
+        int ra = fa.first, pa = fa.second;
+        int rb = fb.first, pb = fb.second;
+        if (ra == rb) return ((pa ^ pb) == w);
+        if (r[(size_t)ra] < r[(size_t)rb]) {
+          std::swap(ra, rb);
+          std::swap(pa, pb);
+        }
+        p[(size_t)rb] = ra;
+        parity[(size_t)rb] = (uint8_t)(pa ^ pb ^ w);
+        if (r[(size_t)ra] == r[(size_t)rb]) r[(size_t)ra] += 1;
+        return true;
+      }
+    };
+
+    std::vector<uint8_t> alive(tris.size(), 1);
+    std::vector<double> triArea(tris.size(), 0.0);
+
+    auto edgeLen = [&](int u, int v)->double {
+      Vec3 a = vpos(u);
+      Vec3 b = vpos(v);
+      return v3_norm(v3_sub(b, a));
+    };
+
+    // Drop degenerates up-front (should already be done, but keep this robust).
+    for (int ti = 0; ti < (int)tris.size(); ti++) {
+      CHECK_CANCEL();
+      const auto& t = tris[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+      if (a == b || b == c || c == a) { alive[(size_t)ti] = 0; continue; }
+      Vec3 pa = vpos(a);
+      Vec3 pb = vpos(b);
+      Vec3 pc = vpos(c);
+      Vec3 nn = v3_cross(v3_sub(pb, pa), v3_sub(pc, pa));
+      double area = 0.5 * v3_norm(nn);
+      triArea[(size_t)ti] = area;
+      if (!(area > 1e-18)) { alive[(size_t)ti] = 0; continue; }
+    }
+
+    auto filterAlive = [&]() {
+      size_t keepN = 0;
+      for (uint8_t f : alive) if (f) keepN++;
+      if (keepN == tris.size()) return;
+      std::vector<std::array<int,3>> kept;
+      kept.reserve(keepN);
+      for (size_t ti = 0; ti < tris.size(); ti++) {
+        CHECK_CANCEL();
+        if (alive[ti]) kept.push_back(tris[ti]);
+      }
+      tris.swap(kept);
+    };
+
+    const int n = (int)tris.size();
+    if (n == 0) return;
+
+    std::unordered_map<uint64_t, EdgeOcc2> edgeOcc;
+    if (!tris.empty()) {
+      edgeOcc.reserve(std::min<size_t>(tris.size() * 4 + 16, (size_t)4000000));
+    }
+
+    auto buildEdgeOcc = [&]() {
+      edgeOcc.clear();
+      for (int ti = 0; ti < n; ti++) {
+        CHECK_CANCEL();
+        if (!alive[(size_t)ti]) continue;
+        const auto& t = tris[(size_t)ti];
+        int a = t[0], b = t[1], c = t[2];
+        if (a == b || b == c || c == a) continue;
+
+        auto addEdge = [&](int u, int v) {
+          uint64_t k = key64(u, v);
+          uint8_t sgn = (u < v) ? (uint8_t)0 : (uint8_t)1;
+          auto it = edgeOcc.find(k);
+          if (it == edgeOcc.end()) {
+            EdgeOcc2 e;
+            e.tri[0] = ti;
+            e.sign[0] = sgn;
+            e.count = 1;
+            edgeOcc.emplace(k, e);
+            return;
+          }
+          EdgeOcc2& e = it->second;
+          if (e.count == 0) {
+            e.tri[0] = ti;
+            e.sign[0] = sgn;
+            e.count = 1;
+          } else if (e.count == 1) {
+            e.tri[1] = ti;
+            e.sign[1] = sgn;
+            e.count = 2;
+          } else {
+            // should not happen after non-manifold cleanup, but keep robust
+            e.count = 3;
+          }
+        };
+
+        addEdge(a, b);
+        addEdge(b, c);
+        addEdge(c, a);
+      }
+    };
+
+    auto countParityConflicts = [&](std::vector<int>& conflictTouch)->int {
+      conflictTouch.assign((size_t)n, 0);
+      TriDsuParityCheck dsu(n);
+      int conflicts = 0;
+      for (const auto& kv : edgeOcc) {
+        CHECK_CANCEL();
+        const EdgeOcc2& e = kv.second;
+        if (e.count != 2) continue;
+        int t1 = e.tri[0], t2 = e.tri[1];
+        if (t1 < 0 || t2 < 0) continue;
+        if (!alive[(size_t)t1] || !alive[(size_t)t2]) continue;
+        int w = (e.sign[0] == e.sign[1]) ? 1 : 0;
+        if (!dsu.unite(t1, t2, w)) {
+          conflicts++;
+          conflictTouch[(size_t)t1] += 1;
+          conflictTouch[(size_t)t2] += 1;
+        }
+      }
+      return conflicts;
+    };
+
+    struct RemKey {
+      int conflictTouch;
+      int createBoundary; // edges that would become boundary (count==2)
+      int removeBoundary; // edges that would stop being boundary (count==1)
+      double dBoundaryLen;
+      double area;
+      int ti;
+    };
+
+    auto remKeyIsBetter = [&](const RemKey& A, const RemKey& B)->bool{
+      if (A.conflictTouch != B.conflictTouch) return A.conflictTouch > B.conflictTouch;
+      if (A.createBoundary != B.createBoundary) return A.createBoundary < B.createBoundary;
+      if (A.removeBoundary != B.removeBoundary) return A.removeBoundary > B.removeBoundary;
+      if (A.dBoundaryLen != B.dBoundaryLen) return A.dBoundaryLen < B.dBoundaryLen;
+      if (A.area != B.area) return A.area < B.area; // drop smaller triangles first
+      return A.ti < B.ti;
+    };
+
+    const int maxDrops = std::min<int>(n, 1000000);
+    int drops = 0;
+
+    while (drops < maxDrops) {
+      CHECK_CANCEL();
+      buildEdgeOcc();
+      std::vector<int> conflictTouch;
+      int conflicts = countParityConflicts(conflictTouch);
+      if (conflicts <= 0) break;
+
+      int bestTi = -1;
+      RemKey bestKey{0, 0, 0, 0.0, 0.0, 0};
+
+      for (int ti = 0; ti < n; ti++) {
+        CHECK_CANCEL();
+        if (!alive[(size_t)ti]) continue;
+        int ct = conflictTouch[(size_t)ti];
+        if (ct <= 0) continue;
+
+        const auto& t = tris[(size_t)ti];
+        int a = t[0], b = t[1], c = t[2];
+
+        int create = 0;
+        int rem = 0;
+        double dlen = 0.0;
+
+        auto evalEdge = [&](int u, int v) {
+          uint64_t k = key64(u, v);
+          auto it = edgeOcc.find(k);
+          int cnt = (it == edgeOcc.end()) ? 0 : (int)it->second.count;
+          double len = edgeLen(u, v);
+          if (cnt == 2) { create++; dlen += len; }
+          else if (cnt == 1) { rem++; dlen -= len; }
+        };
+
+        evalEdge(a, b);
+        evalEdge(b, c);
+        evalEdge(c, a);
+
+        RemKey k{ct, create, rem, dlen, triArea[(size_t)ti], ti};
+        if (bestTi < 0 || remKeyIsBetter(k, bestKey)) {
+          bestTi = ti;
+          bestKey = k;
+        }
+      }
+
+      if (bestTi < 0) break;
+      alive[(size_t)bestTi] = 0;
+      drops++;
+    }
+
+    filterAlive();
+  };
+
+  auto splitNonManifoldVerticesInPlace = [&](std::vector<std::array<int,3>>& tris) {
+    // Non-manifold vertices (multiple triangle fans meeting only at a point) can survive edge trimming and are
+    // common after vertex snapping. They confuse downstream tools and can look like "randomly flipped" shading
+    // when the importer smooths across all incident faces at a vertex.
+    //
+    // We split such vertices by duplicating the vertex id per connected component in its link graph. This keeps
+    // all shared edges intact (so edge incidence stays ≤2) but removes vertex pinches.
+    if (tris.empty()) return;
+
+    // Build incident triangle lists for each vertex id present in this object.
+    std::unordered_map<int, std::vector<int>> inc;
+    inc.reserve(std::min<size_t>(tris.size() * 2 + 16, (size_t)4000000));
+    for (int ti = 0; ti < (int)tris.size(); ti++) {
+      CHECK_CANCEL();
+      const auto& t = tris[(size_t)ti];
+      inc[t[0]].push_back(ti);
+      inc[t[1]].push_back(ti);
+      inc[t[2]].push_back(ti);
+    }
+    if (inc.empty()) return;
+
+    std::vector<int> vids;
+    vids.reserve(inc.size());
+    for (const auto& kv : inc) vids.push_back(kv.first);
+    std::sort(vids.begin(), vids.end());
+
+    std::vector<std::pair<int,int>> linkEdges;
+    std::vector<int> linkNodes;
+    std::unordered_map<int, std::vector<int>> adj;
+    std::unordered_map<int, int> compOf;
+
+    for (int vid : vids) {
+      CHECK_CANCEL();
+      auto itInc = inc.find(vid);
+      if (itInc == inc.end()) continue;
+      const auto& trisAt = itInc->second;
+      if (trisAt.size() < 2) continue;
+
+      // Build link edges between neighbors for this vertex: for each incident triangle (vid,u,w), add link edge (u,w).
+      linkEdges.clear();
+      linkEdges.reserve(trisAt.size());
+      for (int ti : trisAt) {
+        CHECK_CANCEL();
+        const auto& t = tris[(size_t)ti];
+        int a = t[0], b = t[1], c = t[2];
+        int u, w;
+        if (a == vid) { u = b; w = c; }
+        else if (b == vid) { u = a; w = c; }
+        else { u = a; w = b; }
+        if (u == w) continue;
+        if (u > w) std::swap(u, w);
+        linkEdges.emplace_back(u, w);
+      }
+      if (linkEdges.empty()) continue;
+
+      std::sort(linkEdges.begin(), linkEdges.end());
+      linkEdges.erase(std::unique(linkEdges.begin(), linkEdges.end()), linkEdges.end());
+
+      // Build deterministic adjacency on link nodes.
+      adj.clear();
+      adj.reserve(std::min<size_t>(linkEdges.size() * 2 + 16, (size_t)4000000));
+      for (const auto& e : linkEdges) {
+        adj[e.first].push_back(e.second);
+        adj[e.second].push_back(e.first);
+      }
+
+      linkNodes.clear();
+      linkNodes.reserve(adj.size());
+      for (const auto& kv : adj) linkNodes.push_back(kv.first);
+      std::sort(linkNodes.begin(), linkNodes.end());
+      for (int u : linkNodes) {
+        auto& vv = adj[u];
+        std::sort(vv.begin(), vv.end());
+      }
+
+      // Find connected components in the link graph.
+      compOf.clear();
+      compOf.reserve(std::min<size_t>(adj.size() * 2 + 16, (size_t)4000000));
+      std::vector<int> compMinNode;
+      std::vector<int> q;
+      for (int s : linkNodes) {
+        CHECK_CANCEL();
+        if (compOf.find(s) != compOf.end()) continue;
+        int cid = (int)compMinNode.size();
+        compMinNode.push_back(s);
+        q.clear();
+        q.push_back(s);
+        compOf.emplace(s, cid);
+        size_t qi = 0;
+        while (qi < q.size()) {
+          CHECK_CANCEL();
+          int x = q[qi++];
+          auto it = adj.find(x);
+          if (it == adj.end()) continue;
+          for (int y : it->second) {
+            if (compOf.find(y) != compOf.end()) continue;
+            compOf.emplace(y, cid);
+            q.push_back(y);
+          }
+        }
+      }
+      const int compN = (int)compMinNode.size();
+      if (compN <= 1) continue; // already manifold around this vertex
+
+      // Assign each incident triangle to a link component (pick the smaller of the two neighbors for determinism).
+      std::vector<int> triComp(trisAt.size(), 0);
+      std::vector<int> compTriCount((size_t)compN, 0);
+      for (size_t k = 0; k < trisAt.size(); k++) {
+        CHECK_CANCEL();
+        int ti = trisAt[k];
+        const auto& t = tris[(size_t)ti];
+        int a = t[0], b = t[1], c = t[2];
+        int u, w;
+        if (a == vid) { u = b; w = c; }
+        else if (b == vid) { u = a; w = c; }
+        else { u = a; w = b; }
+        int pick = (u < w) ? u : w;
+        auto it = compOf.find(pick);
+        if (it == compOf.end()) {
+          // Fallback: try the other neighbor (should not happen for well-formed triangles).
+          it = compOf.find((pick == u) ? w : u);
+        }
+        int cid = (it == compOf.end()) ? 0 : it->second;
+        triComp[k] = cid;
+        if (cid >= 0 && cid < compN) compTriCount[(size_t)cid] += 1;
+      }
+
+      // Keep the original vertex id for the largest triangle-fan (tie-break by smallest component min-node).
+      int keepCid = 0;
+      for (int cid = 1; cid < compN; cid++) {
+        if (compTriCount[(size_t)cid] != compTriCount[(size_t)keepCid]) {
+          if (compTriCount[(size_t)cid] > compTriCount[(size_t)keepCid]) keepCid = cid;
+        } else if (compMinNode[(size_t)cid] < compMinNode[(size_t)keepCid]) {
+          keepCid = cid;
+        }
+      }
+
+      Vec3 p = vpos(vid);
+      for (int cid = 0; cid < compN; cid++) {
+        CHECK_CANCEL();
+        if (cid == keepCid) continue;
+        int newId = extraVertexNextId++;
+        stlVposOverrideMap[newId] = p;
+        for (size_t k = 0; k < trisAt.size(); k++) {
+          if (triComp[k] != cid) continue;
+          int ti = trisAt[k];
+          auto& t = tris[(size_t)ti];
+          if (t[0] == vid) t[0] = newId;
+          if (t[1] == vid) t[1] = newId;
+          if (t[2] == vid) t[2] = newId;
+        }
+      }
+    }
+  };
+
+#if 0
+  // Alternative STL cleanup algorithms (flood fill + min-cut) were experimental and tended to create holes on
+  // near-planar meshes (blankets). Greedy cleanup is the only supported mode now.
+  auto cleanupNonManifoldEdgesFloodFillInPlace = [&](std::vector<std::array<int,3>>& tris) {
+    // STL cleanup alternative: extract one coherent surface sheet using a region-growing (flood fill) heuristic,
+    // while enforcing that each undirected edge has ≤2 incident kept triangles.
+    if (tris.empty()) return;
+
+    struct EdgeOcc2 {
+      int tri[2];
+      uint8_t count;
+      EdgeOcc2() : tri{-1,-1}, count(0) {}
+    };
+
+    std::vector<uint8_t> alive(tris.size(), 1);
+    std::vector<uint8_t> kept(tris.size(), 0);
+    std::vector<double> triArea(tris.size(), 0.0);
+
+    std::unordered_map<uint64_t, int> edgeCount;
+    size_t want = tris.size() * 3 + 16;
+    edgeCount.reserve(std::min<size_t>(want, (size_t)4000000));
+
+    std::unordered_map<uint64_t, EdgeOcc2> edgeOcc;
+    edgeOcc.reserve(std::min<size_t>(want, (size_t)4000000));
+
+    auto addEdge = [&](int u, int v, int ti) {
+      if (u == v) return;
+      uint64_t k = key64(u, v);
+      auto it = edgeCount.find(k);
+      if (it == edgeCount.end()) edgeCount.emplace(k, 1);
+      else it->second += 1;
+
+      auto it2 = edgeOcc.find(k);
+      if (it2 == edgeOcc.end()) {
+        EdgeOcc2 e;
+        e.tri[0] = ti;
+        e.count = 1;
+        edgeOcc.emplace(k, e);
+        return;
+      }
+      EdgeOcc2& e = it2->second;
+      if (e.count == 0) {
+        e.tri[0] = ti;
+        e.count = 1;
+      } else if (e.count == 1) {
+        e.tri[1] = ti;
+        e.count = 2;
+      } else {
+        e.count = 3; // non-manifold/ambiguous (3+)
+      }
+    };
+
+    for (int ti = 0; ti < (int)tris.size(); ti++) {
+      CHECK_CANCEL();
+      const auto& t = tris[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+      if (a == b || b == c || c == a) { alive[(size_t)ti] = 0; continue; }
+
+      Vec3 pa = vpos(a);
+      Vec3 pb = vpos(b);
+      Vec3 pc = vpos(c);
+      Vec3 nn = v3_cross(v3_sub(pb, pa), v3_sub(pc, pa));
+      double area = 0.5 * v3_norm(nn);
+      triArea[(size_t)ti] = area;
+      if (!(area > 1e-18)) { alive[(size_t)ti] = 0; continue; }
+
+      addEdge(a, b, ti);
+      addEdge(b, c, ti);
+      addEdge(c, a, ti);
+    }
+
+    // Build incident triangle lists for non-manifold edges only (needed for expansion choices).
+    std::unordered_map<uint64_t, std::vector<int>> edgeToTris;
+    edgeToTris.reserve(std::min<size_t>(edgeCount.size() / 8 + 16, (size_t)4000000));
+    bool hasNonManifold = false;
+    for (const auto& kv : edgeCount) {
+      CHECK_CANCEL();
+      if (kv.second > 2) {
+        hasNonManifold = true;
+        edgeToTris.emplace(kv.first, std::vector<int>{});
+      }
+    }
+    if (!hasNonManifold) {
+      // No non-manifold edges; just remove degenerates.
+      size_t keepN = 0;
+      for (uint8_t f : alive) if (f) keepN++;
+      if (keepN == tris.size()) return;
+      std::vector<std::array<int,3>> out;
+      out.reserve(keepN);
+      for (size_t ti = 0; ti < tris.size(); ti++) {
+        CHECK_CANCEL();
+        if (alive[ti]) out.push_back(tris[ti]);
+      }
+      tris.swap(out);
+      return;
+    }
+
+    for (int ti = 0; ti < (int)tris.size(); ti++) {
+      CHECK_CANCEL();
+      if (!alive[(size_t)ti]) continue;
+      const auto& t = tris[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+      auto maybeAdd = [&](int u, int v) {
+        uint64_t k = key64(u, v);
+        auto it = edgeCount.find(k);
+        if (it == edgeCount.end()) return;
+        if (it->second <= 2) return;
+        edgeToTris[k].push_back(ti);
+      };
+      maybeAdd(a, b);
+      maybeAdd(b, c);
+      maybeAdd(c, a);
+    }
+
+    auto edgeLen = [&](int u, int v)->double {
+      Vec3 a = vpos(u);
+      Vec3 b = vpos(v);
+      return v3_norm(v3_sub(b, a));
+    };
+
+    // Pick a seed triangle that touches as few non-manifold edges as possible.
+    int seed = -1;
+    int bestNm = std::numeric_limits<int>::max();
+    double bestArea = -1.0;
+    for (int ti = 0; ti < (int)tris.size(); ti++) {
+      CHECK_CANCEL();
+      if (!alive[(size_t)ti]) continue;
+      const auto& t = tris[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+      int nm = 0;
+      if (edgeCount[key64(a, b)] > 2) nm++;
+      if (edgeCount[key64(b, c)] > 2) nm++;
+      if (edgeCount[key64(c, a)] > 2) nm++;
+      double area = triArea[(size_t)ti];
+      if (nm < bestNm || (nm == bestNm && area > bestArea)) {
+        seed = ti;
+        bestNm = nm;
+        bestArea = area;
+      }
+    }
+    if (seed < 0) return;
+
+    std::unordered_map<uint64_t, uint8_t> selEdgeCount;
+    selEdgeCount.reserve(std::min<size_t>(want, (size_t)4000000));
+    auto selCnt = [&](uint64_t k)->int {
+      auto it = selEdgeCount.find(k);
+      if (it == selEdgeCount.end()) return 0;
+      return (int)it->second;
+    };
+    auto selInc = [&](uint64_t k) {
+      auto it = selEdgeCount.find(k);
+      if (it == selEdgeCount.end()) { selEdgeCount.emplace(k, (uint8_t)1); return; }
+      if (it->second < 2) it->second += 1;
+    };
+
+    // Add seed.
+    kept[(size_t)seed] = 1;
+    {
+      const auto& t = tris[(size_t)seed];
+      selInc(key64(t[0], t[1]));
+      selInc(key64(t[1], t[2]));
+      selInc(key64(t[2], t[0]));
+    }
+
+    struct AddKey {
+      int closeBoundary; // #edges that would go from selCount==1 -> 2
+      int createBoundary; // #edges that would go from selCount==0 -> 1
+      double dBoundaryLen;
+      int nonManifoldTouch; // #edges with original 3+ incident faces
+      double area;
+      int ti;
+    };
+
+    auto addKeyIsBetter = [&](const AddKey& A, const AddKey& B)->bool{
+      if (A.closeBoundary != B.closeBoundary) return A.closeBoundary > B.closeBoundary;
+      if (A.createBoundary != B.createBoundary) return A.createBoundary < B.createBoundary;
+      if (A.dBoundaryLen != B.dBoundaryLen) return A.dBoundaryLen < B.dBoundaryLen;
+      if (A.nonManifoldTouch != B.nonManifoldTouch) return A.nonManifoldTouch < B.nonManifoldTouch;
+      if (A.area != B.area) return A.area < B.area; // keep smaller triangles when ties exist
+      return A.ti < B.ti;
+    };
+
+    auto addKeyEq = [&](const AddKey& A, const AddKey& B)->bool{
+      return A.closeBoundary == B.closeBoundary &&
+             A.createBoundary == B.createBoundary &&
+             A.dBoundaryLen == B.dBoundaryLen &&
+             A.nonManifoldTouch == B.nonManifoldTouch &&
+             A.area == B.area &&
+             A.ti == B.ti;
+    };
+
+    auto makeAddKey = [&](int ti, AddKey& out)->bool {
+      if (ti < 0 || ti >= (int)tris.size()) return false;
+      if (!alive[(size_t)ti]) return false;
+      if (kept[(size_t)ti]) return false;
+
+      const auto& t = tris[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+      int closeB = 0;
+      int createB = 0;
+      double dlen = 0.0;
+      int nmTouch = 0;
+
+      auto evalEdge = [&](int u, int v) {
+        uint64_t k = key64(u, v);
+        int sc = selCnt(k);
+        if (sc >= 2) { closeB = -999999; return; } // infeasible
+        if (sc == 1) { closeB++; dlen -= edgeLen(u, v); }
+        else if (sc == 0) { createB++; dlen += edgeLen(u, v); }
+        if (edgeCount[k] > 2) nmTouch++;
+      };
+
+      evalEdge(a, b);
+      if (closeB < 0) return false;
+      evalEdge(b, c);
+      if (closeB < 0) return false;
+      evalEdge(c, a);
+      if (closeB < 0) return false;
+
+      // Must attach along at least one existing boundary edge to stay connected.
+      if (closeB <= 0) return false;
+
+      out = AddKey{closeB, createB, dlen, nmTouch, triArea[(size_t)ti], ti};
+      return true;
+    };
+
+    struct AddEntry { AddKey key; };
+    struct AddEntryCmp {
+      decltype(addKeyIsBetter)* better;
+      bool operator()(const AddEntry& x, const AddEntry& y) const {
+        return (*better)(y.key, x.key);
+      }
+    };
+
+    std::priority_queue<AddEntry, std::vector<AddEntry>, AddEntryCmp> pq{AddEntryCmp{&addKeyIsBetter}};
+
+    auto pushNeighbors = [&](int ti) {
+      const auto& t = tris[(size_t)ti];
+      const int ids[3] = {t[0], t[1], t[2]};
+      for (int e = 0; e < 3; e++) {
+        int u = ids[e];
+        int v = ids[(e + 1) % 3];
+        uint64_t k = key64(u, v);
+
+        auto itOcc = edgeOcc.find(k);
+        if (itOcc == edgeOcc.end()) continue;
+        const EdgeOcc2& occ = itOcc->second;
+        if (occ.count == 2) {
+          int other = (occ.tri[0] == ti) ? occ.tri[1] : ((occ.tri[1] == ti) ? occ.tri[0] : -1);
+          if (other >= 0 && other < (int)tris.size() && alive[(size_t)other] && !kept[(size_t)other]) {
+            AddKey k2;
+            if (makeAddKey(other, k2)) pq.push(AddEntry{k2});
+          }
+        } else if (occ.count >= 3) {
+          auto it = edgeToTris.find(k);
+          if (it == edgeToTris.end()) continue;
+          for (int other : it->second) {
+            if (other == ti) continue;
+            if (other < 0 || other >= (int)tris.size()) continue;
+            if (!alive[(size_t)other] || kept[(size_t)other]) continue;
+            AddKey k2;
+            if (makeAddKey(other, k2)) pq.push(AddEntry{k2});
+          }
+        }
+      }
+    };
+
+    pushNeighbors(seed);
+    while (!pq.empty()) {
+      CHECK_CANCEL();
+      AddEntry ent = pq.top();
+      pq.pop();
+
+      int ti = ent.key.ti;
+      if (ti < 0 || ti >= (int)tris.size()) continue;
+      if (!alive[(size_t)ti]) continue;
+      if (kept[(size_t)ti]) continue;
+
+      AddKey now;
+      if (!makeAddKey(ti, now)) continue;
+      if (!addKeyEq(now, ent.key)) {
+        pq.push(AddEntry{now});
+        continue;
+      }
+
+      kept[(size_t)ti] = 1;
+      const auto& t = tris[(size_t)ti];
+      selInc(key64(t[0], t[1]));
+      selInc(key64(t[1], t[2]));
+      selInc(key64(t[2], t[0]));
+      pushNeighbors(ti);
+    }
+
+    // Output: keep only the grown component, and drop degenerates.
+    size_t keepN = 0;
+    for (size_t ti = 0; ti < tris.size(); ti++) {
+      if (alive[ti] && kept[ti]) keepN++;
+    }
+    std::vector<std::array<int,3>> out;
+    out.reserve(keepN);
+    for (size_t ti = 0; ti < tris.size(); ti++) {
+      CHECK_CANCEL();
+      if (alive[ti] && kept[ti]) out.push_back(tris[ti]);
+    }
+    tris.swap(out);
+  };
+
+  auto cleanupNonManifoldEdgesMinCutInPlace = [&](std::vector<std::array<int,3>>& tris) {
+    // Global-ish cleanup: use an s-t min-cut to choose triangles to keep vs drop, with pairwise costs that
+    // approximate boundary length. Then iteratively enforce the hard constraint that every edge has ≤2 kept
+    // incident triangles by forcing drops and re-solving.
+    if (tris.empty()) return;
+
+    // Filter degenerates / zero-area triangles and de-duplicate (orientation-independent).
+    std::unordered_set<std::array<int,3>, TriKeyHash> seen;
+    if (!tris.empty()) {
+      seen.reserve(std::min<size_t>(tris.size() * 2 + 16, (size_t)2000000));
+    }
+
+    std::vector<std::array<int,3>> work;
+    work.reserve(tris.size());
+    std::vector<double> triArea;
+    triArea.reserve(tris.size());
+
+    for (const auto& t0 : tris) {
+      CHECK_CANCEL();
+      int a = t0[0], b = t0[1], c = t0[2];
+      if (a == b || b == c || c == a) continue;
+
+      Vec3 pa = vpos(a);
+      Vec3 pb = vpos(b);
+      Vec3 pc = vpos(c);
+      Vec3 nn = v3_cross(v3_sub(pb, pa), v3_sub(pc, pa));
+      double area = 0.5 * v3_norm(nn);
+      if (!(area > 1e-18)) continue;
+
+      int aId = a, bId = b, cId = c;
+      if (aId > bId) std::swap(aId, bId);
+      if (bId > cId) std::swap(bId, cId);
+      if (aId > bId) std::swap(aId, bId);
+      std::array<int,3> k{aId, bId, cId};
+      if (!seen.insert(k).second) continue;
+
+      work.push_back(std::array<int,3>{a, b, c});
+      triArea.push_back(area);
+    }
+
+    if (work.empty()) {
+      tris.clear();
+      return;
+    }
+
+    const int n = (int)work.size();
+
+    // Build edge -> incident triangles.
+    std::unordered_map<uint64_t, std::vector<int>> edgeToTris;
+    edgeToTris.reserve(std::min<size_t>((size_t)n * 3 + 16, (size_t)4000000));
+    for (int ti = 0; ti < n; ti++) {
+      CHECK_CANCEL();
+      const auto& t = work[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+      edgeToTris[key64(a, b)].push_back(ti);
+      edgeToTris[key64(b, c)].push_back(ti);
+      edgeToTris[key64(c, a)].push_back(ti);
+    }
+
+    // Non-manifold touch count per triangle in the *full* soup.
+    std::vector<int> nmTouchFull((size_t)n, 0);
+    for (int ti = 0; ti < n; ti++) {
+      CHECK_CANCEL();
+      const auto& t = work[(size_t)ti];
+      uint64_t e0 = key64(t[0], t[1]);
+      uint64_t e1 = key64(t[1], t[2]);
+      uint64_t e2 = key64(t[2], t[0]);
+      if (edgeToTris[e0].size() > 2) nmTouchFull[(size_t)ti] += 1;
+      if (edgeToTris[e1].size() > 2) nmTouchFull[(size_t)ti] += 1;
+      if (edgeToTris[e2].size() > 2) nmTouchFull[(size_t)ti] += 1;
+    }
+
+    double sumArea = 0.0;
+    for (double a : triArea) sumArea += a;
+    const double avgArea = (n > 0) ? (sumArea / (double)n) : 0.0;
+
+    auto edgeLen = [&](uint64_t ek)->double {
+      int u = (int)(uint32_t)(ek >> 32);
+      int v = (int)(uint32_t)(ek & 0xffffffffu);
+      Vec3 a = vpos(u);
+      Vec3 b = vpos(v);
+      return v3_norm(v3_sub(b, a));
+    };
+
+    struct AdjEdge { int a; int b; double len; };
+    std::vector<AdjEdge> adj;
+    adj.reserve((size_t)n * 2 + 16);
+
+    double sumLen = 0.0;
+    int lenCount = 0;
+    for (const auto& kv : edgeToTris) {
+      CHECK_CANCEL();
+      const auto& inc = kv.second;
+      if (inc.size() != 2) continue;
+      double len = edgeLen(kv.first);
+      if (!(len > 0.0)) continue;
+      sumLen += len;
+      lenCount++;
+      adj.push_back(AdjEdge{inc[0], inc[1], len});
+    }
+    const double avgLen = (lenCount > 0) ? (sumLen / (double)lenCount) : 0.0;
+    const double lambda = (avgLen > 1e-18 && avgArea > 0.0) ? (avgArea / avgLen) : 1.0;
+
+    const double nmWeight = (avgArea > 0.0) ? (0.5 * avgArea) : 1.0;
+
+    struct Dinic {
+      struct Edge { int to; int rev; double cap; };
+      int N;
+      std::vector<std::vector<Edge>> g;
+      std::vector<int> level;
+      std::vector<int> it;
+      explicit Dinic(int n) : N(n), g((size_t)n), level((size_t)n, -1), it((size_t)n, 0) {}
+
+      void addEdge(int fr, int to, double cap) {
+        Edge a{to, (int)g[(size_t)to].size(), cap};
+        Edge b{fr, (int)g[(size_t)fr].size(), 0.0};
+        g[(size_t)fr].push_back(a);
+        g[(size_t)to].push_back(b);
+      }
+
+      void addUndirectedCap(int a, int b, double cap) {
+        addEdge(a, b, cap);
+        addEdge(b, a, cap);
+      }
+
+      bool bfs(int s, int t) {
+        std::fill(level.begin(), level.end(), -1);
+        std::queue<int> q;
+        level[(size_t)s] = 0;
+        q.push(s);
+        while (!q.empty()) {
+          CHECK_CANCEL();
+          int v = q.front();
+          q.pop();
+          for (const auto& e : g[(size_t)v]) {
+            if (e.cap <= 1e-12) continue;
+            if (level[(size_t)e.to] != -1) continue;
+            level[(size_t)e.to] = level[(size_t)v] + 1;
+            q.push(e.to);
+          }
+        }
+        return level[(size_t)t] != -1;
+      }
+
+      double dfs(int v, int t, double f) {
+        if (v == t) return f;
+        for (int& i = it[(size_t)v]; i < (int)g[(size_t)v].size(); i++) {
+          CHECK_CANCEL();
+          Edge& e = g[(size_t)v][(size_t)i];
+          if (e.cap <= 1e-12) continue;
+          if (level[(size_t)e.to] != level[(size_t)v] + 1) continue;
+          double ret = dfs(e.to, t, std::min(f, e.cap));
+          if (ret > 1e-12) {
+            e.cap -= ret;
+            g[(size_t)e.to][(size_t)e.rev].cap += ret;
+            return ret;
+          }
+        }
+        return 0.0;
+      }
+
+      double maxflow(int s, int t) {
+        double flow = 0.0;
+        while (bfs(s, t)) {
+          std::fill(it.begin(), it.end(), 0);
+          while (true) {
+            CHECK_CANCEL();
+            double pushed = dfs(s, t, 1e100);
+            if (pushed <= 1e-12) break;
+            flow += pushed;
+          }
+        }
+        return flow;
+      }
+
+      std::vector<uint8_t> minCutSideFromSource(int s) {
+        std::vector<uint8_t> vis((size_t)N, 0);
+        std::queue<int> q;
+        vis[(size_t)s] = 1;
+        q.push(s);
+        while (!q.empty()) {
+          CHECK_CANCEL();
+          int v = q.front();
+          q.pop();
+          for (const auto& e : g[(size_t)v]) {
+            if (e.cap <= 1e-12) continue;
+            if (vis[(size_t)e.to]) continue;
+            vis[(size_t)e.to] = 1;
+            q.push(e.to);
+          }
+        }
+        return vis;
+      }
+    };
+
+    std::vector<uint8_t> forceDrop((size_t)n, 0);
+
+    auto solveCut = [&]()->std::vector<uint8_t> {
+      const int S = n;
+      const int T = n + 1;
+      Dinic din(n + 2);
+
+      const double INF = 1e30;
+      for (int ti = 0; ti < n; ti++) {
+        CHECK_CANCEL();
+        double costDrop = triArea[(size_t)ti];
+        double costKeep = nmWeight * (double)nmTouchFull[(size_t)ti];
+        if (forceDrop[(size_t)ti]) { costKeep = INF; costDrop = 0.0; }
+        // source side = "keep" (pays costKeep via i->T), sink side = "drop" (pays costDrop via S->i)
+        din.addEdge(S, ti, costDrop);
+        din.addEdge(ti, T, costKeep);
+      }
+
+      for (const auto& e : adj) {
+        CHECK_CANCEL();
+        double w = lambda * e.len;
+        if (!(w > 0.0)) continue;
+        din.addUndirectedCap(e.a, e.b, w);
+      }
+
+      din.maxflow(S, T);
+      std::vector<uint8_t> side = din.minCutSideFromSource(S);
+      side.resize((size_t)n);
+      return side; // 1 => keep
+    };
+
+    auto countKeptEdgeInc = [&](const std::vector<uint8_t>& keep,
+                               std::unordered_map<uint64_t, int>& keptEdgeCount) {
+      keptEdgeCount.clear();
+      keptEdgeCount.reserve(std::min<size_t>((size_t)n * 3 + 16, (size_t)4000000));
+      for (int ti = 0; ti < n; ti++) {
+        CHECK_CANCEL();
+        if (!keep[(size_t)ti]) continue;
+        const auto& t = work[(size_t)ti];
+        keptEdgeCount[key64(t[0], t[1])] += 1;
+        keptEdgeCount[key64(t[1], t[2])] += 1;
+        keptEdgeCount[key64(t[2], t[0])] += 1;
+      }
+    };
+
+    std::vector<uint8_t> keep = solveCut();
+    const int MAX_ITERS = 20;
+    for (int iter = 0; iter < MAX_ITERS; iter++) {
+      CHECK_CANCEL();
+
+      std::unordered_map<uint64_t, int> keptEdgeCount;
+      countKeptEdgeInc(keep, keptEdgeCount);
+
+      auto keptCnt = [&](uint64_t ek)->int {
+        auto it = keptEdgeCount.find(ek);
+        return (it == keptEdgeCount.end()) ? 0 : it->second;
+      };
+
+      auto makeRemKey = [&](int ti)->StlCleanupRemKey {
+        const auto& t = work[(size_t)ti];
+        int a = t[0], b = t[1], c = t[2];
+        int create = 0;
+        int remove = 0;
+        double dlen = 0.0;
+        int nmTouch = 0;
+
+        auto evalEdge = [&](int u, int v) {
+          uint64_t k = key64(u, v);
+          int cnt = keptCnt(k);
+          if (cnt > 2) nmTouch++;
+          double len = edgeLen(k);
+          if (cnt == 2) { create++; dlen += len; }
+          else if (cnt == 1) { remove++; dlen -= len; }
+        };
+        evalEdge(a, b);
+        evalEdge(b, c);
+        evalEdge(c, a);
+        const int allNm = (nmTouch == 3) ? 1 : 0;
+        return StlCleanupRemKey{allNm, create, remove, dlen, nmTouch, triArea[(size_t)ti], ti};
+      };
+
+      bool changed = false;
+      for (const auto& kv : edgeToTris) {
+        CHECK_CANCEL();
+        const auto& inc = kv.second;
+        if (inc.size() <= 2) continue;
+
+        std::vector<int> keptInc;
+        keptInc.reserve(inc.size());
+        for (int ti : inc) {
+          if (keep[(size_t)ti]) keptInc.push_back(ti);
+        }
+        if (keptInc.size() <= 2) continue;
+
+        std::sort(keptInc.begin(), keptInc.end(), [&](int a, int b) {
+          return stlCleanupRemKeyIsBetter(makeRemKey(a), makeRemKey(b));
+        });
+
+        int need = (int)keptInc.size() - 2;
+        for (int i = 0; i < need; i++) {
+          int ti = keptInc[(size_t)i];
+          if (!forceDrop[(size_t)ti]) {
+            forceDrop[(size_t)ti] = 1;
+            changed = true;
+          }
+        }
+      }
+
+      if (!changed) break;
+      keep = solveCut();
+    }
+
+    // Final solve with the accumulated forced drops (in case we hit iteration cap).
+    keep = solveCut();
+
+    std::vector<std::array<int,3>> out;
+    out.reserve(work.size());
+    for (int ti = 0; ti < n; ti++) {
+      CHECK_CANCEL();
+      if (keep[(size_t)ti]) out.push_back(work[(size_t)ti]);
+    }
+
+    tris.swap(out);
+  };
+
+#endif
+
+  auto dropSmallTriangleComponentsInPlace = [&](std::vector<std::array<int,3>>& tris, double areaFrac) {
+    if (tris.empty()) return;
+    if (!(areaFrac > 0.0)) return;
+
+    struct EdgeOcc2 {
+      int tri[2];
+      uint8_t count;
+      EdgeOcc2() : tri{-1,-1}, count(0) {}
+    };
+
+    std::unordered_map<uint64_t, EdgeOcc2> edgeOcc;
+    size_t want = tris.size() * 3 + 16;
+    edgeOcc.reserve(std::min<size_t>(want, (size_t)4000000));
+
+    auto addOcc = [&](uint64_t k, int ti) {
+      auto it = edgeOcc.find(k);
+      if (it == edgeOcc.end()) {
+        EdgeOcc2 e;
+        e.tri[0] = ti;
+        e.count = 1;
+        edgeOcc.emplace(k, e);
+        return;
+      }
+      EdgeOcc2& e = it->second;
+      if (e.count == 0) {
+        e.tri[0] = ti;
+        e.count = 1;
+      } else if (e.count == 1) {
+        e.tri[1] = ti;
+        e.count = 2;
+      } else {
+        e.count = 3; // non-manifold/ambiguous
+      }
+    };
+
+    for (int ti = 0; ti < (int)tris.size(); ti++) {
+      CHECK_CANCEL();
+      const auto& t = tris[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+      if (a == b || b == c || c == a) continue;
+      addOcc(key64(a, b), ti);
+      addOcc(key64(b, c), ti);
+      addOcc(key64(c, a), ti);
+    }
+
+    // Build adjacency via manifold edges.
+    std::vector<std::vector<int>> adj(tris.size());
+    for (const auto& kv : edgeOcc) {
+      CHECK_CANCEL();
+      const EdgeOcc2& e = kv.second;
+      if (e.count != 2) continue;
+      int t1 = e.tri[0];
+      int t2 = e.tri[1];
+      if (t1 < 0 || t2 < 0 || t1 == t2) continue;
+      adj[(size_t)t1].push_back(t2);
+      adj[(size_t)t2].push_back(t1);
+    }
+
+    std::vector<double> triArea(tris.size(), 0.0);
+    for (size_t ti = 0; ti < tris.size(); ti++) {
+      CHECK_CANCEL();
+      const auto& t = tris[ti];
+      Vec3 a = vpos(t[0]);
+      Vec3 b = vpos(t[1]);
+      Vec3 c = vpos(t[2]);
+      Vec3 nn = v3_cross(v3_sub(b, a), v3_sub(c, a));
+      triArea[ti] = 0.5 * v3_norm(nn);
+    }
+
+    std::vector<int> comp((size_t)tris.size(), -1);
+    std::vector<double> compArea;
+    std::vector<std::vector<int>> comps;
+    comps.reserve(64);
+    compArea.reserve(64);
+
+    for (int s = 0; s < (int)tris.size(); s++) {
+      CHECK_CANCEL();
+      if (comp[(size_t)s] != -1) continue;
+      int ci = (int)comps.size();
+      comps.emplace_back();
+      compArea.push_back(0.0);
+
+      std::vector<int> q;
+      q.push_back(s);
+      comp[(size_t)s] = ci;
+      size_t qi = 0;
+      while (qi < q.size()) {
+        CHECK_CANCEL();
+        int u = q[qi++];
+        comps[(size_t)ci].push_back(u);
+        compArea[(size_t)ci] += triArea[(size_t)u];
+        for (int v : adj[(size_t)u]) {
+          if (comp[(size_t)v] == -1) {
+            comp[(size_t)v] = ci;
+            q.push_back(v);
+          }
+        }
+      }
+    }
+
+    if (comps.empty()) return;
+
+    double maxArea = 0.0;
+    for (double a : compArea) maxArea = std::max(maxArea, a);
+    if (!(maxArea > 0.0)) return;
+
+    const double thresh = maxArea * areaFrac;
+    std::vector<uint8_t> rm((size_t)tris.size(), 0);
+    for (int ci = 0; ci < (int)comps.size(); ci++) {
+      CHECK_CANCEL();
+      if (compArea[(size_t)ci] >= thresh) continue;
+      for (int ti : comps[(size_t)ci]) rm[(size_t)ti] = 1;
+    }
+
+    size_t keepN = 0;
+    for (uint8_t f : rm) if (!f) keepN++;
+    if (keepN == tris.size()) return;
+
+    std::vector<std::array<int,3>> kept;
+    kept.reserve(keepN);
+    for (size_t ti = 0; ti < tris.size(); ti++) {
+      CHECK_CANCEL();
+      if (!rm[ti]) kept.push_back(tris[ti]);
+    }
+    tris.swap(kept);
+  };
+
+  auto jacobiEigenSym3InPlace = [&](double a[3][3], double v[3][3]) {
+    // Jacobi eigen-decomposition for a 3x3 symmetric matrix `a` (in-place diagonalization).
+    // On return:
+    //   - `a` is (approximately) diagonal (eigenvalues on the diagonal)
+    //   - `v` columns are the corresponding eigenvectors
+    v[0][0] = 1.0; v[0][1] = 0.0; v[0][2] = 0.0;
+    v[1][0] = 0.0; v[1][1] = 1.0; v[1][2] = 0.0;
+    v[2][0] = 0.0; v[2][1] = 0.0; v[2][2] = 1.0;
+
+    auto absd = [&](double x)->double { return (x < 0.0) ? -x : x; };
+    for (int iter = 0; iter < 24; iter++) {
+      CHECK_CANCEL();
+      int p = 0, q = 1;
+      double m01 = absd(a[0][1]);
+      double m02 = absd(a[0][2]);
+      double m12 = absd(a[1][2]);
+      double mx = m01;
+      if (m02 > mx) { mx = m02; p = 0; q = 2; }
+      if (m12 > mx) { mx = m12; p = 1; q = 2; }
+      if (mx <= 1e-18) break;
+
+      double app = a[p][p];
+      double aqq = a[q][q];
+      double apq = a[p][q];
+      if (absd(apq) <= 1e-30) continue;
+
+      double phi = 0.5 * std::atan2(2.0 * apq, (aqq - app));
+      double c = std::cos(phi);
+      double s = std::sin(phi);
+
+      // Update diagonal.
+      double appNew = c*c*app - 2.0*s*c*apq + s*s*aqq;
+      double aqqNew = s*s*app + 2.0*s*c*apq + c*c*aqq;
+      a[p][p] = appNew;
+      a[q][q] = aqqNew;
+      a[p][q] = 0.0;
+      a[q][p] = 0.0;
+
+      for (int k = 0; k < 3; k++) {
+        if (k == p || k == q) continue;
+        double aik = a[k][p];
+        double aiq = a[k][q];
+        double akpNew = c*aik - s*aiq;
+        double akqNew = s*aik + c*aiq;
+        a[k][p] = akpNew;
+        a[p][k] = akpNew;
+        a[k][q] = akqNew;
+        a[q][k] = akqNew;
+      }
+
+      // Update eigenvectors.
+      for (int k = 0; k < 3; k++) {
+        double vkp = v[k][p];
+        double vkq = v[k][q];
+        v[k][p] = c*vkp - s*vkq;
+        v[k][q] = s*vkp + c*vkq;
+      }
+    }
+  };
+
+  const bool wantObj = (objOut != nullptr);
+  const bool wantStl = opts.export_stl;
+
   std::ostringstream out;
   out << std::setprecision(9);
+
+  std::ostringstream obj;
+  std::unordered_map<int, int> objVidToIndex;
+  std::unordered_set<uint64_t> objSeenNgons;
+  int objNextIndex = 1;
+
+  auto hashNgon64 = [&](const std::vector<int>& cyc)->uint64_t{
+    uint64_t h = 14695981039346656037ULL; // FNV-1a
+    auto mix = [&](uint32_t x) {
+      h ^= (uint64_t)x;
+      h *= 1099511628211ULL;
+    };
+    mix((uint32_t)cyc.size());
+    for (int id : cyc) mix((uint32_t)id);
+    return h;
+  };
+
+  if (wantObj) {
+    obj << std::setprecision(9);
+    if (opts.stl_repair) obj << "# CrochetPARADE periphery export (triangulated + cleaned)\n";
+    else obj << "# CrochetPARADE periphery export (untriangulated n-gons)\n";
+  }
 
   int solidIdx = 0;
   for (int oi : order) {
@@ -1646,13 +3711,268 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     auto& cycs = objects[(size_t)oi];
     orientCyclesInPlace(cycs);
 
-    std::ostringstream name;
-    name << solidName << "_obj" << solidIdx;
-    out << "solid " << name.str() << "\n";
-    emitTrianglesForCycles(out, cycs);
-    out << "endsolid " << name.str() << "\n";
-  }
+    if (wantObj && !opts.stl_repair) {
+      std::ostringstream name;
+      name << solidName << "_obj" << solidIdx;
+      obj << "o " << name.str() << "\n";
 
+      for (const auto& cyc : cycs) {
+        CHECK_CANCEL();
+        if (cyc.size() < 3) continue;
+
+        // Clean up any accidental repeats (OBJ polygon faces should not contain duplicate consecutive indices).
+        std::vector<int> face;
+        face.reserve(cyc.size());
+        int last = std::numeric_limits<int>::min();
+        for (int id : cyc) {
+          if (id == last) continue;
+          face.push_back(id);
+          last = id;
+        }
+        if (face.size() >= 2 && face.front() == face.back()) face.pop_back();
+        if (face.size() < 3) continue;
+
+        // Dedupe n-gons (rotation + reversal invariant) before saving to OBJ.
+        std::vector<int> canon = canonicalizeCycleByIds(face);
+        uint64_t key = hashNgon64(canon);
+        if (!objSeenNgons.insert(key).second) continue;
+
+        // Emit any new vertices, then the face.
+        for (int id : face) {
+          if (objVidToIndex.find(id) != objVidToIndex.end()) continue;
+          if (id <= 0 || id >= (int)pos.xyz.size()) continue;
+          const auto& a = pos.xyz[(size_t)id];
+          obj << "v " << a[0] << " " << a[1] << " " << a[2] << "\n";
+          objVidToIndex.emplace(id, objNextIndex++);
+        }
+
+        obj << "f";
+        for (int id : face) {
+          auto it = objVidToIndex.find(id);
+          if (it == objVidToIndex.end()) continue;
+          obj << " " << it->second;
+        }
+        obj << "\n";
+      }
+    }
+
+    const bool needTriangleMesh = wantStl || (wantObj && opts.stl_repair);
+    if (!needTriangleMesh) continue;
+
+    if (!opts.stl_repair) {
+      std::ostringstream name;
+      name << solidName << "_obj" << solidIdx;
+      out << "solid " << name.str() << "\n";
+      emitTrianglesForCyclesLegacy(out, cycs);
+      out << "endsolid " << name.str() << "\n";
+      continue;
+    }
+
+    // Triangles may repeat when different accepted cycles overlap. Deduplicate triangles per-object
+    // by their vertex ids before emitting STL facets (keeps output size sane and avoids double faces).
+    std::unordered_set<std::array<int,3>, TriKeyHash> seenTriKeys;
+    size_t approxTris = 0;
+    for (const auto& cyc : cycs) {
+      if (cyc.size() >= 3) approxTris += (cyc.size() - 2);
+    }
+    if (approxTris > 0) {
+      // Avoid pathological over-reserve on huge exports.
+      seenTriKeys.reserve(std::min<size_t>(approxTris * 2 + 16, (size_t)2000000));
+    }
+
+    std::vector<std::array<int,3>> tris;
+    tris.reserve(std::min<size_t>(approxTris + 8, (size_t)2000000));
+    collectTrianglesForCycles(cycs, seenTriKeys, tris);
+
+    // Optional pre-pass: weld vertices within eps before trimming non-manifold edges.
+    stlVposOverrideMap.clear();
+    stlVposOverride = &stlVposOverrideMap; // also holds extra vertices created by cleanup
+    if (opts.stl_snap_eps > 0.0) {
+      weldVerticesWithinEpsInPlace(tris, opts.stl_snap_eps, stlVposOverrideMap);
+    }
+
+    // STL cleanup: remove degenerates and clean up edges with 3+ incident faces.
+    cleanupNonManifoldEdgesGreedyGlobalInPlace(tris);
+    repairNonOrientableWindingByDroppingTrianglesInPlace(tris);
+    splitNonManifoldVerticesInPlace(tris);
+
+    // Optional planar reference for winding: for nearly-planar objects (blankets), fit a best-plane normal so we
+    // can pick a stable "front/back" for consistent winding.
+    stlPlanarActive = false;
+    stlPlaneN = Vec3{0.0, 0.0, 1.0};
+
+    if (!tris.empty()) {
+      // Fit a plane to the triangle vertex cloud via PCA (eigenvector of smallest covariance eigenvalue).
+      Vec3 mean{0.0, 0.0, 0.0};
+      long long cnt = 0;
+      for (const auto& t : tris) {
+        for (int id : t) {
+          if (id <= 0) continue;
+          mean = v3_add(mean, vpos(id));
+          cnt++;
+        }
+      }
+      if (cnt > 0) mean = v3_mul(mean, 1.0 / (double)cnt);
+
+      double cov[3][3] = {
+        {0.0, 0.0, 0.0},
+        {0.0, 0.0, 0.0},
+        {0.0, 0.0, 0.0}
+      };
+      for (const auto& t : tris) {
+        for (int id : t) {
+          if (id <= 0) continue;
+          Vec3 p = vpos(id);
+          Vec3 d = v3_sub(p, mean);
+          cov[0][0] += d.x*d.x;
+          cov[0][1] += d.x*d.y;
+          cov[0][2] += d.x*d.z;
+          cov[1][1] += d.y*d.y;
+          cov[1][2] += d.y*d.z;
+          cov[2][2] += d.z*d.z;
+        }
+      }
+      if (cnt > 0) {
+        double inv = 1.0 / (double)cnt;
+        cov[0][0] *= inv;
+        cov[0][1] *= inv;
+        cov[0][2] *= inv;
+        cov[1][1] *= inv;
+        cov[1][2] *= inv;
+        cov[2][2] *= inv;
+      }
+      cov[1][0] = cov[0][1];
+      cov[2][0] = cov[0][2];
+      cov[2][1] = cov[1][2];
+
+      double v[3][3];
+      jacobiEigenSym3InPlace(cov, v);
+      double eval[3] = {cov[0][0], cov[1][1], cov[2][2]};
+      int idx[3] = {0, 1, 2};
+      std::sort(idx, idx + 3, [&](int a, int b) {
+        return eval[a] > eval[b];
+      });
+
+      Vec3 e0{v[0][idx[0]], v[1][idx[0]], v[2][idx[0]]};
+      Vec3 e1{v[0][idx[1]], v[1][idx[1]], v[2][idx[1]]};
+      Vec3 e2{v[0][idx[2]], v[1][idx[2]], v[2][idx[2]]};
+      e0 = v3_normalize(e0);
+      e1 = v3_normalize(e1);
+      e2 = v3_normalize(e2);
+
+      double min0 = +std::numeric_limits<double>::infinity();
+      double min1 = +std::numeric_limits<double>::infinity();
+      double min2 = +std::numeric_limits<double>::infinity();
+      double max0 = -std::numeric_limits<double>::infinity();
+      double max1 = -std::numeric_limits<double>::infinity();
+      double max2 = -std::numeric_limits<double>::infinity();
+
+      for (const auto& t : tris) {
+        for (int id : t) {
+          if (id <= 0) continue;
+          Vec3 p = vpos(id);
+          Vec3 d = v3_sub(p, mean);
+          double s0 = v3_dot(d, e0);
+          double s1 = v3_dot(d, e1);
+          double s2 = v3_dot(d, e2);
+          min0 = std::min(min0, s0); max0 = std::max(max0, s0);
+          min1 = std::min(min1, s1); max1 = std::max(max1, s1);
+          min2 = std::min(min2, s2); max2 = std::max(max2, s2);
+        }
+      }
+      double r0 = (max0 > min0) ? (max0 - min0) : 0.0;
+      double r1 = (max1 > min1) ? (max1 - min1) : 0.0;
+      double r2 = (max2 > min2) ? (max2 - min2) : 0.0;
+      double diam = std::max(r0, r1);
+      double ratio = (diam > 0.0) ? (r2 / diam) : 1.0;
+
+      constexpr double STL_AUTO_PLANAR_RATIO = 0.08; // thickness / in-plane diameter threshold
+      bool planar = (ratio <= STL_AUTO_PLANAR_RATIO);
+
+      if (planar) {
+        stlPlanarActive = true;
+        stlPlaneN = e2;
+
+        // Deterministic normal direction: make the dominant component positive.
+        double ax = std::fabs(stlPlaneN.x);
+        double ay = std::fabs(stlPlaneN.y);
+        double az = std::fabs(stlPlaneN.z);
+        if (ax >= ay && ax >= az) {
+          if (stlPlaneN.x < 0.0) stlPlaneN = v3_mul(stlPlaneN, -1.0);
+        } else if (ay >= az) {
+          if (stlPlaneN.y < 0.0) stlPlaneN = v3_mul(stlPlaneN, -1.0);
+        } else {
+          if (stlPlaneN.z < 0.0) stlPlaneN = v3_mul(stlPlaneN, -1.0);
+        }
+      }
+    }
+
+    // Ensure consistent winding after trimming (and align disconnected components).
+    orientTrianglesInPlace(tris);
+    alignTriangleComponentsToLargestInPlace(tris);
+    orientOutwardHeuristicInPlace(tris);
+
+	    // Optional cleanup: drop tiny disconnected components (viewer noise), relative to the largest component.
+	    dropSmallTriangleComponentsInPlace(tris, opts.stl_drop_component_area_frac);
+
+	    std::ostringstream name;
+	    name << solidName << "_obj" << solidIdx;
+	
+	    if (wantObj) {
+	      obj << "o " << name.str() << "\n";
+	      for (const auto& t : tris) {
+	        CHECK_CANCEL();
+	        int ia = t[0], ib = t[1], ic = t[2];
+	        if (ia == ib || ib == ic || ic == ia) continue;
+	        Vec3 a = vpos(ia);
+	        Vec3 b = vpos(ib);
+	        Vec3 c = vpos(ic);
+	        Vec3 tn = v3_cross(v3_sub(b, a), v3_sub(c, a));
+	        double tnn = v3_norm(tn);
+	        if (tnn <= 1e-18) continue;
+	
+	        auto emitV = [&](int id, Vec3 p) {
+	          if (objVidToIndex.find(id) != objVidToIndex.end()) return;
+	          obj << "v " << p.x << " " << p.y << " " << p.z << "\n";
+	          objVidToIndex.emplace(id, objNextIndex++);
+	        };
+	        emitV(ia, a);
+	        emitV(ib, b);
+	        emitV(ic, c);
+	
+	        auto itA = objVidToIndex.find(ia);
+	        auto itB = objVidToIndex.find(ib);
+	        auto itC = objVidToIndex.find(ic);
+	        if (itA == objVidToIndex.end() || itB == objVidToIndex.end() || itC == objVidToIndex.end()) continue;
+	        obj << "f " << itA->second << " " << itB->second << " " << itC->second << "\n";
+	      }
+	    }
+	
+	    if (wantStl) {
+	      out << "solid " << name.str() << "\n";
+	      for (const auto& t : tris) {
+	        CHECK_CANCEL();
+	        Vec3 a = vpos(t[0]);
+	        Vec3 b = vpos(t[1]);
+	        Vec3 c = vpos(t[2]);
+	        Vec3 tn = v3_cross(v3_sub(b, a), v3_sub(c, a));
+	        double tnn = v3_norm(tn);
+	        if (tnn <= 1e-18) continue;
+	        tn = v3_mul(tn, 1.0 / tnn);
+	
+	        out << "facet normal " << tn.x << " " << tn.y << " " << tn.z << "\n";
+	        out << "  outer loop\n";
+	        out << "    vertex " << a.x << " " << a.y << " " << a.z << "\n";
+	        out << "    vertex " << b.x << " " << b.y << " " << b.z << "\n";
+	        out << "    vertex " << c.x << " " << c.y << " " << c.z << "\n";
+	        out << "  endloop\n";
+	        out << "endfacet\n";
+	      }
+	      out << "endsolid " << name.str() << "\n";
+	    }
+	  }
+
+  if (objOut) *objOut = obj.str();
   return out.str();
 }
 
@@ -2545,9 +4865,9 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
       if (ok) canonical_k[(size_t)i] = parseCanonicalK(lab);
     }
 
-    // Node coordinate table (only needed for STL export).
+    // Node coordinate table (only needed for STL/OBJ export).
     PosTable posTable;
-    if (opts.export_stl) {
+    if (opts.export_stl || opts.export_obj) {
       posTable = parseDotStringNodePositions(dot_simple, vm, dim);
     }
 
@@ -2555,10 +4875,10 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
     std::vector<int> cyclecount;
     cyclecount.reserve(unique_edge_pairs.size());
 
-    // Optional: collect the unblocked cycles (as canonicalized node sequences) for STL export.
+    // Optional: collect the unblocked cycles (as canonicalized node sequences) for mesh export (STL/OBJ).
     std::vector<std::vector<int>> acceptedCycles;
     std::unordered_set<std::string> acceptedCycleKeys;
-    bool collectCycles = opts.export_stl;
+    bool collectCycles = (opts.export_stl || opts.export_obj);
     const size_t MAX_EXPORT_CYCLES = 200000;
     if (collectCycles) {
       acceptedCycles.reserve(std::min<size_t>(MAX_EXPORT_CYCLES, unique_edge_pairs.size() * 2 + 64));
@@ -2676,11 +4996,13 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
     }
     cycleProg.finish();
 
-    // ---------- Optional STL export ----------
+    // ---------- Optional mesh export (STL/OBJ) ----------
     std::string stlText;
-    if (opts.export_stl) {
-      // NOTE: This uses accepted (non-blocked) u->v paths as polygonal cycles, then triangulates them.
-      stlText = buildAsciiStlFromCycles(std::move(acceptedCycles), posTable, unique_edge_pairs, "CrochetPARADE");
+    std::string objText;
+    if (opts.export_stl || opts.export_obj) {
+      // NOTE: This uses accepted (non-blocked) u->v paths as polygonal cycles.
+      std::string* objOut = opts.export_obj ? &objText : nullptr;
+      stlText = buildAsciiStlFromCycles(std::move(acceptedCycles), posTable, unique_edge_pairs, "CrochetPARADE", opts, objOut);
     }
 
     // ---------- Collect periphery edges ----------
@@ -3154,6 +5476,9 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
     out << "]";
     if (opts.export_stl) {
       out << ",\"stl\":\"" << jsonEscape(stlText) << "\"";
+    }
+    if (opts.export_obj) {
+      out << ",\"obj\":\"" << jsonEscape(objText) << "\"";
     }
     out << "}";
     return dup_cstr(out.str());

@@ -5522,6 +5522,42 @@ function evaluate_indices_and_stop(text, substitute) {
         text = text;
     else
         text = result + '\n' + text;
+
+    // Undo parse_definitions()'s internal COLOR encoding for user-facing text output.
+    // parse_definitions encodes commas/parentheses inside COLOR:... tokens as ~ + - to avoid splitting issues.
+    // Here we restore the original COLOR syntax so directives like `COLOR:rgb(255,255,255)` remain unchanged.
+    try {
+        let out = '';
+        let i = 0;
+        while (i < text.length) {
+            const j = text.indexOf('COLOR:', i);
+            if (j < 0) { out += text.slice(i); break; }
+            out += text.slice(i, j) + 'COLOR:';
+            let k = j + 6; // after 'COLOR:'
+            while (k < text.length) {
+                const ch = text[k];
+                if (ch === ',' || ch === ']' || ch === '}' || ch === ')' || ch === '\n') break;
+                k++;
+            }
+            let col = text.slice(j + 6, k);
+            const colTrim = col.trim();
+
+            // parse_definitions encodes the first '(' as '+' and the first ')' as '-', and all commas as '~'.
+            // Only decode when it clearly looks like that encoding (avoid touching hyphens in names like
+            // 'color-mix(...)' or args like 'var(--x)').
+            if (colTrim.includes('+') && colTrim.endsWith('-')) {
+                let dec = colTrim.replaceAll('~', ',');
+                const p = dec.indexOf('+');
+                if (p >= 0) dec = dec.slice(0, p) + '(' + dec.slice(p + 1);
+                dec = dec.slice(0, -1) + ')';
+                col = dec;
+            }
+
+            out += col;
+            i = k;
+        }
+        text = out;
+    } catch (e) {}
     return text;
 }
 

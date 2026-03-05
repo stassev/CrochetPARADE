@@ -1802,23 +1802,29 @@ function parseLatheUrl(url) {
         sessionId: 0,
 
         // Cached results for the current 3D session (reset when a new 3D calc starts)
-	        periphGraphsBaseAll: null,   // all periphery components (NOT including extras)
-	        periphGraphsExtras: null,    // optional extra graphs (longest-cycle / breaking-cycle)
-	        periphLastStl: null,         // last STL string (only when export_stl is enabled)
-	        periphLastStlKey: null,      // cache key for periphLastStl (e.g. TRANSFORM_OBJECT lines)
-	        customPeripheries: [],     // user-saved custom periphery graphs for this 3D session
-	        customPeripheryCounter: 0, // incrementing label for Custom periphery 1,2,...
-	        periphKmax: null,            // cache key #1
-	        periphOptsKey: null,         // cache key #2 (advanced opts)
+		        periphGraphsBaseAll: null,   // all periphery components (NOT including extras)
+		        periphGraphsExtras: null,    // optional extra graphs (longest-cycle / breaking-cycle)
+		        periphLastStl: null,         // last STL string (only when export_stl is enabled)
+		        periphLastStlKey: null,      // cache key for periphLastStl (e.g. TRANSFORM_OBJECT lines)
+		        periphLastObj: null,         // last OBJ string (only when export_obj is enabled)
+		        periphLastObjKey: null,      // cache key for periphLastObj (e.g. TRANSFORM_OBJECT lines)
+		        customPeripheries: [],     // user-saved custom periphery graphs for this 3D session
+		        customPeripheryCounter: 0, // incrementing label for Custom periphery 1,2,...
+		        periphKmax: null,            // cache key #1
+		        periphOptsKey: null,         // cache key #2 (advanced opts)
 
         // Advanced options (mirrors periphery.js opts)
-        periphOpts: {
-          leap_max: 0,
-          include_bridge_edges_in_output: false,
-          include_longest_cycle_subgraph: false,
-          include_breaking_cycle_subgraph: false,
-          export_stl: false
-        },
+		        periphOpts: {
+		          leap_max: 0,
+		          include_bridge_edges_in_output: false,
+		          include_longest_cycle_subgraph: false,
+		          include_breaking_cycle_subgraph: false,
+		          export_stl: false,
+		          export_obj: false,
+		          stl_repair: false,
+		          stl_snap_eps: 0,
+		          stl_drop_component_area_frac: 0
+		        },
 
         // UI state
         kmax: 10,
@@ -1844,12 +1850,14 @@ function parseLatheUrl(url) {
     if ((!('periphGraphsBaseAll' in st) || st.periphGraphsBaseAll == null) && Array.isArray(st.periphGraphsAll)) {
       st.periphGraphsBaseAll = st.periphGraphsAll;
     }
-	    if (!('periphGraphsBaseAll' in st)) st.periphGraphsBaseAll = null;
-	    if (!('periphGraphsExtras' in st)) st.periphGraphsExtras = null;
-	    if (!('periphLastStl' in st)) st.periphLastStl = null;
-	    if (!('periphLastStlKey' in st)) st.periphLastStlKey = null;
-	                st.customPeripheries = [];
-	                st.customPeripheryCounter = 0;
+		    if (!('periphGraphsBaseAll' in st)) st.periphGraphsBaseAll = null;
+		    if (!('periphGraphsExtras' in st)) st.periphGraphsExtras = null;
+		    if (!('periphLastStl' in st)) st.periphLastStl = null;
+		    if (!('periphLastStlKey' in st)) st.periphLastStlKey = null;
+		    if (!('periphLastObj' in st)) st.periphLastObj = null;
+		    if (!('periphLastObjKey' in st)) st.periphLastObjKey = null;
+		                st.customPeripheries = [];
+		                st.customPeripheryCounter = 0;
 
     if (typeof st.sessionId !== 'number') st.sessionId = 0;
     if (!('periphKmax' in st)) st.periphKmax = null;
@@ -1861,20 +1869,28 @@ function parseLatheUrl(url) {
     if (!('applyLabelSaveSortLabel' in st)) st.applyLabelSaveSortLabel = true;
 
     if (!st.periphOpts || typeof st.periphOpts !== 'object') {
-      st.periphOpts = {
-        leap_max: 0,
-        include_bridge_edges_in_output: false,
-        include_longest_cycle_subgraph: false,
-        include_breaking_cycle_subgraph: false,
-        export_stl: false
-      };
-    } else {
+		      st.periphOpts = {
+		        leap_max: 0,
+		        include_bridge_edges_in_output: false,
+		        include_longest_cycle_subgraph: false,
+		        include_breaking_cycle_subgraph: false,
+		        export_stl: false,
+		        export_obj: false,
+		        stl_repair: false,
+		        stl_snap_eps: 0,
+		        stl_drop_component_area_frac: 0
+		      };
+	    } else {
       if (typeof st.periphOpts.leap_max !== 'number') st.periphOpts.leap_max = 0;
-      if (typeof st.periphOpts.include_bridge_edges_in_output !== 'boolean') st.periphOpts.include_bridge_edges_in_output = false;
-      if (typeof st.periphOpts.include_longest_cycle_subgraph !== 'boolean') st.periphOpts.include_longest_cycle_subgraph = false;
-      if (typeof st.periphOpts.include_breaking_cycle_subgraph !== 'boolean') st.periphOpts.include_breaking_cycle_subgraph = false;
-      if (typeof st.periphOpts.export_stl !== 'boolean') st.periphOpts.export_stl = false;
-    }
+	      if (typeof st.periphOpts.include_bridge_edges_in_output !== 'boolean') st.periphOpts.include_bridge_edges_in_output = false;
+	      if (typeof st.periphOpts.include_longest_cycle_subgraph !== 'boolean') st.periphOpts.include_longest_cycle_subgraph = false;
+	      if (typeof st.periphOpts.include_breaking_cycle_subgraph !== 'boolean') st.periphOpts.include_breaking_cycle_subgraph = false;
+		      if (typeof st.periphOpts.export_stl !== 'boolean') st.periphOpts.export_stl = false;
+		      if (typeof st.periphOpts.export_obj !== 'boolean') st.periphOpts.export_obj = false;
+		      if (typeof st.periphOpts.stl_repair !== 'boolean') st.periphOpts.stl_repair = false;
+		      if (typeof st.periphOpts.stl_snap_eps !== 'number') st.periphOpts.stl_snap_eps = 0;
+		      if (typeof st.periphOpts.stl_drop_component_area_frac !== 'number') st.periphOpts.stl_drop_component_area_frac = 0;
+		    }
 
     if (typeof st.kmax !== 'number') st.kmax = 10;
     if (typeof st.N !== 'number') st.N = 3;
@@ -1985,17 +2001,70 @@ function parseLatheUrl(url) {
 	               style="width:100%;padding:6px;margin-top:4px"/>
 	      </div>
 	
-	      <div style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px">
-	        <div style="display:flex;align-items:center;gap:8px">
-	          <label for="periphAutoSaveStl" style="cursor:pointer">Save detected 3D model surface as STL file</label>
-	          <span class="periphHelpWrap">
-	            <button type="button" class="periphHelpBtn"
-	                    data-help="Builds a triangle mesh from the detected cycles (using the current 3D layout coordinates) and downloads it as an STL file after the periphery run completes.">?</button>
+		      <div style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+		        <div style="display:flex;align-items:center;gap:8px">
+		          <label for="periphAutoSaveObj" style="cursor:pointer">Save detected 3D model surface as OBJ file</label>
+		          <span class="periphHelpWrap">
+		            <button type="button" class="periphHelpBtn"
+		                    data-help="Downloads an OBJ file of the detected surface. If “Clean non-manifold edges” is off, exports the accepted cycles as untriangulated polygon faces (n-gons) after cycle orientation (step 1) and before triangulation (step 2), with duplicate n-gons removed. If cleanup is on, exports the cleaned triangulated surface (same cleanup as STL) as triangle faces.">?</button>
+		            <div class="periphHelpPopup"></div>
+		          </span>
+		        </div>
+		        <input id="periphAutoSaveObj" type="checkbox"/>
+		      </div>
+		
+		      <div style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+		        <div style="display:flex;align-items:center;gap:8px">
+		          <label for="periphAutoSaveStl" style="cursor:pointer">Save detected 3D model surface as STL file</label>
+		          <span class="periphHelpWrap">
+		            <button type="button" class="periphHelpBtn"
+		                    data-help="Builds a triangle mesh from the detected cycles (using the current 3D layout coordinates) and downloads it as an STL file after the periphery run completes.">?</button>
 	            <div class="periphHelpPopup"></div>
 	          </span>
 	        </div>
 	        <input id="periphAutoSaveStl" type="checkbox"/>
 	      </div>
+		      <div id="periphStlRepairRow" style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-left:14px">
+		        <div style="display:flex;align-items:center;gap:8px">
+		          <label for="periphStlRepair" style="cursor:pointer">Clean non-manifold edges (≥3 faces/edge)</label>
+			          <span class="periphHelpWrap">
+			            <button type="button" class="periphHelpBtn"
+			                    data-help="Experimental mesh cleanup (STL/OBJ): trims extra triangles around edges that have 3+ incident faces (so each edge has ≤2 faces). If the remaining surface is still not globally orientable (no consistent winding exists due to vertex welding), it drops a small set of triangles to make a consistent winding possible, then re-orients triangles to be consistent. Also splits non-manifold vertices (multiple triangle-fans meeting only at a point), which can otherwise create shading artifacts and confuse downstream tools.">?</button>
+			            <div class="periphHelpPopup"></div>
+			          </span>
+			        </div>
+		        <input id="periphStlRepair" type="checkbox"/>
+		      </div>
+		      <div id="periphStlRepairOpts"
+		           style="margin-top:-6px;margin-bottom:10px;display:none;flex-direction:column;gap:10px;padding-left:28px">
+
+		        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+		          <div style="display:flex;align-items:center;gap:8px">
+		            <label for="periphStlSnapEps" style="cursor:pointer">Snap eps (e.g. 0.02)</label>
+		            <span class="periphHelpWrap">
+		              <button type="button" class="periphHelpBtn"
+		                      data-help="Optional pre-pass: weld/snap vertices within this distance before cleanup (in 3D model coordinate units). Use 0 to disable.">?</button>
+		              <div class="periphHelpPopup"></div>
+		            </span>
+		          </div>
+		          <input id="periphStlSnapEps" type="number" min="0" step="any" value="0"
+		                 style="width:90px;padding:6px"/>
+		        </div>
+
+		        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+		          <div style="display:flex;align-items:center;gap:8px">
+		            <label for="periphStlDropCompFrac" style="cursor:pointer">Drop tiny comps (e.g. 0.05)</label>
+	              <span class="periphHelpWrap">
+	                <button type="button" class="periphHelpBtn"
+	                      data-help="Drops disconnected triangle components whose area is below this fraction of the largest component. Use 0 to disable.">?</button>
+	                <div class="periphHelpPopup"></div>
+	              </span>
+	            </div>
+	            <input id="periphStlDropCompFrac" type="number" min="0" step="any" value="0"
+	                   style="width:90px;padding:6px"/>
+	          </div>
+
+		      </div>
 	      <details id="periphAdvancedDetails"
 	               style="margin-bottom:10px;border:1px solid #ddd;border-radius:8px;padding:8px;background:#fafafa">
 	        <summary style="cursor:pointer;font-weight:600">Advanced settings</summary>
@@ -2154,19 +2223,25 @@ function parseLatheUrl(url) {
       </div>
     `;
 
-    document.body.appendChild(modal);
+	    document.body.appendChild(modal);
 
-    const kmaxInput = modal.querySelector('#kmaxInput');
-    const advDetails = modal.querySelector('#periphAdvancedDetails');
-    const leapMaxInput = modal.querySelector('#periphLeapMax');
-    const includeBridgeInput = modal.querySelector('#periphIncludeBridge');
-    const includeLongestCycleInput = modal.querySelector('#periphIncludeLongestCycle');
-    const includeBreakingCycleInput = modal.querySelector('#periphIncludeBreakingCycle');
-    const autoSaveStlInput = modal.querySelector('#periphAutoSaveStl');
-    const msg = modal.querySelector('#periphMessage');
-    const labelDetails = modal.querySelector('#periphLabelDetails');
-    const labelInput = modal.querySelector('#periphApplyLabelInput');
-    const labelOkBtn = modal.querySelector('#periphApplyLabelBtn');
+	    const kmaxInput = modal.querySelector('#kmaxInput');
+	    const advDetails = modal.querySelector('#periphAdvancedDetails');
+	    const leapMaxInput = modal.querySelector('#periphLeapMax');
+	    const includeBridgeInput = modal.querySelector('#periphIncludeBridge');
+	    const includeLongestCycleInput = modal.querySelector('#periphIncludeLongestCycle');
+	    const includeBreakingCycleInput = modal.querySelector('#periphIncludeBreakingCycle');
+	    const stlSnapEpsInput = modal.querySelector('#periphStlSnapEps');
+	    const stlDropCompFracInput = modal.querySelector('#periphStlDropCompFrac');
+	    const autoSaveObjInput = modal.querySelector('#periphAutoSaveObj');
+	    const autoSaveStlInput = modal.querySelector('#periphAutoSaveStl');
+	    const stlRepairRow = modal.querySelector('#periphStlRepairRow');
+	    const stlRepairInput = modal.querySelector('#periphStlRepair');
+	    const stlRepairOpts = modal.querySelector('#periphStlRepairOpts');
+	    const msg = modal.querySelector('#periphMessage');
+	    const labelDetails = modal.querySelector('#periphLabelDetails');
+	    const labelInput = modal.querySelector('#periphApplyLabelInput');
+	    const labelOkBtn = modal.querySelector('#periphApplyLabelBtn');
 
     // Per-label feedback area (shows how many labels were added)
     const labelApplyMsg = document.createElement('div');
@@ -3384,23 +3459,35 @@ function appendSortLabelLine(text, labelName, values) {
         }
       });
     }
-    // --- end autocomplete ---
+	    // --- end autocomplete ---
 
 
-    function normalizePeriphOptsFromUI() {
-      const rawLeap = leapMaxInput ? parseInt(leapMaxInput.value, 10) : 0;
-      const leap = isFinite(rawLeap) ? Math.max(0, Math.min(8, rawLeap)) : 0;
-      if (leapMaxInput) leapMaxInput.value = String(leap);
+		    function normalizePeriphOptsFromUI() {
+		      const rawLeap = leapMaxInput ? parseInt(leapMaxInput.value, 10) : 0;
+		      const leap = isFinite(rawLeap) ? Math.max(0, Math.min(8, rawLeap)) : 0;
+		      if (leapMaxInput) leapMaxInput.value = String(leap);
 
-      const opts = {
-        leap_max: leap,
-        include_bridge_edges_in_output: !!(includeBridgeInput && includeBridgeInput.checked),
-        include_longest_cycle_subgraph: !!(includeLongestCycleInput && includeLongestCycleInput.checked),
-        include_breaking_cycle_subgraph: !!(includeBreakingCycleInput && includeBreakingCycleInput.checked),
-        export_stl: !!(autoSaveStlInput && autoSaveStlInput.checked)
-      };
-      return opts;
-    }
+		      const rawSnapEps = stlSnapEpsInput ? parseFloat(stlSnapEpsInput.value) : 0;
+		      const snapEps = (isFinite(rawSnapEps) && rawSnapEps >= 0) ? rawSnapEps : 0;
+		      if (stlSnapEpsInput && document.activeElement !== stlSnapEpsInput) stlSnapEpsInput.value = String(snapEps);
+
+	      const rawDropFrac = stlDropCompFracInput ? parseFloat(stlDropCompFracInput.value) : 0;
+	      const dropFrac = (isFinite(rawDropFrac) && rawDropFrac >= 0) ? rawDropFrac : 0;
+	      if (stlDropCompFracInput && document.activeElement !== stlDropCompFracInput) stlDropCompFracInput.value = String(dropFrac);
+
+		      const opts = {
+		        leap_max: leap,
+			        include_bridge_edges_in_output: !!(includeBridgeInput && includeBridgeInput.checked),
+			        include_longest_cycle_subgraph: !!(includeLongestCycleInput && includeLongestCycleInput.checked),
+			        include_breaking_cycle_subgraph: !!(includeBreakingCycleInput && includeBreakingCycleInput.checked),
+			        export_stl: !!(autoSaveStlInput && autoSaveStlInput.checked),
+			        export_obj: !!(autoSaveObjInput && autoSaveObjInput.checked),
+			        stl_repair: !!(stlRepairInput && stlRepairInput.checked),
+		        stl_snap_eps: snapEps,
+		        stl_drop_component_area_frac: dropFrac
+		      };
+		      return opts;
+		    }
 
     function periphOptsKey(opts) {
       // Stable key (insertion order is stable because we construct the object in a fixed order)
@@ -3410,14 +3497,16 @@ function appendSortLabelLine(text, labelName, values) {
 	    function invalidatePeripheryCache(reason) {
 	      const had = ((Array.isArray(state.periphGraphsBaseAll) && state.periphGraphsBaseAll.length) ||
 	                   (Array.isArray(state.periphGraphsExtras) && state.periphGraphsExtras.length));
-	      // Clear cached results so a re-run is required.
-	      state.periphGraphsBaseAll = null;
-	      state.periphGraphsExtras = null;
-	      state.periphLastStl = null;
-	      state.periphLastStlKey = null;
-	      state.periphKmax = null;
-	      state.selectedIndex = 0;
-	      state.periphCacheInvalidatedMsg = reason || 'Settings changed — cached peripheries cleared. Click Re-run to compute again.';
+		      // Clear cached results so a re-run is required.
+		      state.periphGraphsBaseAll = null;
+		      state.periphGraphsExtras = null;
+		      state.periphLastStl = null;
+		      state.periphLastStlKey = null;
+		      state.periphLastObj = null;
+		      state.periphLastObjKey = null;
+		      state.periphKmax = null;
+		      state.selectedIndex = 0;
+		      state.periphCacheInvalidatedMsg = reason || 'Settings changed — cached peripheries cleared. Click Re-run to compute again.';
 	      try { renderResultsFromState(); } catch (e) {}
 	      return had;
 	    }
@@ -3433,17 +3522,22 @@ function appendSortLabelLine(text, labelName, values) {
       if (hadCache && oldKey !== newKey) {
         invalidatePeripheryCache('Advanced settings changed — cached peripheries cleared. Click Re-run to recompute.');
       }
+      try { updateStlRepairUI(); } catch (e) {}
     }
 
-    // Persist advanced settings as the user edits them (so reopen keeps them)
-    if (leapMaxInput) leapMaxInput.addEventListener('input', persistPeriphOpts);
-    if (includeBridgeInput) includeBridgeInput.addEventListener('change', persistPeriphOpts);
-    if (includeLongestCycleInput) includeLongestCycleInput.addEventListener('change', persistPeriphOpts);
-    if (includeBreakingCycleInput) includeBreakingCycleInput.addEventListener('change', persistPeriphOpts);
-    if (autoSaveStlInput) autoSaveStlInput.addEventListener('change', persistPeriphOpts);
+	    // Persist advanced settings as the user edits them (so reopen keeps them)
+	    if (leapMaxInput) leapMaxInput.addEventListener('input', persistPeriphOpts);
+	    if (includeBridgeInput) includeBridgeInput.addEventListener('change', persistPeriphOpts);
+	    if (includeLongestCycleInput) includeLongestCycleInput.addEventListener('change', persistPeriphOpts);
+		    if (includeBreakingCycleInput) includeBreakingCycleInput.addEventListener('change', persistPeriphOpts);
+		    if (stlRepairInput) stlRepairInput.addEventListener('change', persistPeriphOpts);
+		    if (stlSnapEpsInput) stlSnapEpsInput.addEventListener('input', persistPeriphOpts);
+				    if (stlDropCompFracInput) stlDropCompFracInput.addEventListener('input', persistPeriphOpts);
+			    if (autoSaveStlInput) autoSaveStlInput.addEventListener('change', persistPeriphOpts);
+			    if (autoSaveObjInput) autoSaveObjInput.addEventListener('change', persistPeriphOpts);
 
-	    // Help popups (question-mark buttons)
-	    let helpPortal = document.getElementById('periphHelpPortal');
+		    // Help popups (question-mark buttons)
+		    let helpPortal = document.getElementById('periphHelpPortal');
 	    if (!helpPortal) {
 	      helpPortal = document.createElement('div');
 	      helpPortal.id = 'periphHelpPortal';
@@ -3500,6 +3594,22 @@ function appendSortLabelLine(text, labelName, values) {
 
     let periphIsBusy = false;
 
+	    function updateStlRepairUI() {
+	      const exportOn = !!((autoSaveStlInput && autoSaveStlInput.checked) || (autoSaveObjInput && autoSaveObjInput.checked));
+	      const repairOn = exportOn && !!(stlRepairInput && stlRepairInput.checked);
+
+	      if (stlRepairRow) stlRepairRow.style.opacity = exportOn ? '1' : '0.65';
+		      if (stlRepairInput) stlRepairInput.disabled = periphIsBusy || !exportOn;
+		      if (stlRepairOpts) stlRepairOpts.style.display = repairOn ? 'flex' : 'none';
+
+		      const advEls = [stlSnapEpsInput, stlDropCompFracInput];
+		      for (const el of advEls) {
+		        if (!el) continue;
+		        el.disabled = periphIsBusy || !repairOn;
+		        try { if (el.parentElement) el.parentElement.style.opacity = repairOn ? '1' : '0.65'; } catch (e) {}
+	      }
+	    }
+
     function setBusy(isBusy, label) {
       periphIsBusy = !!isBusy;
       if (spinnerEl) {
@@ -3519,11 +3629,16 @@ function appendSortLabelLine(text, labelName, values) {
       runBtn.disabled = isBusy;
       kmaxInput.disabled = isBusy;
       if (leapMaxInput) leapMaxInput.disabled = isBusy;
-      if (includeBridgeInput) includeBridgeInput.disabled = isBusy;
-      if (includeLongestCycleInput) includeLongestCycleInput.disabled = isBusy;
-      if (includeBreakingCycleInput) includeBreakingCycleInput.disabled = isBusy;
-      if (autoSaveStlInput) autoSaveStlInput.disabled = isBusy;
-    }
+	      if (includeBridgeInput) includeBridgeInput.disabled = isBusy;
+			      if (includeLongestCycleInput) includeLongestCycleInput.disabled = isBusy;
+			      if (includeBreakingCycleInput) includeBreakingCycleInput.disabled = isBusy;
+			      if (stlRepairInput) stlRepairInput.disabled = isBusy;
+			      if (stlSnapEpsInput) stlSnapEpsInput.disabled = isBusy;
+				      if (stlDropCompFracInput) stlDropCompFracInput.disabled = isBusy;
+				      if (autoSaveStlInput) autoSaveStlInput.disabled = isBusy;
+				      if (autoSaveObjInput) autoSaveObjInput.disabled = isBusy;
+		      try { updateStlRepairUI(); } catch (e) {}
+		    }
 
     function downloadTextFile(text, filename, mime) {
       try {
@@ -3540,24 +3655,38 @@ function appendSortLabelLine(text, labelName, values) {
       }
     }
 
-    function defaultStlFilename() {
-      try {
-        const ts = new Date().toISOString().replace(/[:.]/g, '-');
-        return `crochetparade_model_${ts}.stl`;
-      } catch (e) {
-        return 'crochetparade_model.stl';
-      }
-    }
+	    function defaultStlFilename() {
+	      try {
+	        const ts = new Date().toISOString().replace(/[:.]/g, '-');
+	        return `crochetparade_model_${ts}.stl`;
+	      } catch (e) {
+	        return 'crochetparade_model.stl';
+	      }
+	    }
+	
+	    function defaultObjFilename() {
+	      try {
+	        const ts = new Date().toISOString().replace(/[:.]/g, '-');
+	        return `crochetparade_model_${ts}.obj`;
+	      } catch (e) {
+	        return 'crochetparade_model.obj';
+	      }
+	    }
 
-    function renderResultsFromState() {
+	    function renderResultsFromState() {
       // Keep current Kmax input value (do not overwrite user edits).
       // state.kmax is updated from the input via listeners.
       // Restore advanced settings
-      if (leapMaxInput) leapMaxInput.value = String((state.periphOpts && typeof state.periphOpts.leap_max === 'number') ? state.periphOpts.leap_max : 0);
-      if (includeBridgeInput) includeBridgeInput.checked = !!(state.periphOpts && state.periphOpts.include_bridge_edges_in_output);
-      if (includeLongestCycleInput) includeLongestCycleInput.checked = !!(state.periphOpts && state.periphOpts.include_longest_cycle_subgraph);
-      if (includeBreakingCycleInput) includeBreakingCycleInput.checked = !!(state.periphOpts && state.periphOpts.include_breaking_cycle_subgraph);
-      if (autoSaveStlInput) autoSaveStlInput.checked = !!(state.periphOpts && state.periphOpts.export_stl);
+      if (leapMaxInput && document.activeElement !== leapMaxInput) leapMaxInput.value = String((state.periphOpts && typeof state.periphOpts.leap_max === 'number') ? state.periphOpts.leap_max : 0);
+	      if (includeBridgeInput) includeBridgeInput.checked = !!(state.periphOpts && state.periphOpts.include_bridge_edges_in_output);
+	      if (includeLongestCycleInput) includeLongestCycleInput.checked = !!(state.periphOpts && state.periphOpts.include_longest_cycle_subgraph);
+	      if (includeBreakingCycleInput) includeBreakingCycleInput.checked = !!(state.periphOpts && state.periphOpts.include_breaking_cycle_subgraph);
+	      if (stlRepairInput) stlRepairInput.checked = !!(state.periphOpts && state.periphOpts.stl_repair);
+	      if (stlSnapEpsInput && document.activeElement !== stlSnapEpsInput) stlSnapEpsInput.value = String((state.periphOpts && typeof state.periphOpts.stl_snap_eps === 'number') ? state.periphOpts.stl_snap_eps : 0);
+		      if (stlDropCompFracInput && document.activeElement !== stlDropCompFracInput) stlDropCompFracInput.value = String((state.periphOpts && typeof state.periphOpts.stl_drop_component_area_frac === 'number') ? state.periphOpts.stl_drop_component_area_frac : 0);
+		      if (autoSaveStlInput) autoSaveStlInput.checked = !!(state.periphOpts && state.periphOpts.export_stl);
+		      if (autoSaveObjInput) autoSaveObjInput.checked = !!(state.periphOpts && state.periphOpts.export_obj);
+		      try { updateStlRepairUI(); } catch (e) {}
 
       // Remove old periphery selector UI (if any)
       const oldRow = modal.querySelector('#peripherySelectRow');
@@ -4461,15 +4590,15 @@ async function _periphRunEditorPreview(reason, reqId) {
         return;
       }
 
-	      // When exporting STL, we need node coordinates. The default dot_simple used for periphery
-	      // is generated *before* layout. Regenerate a dot_simple that includes current coordinates.
-	      let dotData = baseDotData;
-	      let stlKeyForRun = null;
-	      if (optsForRun && optsForRun.export_stl) {
-	        try {
-	          const inputEl = document.getElementById('inputText') || window.inputText;
-	          const text = inputEl ? String(inputEl.value ?? '') : '';
-	          const jsonForPos = (typeof window.json0 !== 'undefined') ? window.json0 : null;
+		      // When exporting STL/OBJ, we need node coordinates. The default dot_simple used for periphery
+		      // is generated *before* layout. Regenerate a dot_simple that includes current coordinates.
+		      let dotData = baseDotData;
+		      let meshKeyForRun = null;
+		      if (optsForRun && (optsForRun.export_stl || optsForRun.export_obj)) {
+		        try {
+		          const inputEl = document.getElementById('inputText') || window.inputText;
+		          const text = inputEl ? String(inputEl.value ?? '') : '';
+		          const jsonForPos = (typeof window.json0 !== 'undefined') ? window.json0 : null;
 	          const dim = (typeof window.DIM === 'number') ? window.DIM : 3;
 	
 	          // Parse TRANSFORM_OBJECT lines (same numeric fields as the Object Transform tool writes).
@@ -4486,8 +4615,8 @@ async function _periphRunEditorPreview(reason, reqId) {
 	            if (!isFinite(objId) || vals.some(v => !isFinite(v))) continue;
 	            transforms.push([objId, vals[0], vals[1], vals[2], vals[3], vals[4], vals[5]]);
 	          }
-	          transforms.sort((a, b) => a[0] - b[0]);
-	          try { stlKeyForRun = JSON.stringify(transforms); } catch (e) { stlKeyForRun = String(transforms.length); }
+		          transforms.sort((a, b) => a[0] - b[0]);
+		          try { meshKeyForRun = JSON.stringify(transforms); } catch (e) { meshKeyForRun = String(transforms.length); }
 	
 	          function parsePos3(pos) {
 	            if (pos == null) return null;
@@ -4691,13 +4820,13 @@ async function _periphRunEditorPreview(reason, reqId) {
 	          const res = (typeof processTextSafe === 'function') ? processTextSafe(text, jsonForDot || '') : null;
 	          if (Array.isArray(res) && typeof res[1] === 'string' && res[1].trim()) {
 	            dotData = res[1];
-	          } else {
-	            console.warn('Save STL requested, but could not regenerate dot_simple with coordinates; proceeding with base dot_simple.');
-	          }
-	        } catch (e) {
-	          console.warn('Save STL: failed to regenerate dot_simple with coordinates; proceeding with base dot_simple.', e);
-	        }
-	      }
+		          } else {
+		            console.warn('Save STL/OBJ requested, but could not regenerate dot_simple with coordinates; proceeding with base dot_simple.');
+		          }
+		        } catch (e) {
+		          console.warn('Save STL/OBJ: failed to regenerate dot_simple with coordinates; proceeding with base dot_simple.', e);
+		        }
+		      }
 
       const myToken = ++state.runToken;
       setBusy(true, 'Calculating periphery graphs (this can take a while)…');
@@ -4710,18 +4839,23 @@ async function _periphRunEditorPreview(reason, reqId) {
       try { window.__peripherySceneHighlightedNodeLabels = []; } catch (e) {}
       try { window.__peripheryHighlightSessionId = (window.__peripheryDialogState && typeof window.__peripheryDialogState.sessionId === 'number') ? window.__peripheryDialogState.sessionId : null; } catch (e) {}
 
-	      try {
-	        const cachedBase = Array.isArray(state.periphGraphsBaseAll) ? state.periphGraphsBaseAll : null;
-	        const stlCacheOk = (!optsForRun || !optsForRun.export_stl) ||
-	          (typeof state.periphLastStl === 'string' && state.periphLastStl.trim() && state.periphLastStlKey === stlKeyForRun);
-	        if (cachedBase && cachedBase.length > 0 && state.periphKmax === kmaxVal && state.periphOptsKey === optsKeyForRun && stlCacheOk) {
-	          setBusy(false);
-	          if (optsForRun && optsForRun.export_stl && typeof state.periphLastStl === 'string' && state.periphLastStl.trim() && state.periphLastStlKey === stlKeyForRun) {
-	            downloadTextFile(state.periphLastStl, defaultStlFilename(), 'model/stl');
-	          }
-	          modal.refreshPeripheryUI();
-	          return;
-	        }
+		      try {
+		        const cachedBase = Array.isArray(state.periphGraphsBaseAll) ? state.periphGraphsBaseAll : null;
+		        const stlCacheOk = (!optsForRun || !optsForRun.export_stl) ||
+		          (typeof state.periphLastStl === 'string' && state.periphLastStl.trim() && state.periphLastStlKey === meshKeyForRun);
+		        const objCacheOk = (!optsForRun || !optsForRun.export_obj) ||
+		          (typeof state.periphLastObj === 'string' && state.periphLastObj.trim() && state.periphLastObjKey === meshKeyForRun);
+		        if (cachedBase && cachedBase.length > 0 && state.periphKmax === kmaxVal && state.periphOptsKey === optsKeyForRun && stlCacheOk && objCacheOk) {
+		          setBusy(false);
+		          if (optsForRun && optsForRun.export_stl && typeof state.periphLastStl === 'string' && state.periphLastStl.trim() && state.periphLastStlKey === meshKeyForRun) {
+		            downloadTextFile(state.periphLastStl, defaultStlFilename(), 'model/stl');
+		          }
+		          if (optsForRun && optsForRun.export_obj && typeof state.periphLastObj === 'string' && state.periphLastObj.trim() && state.periphLastObjKey === meshKeyForRun) {
+		            downloadTextFile(state.periphLastObj, defaultObjFilename(), 'model/obj');
+		          }
+		          modal.refreshPeripheryUI();
+		          return;
+		        }
 
         // Let the browser paint the spinner/status before heavy work begins.
         await new Promise(requestAnimationFrame);
@@ -4732,17 +4866,25 @@ async function _periphRunEditorPreview(reason, reqId) {
         // and then slices to N, so using a large N mostly affects the size of the returned list.
         const Nall = 100000;
 
-	        const rawGraphs = await find_periphery(dotData, state.kmax, Nall, optsForRun);
-	        const stlText = (rawGraphs && typeof rawGraphs.stl === 'string') ? rawGraphs.stl : null;
-	        if (optsForRun && optsForRun.export_stl) {
-	          state.periphLastStl = (typeof stlText === 'string' && stlText.trim()) ? stlText : null;
-	          state.periphLastStlKey = stlKeyForRun;
-	        } else {
-	          state.periphLastStl = null;
-	          state.periphLastStlKey = null;
-	        }
-        // Sanity-check + normalize output: keep only graphs with non-empty nodes+edges arrays.
-        const cleaned = (Array.isArray(rawGraphs) ? rawGraphs : []).filter(g => {
+		        const rawGraphs = await find_periphery(dotData, state.kmax, Nall, optsForRun);
+		        const stlText = (rawGraphs && typeof rawGraphs.stl === 'string') ? rawGraphs.stl : null;
+		        const objText = (rawGraphs && typeof rawGraphs.obj === 'string') ? rawGraphs.obj : null;
+		        if (optsForRun && optsForRun.export_stl) {
+		          state.periphLastStl = (typeof stlText === 'string' && stlText.trim()) ? stlText : null;
+		          state.periphLastStlKey = meshKeyForRun;
+		        } else {
+		          state.periphLastStl = null;
+		          state.periphLastStlKey = null;
+		        }
+		        if (optsForRun && optsForRun.export_obj) {
+		          state.periphLastObj = (typeof objText === 'string' && objText.trim()) ? objText : null;
+		          state.periphLastObjKey = meshKeyForRun;
+		        } else {
+		          state.periphLastObj = null;
+		          state.periphLastObjKey = null;
+		        }
+	        // Sanity-check + normalize output: keep only graphs with non-empty nodes+edges arrays.
+	        const cleaned = (Array.isArray(rawGraphs) ? rawGraphs : []).filter(g => {
           if (!g || typeof g !== 'object') return false;
           if (!Array.isArray(g.nodes) || !Array.isArray(g.edges)) return false;
           if (g.nodes.length === 0 || g.edges.length === 0) return false;
@@ -4794,11 +4936,15 @@ async function _periphRunEditorPreview(reason, reqId) {
         // Ignore if a newer run started
         if (state.runToken !== myToken) return;
 
-        if (optsForRun && optsForRun.export_stl && typeof state.periphLastStl === 'string' && state.periphLastStl.trim()) {
-          downloadTextFile(state.periphLastStl, defaultStlFilename(), 'model/stl');
-        }
+	        if (optsForRun && optsForRun.export_stl && typeof state.periphLastStl === 'string' && state.periphLastStl.trim()) {
+	          downloadTextFile(state.periphLastStl, defaultStlFilename(), 'model/stl');
+	        }
+	
+	        if (optsForRun && optsForRun.export_obj && typeof state.periphLastObj === 'string' && state.periphLastObj.trim()) {
+	          downloadTextFile(state.periphLastObj, defaultObjFilename(), 'model/obj');
+	        }
 
-        if (!Array.isArray(baseAll) || baseAll.length === 0) {
+	        if (!Array.isArray(baseAll) || baseAll.length === 0) {
           // Keep extras if any, but typically if there are no base peripheries there's nothing useful to highlight.
           state.periphGraphsBaseAll = null;
           state.periphGraphsExtras = Array.isArray(extras) && extras.length ? extras : null;
@@ -5154,7 +5300,7 @@ window.highlightPeripheryInText = function (nodeLabels) {
                 <button class="button" id="latheButton" onclick="lathe()">Convert Crochet Lathe instructions to CrochetPARADE</button>
                 <button class="button" id="expandButton" onclick="expandExpression()">Expand instructions</button>
                 <button class="button" id="collectButton" onclick="collectExpression()">Simplify instructions</button>
-                <button class="button" id="findEdgesButton" onclick="window.showFindPeripheryDialog()">Find project periphery/Save 3D Model to STL</button>
+                <button class="button" id="findEdgesButton" onclick="window.showFindPeripheryDialog()">Find project periphery/Save 3D model</button>
             </div>
         </div>
         <div class="dropdown">
@@ -7336,16 +7482,22 @@ if (hasTokenWordsAfterLastBr) {
                 st.periphKmax = null;
                 st.periphOptsKey = null;
                 // reset dialog settings for the new 3D session
-	                st.periphOpts = {
-	                  leap_max: 0,
-	                  include_bridge_edges_in_output: false,
-	                  include_longest_cycle_subgraph: false,
-	                  include_breaking_cycle_subgraph: false,
-	                  export_stl: false
-	                };
-	                st.periphLastStl = null;
-	                st.periphLastStlKey = null;
-	                st.kmax = 10;
+				                st.periphOpts = {
+				                  leap_max: 0,
+				                  include_bridge_edges_in_output: false,
+				                  include_longest_cycle_subgraph: false,
+				                  include_breaking_cycle_subgraph: false,
+				                  export_stl: false,
+				                  export_obj: false,
+				                  stl_repair: false,
+				                  stl_snap_eps: 0,
+				                  stl_drop_component_area_frac: 0
+				                };
+			                st.periphLastStl = null;
+		                st.periphLastStlKey = null;
+		                st.periphLastObj = null;
+		                st.periphLastObjKey = null;
+		                st.kmax = 10;
 	                st.N = 3;
 	                st.selectedIndex = 0;
 	                st.runToken = 0;
