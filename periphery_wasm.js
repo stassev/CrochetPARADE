@@ -2,15 +2,15 @@
 // periphery_wasm.js
 //
 // Drop-in replacement for periphery.js that runs the SAME algorithm (ported to C++ in periphery.cpp)
-// compiled with Emscripten (periphery60.js + periphery60.wasm) inside a Web Worker.
+// compiled with Emscripten (periphery61.js + periphery61.wasm) inside a Web Worker.
 //
 // Exports:
 //   - find_periphery(dot_simple, Kmax=10, N=Infinity, opts={})  -> Promise<Array<{nodes,edges}> | null>
 //   - sort_edge_dot(dot_edges_only, N=Infinity, opts={})        -> Promise<Array<{nodes,edges}>>
 //   - cancel_find_periphery()                                   -> void (cancels any in-flight call; resolves to null)
 //
-// NOTE: the worker expects the compiled Emscripten output to be named `periphery60.js`
-//       (and the corresponding `periphery60.wasm`) in the same directory as index.html.
+// NOTE: the worker expects the compiled Emscripten output to be named `periphery61.js`
+//       (and the corresponding `periphery61.wasm`) in the same directory as index.html.
 
 let worker = null;
 let readyPromise = null;

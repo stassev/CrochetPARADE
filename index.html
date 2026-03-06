@@ -1125,7 +1125,7 @@
         
         var shape;
     </script>
-    <script src="bezier60.js"></script>
+    <script src="bezier61.js"></script>
     <script>
         window.onload = function() {
             document.getElementById('thicknessB').checked = false;
@@ -1216,12 +1216,12 @@
 
 
 
-    <script src="./parse60.js"></script>
+    <script src="./parse61.js"></script>
     <script src="./svg.min.js"></script>
     <!--<script src="./math.js"></script>-->
 
 
-    <script src="simplify60.js"></script>
+    <script src="simplify61.js"></script>
     <div id="mouse">
         <span id="left" class="buttonM"></span>
         <span id="middle" class="buttonM">
@@ -4671,7 +4671,7 @@ async function _periphRunEditorPreview(reason, reqId) {
 	            const n = objs.length;
 	            const pos = new Array(n);
 	
-	            // Global mean + r2 (matches mesh60.js normalization; translation in TRANSFORM_OBJECT is expressed in units of r2).
+	            // Global mean + r2 (matches mesh61.js normalization; translation in TRANSFORM_OBJECT is expressed in units of r2).
 	            let xm = 0, ym = 0, zm = 0, tot = 0;
 	            for (let i = 0; i < n; i++) {
 	              const p = parsePos3(objs[i].pos);
@@ -4691,7 +4691,7 @@ async function _periphRunEditorPreview(reason, reqId) {
 	            r2 = Math.sqrt(r2);
 	            if (!isFinite(r2) || r2 < 1e-12) r2 = 1;
 	
-	            // Component ids (object ids) match mesh60.js: scan nodes in order, DFS components in the undirected edge graph.
+	            // Component ids (object ids) match mesh61.js: scan nodes in order, DFS components in the undirected edge graph.
 	            const compId = new Array(n).fill(-1);
 	            const adj = Array.from({ length: n }, () => []);
 	            if (Array.isArray(jsonForPos.edges)) {
@@ -4719,7 +4719,7 @@ async function _periphRunEditorPreview(reason, reqId) {
 	              compCount++;
 	            }
 	
-	            // Per-object COM for rotation pivot: match mesh60.js behavior (average over rendered node spheres + edge midpoints).
+	            // Per-object COM for rotation pivot: match mesh61.js behavior (average over rendered node spheres + edge midpoints).
 	            const comSum = Array.from({ length: compCount }, () => [0, 0, 0]);
 	            const comW = new Array(compCount).fill(0);
 	
@@ -4803,7 +4803,7 @@ async function _periphRunEditorPreview(reason, reqId) {
 		                p1 = [rrel[0] + c[0] + tr.t[0], rrel[1] + c[1] + tr.t[1], rrel[2] + c[2] + tr.t[2]];
 		              }
 		              const posStr = (p1 && isFinite(p1[0]) && isFinite(p1[1]) && isFinite(p1[2]))
-		                // Match the 3D view / GLTF export coordinate normalization (mesh60.js): subtract global mean and divide by r2.
+		                // Match the 3D view / GLTF export coordinate normalization (mesh61.js): subtract global mean and divide by r2.
 		                // Then match Blender’s GLTF import axis conversion (Y-up -> Z-up) so STL and GLTF overlap in Blender.
 		                ? (() => {
 		                  const xn = (p1[0] - xm) / r2;
@@ -5250,7 +5250,7 @@ window.__TextHL = window.__TextHL || (function () {
     if (typeof window.highlightPeripheryInScene === 'function') {
       window.highlightPeripheryInScene(graph.nodes, graph.edges);
     } else {
-      console.warn('highlightPeripheryInScene is not defined. Did you add it to mesh60.js?');
+      console.warn('highlightPeripheryInScene is not defined. Did you add it to mesh61.js?');
     }
 
     // 2) Text (only if expanded)
@@ -5401,7 +5401,7 @@ window.highlightPeripheryInText = function (nodeLabels) {
     </script>
 
 
-    <script src="sphere-generator60.js"></script>
+    <script src="sphere-generator61.js"></script>
 
     <script>
         var json0 = '';
@@ -7405,7 +7405,7 @@ if (hasTokenWordsAfterLastBr) {
             }
         };
     </script>
-    <script async src="./graph60.js"></script>
+    <script async src="./graph61.js"></script>
     <script>
         function transformJsonWithPos(inputJson, inputJson2) {
             const data = JSON.parse(inputJson);
@@ -7469,7 +7469,7 @@ if (hasTokenWordsAfterLastBr) {
     </script>
     <script type="module">
 
-        import Generate3DModel from './mesh60.js';
+        import Generate3DModel from './mesh61.js';
          //import  "./viz-standalone.js";
          const button = document.getElementById("3dbutton");
          //const textarea = document.getElementById('inputText');
