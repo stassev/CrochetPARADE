@@ -49,6 +49,7 @@ async function expandCompactResult(res) {
     const g = graphs[i] || {};
     const ns = Array.isArray(g.nodes) ? g.nodes : [];
     const es = Array.isArray(g.edges) ? g.edges : [];
+    const kind = (typeof g.kind === 'number') ? g.kind : undefined;
     const nodes = new Array(ns.length);
     for (let j = 0; j < ns.length; j++) nodes[j] = labels[ns[j]] ?? '';
     const edges = new Array(es.length);
@@ -58,7 +59,9 @@ async function expandCompactResult(res) {
       const b = labels[e[1]] ?? '';
       edges[j] = [a, b];
     }
-    out[i] = { nodes, edges };
+    const item = { nodes, edges };
+    if (kind !== undefined) item.kind = kind;
+    out[i] = item;
     if ((i + 1) % CHUNK === 0) {
       await new Promise(requestAnimationFrame);
     }

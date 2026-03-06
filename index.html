@@ -3760,7 +3760,10 @@ function appendSortLabelLine(text, labelName, values) {
               (g && typeof g.__name === 'string' && g.__name.trim()) ? g.__name.trim() :
               `Custom #${idx + 1}`;
           } else if (idx < (nCustom + nExtra)) {
-            label = `Extra #${(idx - nCustom) + 1}`;
+            const k = (g && typeof g.kind === 'number') ? g.kind : 0;
+            if (k === 1) label = 'Longest-cycle';
+            else if (k === 2) label = 'Breaking-cycle';
+            else label = `Extra #${(idx - nCustom) + 1}`;
           } else {
             label = `Periphery #${(idx - nCustom - nExtra) + 1}`;
           }
@@ -4896,7 +4899,8 @@ async function _periphRunEditorPreview(reason, reqId) {
           return true;
         });
 
-        // Identify optional "extras" appended by periphery.js (if enabled). We only pull from the end.
+        // Identify optional "extras" appended by periphery.cpp (if enabled).
+        // Prefer explicit `kind` tags; fall back to heuristic peeling from the end for older bundles.
         function isSimpleCycleGraph(g) {
           if (!g || !Array.isArray(g.nodes) || !Array.isArray(g.edges)) return false;
           if (g.nodes.length < 3) return false;
@@ -4915,21 +4919,44 @@ async function _periphRunEditorPreview(reason, reqId) {
         }
 
         const extras = [];
-        let baseAll = cleaned.slice();
+        let baseAll = [];
+        let sawKind = false;
 
-        // breaking-cycle is appended after longest-cycle when both are enabled
-        if (optsForRun && optsForRun.include_breaking_cycle_subgraph) {
-          const cand = baseAll[baseAll.length - 1];
-          if (cand && isSimpleCycleGraph(cand)) {
-            extras.unshift(cand);
-            baseAll = baseAll.slice(0, -1);
+        for (const g of cleaned) {
+          const k = (g && typeof g.kind === 'number') ? g.kind : 0;
+          if (Number.isFinite(k) && k !== 0) {
+            sawKind = true;
+            extras.push(g);
+          } else {
+            baseAll.push(g);
           }
         }
-        if (optsForRun && optsForRun.include_longest_cycle_subgraph) {
-          const cand = baseAll[baseAll.length - 1];
-          if (cand && isSimpleCycleGraph(cand)) {
-            extras.unshift(cand);
-            baseAll = baseAll.slice(0, -1);
+
+        if (sawKind) {
+          // Ensure deterministic order: longest-cycle then breaking-cycle.
+          extras.sort((a, b) => {
+            const ka = (a && typeof a.kind === 'number') ? a.kind : 0;
+            const kb = (b && typeof b.kind === 'number') ? b.kind : 0;
+            return ka - kb;
+          });
+        } else {
+          // Legacy fallback: peel from the end based on structure (simple cycle).
+          baseAll = cleaned.slice();
+
+          // breaking-cycle is appended after longest-cycle when both are enabled
+          if (optsForRun && optsForRun.include_breaking_cycle_subgraph) {
+            const cand = baseAll[baseAll.length - 1];
+            if (cand && isSimpleCycleGraph(cand)) {
+              extras.unshift(cand);
+              baseAll = baseAll.slice(0, -1);
+            }
+          }
+          if (optsForRun && optsForRun.include_longest_cycle_subgraph) {
+            const cand = baseAll[baseAll.length - 1];
+            if (cand && isSimpleCycleGraph(cand)) {
+              extras.unshift(cand);
+              baseAll = baseAll.slice(0, -1);
+            }
           }
         }
 

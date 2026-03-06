@@ -5035,6 +5035,7 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
       std::vector<std::pair<int,int>> edgeIds;  // directed edges in traversal order (1-based ids)
       int edgeCount=0;
       int nodeCount=0;
+      int kind=0; // 0=base, 1=longest-cycle extra, 2=breaking-cycle extra
       // internal for extras
       OrderedSet<int> _nodeIds;
       OrderedSet<std::string> _traversalEdgeKeys;
@@ -5417,6 +5418,7 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
         if (longest.cycleNodes.size() >= 3) {
           Traversal ord = orderCycleOnGivenCycle(longest.cycleNodes, vm, is_canonical, canonical_k);
           OutComponent ex;
+          ex.kind = 1;
           ex.nodeIds = ord.nodes;
           ex.edgeIds = ord.edges;
           ex.nodeCount = (int)ex.nodeIds.size();
@@ -5430,6 +5432,7 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
         if (breaking.cycleNodes.size() >= 3) {
           Traversal ord = orderCycleOnGivenCycle(breaking.cycleNodes, vm, is_canonical, canonical_k);
           OutComponent ex;
+          ex.kind = 2;
           ex.nodeIds = ord.nodes;
           ex.edgeIds = ord.edges;
           ex.nodeCount = (int)ex.nodeIds.size();
@@ -5457,7 +5460,7 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
       CHECK_CANCEL();
       if (!firstGraph) out << ",";
       firstGraph = false;
-      out << "{\"nodes\":[";
+      out << "{\"kind\":" << g.kind << ",\"nodes\":[";
       for (size_t i = 0; i < g.nodeIds.size(); i++) {
         if (i) out << ",";
         out << (g.nodeIds[i] - 1);
