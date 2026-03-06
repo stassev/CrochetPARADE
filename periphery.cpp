@@ -1363,6 +1363,7 @@ static std::vector<std::array<int,3>> triangulatePolygonEarClip(const std::vecto
 static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
                                            const PosTable& pos,
                                            const std::vector<std::pair<int,int>>& baseEdges,
+                                           const std::vector<std::pair<int,int>>& peripheryEdges,
                                            const std::string& solidName,
                                            const Options& opts,
                                            std::string* objOut) {
@@ -1457,6 +1458,24 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     objects[(size_t)oi].push_back(std::move(cyc));
   }
   kept.clear();
+
+  // Per-object periphery edge list (subset of `peripheryEdges` belonging to each base-graph component).
+  std::vector<std::vector<std::pair<int,int>>> objPeripheryEdges;
+  objPeripheryEdges.resize(objects.size());
+  if (!peripheryEdges.empty()) {
+    for (const auto& uv : peripheryEdges) {
+      CHECK_CANCEL();
+      int a = uv.first;
+      int b = uv.second;
+      if (a <= 0 || b <= 0 || a > maxId || b > maxId || a == b) continue;
+      int r1 = dsu.find(a);
+      int r2 = dsu.find(b);
+      if (r1 != r2) continue;
+      auto it = root2obj.find(r1);
+      if (it == root2obj.end()) continue;
+      objPeripheryEdges[(size_t)it->second].push_back(uv);
+    }
+  }
 
   // Deterministic object order: sort by component min node id.
   std::vector<int> order(objects.size());
@@ -2044,7 +2063,7 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     int createBoundary; // #edges that would become boundary (count==2)
     int removeBoundary; // #edges that would stop being boundary (count==1)
     double dBoundaryLen;
-    int nonManifoldTouch;
+    int nonManifoldTouch; // #edges currently exceeding the incident-face limit (2 for interior, 1 for periphery)
     double area;
     int ti;
   };
@@ -2071,7 +2090,8 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
 
   auto weldVerticesWithinEpsInPlace = [&](std::vector<std::array<int,3>>& tris,
                                          double eps,
-                                         std::unordered_map<int, Vec3>& outOverride) {
+                                         std::unordered_map<int, Vec3>& outOverride,
+                                         std::unordered_map<int, int>* outRemap) {
     // Vertex welding (heuristic):
     // Weld vertices within `eps` (in 3D coordinate units), then update triangles accordingly.
     // This can help the later non-manifold trimming remove duplicate sheets/cracks without introducing
@@ -2080,6 +2100,7 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     if (!(eps > 0.0)) return;
 
     outOverride.clear();
+    if (outRemap) outRemap->clear();
 
     // Gather unique vertex ids used by this object.
     std::unordered_map<int,int> id2idx;
@@ -2216,7 +2237,9 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
       cnt[(size_t)r] += 1;
     }
 
-    std::unordered_map<int,int> remap;
+    std::unordered_map<int,int> remapLocal;
+    std::unordered_map<int,int>& remap = outRemap ? *outRemap : remapLocal;
+    remap.clear();
     remap.reserve(std::min<size_t>(ids.size() * 2 + 16, (size_t)4000000));
     for (int i = 0; i < (int)ids.size(); i++) {
       CHECK_CANCEL();
@@ -2284,10 +2307,13 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     tris.swap(out);
   };
 
-  auto cleanupNonManifoldEdgesGreedyGlobalInPlace = [&](std::vector<std::array<int,3>>& tris) {
+  auto cleanupNonManifoldEdgesGreedyGlobalInPlace = [&](std::vector<std::array<int,3>>& tris,
+                                                        const std::unordered_set<uint64_t>* periphEdges) {
     // STL cleanup (triangle soup):
     //   - Remove degenerate triangles
-    //   - Trim triangles incident to edges that have 3+ incident faces until every edge has ≤2 faces.
+    //   - Trim triangles incident to edges that exceed the allowed incident-face limit:
+    //       - non-periphery edges: ≤2 faces
+    //       - detected periphery edges: ≤1 face (must remain boundary)
     //
     // Algorithm: global greedy removal (priority queue of candidate triangles).
     // Priority favors removing triangles that:
@@ -2303,6 +2329,14 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     std::unordered_map<uint64_t, int> edgeCount;
     size_t want = tris.size() * 3 + 16;
     edgeCount.reserve(std::min<size_t>(want, (size_t)4000000));
+
+    auto isPeriphEdge = [&](uint64_t k)->bool {
+      return periphEdges && (periphEdges->find(k) != periphEdges->end());
+    };
+
+    auto edgeLimit = [&](uint64_t k)->int {
+      return isPeriphEdge(k) ? 1 : 2;
+    };
 
     auto addEdge = [&](int u, int v) {
       if (u == v) return;
@@ -2331,14 +2365,15 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
       addEdge(c, a);
     }
 
-    // Collect non-manifold edges (3+ incident triangles).
-    std::vector<uint64_t> nonManifoldEdges;
-    nonManifoldEdges.reserve(edgeCount.size() / 16 + 8);
+    // Collect bad edges (too many incident triangles for this edge's limit).
+    std::vector<uint64_t> badEdges;
+    badEdges.reserve(edgeCount.size() / 16 + 8);
     int badEdgesRemaining = 0;
     for (const auto& kv : edgeCount) {
       CHECK_CANCEL();
-      if (kv.second > 2) {
-        nonManifoldEdges.push_back(kv.first);
+      int lim = edgeLimit(kv.first);
+      if (kv.second > lim) {
+        badEdges.push_back(kv.first);
         badEdgesRemaining++;
       }
     }
@@ -2356,15 +2391,15 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
       tris.swap(kept);
     };
 
-    // Always remove degenerates, even if there are no non-manifold edges.
+    // Always remove degenerates, even if there are no bad edges.
     if (badEdgesRemaining == 0) {
       filterAlive();
       return;
     }
 
-    // Build incident triangle lists for non-manifold edges only (edge counts only decrease).
+    // Build incident triangle lists for bad edges only (edge counts only decrease).
     std::unordered_map<uint64_t, std::vector<int>> edgeToTris;
-    edgeToTris.reserve(std::min<size_t>(nonManifoldEdges.size() * 2 + 16, (size_t)4000000));
+    edgeToTris.reserve(std::min<size_t>(badEdges.size() * 2 + 16, (size_t)4000000));
     for (int ti = 0; ti < (int)tris.size(); ti++) {
       CHECK_CANCEL();
       if (!alive[(size_t)ti]) continue;
@@ -2375,7 +2410,7 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
         uint64_t k = key64(u, v);
         auto it = edgeCount.find(k);
         if (it == edgeCount.end()) return;
-        if (it->second <= 2) return;
+        if (it->second <= edgeLimit(k)) return;
         edgeToTris[k].push_back(ti);
       };
       maybeAdd(a, b);
@@ -2404,6 +2439,7 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
       int remove = 0;
       double dlen = 0.0;
       int nmTouch = 0;
+      int badTouch = 0;
 
       auto evalEdge = [&](int u, int v) {
         uint64_t k = key64(u, v);
@@ -2411,10 +2447,18 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
         auto it = edgeCount.find(k);
         if (it != edgeCount.end()) cnt = it->second;
 
+        const bool per = isPeriphEdge(k);
+        const int lim = per ? 1 : 2;
         if (cnt > 2) nmTouch++;
+        if (cnt > lim) badTouch++;
         double len = edgeLen(u, v);
-        if (cnt == 2) { create++; dlen += len; }
-        else if (cnt == 1) { remove++; dlen -= len; }
+        if (per) {
+          if (cnt == 2) { remove++; dlen -= len; } // make periphery boundary
+          else if (cnt == 1) { create += 1000000; dlen += 1e9 * len; } // don't break periphery
+        } else {
+          if (cnt == 2) { create++; dlen += len; }
+          else if (cnt == 1) { remove++; dlen -= len; }
+        }
       };
 
       evalEdge(a, b);
@@ -2422,7 +2466,7 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
       evalEdge(c, a);
 
       const int allNm = (nmTouch == 3) ? 1 : 0;
-      return StlCleanupRemKey{allNm, create, remove, dlen, nmTouch, triArea[(size_t)ti], ti};
+      return StlCleanupRemKey{allNm, create, remove, dlen, badTouch, triArea[(size_t)ti], ti};
     };
 
     struct RemEntry { StlCleanupRemKey key; };
@@ -2467,7 +2511,8 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
         if (it == edgeCount.end()) return;
         int before = it->second;
         it->second = before - 1;
-        if (before == 3) badEdgesRemaining--;
+        int lim = edgeLimit(k);
+        if (before == lim + 1) badEdgesRemaining--;
       };
       dec(a, b);
       dec(b, c);
@@ -2477,7 +2522,262 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     filterAlive();
   };
 
-  auto repairNonOrientableWindingByDroppingTrianglesInPlace = [&](std::vector<std::array<int,3>>& tris) {
+  auto cleanupNonManifoldEdgesFloodFillFromPeripheryInPlace =
+      [&](std::vector<std::array<int,3>>& tris,
+          const std::unordered_set<uint64_t>* periphEdges) {
+    // Alternative cleanup strategy: build a manifold surface by *adding* triangles starting from the detected
+    // periphery, repeatedly filling any non-periphery boundary edge when possible.
+    //
+    // Constraints (same as greedy cleanup):
+    //   - periphery edges: ≤1 incident triangle
+    //   - other edges: ≤2 incident triangles
+    //
+    // This avoids the "punch holes while trimming" failure mode of pure triangle removal.
+    if (tris.empty()) return;
+
+    const std::vector<std::array<int,3>> soup = tris;
+    const int n = (int)soup.size();
+
+    auto isPeriphEdge = [&](uint64_t k)->bool {
+      return periphEdges && (periphEdges->find(k) != periphEdges->end());
+    };
+    auto edgeLimit = [&](uint64_t k)->int {
+      return isPeriphEdge(k) ? 1 : 2;
+    };
+
+    auto edgeLenKey = [&](uint64_t k)->double {
+      int u = (int)(uint32_t)(k >> 32);
+      int v = (int)(uint32_t)(k & 0xffffffffu);
+      Vec3 a = vpos(u);
+      Vec3 b = vpos(v);
+      return v3_norm(v3_sub(b, a));
+    };
+
+    // Edge -> incident soup triangles.
+    std::unordered_map<uint64_t, std::vector<int>> edgeToTris;
+    edgeToTris.reserve(std::min<size_t>((size_t)n * 3 + 16, (size_t)4000000));
+
+    for (int ti = 0; ti < n; ti++) {
+      CHECK_CANCEL();
+      const auto& t = soup[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+      if (a == b || b == c || c == a) continue;
+      edgeToTris[key64(a, b)].push_back(ti);
+      edgeToTris[key64(b, c)].push_back(ti);
+      edgeToTris[key64(c, a)].push_back(ti);
+    }
+
+    // Precompute triangle areas (for deterministic seeding/tie-breaks).
+    std::vector<double> triAreaLocal((size_t)n, 0.0);
+    for (int ti = 0; ti < n; ti++) {
+      CHECK_CANCEL();
+      const auto& t = soup[(size_t)ti];
+      int a = t[0], b = t[1], c = t[2];
+      if (a == b || b == c || c == a) continue;
+      Vec3 pa = vpos(a);
+      Vec3 pb = vpos(b);
+      Vec3 pc = vpos(c);
+      Vec3 nn = v3_cross(v3_sub(pb, pa), v3_sub(pc, pa));
+      double area = 0.5 * v3_norm(nn);
+      if (area > 1e-18) triAreaLocal[(size_t)ti] = area;
+    }
+
+    std::vector<uint8_t> selected((size_t)n, 0);
+    std::vector<std::array<int,3>> out;
+    out.reserve((size_t)n);
+
+    // Current edge counts in the growing surface.
+    std::unordered_map<uint64_t, int> edgeCount;
+    edgeCount.reserve(std::min<size_t>((size_t)n * 3 + 16, (size_t)4000000));
+
+    auto getCnt = [&](uint64_t k)->int {
+      auto it = edgeCount.find(k);
+      return (it == edgeCount.end()) ? 0 : it->second;
+    };
+
+    struct BEnt { double len; uint64_t k; };
+    struct BCmp { bool operator()(const BEnt& a, const BEnt& b) const { return a.len < b.len; } };
+    std::priority_queue<BEnt, std::vector<BEnt>, BCmp> boundary;
+
+    std::unordered_set<uint64_t> deadBoundary;
+    deadBoundary.reserve(std::min<size_t>(edgeToTris.size() / 8 + 16, (size_t)2000000));
+
+    auto canAddTri = [&](const std::array<int,3>& t)->bool {
+      int a = t[0], b = t[1], c = t[2];
+      if (a == b || b == c || c == a) return false;
+      uint64_t k1 = key64(a, b);
+      uint64_t k2 = key64(b, c);
+      uint64_t k3 = key64(c, a);
+      return getCnt(k1) < edgeLimit(k1) &&
+             getCnt(k2) < edgeLimit(k2) &&
+             getCnt(k3) < edgeLimit(k3);
+    };
+
+    auto addTri = [&](int ti) {
+      selected[(size_t)ti] = 1;
+      const auto& t = soup[(size_t)ti];
+      out.push_back(t);
+
+      auto incEdge = [&](int u, int v) {
+        if (u == v) return;
+        uint64_t k = key64(u, v);
+        int before = 0;
+        auto it = edgeCount.find(k);
+        if (it == edgeCount.end()) {
+          edgeCount.emplace(k, 1);
+          before = 0;
+        } else {
+          before = it->second;
+          it->second = before + 1;
+        }
+        int after = before + 1;
+        if (after == 1 && !isPeriphEdge(k)) {
+          boundary.push(BEnt{edgeLenKey(k), k});
+        }
+      };
+
+      incEdge(t[0], t[1]);
+      incEdge(t[1], t[2]);
+      incEdge(t[2], t[0]);
+    };
+
+    struct AddKey {
+      int createCount;
+      double createLen;
+      int closeCount;
+      double closeLen;
+      double area;
+      int ti;
+    };
+
+    auto addKeyIsBetter = [&](const AddKey& A, const AddKey& B)->bool {
+      if (A.createCount != B.createCount) return A.createCount < B.createCount;
+      if (A.createLen != B.createLen) return A.createLen < B.createLen;
+      if (A.closeCount != B.closeCount) return A.closeCount > B.closeCount;
+      if (A.closeLen != B.closeLen) return A.closeLen > B.closeLen;
+      if (A.area != B.area) return A.area > B.area;
+      return A.ti < B.ti;
+    };
+
+    auto bestCandidateForBoundaryEdge = [&](uint64_t ekey)->int {
+      auto it = edgeToTris.find(ekey);
+      if (it == edgeToTris.end()) return -1;
+      const auto& cand = it->second;
+
+      int best = -1;
+      AddKey bestKey{0, 0.0, 0, 0.0, 0.0, 0};
+      bool hasBest = false;
+
+      for (int ti : cand) {
+        CHECK_CANCEL();
+        if (ti < 0 || ti >= n) continue;
+        if (selected[(size_t)ti]) continue;
+        if (!(triAreaLocal[(size_t)ti] > 1e-18)) continue;
+        const auto& t = soup[(size_t)ti];
+        int a = t[0], b = t[1], c = t[2];
+        if (a == b || b == c || c == a) continue;
+
+        bool ok = true;
+        int createC = 0;
+        int closeC = 0;
+        double createL = 0.0;
+        double closeL = 0.0;
+
+        auto evalEdge = [&](int u, int v) {
+          uint64_t k = key64(u, v);
+          int cnt = getCnt(k);
+          int lim = edgeLimit(k);
+          if (cnt >= lim) { ok = false; return; }
+          if (isPeriphEdge(k)) return;
+          double len = edgeLenKey(k);
+          if (cnt == 0) { createC++; createL += len; }
+          else if (cnt == 1) { closeC++; closeL += len; }
+        };
+
+        evalEdge(a, b);
+        evalEdge(b, c);
+        evalEdge(c, a);
+        if (!ok) continue;
+        if (closeC <= 0) continue;
+
+        AddKey k{createC, createL, closeC, closeL, triAreaLocal[(size_t)ti], ti};
+        if (!hasBest || addKeyIsBetter(k, bestKey)) {
+          hasBest = true;
+          bestKey = k;
+          best = ti;
+        }
+      }
+      return best;
+    };
+
+    auto processBoundary = [&]() {
+      while (!boundary.empty()) {
+        CHECK_CANCEL();
+        BEnt ent = boundary.top();
+        boundary.pop();
+
+        uint64_t k = ent.k;
+        if (deadBoundary.find(k) != deadBoundary.end()) continue;
+        if (isPeriphEdge(k)) continue;
+        if (getCnt(k) != 1) continue;
+
+        int ti = bestCandidateForBoundaryEdge(k);
+        if (ti < 0) {
+          deadBoundary.insert(k);
+          continue;
+        }
+        if (!canAddTri(soup[(size_t)ti])) {
+          // If we can't add any triangle now, we won't be able to later (counts only increase).
+          deadBoundary.insert(k);
+          continue;
+        }
+        addTri(ti);
+      }
+    };
+
+    // Seed triangles: prefer those touching detected periphery edges (keeps output connected to the periphery).
+    std::vector<int> seeds;
+    seeds.reserve((size_t)n);
+    if (periphEdges && !periphEdges->empty()) {
+      for (int ti = 0; ti < n; ti++) {
+        CHECK_CANCEL();
+        if (!(triAreaLocal[(size_t)ti] > 1e-18)) continue;
+        const auto& t = soup[(size_t)ti];
+        uint64_t k1 = key64(t[0], t[1]);
+        uint64_t k2 = key64(t[1], t[2]);
+        uint64_t k3 = key64(t[2], t[0]);
+        if (isPeriphEdge(k1) || isPeriphEdge(k2) || isPeriphEdge(k3)) {
+          seeds.push_back(ti);
+        }
+      }
+    } else {
+      for (int ti = 0; ti < n; ti++) {
+        CHECK_CANCEL();
+        if (triAreaLocal[(size_t)ti] > 1e-18) seeds.push_back(ti);
+      }
+    }
+
+    std::sort(seeds.begin(), seeds.end(), [&](int a, int b) {
+      double aa = triAreaLocal[(size_t)a];
+      double bb = triAreaLocal[(size_t)b];
+      if (aa != bb) return aa > bb;
+      return a < b;
+    });
+
+    for (int seed : seeds) {
+      CHECK_CANCEL();
+      if (seed < 0 || seed >= n) continue;
+      if (selected[(size_t)seed]) continue;
+      if (!canAddTri(soup[(size_t)seed])) continue;
+      addTri(seed);
+      processBoundary();
+    }
+
+    tris.swap(out);
+  };
+
+  auto repairNonOrientableWindingByDroppingTrianglesInPlace = [&](std::vector<std::array<int,3>>& tris,
+                                                                  const std::unordered_set<uint64_t>* periphEdges) {
     // After trimming non-manifold edges, the remaining mesh can still be non-orientable (i.e. no globally
     // consistent winding exists) due to vertex welding / accidental identifications. This shows up as
     // adjacent triangles that cannot be made to agree on shared-edge direction everywhere.
@@ -2682,8 +2982,14 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
           auto it = edgeOcc.find(k);
           int cnt = (it == edgeOcc.end()) ? 0 : (int)it->second.count;
           double len = edgeLen(u, v);
-          if (cnt == 2) { create++; dlen += len; }
-          else if (cnt == 1) { rem++; dlen -= len; }
+          const bool per = periphEdges && (periphEdges->find(k) != periphEdges->end());
+          if (per) {
+            if (cnt == 2) { rem++; dlen -= len; } // make periphery boundary
+            else if (cnt == 1) { create += 1000000; dlen += 1e9 * len; } // don't break periphery
+          } else {
+            if (cnt == 2) { create++; dlen += len; }
+            else if (cnt == 1) { rem++; dlen -= len; }
+          }
         };
 
         evalEdge(a, b);
@@ -2705,7 +3011,8 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     filterAlive();
   };
 
-  auto splitNonManifoldVerticesInPlace = [&](std::vector<std::array<int,3>>& tris) {
+  auto splitNonManifoldVerticesInPlace = [&](std::vector<std::array<int,3>>& tris,
+                                             const std::unordered_set<int>* protectVerts) {
     // Non-manifold vertices (multiple triangle fans meeting only at a point) can survive edge trimming and are
     // common after vertex snapping. They confuse downstream tools and can look like "randomly flipped" shading
     // when the importer smooths across all incident faces at a vertex.
@@ -2738,6 +3045,7 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
 
     for (int vid : vids) {
       CHECK_CANCEL();
+      if (protectVerts && (protectVerts->find(vid) != protectVerts->end())) continue;
       auto itInc = inc.find(vid);
       if (itInc == inc.end()) continue;
       const auto& trisAt = itInc->second;
@@ -3676,6 +3984,118 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     }
   };
 
+  auto fitAutoPlanarReferenceFromTris = [&](const std::vector<std::array<int,3>>& tris,
+                                           bool& planarActive,
+                                           Vec3& planeN) {
+    // For nearly-planar meshes (blankets), outward is degenerate; compute a stable best-fit plane normal.
+    // Uses PCA: eigenvector of smallest covariance eigenvalue.
+    planarActive = false;
+    planeN = Vec3{0.0, 0.0, 1.0};
+    if (tris.empty()) return;
+
+    Vec3 mean{0.0, 0.0, 0.0};
+    long long cnt = 0;
+    for (const auto& t : tris) {
+      CHECK_CANCEL();
+      for (int id : t) {
+        if (id <= 0) continue;
+        mean = v3_add(mean, vpos(id));
+        cnt++;
+      }
+    }
+    if (cnt <= 0) return;
+    mean = v3_mul(mean, 1.0 / (double)cnt);
+
+    double cov[3][3] = {
+      {0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0},
+      {0.0, 0.0, 0.0}
+    };
+    for (const auto& t : tris) {
+      CHECK_CANCEL();
+      for (int id : t) {
+        if (id <= 0) continue;
+        Vec3 p = vpos(id);
+        Vec3 d = v3_sub(p, mean);
+        cov[0][0] += d.x*d.x;
+        cov[0][1] += d.x*d.y;
+        cov[0][2] += d.x*d.z;
+        cov[1][1] += d.y*d.y;
+        cov[1][2] += d.y*d.z;
+        cov[2][2] += d.z*d.z;
+      }
+    }
+    double inv = 1.0 / (double)cnt;
+    cov[0][0] *= inv;
+    cov[0][1] *= inv;
+    cov[0][2] *= inv;
+    cov[1][1] *= inv;
+    cov[1][2] *= inv;
+    cov[2][2] *= inv;
+    cov[1][0] = cov[0][1];
+    cov[2][0] = cov[0][2];
+    cov[2][1] = cov[1][2];
+
+    double v[3][3];
+    jacobiEigenSym3InPlace(cov, v);
+    double eval[3] = {cov[0][0], cov[1][1], cov[2][2]};
+    int idx[3] = {0, 1, 2};
+    std::sort(idx, idx + 3, [&](int a, int b) { return eval[a] > eval[b]; });
+
+    Vec3 e0{v[0][idx[0]], v[1][idx[0]], v[2][idx[0]]};
+    Vec3 e1{v[0][idx[1]], v[1][idx[1]], v[2][idx[1]]};
+    Vec3 e2{v[0][idx[2]], v[1][idx[2]], v[2][idx[2]]};
+    e0 = v3_normalize(e0);
+    e1 = v3_normalize(e1);
+    e2 = v3_normalize(e2);
+
+    double min0 = +std::numeric_limits<double>::infinity();
+    double min1 = +std::numeric_limits<double>::infinity();
+    double min2 = +std::numeric_limits<double>::infinity();
+    double max0 = -std::numeric_limits<double>::infinity();
+    double max1 = -std::numeric_limits<double>::infinity();
+    double max2 = -std::numeric_limits<double>::infinity();
+
+    for (const auto& t : tris) {
+      CHECK_CANCEL();
+      for (int id : t) {
+        if (id <= 0) continue;
+        Vec3 p = vpos(id);
+        Vec3 d = v3_sub(p, mean);
+        double s0 = v3_dot(d, e0);
+        double s1 = v3_dot(d, e1);
+        double s2 = v3_dot(d, e2);
+        min0 = std::min(min0, s0); max0 = std::max(max0, s0);
+        min1 = std::min(min1, s1); max1 = std::max(max1, s1);
+        min2 = std::min(min2, s2); max2 = std::max(max2, s2);
+      }
+    }
+
+    double r0 = (max0 > min0) ? (max0 - min0) : 0.0;
+    double r1 = (max1 > min1) ? (max1 - min1) : 0.0;
+    double r2 = (max2 > min2) ? (max2 - min2) : 0.0;
+    double diam = std::max(r0, r1);
+    double ratio = (diam > 0.0) ? (r2 / diam) : 1.0;
+
+    constexpr double STL_AUTO_PLANAR_RATIO = 0.08; // thickness / in-plane diameter threshold
+    if (ratio > STL_AUTO_PLANAR_RATIO) return;
+
+    planarActive = true;
+    planeN = e2;
+
+    // Deterministic normal direction: make the dominant component positive.
+    double ax = std::fabs(planeN.x);
+    double ay = std::fabs(planeN.y);
+    double az = std::fabs(planeN.z);
+    if (ax >= ay && ax >= az) {
+      if (planeN.x < 0.0) planeN = v3_mul(planeN, -1.0);
+    } else if (ay >= az) {
+      if (planeN.y < 0.0) planeN = v3_mul(planeN, -1.0);
+    } else {
+      if (planeN.z < 0.0) planeN = v3_mul(planeN, -1.0);
+    }
+  };
+
   const bool wantObj = (objOut != nullptr);
   const bool wantStl = opts.export_stl;
 
@@ -3787,125 +4207,91 @@ static std::string buildAsciiStlFromCycles(std::vector<std::vector<int>> cycles,
     // Optional pre-pass: weld vertices within eps before trimming non-manifold edges.
     stlVposOverrideMap.clear();
     stlVposOverride = &stlVposOverrideMap; // also holds extra vertices created by cleanup
+    std::unordered_map<int, int> weldRemap;
     if (opts.stl_snap_eps > 0.0) {
-      weldVerticesWithinEpsInPlace(tris, opts.stl_snap_eps, stlVposOverrideMap);
+      weldVerticesWithinEpsInPlace(tris, opts.stl_snap_eps, stlVposOverrideMap, &weldRemap);
     }
 
-    // STL cleanup: remove degenerates and clean up edges with 3+ incident faces.
-    cleanupNonManifoldEdgesGreedyGlobalInPlace(tris);
-    repairNonOrientableWindingByDroppingTrianglesInPlace(tris);
-    splitNonManifoldVerticesInPlace(tris);
+    // Periphery constraints: keep the detected periphery as the output mesh boundary after cleanup.
+    const auto& periphEdgesObj = objPeripheryEdges[(size_t)oi];
+    std::unordered_set<uint64_t> periphEdgeKeys;
+    periphEdgeKeys.reserve(periphEdgesObj.size() * 2 + 16);
+    std::unordered_set<int> periphVerts;
+    periphVerts.reserve(periphEdgesObj.size() * 2 + 16);
+
+    auto remapId = [&](int id)->int {
+      auto it = weldRemap.find(id);
+      return (it == weldRemap.end()) ? id : it->second;
+    };
+
+    for (const auto& uv : periphEdgesObj) {
+      int u = remapId(uv.first);
+      int v = remapId(uv.second);
+      if (u == v) continue;
+      periphEdgeKeys.insert(key64(u, v));
+      periphVerts.insert(u);
+      periphVerts.insert(v);
+    }
+
+    const std::unordered_set<uint64_t>* periphEdgeKeysPtr = periphEdgeKeys.empty() ? nullptr : &periphEdgeKeys;
+    const std::unordered_set<int>* periphVertsPtr = periphVerts.empty() ? nullptr : &periphVerts;
+
+    // STL cleanup: try two strategies and keep the one that produces a shorter "extra boundary"
+    // (boundary edges not in the detected periphery), while still enforcing per-edge incident limits.
+    const std::vector<std::array<int,3>> soupTris = tris;
+
+    std::vector<std::array<int,3>> trisGreedy = soupTris;
+    cleanupNonManifoldEdgesGreedyGlobalInPlace(trisGreedy, periphEdgeKeysPtr);
+    repairNonOrientableWindingByDroppingTrianglesInPlace(trisGreedy, periphEdgeKeysPtr);
+
+    std::vector<std::array<int,3>> trisFlood = soupTris;
+    cleanupNonManifoldEdgesFloodFillFromPeripheryInPlace(trisFlood, periphEdgeKeysPtr);
+    repairNonOrientableWindingByDroppingTrianglesInPlace(trisFlood, periphEdgeKeysPtr);
+
+    auto extraBoundaryLen = [&](const std::vector<std::array<int,3>>& ts)->double {
+      if (ts.empty()) return 0.0;
+      std::unordered_map<uint64_t, int> cnt;
+      cnt.reserve(std::min<size_t>(ts.size() * 3 + 16, (size_t)4000000));
+
+      auto incEdge = [&](int u, int v) {
+        if (u == v) return;
+        uint64_t k = key64(u, v);
+        auto it = cnt.find(k);
+        if (it == cnt.end()) cnt.emplace(k, 1);
+        else it->second += 1;
+      };
+
+      for (const auto& t : ts) {
+        CHECK_CANCEL();
+        incEdge(t[0], t[1]);
+        incEdge(t[1], t[2]);
+        incEdge(t[2], t[0]);
+      }
+
+      double sum = 0.0;
+      for (const auto& kv : cnt) {
+        CHECK_CANCEL();
+        if (kv.second != 1) continue;
+        if (periphEdgeKeysPtr && (periphEdgeKeysPtr->find(kv.first) != periphEdgeKeysPtr->end())) continue;
+        int u = (int)(uint32_t)(kv.first >> 32);
+        int v = (int)(uint32_t)(kv.first & 0xffffffffu);
+        Vec3 a = vpos(u);
+        Vec3 b = vpos(v);
+        sum += v3_norm(v3_sub(b, a));
+      }
+      return sum;
+    };
+
+    double scoreGreedy = extraBoundaryLen(trisGreedy);
+    double scoreFlood = extraBoundaryLen(trisFlood);
+    if (trisFlood.size() > 0 && (scoreFlood < scoreGreedy)) tris.swap(trisFlood);
+    else tris.swap(trisGreedy);
+
+    splitNonManifoldVerticesInPlace(tris, periphVertsPtr);
 
     // Optional planar reference for winding: for nearly-planar objects (blankets), fit a best-plane normal so we
     // can pick a stable "front/back" for consistent winding.
-    stlPlanarActive = false;
-    stlPlaneN = Vec3{0.0, 0.0, 1.0};
-
-    if (!tris.empty()) {
-      // Fit a plane to the triangle vertex cloud via PCA (eigenvector of smallest covariance eigenvalue).
-      Vec3 mean{0.0, 0.0, 0.0};
-      long long cnt = 0;
-      for (const auto& t : tris) {
-        for (int id : t) {
-          if (id <= 0) continue;
-          mean = v3_add(mean, vpos(id));
-          cnt++;
-        }
-      }
-      if (cnt > 0) mean = v3_mul(mean, 1.0 / (double)cnt);
-
-      double cov[3][3] = {
-        {0.0, 0.0, 0.0},
-        {0.0, 0.0, 0.0},
-        {0.0, 0.0, 0.0}
-      };
-      for (const auto& t : tris) {
-        for (int id : t) {
-          if (id <= 0) continue;
-          Vec3 p = vpos(id);
-          Vec3 d = v3_sub(p, mean);
-          cov[0][0] += d.x*d.x;
-          cov[0][1] += d.x*d.y;
-          cov[0][2] += d.x*d.z;
-          cov[1][1] += d.y*d.y;
-          cov[1][2] += d.y*d.z;
-          cov[2][2] += d.z*d.z;
-        }
-      }
-      if (cnt > 0) {
-        double inv = 1.0 / (double)cnt;
-        cov[0][0] *= inv;
-        cov[0][1] *= inv;
-        cov[0][2] *= inv;
-        cov[1][1] *= inv;
-        cov[1][2] *= inv;
-        cov[2][2] *= inv;
-      }
-      cov[1][0] = cov[0][1];
-      cov[2][0] = cov[0][2];
-      cov[2][1] = cov[1][2];
-
-      double v[3][3];
-      jacobiEigenSym3InPlace(cov, v);
-      double eval[3] = {cov[0][0], cov[1][1], cov[2][2]};
-      int idx[3] = {0, 1, 2};
-      std::sort(idx, idx + 3, [&](int a, int b) {
-        return eval[a] > eval[b];
-      });
-
-      Vec3 e0{v[0][idx[0]], v[1][idx[0]], v[2][idx[0]]};
-      Vec3 e1{v[0][idx[1]], v[1][idx[1]], v[2][idx[1]]};
-      Vec3 e2{v[0][idx[2]], v[1][idx[2]], v[2][idx[2]]};
-      e0 = v3_normalize(e0);
-      e1 = v3_normalize(e1);
-      e2 = v3_normalize(e2);
-
-      double min0 = +std::numeric_limits<double>::infinity();
-      double min1 = +std::numeric_limits<double>::infinity();
-      double min2 = +std::numeric_limits<double>::infinity();
-      double max0 = -std::numeric_limits<double>::infinity();
-      double max1 = -std::numeric_limits<double>::infinity();
-      double max2 = -std::numeric_limits<double>::infinity();
-
-      for (const auto& t : tris) {
-        for (int id : t) {
-          if (id <= 0) continue;
-          Vec3 p = vpos(id);
-          Vec3 d = v3_sub(p, mean);
-          double s0 = v3_dot(d, e0);
-          double s1 = v3_dot(d, e1);
-          double s2 = v3_dot(d, e2);
-          min0 = std::min(min0, s0); max0 = std::max(max0, s0);
-          min1 = std::min(min1, s1); max1 = std::max(max1, s1);
-          min2 = std::min(min2, s2); max2 = std::max(max2, s2);
-        }
-      }
-      double r0 = (max0 > min0) ? (max0 - min0) : 0.0;
-      double r1 = (max1 > min1) ? (max1 - min1) : 0.0;
-      double r2 = (max2 > min2) ? (max2 - min2) : 0.0;
-      double diam = std::max(r0, r1);
-      double ratio = (diam > 0.0) ? (r2 / diam) : 1.0;
-
-      constexpr double STL_AUTO_PLANAR_RATIO = 0.08; // thickness / in-plane diameter threshold
-      bool planar = (ratio <= STL_AUTO_PLANAR_RATIO);
-
-      if (planar) {
-        stlPlanarActive = true;
-        stlPlaneN = e2;
-
-        // Deterministic normal direction: make the dominant component positive.
-        double ax = std::fabs(stlPlaneN.x);
-        double ay = std::fabs(stlPlaneN.y);
-        double az = std::fabs(stlPlaneN.z);
-        if (ax >= ay && ax >= az) {
-          if (stlPlaneN.x < 0.0) stlPlaneN = v3_mul(stlPlaneN, -1.0);
-        } else if (ay >= az) {
-          if (stlPlaneN.y < 0.0) stlPlaneN = v3_mul(stlPlaneN, -1.0);
-        } else {
-          if (stlPlaneN.z < 0.0) stlPlaneN = v3_mul(stlPlaneN, -1.0);
-        }
-      }
-    }
+    fitAutoPlanarReferenceFromTris(tris, stlPlanarActive, stlPlaneN);
 
     // Ensure consistent winding after trimming (and align disconnected components).
     orientTrianglesInPlace(tris);
@@ -4996,15 +5382,6 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
     }
     cycleProg.finish();
 
-    // ---------- Optional mesh export (STL/OBJ) ----------
-    std::string stlText;
-    std::string objText;
-    if (opts.export_stl || opts.export_obj) {
-      // NOTE: This uses accepted (non-blocked) u->v paths as polygonal cycles.
-      std::string* objOut = opts.export_obj ? &objText : nullptr;
-      stlText = buildAsciiStlFromCycles(std::move(acceptedCycles), posTable, unique_edge_pairs, "CrochetPARADE", opts, objOut);
-    }
-
     // ---------- Collect periphery edges ----------
     std::vector<std::pair<int,int>> peripheryEdgesIds;
     peripheryEdgesIds.reserve(unique_edge_pairs.size());
@@ -5027,6 +5404,22 @@ extern "C" const char* find_periphery(const char* dot_simple_cstr, int Kmax, int
       CHECK_CANCEL();
       periphVertices.insert(uv.first);
       periphVertices.insert(uv.second);
+    }
+
+    // ---------- Optional mesh export (STL/OBJ) ----------
+    std::string stlText;
+    std::string objText;
+    if (opts.export_stl || opts.export_obj) {
+      // NOTE: This uses accepted (non-blocked) u->v paths as polygonal cycles.
+      std::string* objOut = opts.export_obj ? &objText : nullptr;
+      stlText = buildAsciiStlFromCycles(
+          std::move(acceptedCycles),
+          posTable,
+          unique_edge_pairs,
+          peripheryEdgesIds,
+          "CrochetPARADE",
+          opts,
+          objOut);
     }
 
     // ---------- Build output per component ----------

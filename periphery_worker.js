@@ -1,7 +1,7 @@
 
 /* periphery_worker.js
  *
- * Runs periphery computation in a Web Worker using Emscripten output periphery61.js/periphery61.wasm.
+ * Runs periphery computation in a Web Worker using Emscripten output periphery62.js/periphery62.wasm.
  * This keeps the UI responsive and enables cancellation by terminating the worker.
  *
  * Messages:
@@ -33,14 +33,14 @@ function init() {
     },
   };
 
-  // IMPORTANT: the compiled output must be named `periphery61.js` and sit next to this worker.
-  importScripts('periphery61.js');
+  // IMPORTANT: the compiled output must be named `periphery62.js` and sit next to this worker.
+  importScripts('periphery62.js');
 }
 
 init();
 
 function ensureReady() {
-  if (!ready) throw new Error('periphery61.js not ready yet');
+  if (!ready) throw new Error('periphery62.js not ready yet');
 }
 
 function cstrToJs(ptr) {

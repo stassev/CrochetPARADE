@@ -31,7 +31,11 @@ import {
     returnRotational,
     returnTranslation,
     setRotationAngles
+<<<<<<<< HEAD:mesh61.js
 } from './transform_controls61.js';
+========
+} from './transform_controls62.js';
+>>>>>>>> remesh2:mesh62.js
 
 //import {
 //    SVGRenderer
