@@ -1,0 +1,24 @@
+{
+  "entryFunction": "build_browser_review_model",
+  "entryModule": "crochetparade_translator.browser.review_model",
+  "files": [
+    "crochetparade_translator/__init__.py",
+    "crochetparade_translator/normalization/__init__.py",
+    "crochetparade_translator/normalization/grammar.py",
+    "crochetparade_translator/normalization/text_clean.py",
+    "crochetparade_translator/normalization/hardcoded_templates.py",
+    "crochetparade_translator/normalization/repeat_rewriter.py",
+    "crochetparade_translator/normalization/pattern_segmenter.py",
+    "crochetparade_translator/normalization/english_normalizer.py",
+    "crochetparade_translator/ir/__init__.py",
+    "crochetparade_translator/ir/schema.py",
+    "crochetparade_translator/ir/block_ref_resolver.py",
+    "crochetparade_translator/ir/parser.py",
+    "crochetparade_translator/ir/compiler.py",
+    "crochetparade_translator/dsl/__init__.py",
+    "crochetparade_translator/dsl/canonicalize.py",
+    "crochetparade_translator/browser/__init__.py",
+    "crochetparade_translator/browser/review_model.py"
+  ],
+  "pythonRoot": "python"
+}

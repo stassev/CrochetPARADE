@@ -17,7 +17,7 @@ Default behavior (no arguments):
       parse<OLD>.js, mesh<OLD>.js, bezier<OLD>.js, simplify<OLD>.js,
       transform_controls<OLD>.js, sphere-generator<OLD>.js
     to the new version.
-  - Update references/imports in root .js/.html files.
+  - Update references/imports in tracked .js/.html/.py files.
   - Delete older graph/periphery numbered bundles not matching NEW.
 
 Use --dry-run to print actions without changing files.
@@ -36,6 +36,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
+TEXT_REF_EXTS = frozenset({".js", ".html", ".py"})
+SKIP_DIR_NAMES = frozenset({".git", "__pycache__", ".mypy_cache", ".pytest_cache", "node_modules"})
 
 VERSIONED_PREFIXES_JS = [
     "bezier",
@@ -131,6 +133,24 @@ def atomic_write_text(path: Path, text: str) -> None:
     tmp = path.with_suffix(path.suffix + ".tmp")
     tmp.write_text(text, encoding="utf-8")
     tmp.replace(path)
+
+
+def iter_versioned_ref_text_paths() -> list[Path]:
+    compiled_js_rx = re.compile(r"^(graph|periphery)\d+\.js$")
+    paths: list[Path] = []
+    for p in ROOT.rglob("*"):
+        if not p.is_file():
+            continue
+        if p.suffix not in TEXT_REF_EXTS:
+            continue
+        rel = p.relative_to(ROOT)
+        if any(part in SKIP_DIR_NAMES for part in rel.parts):
+            continue
+        if compiled_js_rx.match(p.name):
+            continue
+        paths.append(p)
+    paths.sort(key=lambda p: p.relative_to(ROOT).as_posix())
+    return paths
 
 
 def main() -> int:
@@ -241,24 +261,17 @@ def main() -> int:
         if not args.dry_run:
             r.src.replace(r.dst)
 
-    # 3) Update references/imports across root JS/HTML (excluding compiled outputs).
+    # 3) Update references/imports across tracked JS/HTML/PY files
+    #    (excluding compiled graph/periphery outputs).
     # Replace ANY versioned reference with the new version.
     def repl(m: re.Match[str]) -> str:
         pref = m.group("prefix")
         ext = m.group("ext")
         return f"{pref}{new_ver}.{ext}"
 
-    compiled_js_rx = re.compile(r"^(graph|periphery)\d+\.js$")
-    text_paths = [
-        p
-        for p in ROOT.iterdir()
-        if p.is_file()
-        and p.suffix in (".js", ".html")
-        and not compiled_js_rx.match(p.name)
-    ]
-
     touched: list[Path] = []
-    for p in sorted(text_paths, key=lambda x: x.name):
+    for p in iter_versioned_ref_text_paths():
+        rel = p.relative_to(ROOT).as_posix()
         try:
             txt = p.read_text(encoding="utf-8")
         except UnicodeDecodeError:
@@ -266,7 +279,7 @@ def main() -> int:
         new_txt = VERSIONED_REF_RE.sub(repl, txt)
         if new_txt != txt:
             touched.append(p)
-            print(f"edit {p.name}")
+            print(f"edit {rel}")
             if not args.dry_run:
                 atomic_write_text(p, new_txt)
 
@@ -289,14 +302,14 @@ def main() -> int:
         if not args.dry_run:
             p.unlink()
 
-    # 5) Validate: ensure root JS/HTML don't refer to old bundle numbers.
+    # 5) Validate: ensure touched JS/HTML/PY files don't refer to old bundle numbers.
     if not args.dry_run:
         bad: list[tuple[str, str]] = []
         for p in touched:
             txt = p.read_text(encoding="utf-8")
             for m in VERSIONED_REF_RE.finditer(txt):
                 if int(m.group("ver")) != new_ver:
-                    bad.append((p.name, m.group(0)))
+                    bad.append((p.relative_to(ROOT).as_posix(), m.group(0)))
         if bad:
             eprint("Found stale versioned references after update:")
             for fn, ref in bad[:50]:

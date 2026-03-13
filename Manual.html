@@ -987,6 +987,8 @@ Line 5: The attachment point resets because of the new line. There is no turn at
 If no stitch of the requested TYPE is found at "@+k" or later in the crocheting direction,
 the parser must emit an error.
 </p></p>
+<p><strong>Explicit @ head required on the current row/round.</strong> If a row or round begins with a relative attachment such as <code>@[@]</code>, <code>@[@-1]</code>, <code>@[dc:@]</code>, or <code>@[ch:@]</code>, then the <code>@</code> head must already have been initialized on that same row/round by either an attached stitch or a stitchless head move such as <code>@[-1,-1]</code>. Otherwise the parser must emit an error.</p>
+<p>When a typed relative attachment such as <code>@[ch:@+1]</code> crosses into an earlier row or round, subsequent typed <code>@</code>-relative attachments continue to follow that same sequential traversal direction unless you reset the head explicitly with a stitchless <code>@[...]</code> move. This keeps typed relative attachments aligned with ordinary automatic attachment flow across row boundaries.</p>
 Notes:
 </p></p>
 - @[sc:@] attaches to the nearest sc stitch at or after "@". If "@" is already on an sc stitch,
@@ -1515,9 +1517,7 @@ $k=1$,sk,3ch,scA
                 nice to fix this.)</p>
 </li>
 <li>
-<p>An attachment point using @ as a coordinate, e.g. @[@+1], cannot work
-                unless there was already at least one attached stitch on that row/round.
-                That assigns the value of "@" to which we add the 1 in this example. This is by design. </p>
+<p>An attachment point using @ as a coordinate, e.g. @[@+1], requires the attachment head to have been initialized earlier on the same row/round, either by a previous attached stitch or by an explicit stitchless head move such as <code>@[-1,-1]</code>.</p>
 </li>
 <li>
 <p>The <code>turn</code> directive, should always be the last in a row/round/line of the code. No stitches can follow

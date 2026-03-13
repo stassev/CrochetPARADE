@@ -8,7 +8,7 @@ Stages and commits the versioned JS/WASM bundle update produced by
 
 This script is intentionally conservative:
   - It validates that all required versioned assets exist at ONE common version.
-  - It validates that all root .js/.html references point to that same version.
+  - It validates that tracked .js/.html/.py references point to that same version.
   - It stages only the expected files (avoids accidentally adding STLs/OBJs/etc).
 
 Usage: run from repo root (no arguments).
@@ -23,6 +23,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
+TEXT_REF_EXTS = frozenset({".js", ".html", ".py"})
+SKIP_DIR_NAMES = frozenset({".git", "__pycache__", ".mypy_cache", ".pytest_cache", "node_modules"})
 
 VERSIONED_PREFIXES_JS = [
     "bezier",
@@ -69,6 +71,24 @@ def find_versions(prefix: str, ext: str) -> list[int]:
         out.append(int(m.group(1)))
     out.sort()
     return out
+
+
+def iter_versioned_ref_text_paths() -> list[Path]:
+    compiled_js_rx = re.compile(r"^(graph|periphery)\d+\.js$")
+    paths: list[Path] = []
+    for p in ROOT.rglob("*"):
+        if not p.is_file():
+            continue
+        if p.suffix not in TEXT_REF_EXTS:
+            continue
+        rel = p.relative_to(ROOT)
+        if any(part in SKIP_DIR_NAMES for part in rel.parts):
+            continue
+        if compiled_js_rx.match(p.name):
+            continue
+        paths.append(p)
+    paths.sort(key=lambda p: p.relative_to(ROOT).as_posix())
+    return paths
 
 
 def main() -> int:
@@ -119,17 +139,20 @@ def main() -> int:
     if f"importScripts('periphery{ver}.js')" not in worker:
         die(f"periphery_worker.js does not importScripts('periphery{ver}.js')")
 
-    # 3) Ensure no mixed-version references remain in root .js/.html.
-    text_paths = [p for p in ROOT.iterdir() if p.is_file() and p.suffix in (".js", ".html")]
+    # 3) Ensure no mixed-version references remain in tracked .js/.html/.py.
     bad: list[tuple[str, str]] = []
-    for p in sorted(text_paths, key=lambda x: x.name):
+    ref_paths_with_refs: set[str] = set()
+    for p in iter_versioned_ref_text_paths():
         try:
             txt = p.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             continue
+        rel = p.relative_to(ROOT).as_posix()
+        if VERSIONED_ASSET_RE.search(txt):
+            ref_paths_with_refs.add(rel)
         for m in VERSIONED_ASSET_RE.finditer(txt):
             if int(m.group("ver")) != ver:
-                bad.append((p.name, m.group(0)))
+                bad.append((rel, m.group(0)))
     if bad:
         lines = "\n".join(f"  {fn}: {ref}" for fn, ref in bad[:50])
         die(f"Found stale/mixed versioned references:\n{lines}")
@@ -163,6 +186,8 @@ def main() -> int:
     staged = run(["git", "diff", "--cached", "--name-status"]).splitlines()
 
     def is_allowed(path: str) -> bool:
+        if path in ref_paths_with_refs:
+            return True
         if path in ("index.html", "periphery_wasm.js", "periphery_worker.js", "update_web_bundle.py", "commit_web_bundle_update.py"):
             return True
         return bool(re.match(rf"^({'|'.join(re.escape(p) for p in ALL_PREFIXES)})\d+\.(js|wasm)$", path))

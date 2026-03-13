@@ -158,12 +158,21 @@ var ALL_DEFINED_LABELS = new Set();   // all labels that appear anywhere in the 
 var USED_LABEL_REFS = new Set();      // labels referenced via @ (canonicalized)
 var USED_INDEX_ARRAYS = new Set();    // INDEX_ARRAY names that were actually consumed
 var WARNINGS = [];                   // collected warning strings
+var WARNED_MESSAGES = new Set();     // de-duplicate non-fatal parser warnings
 
 function warn(msg) {
     msg = String(msg);
     WARNINGS.push(msg);
     try { DEBUG += 'WARNING: ' + msg + '\n'; } catch (e) {}
     try {  alert(msg); } catch (e) {}
+}
+
+function warn_once(msg) {
+    msg = String(msg);
+    if (WARNED_MESSAGES.has(msg))
+        return;
+    WARNED_MESSAGES.add(msg);
+    warn(msg);
 }
 
 function _canonicalize_label_ref(label) {
@@ -181,11 +190,62 @@ function _canonicalize_label_def(label) {
     return s.trim();
 }
 
+function _label_family_range(defs, stem) {
+    let values = [];
+    try {
+        const prefix = String(stem) + '[';
+        for (let d of defs) {
+            if (!String(d).startsWith(prefix) || !String(d).endsWith(']')) continue;
+            const inner = String(d).slice(prefix.length, -1);
+            if (/^-?\d+$/.test(inner)) values.push(parseInt(inner));
+        }
+    } catch (e) {}
+    values.sort((a, b) => a - b);
+    return values;
+}
+
+function _format_missing_label_message(Stitches, label) {
+    let canon = _canonicalize_label_ref(label);
+    let detail = 'Label not found: ' + label;
+    try {
+        const defs = Array.from(_collect_defined_labels_from_Stitches(Stitches));
+        const indexed = canon.match(/^(.*)\[(-?\d+)\]$/);
+        if (indexed) {
+            const stem = indexed[1];
+            const wanted = parseInt(indexed[2]);
+            const values = _label_family_range(defs, stem);
+            if (values.length > 0) {
+                const minv = values[0];
+                const maxv = values[values.length - 1];
+                detail += '. Defined labels for "' + stem + '" exist only in the range [' + String(minv) + '..' + String(maxv) + '].';
+                if (wanted === maxv + 1) {
+                    detail += ' This looks like an off-by-one lookup one past the last defined label.';
+                } else if (wanted === minv - 1) {
+                    detail += ' This looks like an off-by-one lookup one before the first defined label.';
+                }
+                const preview = values.slice(Math.max(0, values.length - 5)).join(', ');
+                if (preview.length > 0) {
+                    detail += ' Recent defined indices: [' + preview + '].';
+                }
+                return detail;
+            }
+        }
+
+        const sameStem = defs.filter(d => String(d).startsWith(canon.split('[')[0]));
+        if (sameStem.length > 0) {
+            detail += '. Similar defined labels: ' + sameStem.slice(0, 6).join(', ');
+            if (sameStem.length > 6) detail += ', ...';
+        }
+    } catch (e) {}
+    return detail;
+}
+
 function _reset_usage_tracking() {
     ALL_DEFINED_LABELS = new Set();
     USED_LABEL_REFS = new Set();
     USED_INDEX_ARRAYS = new Set();
     WARNINGS = [];
+    WARNED_MESSAGES = new Set();
 }
 
 function _collect_defined_labels_from_LIST(LIST) {
@@ -1690,18 +1750,22 @@ function handle_Ninc(stitch, N) {
         }
     TopNew = TopNew.slice(0, -1);
 
-    const regex = /(\d+)?([A-Za-z_0-9\[\]]+)/g;
+    const regex = /(\d+)?([A-Za-z_0-9]+(\[[^\]]*\])?)/g;
     var nameBottom;
     var Bottom = '';
     var k = 0;
-    while (match = regex.exec(bottom)) {
-        const name = match[2];
-        var number = match[1];
-        nameBottom = name.replace(/\[[^\]]*\]$/, '');
+    while ((match = regex.exec(bottom))) {
+        let name = match[2];
+        let number = match[1] || '';
+        let bracketPart = '';
 
-        if (!number)
-            number = '';
-        Bottom += number + name;
+        const bracketMatch = name.match(/(\[[^\]]*\])/);
+        if (bracketMatch) {
+            bracketPart = bracketMatch[1];
+            name = name.replace(bracketPart, '');
+        }
+        nameBottom = name;
+        Bottom += number + name + (bracketPart || '');
         if (k > 0)
             throw new Error('Cannot handle Ninc for stitches with more than one bottom node. Try to specify stitch dictionary entry instead for ' + stitch + String(N) + 'inc');
         k++;
@@ -1846,73 +1910,92 @@ function handle_Ntog(stitch, N) {
 function find_stitchID_by_pos(Stitches, row, pos, relative_id = -1, direction = 1, type = '') {
 set_parse_ctx({ stage: 'find_stitchID_by_pos', row: row, at_expr: 'pos=' + String(pos) + ', type=' + String(type), id: relative_id });
 
-    var ids;
-    if (type === '')
-        ids = Stitches.filter(structure => {
-            return structure.id.length > 0 && structure.nrow == row;
-        }).map(obj => obj.id).flat(Infinity);
-    else
-        ids = Stitches.filter(structure => {
-            return structure.id.length > 0 && structure.nrow == row;
+    function _collect_ids(global_type_search = false) {
+        if (type === '')
+            return Stitches.filter(structure => {
+                return structure.id.length > 0 && structure.nrow == row;
+            }).map(obj => obj.id).flat(Infinity);
+        return Stitches.filter(structure => {
+            return structure.id.length > 0 && (global_type_search || structure.nrow == row);
         }).map(structure => {
             const matchingIds = Object.keys(structure.topNodes).filter(key => structure.topNodes[key].type === type).map(key => structure.topNodes[key].id);
             return matchingIds;
         }).flat(Infinity);
-
-
-    if (ids.length == 0)
-        throw new Error('Stitch at that position not found: [row,pos,type]=' + row + ',' + pos + ',' + type);
-
-    //console.log(ids, pos)
-    if ((relative_id) != -1 && type !== '') {
-        let [s, i] = find_stitch_by_id(Stitches, relative_id);
-        if (s.topNodes[s.topNodesNames[i]].type !== type) {
-            //@[sc: @] and @[sc: @ + 1] should both give the first encounter of sc in this case.
-            if (pos > 0)
-                pos -= 1;
-        }
     }
 
-    if (direction == -1)
-        ids.reverse();
+    function _resolve_from_ids(ids_in) {
+        var ids = ids_in.slice();
 
-    function findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(arr, N, direction) {
-        // Lower-bound insertion index in the crocheting-direction ordering.
-        // If no element qualifies, return arr.length (so the caller will error instead of wrapping).
-        if (direction < 0) {
-            arr = arr.map(s => -s);
-            // arr.reverse() already reversed ids for direction==-1
-            N = -N;
-        }
-        let low = 0;
-        let high = arr.length - 1;
-        let result = arr.length;
+        if (ids.length == 0)
+            throw new Error('Stitch at that position not found: [row,pos,type]=' + row + ',' + pos + ',' + type);
 
-        while (low <= high) {
-            let mid = Math.floor((low + high) / 2);
-            if (arr[mid] < N) {
-                low = mid + 1;
-            } else {
-                result = mid;
-                high = mid - 1;
+        var local_pos = pos;
+
+        //console.log(ids, pos)
+        if ((relative_id) != -1 && type !== '') {
+            try {
+                let [s, i] = find_stitch_by_id(Stitches, relative_id);
+                if (s.topNodes[s.topNodesNames[i]].type !== type) {
+                    //@[sc: @] and @[sc: @ + 1] should both give the first encounter of sc in this case.
+                    if (local_pos > 0)
+                        local_pos -= 1;
+                }
+            } catch (e) {
+                if (!String(e && e.message || '').startsWith('ID not found'))
+                    throw e;
             }
         }
-        return result;
-    }
-    //console.log(ids, pos, ids[pos], relative_id, findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(ids, relative_id, direction), direction)
-    if (relative_id != -1)
-        pos = pos + findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(ids, relative_id, direction);
-    //console.log(ids, pos, ids[pos], relative_id)
-    if ((type !== '') && (pos < 0) && (relative_id != -1))
-        pos = 0;
-    //console.log('debug: ', Stitches, row, pos, relative_id, direction, type, ids)
-    if (!Number.isInteger(ids.slice(pos)[0])) {
-        let pos1 = pos;
+
         if (direction == -1)
-            pos1 = ids.length - 1 - pos;
-        throw new Error('Stitch at that position not found: [row,pos,relative_id,type]=' + row + ',' + pos1 + ',' + relative_id + ',' + type + '; ', Stitches);
+            ids.reverse();
+
+        function findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(arr, N, direction) {
+            // Lower-bound insertion index in the crocheting-direction ordering.
+            // If no element qualifies, return arr.length (so the caller will error instead of wrapping).
+            if (direction < 0) {
+                arr = arr.map(s => -s);
+                // arr.reverse() already reversed ids for direction==-1
+                N = -N;
+            }
+            let low = 0;
+            let high = arr.length - 1;
+            let result = arr.length;
+
+            while (low <= high) {
+                let mid = Math.floor((low + high) / 2);
+                if (arr[mid] < N) {
+                    low = mid + 1;
+                } else {
+                    result = mid;
+                    high = mid - 1;
+                }
+            }
+            return result;
+        }
+
+        //console.log(ids, pos, ids[pos], relative_id, findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(ids, relative_id, direction), direction)
+        if (relative_id != -1)
+            local_pos = local_pos + findIndexOfElementThatIsGreaterOrEqToNIfDirectionIsPositiveAndLessOrEqIfDirectionIsNegative(ids, relative_id, direction);
+        //console.log(ids, pos, ids[pos], relative_id)
+        if ((type !== '') && (local_pos < 0) && (relative_id != -1))
+            local_pos = 0;
+        //console.log('debug: ', Stitches, row, pos, relative_id, direction, type, ids)
+        if (!Number.isInteger(ids.slice(local_pos)[0])) {
+            let pos1 = local_pos;
+            if (direction == -1)
+                pos1 = ids.length - 1 - local_pos;
+            throw new Error('Stitch at that position not found: [row,pos,relative_id,type]=' + row + ',' + pos1 + ',' + relative_id + ',' + type + '; ', Stitches);
+        }
+        return ids.slice(local_pos)[0];
     }
-    return ids.slice(pos)[0];
+
+    try {
+        return _resolve_from_ids(_collect_ids(false));
+    } catch (e) {
+        if ((type !== '') && (relative_id != -1) && String(e && e.message || '').startsWith('Stitch at that position not found'))
+            return _resolve_from_ids(_collect_ids(true));
+        throw e;
+    }
 }
 
 function find_stitch_by_id(Stitches, id) {
@@ -2317,7 +2400,9 @@ set_parse_ctx({ stage: 'find_label', label: _truncate_for_ctx(label, 140) });
         if (ALL_DEFINED_LABELS && ALL_DEFINED_LABELS.has(_canonicalize_label_def(canon))) {
             throw new Error('Cannot attach into the future: label "' + canon + '" is defined later in the pattern.');
         }
-        throw new Error('Label not found: ' + label);
+        let detail = _format_missing_label_message(Stitches, label);
+        warn_once(detail);
+        throw new Error(detail);
     }
     // Mark as used (referenced via @)
     try { USED_LABEL_REFS.add(_canonicalize_label_def(_canonicalize_label_ref(label))); } catch (e) {}
@@ -2342,8 +2427,11 @@ function find_label_ALL(Stitches, label) {
         let g = [...structure.label].map(l => l.split('!')[0].split('+')[0].split('^')[0]);
         return (g.includes(label)) && (structure.id.length > 0);
     });
-    if (count_stitches(s) == 0)
-        throw new Error('Label not found: ' + label);
+    if (count_stitches(s) == 0) {
+        let detail = _format_missing_label_message(Stitches, label);
+        warn_once(detail);
+        throw new Error(detail);
+    }
     return s;
 }
 
@@ -3053,10 +3141,12 @@ set_parse_ctx({ stage: 'recompute_relative_and_sequential_attachments_after_labe
         return null;
     }
 
-    function _direction_for_row(rowIndex) {
+    function _direction_for_row(rowIndex, beforeRow) {
         if (rowIndex === null || rowIndex === undefined) return 1;
         try {
-            return (sum(turns.slice(rowIndex)) % 2 == 1) ? -1 : 1;
+            let end = (beforeRow === null || beforeRow === undefined) ? turns.length : beforeRow;
+            if (end < rowIndex) end = rowIndex;
+            return (sum(turns.slice(rowIndex, end)) % 2 == 1) ? -1 : 1;
         } catch (e) {
             return 1;
         }
@@ -3258,7 +3348,7 @@ set_parse_ctx({ stage: 'recompute_relative_and_sequential_attachments_after_labe
         let k = keys[0];
         let expr = at_map[k];
 
-        let dir = _direction_for_row(head_row[k]);
+        let dir = _direction_for_row(head_row[k], st.nrow);
 
         let rel = _parse_relative_expr(expr);
         if (rel !== null && row_has_label[st.nrow]) {
@@ -3274,10 +3364,26 @@ set_parse_ctx({ stage: 'recompute_relative_and_sequential_attachments_after_labe
             if (anchor !== undefined && anchor !== null) {
                 // Direction should follow the target row's attachment direction (same as update_attachment_points)
                 let x = _row_of_target(anchor);
+                let traversal_row_hint = null;
+                let use_first_pass_typed_semantics = false;
+                try {
+                    if (st._attach_row_hint &&
+                        Object.prototype.hasOwnProperty.call(st._attach_row_hint, anchorKey) &&
+                        Number.isInteger(st._attach_row_hint[anchorKey])) {
+                        traversal_row_hint = st._attach_row_hint[anchorKey];
+                    }
+                } catch (e) {}
+                if ((rel.type || '') !== '' &&
+                    x !== null && x !== undefined &&
+                    traversal_row_hint !== null && traversal_row_hint !== undefined &&
+                    x < traversal_row_hint) {
+                    x = traversal_row_hint;
+                    use_first_pass_typed_semantics = true;
+                }
                 let direction = 1;
                 if (x !== null && x !== undefined) {
                     try {
-                        if (sum(turns.slice(x)) % 2 == 1)
+                        if (sum(turns.slice(x, st.nrow)) % 2 == 1)
                             direction = -1;
                     } catch (e) {}
                 }
@@ -3447,11 +3553,26 @@ set_parse_ctx({ stage: 'recompute_relative_and_sequential_attachments_after_labe
 
                     if (typeof anchor_for_pos === 'number' && x !== null && x !== undefined) {
                         if (useType !== '') {
-                            // Two-step semantics for @[TYPE:@+k] during post-label recomputation:
-                            // 1) move k stitches from @ in overall stitch-space,
-                            // 2) then find the first TYPE stitch at or after that position.
-                            let candidate = find_stitchID_by_pos(Stitches, x, pos_for_pos, anchor_for_pos, direction, '');
-                            new_first = find_stitchID_by_pos(Stitches, x, 0, candidate, direction, useType);
+                            if (use_first_pass_typed_semantics) {
+                                new_first = find_stitchID_by_pos(Stitches, x, rel.delta, anchor, direction, useType);
+                            } else {
+                                // Two-step semantics for @[TYPE:@+k] during post-label recomputation:
+                                // 1) move k stitches from @ in overall stitch-space,
+                                // 2) then find the first TYPE stitch at or after that position.
+                                try {
+                                    let candidate = find_stitchID_by_pos(Stitches, x, pos_for_pos, anchor_for_pos, direction, '');
+                                    new_first = find_stitchID_by_pos(Stitches, x, 0, candidate, direction, useType);
+                                } catch (e) {
+                                    // Be conservative: if the typed post-pass cannot reproduce a first-pass
+                                    // attachment that already parsed successfully, preserve the original
+                                    // first-pass attachment instead of failing or drifting structure.
+                                    if (Array.isArray(st.id_attach) && st.id_attach.length > 0) {
+                                        new_first = st.id_attach[0];
+                                    } else {
+                                        throw e;
+                                    }
+                                }
+                            }
                         } else {
                             new_first = find_stitchID_by_pos(Stitches, x, pos_for_pos, anchor_for_pos, direction, '');
                         }
@@ -3597,6 +3718,7 @@ set_parse_ctx({ stage: 'update_attachment_points', row: node && node['nrow'], no
         var x;
         var y;
         var relative_id = -1;
+        var traversal_row = null;
 
         var atTrue = false;
         if (at.includes('@')) {
@@ -3610,16 +3732,24 @@ set_parse_ctx({ stage: 'update_attachment_points', row: node && node['nrow'], no
             if ((!Number.isInteger(at3)) && 'attach_id' in at3)
                 at3 = at3['attach_id'];
             relative_id = at3;
+            if (Object.prototype.hasOwnProperty.call(attach_row, keyToExtract) &&
+                Number.isInteger(attach_row[keyToExtract]) &&
+                attach_row[keyToExtract] >= 0)
+                traversal_row = attach_row[keyToExtract];
             try {
-            x = find_stitch_by_id(Stitches, relative_id)[0].nrow;
-        } catch (e) {
-            // This happens when "@" is used as a relative coordinate but there is no valid anchor stitch yet.
-            // Example: 9ch,turn\nsc@[@+1]
-            if (String(e && e.message || '').startsWith('ID not found')) {
-                throw new Error('Cannot use "@" as a coordinate anchor in attachment [' + at + ']. There must already be at least one attached stitch on the target row/round for "@" to refer to. (Current anchor id: ' + String(relative_id) + ')');
+                let relative_row = find_stitch_by_id(Stitches, relative_id)[0].nrow;
+                let use_traversal_row = (count_by_stitch_name !== '') &&
+                    (traversal_row !== null) &&
+                    (relative_row < traversal_row);
+                x = use_traversal_row ? traversal_row : relative_row;
+                if (use_traversal_row && (relative_row !== traversal_row)) {
+                    warn_once('Attachment [' + at + '] followed the current sequential head from row/round ' +
+                        String(traversal_row) + ' even though the last attached stitch lives on row/round ' +
+                        String(relative_row) + '. Add a stitchless @[...] move if you want to reset the @ traversal head explicitly.');
+                }
+            } catch (e) {
+                throw e;
             }
-            throw e;
-        }
         } else {
             at = at.split(',');
             var [count, first, last] = count_stitches_in_row(Stitches, Nrows);
@@ -3658,6 +3788,16 @@ set_parse_ctx({ stage: 'update_attachment_points', row: node && node['nrow'], no
             } else {
                 throw e;
             }
+        }
+        if (atTrue) {
+            try {
+                let resolved = find_stitch_by_id(Stitches, attach[key])[0].nrow;
+                if (resolved !== x) {
+                    warn_once('Attachment [' + at + '] moved the "@" head from row/round ' + String(x) +
+                        ' to row/round ' + String(resolved) +
+                        '; later @-relative attachments will follow that resolved head.');
+                }
+            } catch (e) {}
         }
         return attach;
     }
@@ -3736,9 +3876,9 @@ set_parse_ctx({ stage: 'parse_StitchCodeList' });
         var Stitch;
         for (var node of row) {
 
-
-// Enforce: cannot use "@" as a coordinate anchor in [@...] unless at least one stitch has already attached
-// on this row/round for the referenced attachment head.
+// Fail early when "@" is used in [@...] before the current row/round has attached any stitch
+// for that head. This preserves the requirement that bracketed relative heads be initialized
+// explicitly on the current line/row/round via @[...] or an attached stitch.
 try {
     for (let _ak of Object.keys(node['at'] || {})) {
         let _expr = node['at'][_ak];
@@ -3751,9 +3891,8 @@ try {
                     let _key = (_m[1] === '') ? '0' : _m[1];
                     if (!(_key in row_attached)) row_attached[_key] = false;
                     if (!row_attached[_key]) {
-                        let _a = attach[_key];
-                        if ((_a !== null) && (typeof _a === 'object') && ('attach_id' in _a)) _a = _a['attach_id'];
-                        throw new Error('Cannot use "@" as a coordinate anchor in attachment ' + _t + '. There must already be at least one attached stitch on the target row/round for "@" to refer to. (Current anchor id: ' + String(_a) + ')');
+                        throw new Error('Attachment ' + _t + ' uses "@" before the attachment head for key ' + _key +
+                            ' was initialized on this row/round. Add a stitchless @[...] move or an attached stitch first.');
                     }
                 }
             }
@@ -3794,6 +3933,10 @@ try {
                 }
                 if (Stitch.id.length > 0)
                     id = last_element(Stitch.id);
+                try {
+                    if (!Stitch._attach_row_hint) Stitch._attach_row_hint = {};
+                    Stitch._attach_row_hint[String(key)] = attach_row[key];
+                } catch (e) {}
                 Stitches.push(Stitch);
 
 // Mark this attachment head as having seen an attached stitch on this row.
