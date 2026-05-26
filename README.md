@@ -39,7 +39,15 @@ and others can use the CrochetPARADE platform to render the shared text into a m
 wear crochet hats and sweaters that match real-world crochet projects.
 
    * It is probably inevitable that the grammar along with the renderer can allow AI to learn how to write correct crochet instructions of complicated patterns (beyond simple amigurumi) based on general project descriptions.
-   
+
+## EXAMPLE USES IN RESEARCH
+
+  * <a href="https://web.archive.org/web/20250301013839/https://essay.utwente.nl/104651/1/Gomez_MA_TNW.pdf">Exploratory Research on Crochet: Assessing its Potential as a Fabrication Technique for Soft Robotic Systems and Biomedical Devices</a>, Master's thesis by Marina Gómez Fernández (University of Twente)
+  * <a href="https://web.archive.org/web/20250529083356/https://summer-symposia-proceedings.aaai.org/preprints/pdfs/5499.pdf">Translation of User Crochet Patterns to CrochetPARADE syntax using Large Language Models</a>, Rachael Dias, Kayvan Karim (Heriot-Watt University Dubai)
+  * <a href="https://arxiv.org/abs/2511.09483v1">CrochetBench: Can Vision-Language Models Move from Describing to Doing in Crochet Domain?</a>, Peiyu Li, Xiaobao Huang, Nitesh V. Chawla (University of Notre Dame)
+  * <a href="https://web.archive.org/web/20250703222944/https://diglib.eg.org/server/api/core/bitstreams/4d4b9306-b5a6-44ee-a4da-1199ccf5aaf6/content">Modeling crochet patterns with a force-directed graph layout</a>, Émile Greer and David Mould (Carleton University, Canada)
+  * <a href="https://web.archive.org/web/20250916142841/https://theses.liacs.nl/pdf/2024-2025-SmeyersCCatherine.pdf">Analysis and Visualization of AI-generated Amigurumi Crochet Patterns</a>, Catherine Smeyers (Leiden Institute of Advanced Computer Science)
+
 ## LICENSE AND COPYRIGHT
 
    * The website and all of its computational components are free and open source and are released under the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html#license-text">GPLv3 license</a>. 
